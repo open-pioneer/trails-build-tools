@@ -64,7 +64,7 @@ jobs:
 
       - name: Publish package
         run: | 
-          pnpm publish --filter "${{ inputs.package }}" --access public --dry-run
+          pnpm publish --filter "${{ inputs.package }}" --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
