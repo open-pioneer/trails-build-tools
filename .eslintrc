@@ -3,22 +3,16 @@
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:import/typescript",
-        "plugin:react/recommended",
-        "plugin:react/jsx-runtime",
-        "plugin:react-hooks/recommended",
         "prettier"
     ],
     "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint", "import", "unused-imports", "react", "react-hooks"],
+    "plugins": ["@typescript-eslint", "import", "unused-imports"],
     "env": {
         "node": true,
         "browser": true
     },
     "root": true,
     "settings": {
-        "react": {
-            "version": "detect"
-        },
         "import/resolver": {
             "typescript": true,
             "node": true
@@ -50,7 +44,6 @@
         // Variables can be prefixed with _ to disable the warning when necessary.
         "no-unused-vars": "off",
         "@typescript-eslint/no-unused-vars": "off",
-        "react/jsx-uses-vars": "error",
         "unused-imports/no-unused-imports": "warn",
         "unused-imports/no-unused-vars": [
             "warn",

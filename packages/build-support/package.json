@@ -1,0 +1,12 @@
+{
+    "name": "@open-pioneer/build-support",
+    "main": "index.js",
+    "types": "index.d.ts",
+    "version": "0.1.0",
+    "type": "module",
+    "files": [
+        "index.js",
+        "index.d.ts",
+        "README.md"
+    ]
+}

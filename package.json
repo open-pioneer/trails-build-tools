@@ -1,0 +1,40 @@
+{
+    "name": "build-tools",
+    "type": "module",
+    "private": true,
+    "license": "Apache-2.0",
+    "scripts": {
+        "clean": "pnpm recursive --no-sort run clean",
+        "build": "pnpm recursive --sort run build",
+        "test": "pnpm recursive --sort run test",
+        "check-types": "tsc --noEmit",
+        "watch-types": "pnpm check-types -w",
+        "lint": "eslint ./packages --cache",
+        "prettier-check": "pnpm prettier:common -c",
+        "prettier": "pnpm prettier:common -w",
+        "prettier:common": "prettier ./packages --ignore-path .eslintignore --cache",
+        "prepare": "husky install"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.1",
+        "@types/chai": "^4.3.4",
+        "chai": "^4.3.7",
+        "mocha": "^10.2.0",
+        "@types/node": "^16.18.12",
+        "@typescript-eslint/eslint-plugin": "^5.50.0",
+        "@typescript-eslint/parser": "^5.51.0",
+        "eslint": "^8.33.0",
+        "eslint-config-prettier": "^8.6.0",
+        "eslint-import-resolver-typescript": "^3.5.3",
+        "eslint-plugin-import": "^2.27.5",
+        "eslint-plugin-unused-imports": "^2.0.0",
+        "husky": "^8.0.3",
+        "prettier": "^2.8.4",
+        "rimraf": "^4.1.2",
+        "typescript": "^4.9.5"
+    },
+    "engines": {
+        "node": ">= 16",
+        "pnpm": "^7"
+    }
+}

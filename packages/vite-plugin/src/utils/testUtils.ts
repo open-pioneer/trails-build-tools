@@ -27,6 +27,9 @@ export async function runViteBuild(options: {
                     if (isResolved && /[/\\]node_modules[/\\]/.test(id)) {
                         return true;
                     }
+                    if (/^@open-pioneer\/runtime\//.test(id)) {
+                        return true;
+                    }
                 }
             }
         },
