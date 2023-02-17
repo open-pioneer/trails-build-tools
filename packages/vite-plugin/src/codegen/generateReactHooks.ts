@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 export function generateReactHooks(packageName: string, runtimeModuleId: string) {
     return `
 import { useServiceInternal, useServicesInternal, usePropertiesInternal } from ${JSON.stringify(

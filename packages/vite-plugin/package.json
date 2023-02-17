@@ -4,6 +4,7 @@
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "commonjs",
+    "license": "Apache-2.0",
     "scripts": {
         "clean": "rimraf dist temp",
         "build": "node esbuild.config.js build",
@@ -18,7 +19,8 @@
         "client.d.ts",
         "types.d.ts",
         "CHANGELOG.md",
-        "README.md"
+        "README.md",
+        "LICENSE"
     ],
     "peerDependencies": {
         "vite": "^4.0.0",

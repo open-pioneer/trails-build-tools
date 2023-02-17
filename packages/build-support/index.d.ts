@@ -1,6 +1,5 @@
-/**
- * Schema for `build.config.mjs` files.
- */
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 export interface BuildConfig {
     /**
      * Path to a file containing CSS.

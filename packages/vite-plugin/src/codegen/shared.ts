@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 import { dirname } from "node:path";
 
 const APP_META_RE = /[?&]open-pioneer-app(?:$|&)/;

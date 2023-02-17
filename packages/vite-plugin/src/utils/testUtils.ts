@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 import { resolve } from "node:path";
 import { build } from "vite";
 import { pioneer, PioneerPluginOptions } from "..";

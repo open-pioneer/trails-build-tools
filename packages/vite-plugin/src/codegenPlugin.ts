@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { PluginContext } from "rollup";

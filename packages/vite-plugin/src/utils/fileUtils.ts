@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 import * as fs from "node:fs";
 import { isAbsolute, relative } from "node:path";
 

@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 import { assert } from "chai";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";

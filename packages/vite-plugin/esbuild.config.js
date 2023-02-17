@@ -1,5 +1,6 @@
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 /* eslint-disable @typescript-eslint/no-var-requires */
-
 const esbuild = require("esbuild");
 
 const buildOptions = {

@@ -1,4 +1,5 @@
-/** Options for the open-pioneer vite plugin. */
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 export interface PioneerPluginOptions {
     /**
      * Whether to include the root `index.html` site (by default at `src/index.html`) in the build.

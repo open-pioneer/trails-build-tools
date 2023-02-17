@@ -1,7 +1,5 @@
-/**
- * Generates unique identifiers from source strings.
- * Non-representable characters are removed and numbers are added if the identifier is not unique.
- */
+// SPDX-FileCopyrightText: con terra GmbH and contributors
+// SPDX-License-Identifier: Apache-2.0
 export class IdGenerator {
     private existing = new Map<string, number>();
 
