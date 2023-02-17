@@ -11,6 +11,16 @@ on:
           - "vite-plugin-pioneer"
           - "build-support"
 
+      version:
+        type: string
+        description: Enter release version (x.y.z)
+        required: true
+
+      next_version:
+        type: string
+        description: Enter next development version (x.y.z)
+        required: true
+
 jobs:
   # Run tests before publish https://stackoverflow.com/a/71489231
   tests:
@@ -33,17 +43,54 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          registry-url: 'https://registry.npmjs.org'
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Detect package directory
+        run: |
+          DIR=$(pnpm ls --filter ${{ inputs.package }} --json --depth=-1 | jq ".[0].path" -r);
+          echo "Package path of ${{ inputs.package }} is $DIR";
+          echo "package_path=$DIR" >> $GITHUB_ENV
+
+      - name: Update package version
+        run: cd "${{ env.package_path }}" && npm version "${{ inputs.version }}" --allow-same-version --no-git-tag-version
+
       - name: Build package
         run: |
-          pnpm run --filter ${{ inputs.package }} --if-present build
+          pnpm run --filter "${{ inputs.package }}" --if-present build
 
       - name: Publish package
         run: | 
-          pnpm publish --filter ${{ inputs.package }} --access public --dry-run
+          pnpm publish --filter "${{ inputs.package }}" --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create release tag
+        run: |
+          set -xu;
+
+          # Set git options
+          git config pull.rebase false;
+          git config --global user.email "publish-workflow[bot]@automation";
+          git config --global user.name "Publish Workflow [Bot]";
+          
+          # Do not commit changes to npmrc
+          git restore .npmrc
+     
+          # Release commit
+          git add . && git commit -m "Publish: ${{ inputs.package }} v${{ inputs.version }}" --no-verify --allow-empty;
+          git tag "${{ inputs.package }}-v${{ inputs.version }}";
+
+          ## Next version commit
+          (cd "${{ env.package_path }}" && npm version "${{ inputs.next_version }}" --no-git-tag-version);
+          git add . && git commit -m "Publish: Update ${{ inputs.package }} to next development version v${{ inputs.next_version }}" --no-verify;
+
+          # Push changes
+          git pull origin main --no-edit;
+          git rebase;
+          git push origin main;
+          git push origin main --tags;
+
