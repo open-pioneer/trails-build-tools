@@ -2,6 +2,24 @@
 
 This package contains build tools required by the open pioneer framework.
 
+## Development Notes
+
+### Windows users
+
+If you're developing the build tools on windows, you will likely have to Window's support für symbolic links.
+This is needed for the plugin tests: they emulate a pnpm monorepo with local links via manual symlinks.
+
+To enable symbolic links on windows you need to enable windows developer mode
+(German Windows 11: Einstellungen > Datenschutz und Sicherheit > Für Entwickler > Entwicklermodus).
+Additionally, you need to set the following git config: `git config --global core.symlinks true`.
+If this setting was not enabled from the beginning, it might be necessary to set up the project
+again from scratch to avoid problems with link creation.
+
+### Releasing
+
+Use the [publish action](https://github.com/open-pioneer/build-tools/actions/workflows/publish.yml) to trigger an npm release of a package.
+The action accepts two version numbers: the version to release (may be the same as in the current package.json) and the next development version (which must be different).
+
 ## License
 
 Copyright 2023 con terra GmbH and contributors
