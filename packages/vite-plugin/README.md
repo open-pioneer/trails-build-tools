@@ -108,7 +108,7 @@ This plugin internally configures the rollup options inside vite's config to ach
 To manually build the plugin, run `pnpm run build`.
 This build does _not_ include tests.
 
-`pnpm run watch` will continuously rebuild the code (including tests files).
+`pnpm run dev` will continuously rebuild the code (including tests files).
 
 `pnpm run test` will execute all tests using mocha.
 If you create a new test file, make sure to list it in `src/all.test.ts`.
