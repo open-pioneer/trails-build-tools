@@ -1,5 +1,9 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.2.2
+
+-   Make type of app metadata required
+
 ## v0.2.1
 
 -   Do not skip package metadata during codegen anymore.

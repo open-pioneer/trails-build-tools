@@ -3,7 +3,7 @@
 declare module "open-pioneer:app" {
     import { type ApplicationMetadata } from "@open-pioneer/runtime/metadata";
 
-    const metadata: ApplicationMetadata;
+    const metadata: Required<ApplicationMetadata>;
     export = metadata;
 }
 
