@@ -1,5 +1,7 @@
 # build-tools
 
+![Build status](https://github.com/open-pioneer/build-tools/actions/workflows/test-and-build.yml/badge.svg) ![Dependency audit](https://github.com/open-pioneer/build-tools/actions/workflows/audit-dependencies.yml/badge.svg)
+
 This package contains build tools required by the open pioneer framework.
 
 ## Development Notes
