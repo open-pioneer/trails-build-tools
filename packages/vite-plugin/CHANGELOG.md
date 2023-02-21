@@ -1,5 +1,10 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.2.1
+
+-   Do not skip package metadata during codegen anymore.
+    All packages (with pioneer extensions) have an entry in the app's metadata.
+
 ## v0.2.0
 
 -   Initial support for i18n files

@@ -68,10 +68,6 @@ export function generatePackagesMetadata(packages: PackageMetadataInput[]): stri
     const packagesMetadata = nodes.objectExpression([]);
     const imports: nodes.Statement[] = [];
     for (const pkg of packages) {
-        if (skipPackage(pkg)) {
-            continue;
-        }
-
         const packageMetadata = generatePackageMetadata(pkg, {
             importServiceClass(variableName, className, entryPoint) {
                 const id = idGenerator.generate(variableName);
@@ -173,26 +169,6 @@ function generatePackageMetadata(
         PROPERTIES: propertiesObject
     });
     return pkgObject;
-}
-
-/**
- * Returns true if the package does not contain any relevant metadata.
- */
-function skipPackage(pkg: PackageMetadataInput) {
-    const config = pkg.config;
-    if (config.services.length) {
-        return false;
-    }
-    if (config.styles) {
-        return false;
-    }
-    if (config.ui.references.length) {
-        return false;
-    }
-    if (config.properties.length) {
-        return false;
-    }
-    return true;
 }
 
 function jsonToExpression(json: unknown): nodes.Expression {
