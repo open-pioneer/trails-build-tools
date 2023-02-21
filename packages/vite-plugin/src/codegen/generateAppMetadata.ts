@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { APP_CSS_QUERY, APP_PACKAGES_QUERY } from "./shared";
+import { APP_CSS_QUERY, APP_I18N_INDEX_QUERY, APP_PACKAGES_QUERY } from "./shared";
 
 /**
  * Generates the main app metadata module.
@@ -27,16 +27,18 @@ export function generateAppMetadata(importer: string, metadataModuleId: string) 
     */
     const packagesModule = `${importer}?${APP_PACKAGES_QUERY}`;
     const cssModule = `${importer}?${APP_CSS_QUERY}&inline&lang.css`;
+    const i18nModule = `${importer}?${APP_I18N_INDEX_QUERY}`;
     return `
 import { createBox } from ${JSON.stringify(metadataModuleId)};
 import packages from ${JSON.stringify(packagesModule)};
 import stylesString from ${JSON.stringify(cssModule)};
+import { locales, loadMessages } from ${JSON.stringify(i18nModule)};
 
 const styles = createBox(stylesString);
 if (import.meta.hot) {
     import.meta.hot.data.styles ??= styles;
     import.meta.hot.accept((mod) => {
-        if (mod && mod.packages === packages) {
+        if (mod && mod.packages === packages && mod.locales === locales && mod.loadMessages === loadMessages) {
             import.meta.hot.data.styles.setValue(mod.styles.value);
             return;
         }
@@ -48,7 +50,9 @@ if (import.meta.hot) {
 
 export {
     packages,
-    styles
+    styles,
+    locales,
+    loadMessages
 };
 `.trim();
 }

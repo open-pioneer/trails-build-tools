@@ -12,6 +12,16 @@ declare module "open-pioneer:app" {
      * Combined styles of all packages contained in the app.
      */
     declare const styles: ObservableBox<string>;
+
+    /**
+     * Locales supported by the app.
+     */
+    declare const locales: string[];
+
+    /**
+     * Returns the messages associated with the given locale.
+     */
+    declare function loadMessages(locale: string): Promise<Record<string, string>>;
 }
 
 /**

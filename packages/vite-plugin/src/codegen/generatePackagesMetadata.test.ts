@@ -3,7 +3,7 @@
 import { assert } from "chai";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { TEST_DATA } from "../utils/testUtils";
+import { GENERATE_SNAPSHOTS, TEST_DATA } from "../utils/testUtils";
 import { generatePackagesMetadata } from "./generatePackagesMetadata";
 
 describe("generatePackagesMetadata", function () {
@@ -14,6 +14,7 @@ describe("generatePackagesMetadata", function () {
                 name: "test",
                 config: {
                     styles: undefined,
+                    i18n: undefined,
                     services: [
                         {
                             name: "ServiceA",
@@ -71,8 +72,7 @@ describe("generatePackagesMetadata", function () {
             }
         ]);
 
-        // eslint-disable-next-line no-constant-condition
-        if (false) {
+        if (GENERATE_SNAPSHOTS) {
             writeFileSync(testDataFile, pkgMetadata, "utf-8");
         }
 

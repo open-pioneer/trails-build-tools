@@ -1,0 +1,3 @@
+overrides:
+    package-foo:
+        from-foo.greeting: "Changed from app"

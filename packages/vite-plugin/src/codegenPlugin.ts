@@ -13,6 +13,7 @@ import { APP_META_QUERY, PACKAGE_HOOKS, parseVirtualAppModuleId } from "./codege
 import { readFile } from "node:fs/promises";
 import { generateReactHooks } from "./codegen/generateReactHooks";
 import { ReportableError } from "./ReportableError";
+import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
@@ -124,9 +125,9 @@ export function codegenPlugin(): Plugin {
                     return generatedSourceCode;
                 }
 
-                const { type, importer } = virtualModule;
-                if (type === "app-meta") {
-                    return generateAppMetadata(importer, metadataId);
+                const importer = virtualModule.importer;
+                if (virtualModule.type === "app-meta") {
+                    return generateAppMetadata(virtualModule.importer, metadataId);
                 }
 
                 const pkgJsonPath = findPackageJson(dirname(importer), config.root);
@@ -138,17 +139,34 @@ export function codegenPlugin(): Plugin {
 
                 const context = buildMetadataContext(this, moduleId, devServer, manualDeps);
                 const appDir = dirname(pkgJsonPath);
-                switch (type) {
+                const appMetadata = await metadata.getAppMetadata(context, appDir);
+                switch (virtualModule.type) {
                     case "app-packages": {
-                        const appMetadata = await metadata.getAppMetadata(context, appDir);
                         const generatedSourceCode = generatePackagesMetadata(appMetadata.packages);
                         isDebug && debug("Generated app metadata: %O", generatedSourceCode);
                         return generatedSourceCode;
                     }
                     case "app-css": {
-                        const appMetadata = await metadata.getAppMetadata(context, appDir);
                         const generatedSourceCode = generateCombinedCss(appMetadata.packages);
                         isDebug && debug("Generated app css: %O", generatedSourceCode);
+                        return generatedSourceCode;
+                    }
+                    case "app-i18n-index": {
+                        const generatedSourceCode = generateI18nIndex(
+                            importer,
+                            appMetadata.locales
+                        );
+                        isDebug && debug("Generated i18n lookup: %O", generatedSourceCode);
+                        return generatedSourceCode;
+                    }
+                    case "app-i18n": {
+                        const generatedSourceCode = generateI18nMessages(
+                            context,
+                            virtualModule.locale,
+                            appMetadata.name,
+                            appMetadata.packages
+                        );
+                        isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
                         return generatedSourceCode;
                     }
                 }
@@ -228,7 +246,7 @@ async function getPackageName(ctx: PluginContext, packageJsonPath: string) {
         throw new ReportableError(`Failed to read package.json file: ${e}`);
     }
     if (!name) {
-        throw new ReportableError(`Failed to read package name from '${packageJsonPath}'.`);
+        throw new ReportableError(`Failed to read package name from ${packageJsonPath}.`);
     }
     return name;
 }

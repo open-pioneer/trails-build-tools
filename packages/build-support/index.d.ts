@@ -9,6 +9,17 @@ export interface BuildConfig {
     styles?: string;
 
     /**
+     * Array of supported languages, every entry here needs a ./i18n/<lang>.yaml file.
+     *
+     * @example
+     *
+     * ```js
+     *i18n: ["de", "en"]
+     * ```
+     */
+    i18n?: string[];
+
+    /**
      * Services provided by this package.
      * The service name must match an exported class from the package's main entry point (usually `index.{js,ts}`).
      */

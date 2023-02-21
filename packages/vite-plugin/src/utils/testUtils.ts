@@ -8,6 +8,8 @@ import { pioneer, PioneerPluginOptions } from "..";
 export const TEST_DATA = resolve("./test-data");
 export const TEMP_DATA = resolve("./temp");
 
+export const GENERATE_SNAPSHOTS = process.env.SNAPSHOTS === "1";
+
 export async function runViteBuild(options: {
     outDir: string;
     rootDir: string;

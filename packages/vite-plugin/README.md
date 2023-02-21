@@ -137,6 +137,21 @@ open-pioneer:codegen Adding manual watch for /home/michael/projects/starter/src/
 
 You can also add a `--debug` flag to `vite` to show vite's internal log messages.
 
+### Snapshots
+
+We're using an ad-hoc implementation of snapshot tests for some generated files.
+Pass the environment variable `SNAPSHOTS=1` to (re-) generate snapshots:
+
+```bash
+$ SNAPSHOTS=1 pnpm run test
+```
+
+In your test code, reference the `GENERATE_SNAPSHOTS` constant (which is initialized from the environment variable):
+
+```js
+import { GENERATE_SNAPSHOTS } from "../utils/testUtils";
+```
+
 ## License
 
 Copyright 2023 con terra GmbH and contributors

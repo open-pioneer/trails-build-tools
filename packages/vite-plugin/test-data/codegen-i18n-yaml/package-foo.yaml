@@ -1,0 +1,4 @@
+messages:
+    from-foo:
+        greeting: |
+            Hello World!

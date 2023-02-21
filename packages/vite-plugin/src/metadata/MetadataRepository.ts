@@ -30,6 +30,9 @@ export interface AppMetadata {
     /** Path to package.json file. */
     packageJsonPath: string;
 
+    /** Locales required by the application. */
+    locales: string[];
+
     /**
      * Packages used by the app.
      * Includes the app package itself!
@@ -55,6 +58,12 @@ export interface PackageMetadata {
 
     /** Path to the resolved css file (if any). */
     cssFilePath: string | undefined;
+
+    /**
+     * Paths to i18n yaml config for any defined lang in build config.
+     * Key: locale, value: file path
+     */
+    i18nPaths: Map<string, string>;
 
     /** Runtime dependencies (from package.json). */
     dependencies: string[];
@@ -144,6 +153,9 @@ export class MetadataRepository {
             );
         }
 
+        // App's locales define which locales must be supported.
+        const appLocales = Array.from(appPackageMetadata.i18nPaths.keys());
+
         // Map to ensure that we don't return duplicates. Key: package name
         const packageMetadataByName = new Map<string, PackageMetadata>();
         packageMetadataByName.set(appPackageMetadata.name, appPackageMetadata);
@@ -177,6 +189,7 @@ export class MetadataRepository {
         const appMetadata: AppMetadata = {
             name: appPackageMetadata.name,
             directory: appPackageMetadata.directory,
+            locales: appLocales,
             packageJsonPath: appPackageMetadata.packageJsonPath,
             packages: Array.from(packageMetadataByName.values())
         };
@@ -362,12 +375,32 @@ export async function parsePackageMetadata(
         }
     }
 
+    const i18nPaths = new Map<string, string>();
+    if (buildConfig.i18n) {
+        for (const locale of buildConfig.i18n) {
+            if (i18nPaths.has(locale)) {
+                throw new ReportableError(
+                    `Locale '${locale}' was defined twice in ${buildConfigPath}`
+                );
+            }
+
+            const path = join(packageDir, "i18n", `${locale}.yaml`);
+            ctx.addWatchFile(path);
+            if (!(await fileExists(path))) {
+                throw new ReportableError(`i18n file '${path}' does not exist.`);
+            }
+
+            i18nPaths.set(locale, normalizePath(path));
+        }
+    }
+
     return {
         name: packageName,
         directory: packageDir,
         packageJsonPath: packageJsonPath,
         entryPointPath: entryPoint,
         cssFilePath: cssFile,
+        i18nPaths,
         dependencies,
         config: buildConfig
     };
