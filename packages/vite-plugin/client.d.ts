@@ -1,27 +1,10 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 declare module "open-pioneer:app" {
-    import { type PackageMetadata, type ObservableBox } from "@open-pioneer/runtime/metadata";
+    import { type ApplicationMetadata } from "@open-pioneer/runtime/metadata";
 
-    /**
-     * Metadata for packages contained in the app.
-     */
-    declare const packages: Record<string, PackageMetadata>;
-
-    /**
-     * Combined styles of all packages contained in the app.
-     */
-    declare const styles: ObservableBox<string>;
-
-    /**
-     * Locales supported by the app.
-     */
-    declare const locales: string[];
-
-    /**
-     * Returns the messages associated with the given locale.
-     */
-    declare function loadMessages(locale: string): Promise<Record<string, string>>;
+    const metadata: ApplicationMetadata;
+    export = metadata;
 }
 
 /**
