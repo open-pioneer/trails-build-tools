@@ -5,6 +5,12 @@ export interface BuildConfig {
      * Path to a file containing CSS.
      * The CSS file will be automatically loaded when the package
      * is part of an application.
+     *
+     * @example
+     *
+     * ```js
+     * styles: "./styles.css"
+     * ```
      */
     styles?: string;
 
@@ -22,11 +28,32 @@ export interface BuildConfig {
     /**
      * Services provided by this package.
      * The service name must match an exported class from the package's main entry point (usually `index.{js,ts}`).
+     *
+     * @example
+     *
+     * ```js
+     * services: {
+     *    MyService: {
+     *        provides: "some.interface.name",
+     *        references: {
+     *            // ...
+     *        }
+     *    }
+     * }
+     * ```
      */
     services?: Record<string, ServiceConfig>;
 
     /**
      * UI configuration.
+     *
+     * @example
+     *
+     * ```js
+     * ui: {
+     *     references: ["integration.ExternalEventService"]
+     * }
+     * ```
      */
     ui?: UiConfig;
 
