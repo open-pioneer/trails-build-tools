@@ -1,5 +1,9 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.2.4
+
+-   Add support for the `useIntl` hook
+
 ## v0.2.3
 
 -   Add caching for i18n files
