@@ -5,9 +5,8 @@ import template from "@babel/template";
 import { appLocaleFileId } from "./shared";
 import generate from "@babel/generator";
 import { PackageMetadata } from "../metadata/MetadataRepository";
-import { PluginContext } from "rollup";
-import { loadI18nFile } from "../metadata/parseI18nYaml";
 import { ReportableError } from "../ReportableError";
+import { I18nFile } from "../metadata/parseI18nYaml";
 
 const INDEX_TEMPLATE = template.program(`
     export const locales = %%LOCALES_ARRAY%%;
@@ -52,17 +51,27 @@ export function generateI18nIndex(importer: string, locales: string[]): string {
     return generate(program).code;
 }
 
+export interface I18nMessageOptions {
+    /** The locale to generate. */
+    locale: string;
+
+    /** The name of the current application. */
+    appName: string;
+
+    /** All packages in the application (including the app). */
+    packages: Pick<PackageMetadata, "name" | "i18nPaths">[];
+
+    /** Called by the function when the contents of an i18n file (in i18nPaths) is required. */
+    loadI18n: (path: string) => Promise<I18nFile>;
+}
+
 /**
  * Generates a messages module containing a single default export: the messages record.
  *
  * Messages are taken from the given packages (for the specified locale).
  */
-export async function generateI18nMessages(
-    ctx: Pick<PluginContext, "addWatchFile">,
-    locale: string,
-    appName: string,
-    packages: Pick<PackageMetadata, "name" | "i18nPaths">[]
-): Promise<string> {
+export async function generateI18nMessages(options: I18nMessageOptions): Promise<string> {
+    const { locale, appName, packages, loadI18n } = options;
     const packageMessages = new Map<string, Map<string, string>>();
     const packagesNeedingMessages = new Set<string>();
     let packageOverrides: Map<string, Map<string, string>> | undefined;
@@ -78,9 +87,7 @@ export async function generateI18nMessages(
             continue;
         }
 
-        // TODO: Caching
-        ctx.addWatchFile(filePath);
-        const { messages, overrides } = await loadI18nFile(filePath);
+        const { messages, overrides } = await loadI18n(filePath);
         if (overrides.size !== 0) {
             if (pkg.name !== appName) {
                 throw new ReportableError(

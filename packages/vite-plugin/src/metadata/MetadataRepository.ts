@@ -7,12 +7,14 @@ import { normalizePath } from "vite";
 import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists, isInDirectory } from "../utils/fileUtils";
+import { Cache } from "../utils/Cache";
 import {
     BUILD_CONFIG_NAME,
     isBuildConfig,
     loadBuildConfig,
     NormalizedPackageConfig
 } from "./parseBuildConfig";
+import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -97,6 +99,11 @@ interface MetadataCacheEntry {
     watchFiles: ReadonlySet<string>;
 }
 
+interface I18nEntry {
+    i18n: I18nFile;
+    watchFiles: ReadonlySet<string>;
+}
+
 /**
  * Provides metadata about apps and packages.
  * Metadata is read from disk on demand and will then be cached
@@ -115,11 +122,40 @@ export class MetadataRepository {
     // Key: package directory on disk
     private packageMetadataJobs = new Map<string, Promise<MetadataCacheEntry>>();
 
+    // Cache for the contents of i18n files.
+    // Key: path on disk.
+    private i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
+
     /**
      * @param sourceRoot Source folder on disk, needed to detect 'local' packages
      */
     constructor(sourceRoot: string) {
         this.sourceRoot = sourceRoot;
+        this.i18nCache = new Cache({
+            getId(path) {
+                return normalizePath(path);
+            },
+            async getValue(path, ctx) {
+                isDebug && debug(`Loading i18n file %O`, path);
+
+                // watch before loading. this protects against rare race conditions
+                // caused by our manual watch workaround in the codegen plugin.
+                // essentially, we must watch for changes BEFORE the files are loaded
+                // to get reliable notifications.
+                ctx.addWatchFile(path);
+                const entry: I18nEntry = {
+                    i18n: await loadI18nFile(path),
+                    watchFiles: new Set([path])
+                };
+                return entry;
+            },
+            onInvalidate(path) {
+                isDebug && debug(`Removed cache entry for i18n file ${path}`);
+            },
+            onCachedReturn(path) {
+                isDebug && debug(`Returning cached entry for i18n file ${path}`);
+            }
+        });
     }
 
     reset() {
@@ -127,10 +163,15 @@ export class MetadataRepository {
         this.packageMetadataJobs.clear();
     }
 
+    /**
+     * Called by the plugin when a file has been changed.
+     * The cached data associated with that file (if any) will be removed.
+     */
     onFileChanged(path: string) {
         if (isPackageJson(path) || isBuildConfig(path)) {
             this.invalidatePackageMetadata(dirname(path));
         }
+        this.i18nCache.invalidate(path);
     }
 
     /**
@@ -218,6 +259,12 @@ export class MetadataRepository {
             return cacheEntry.metadata;
         }
         return await this.schedulePackageMetadataJob(ctx, packageDir);
+    }
+
+    async getI18nFile(ctx: MetadataContext, path: string): Promise<I18nFile> {
+        const { i18n, watchFiles } = await this.i18nCache.get(path, ctx);
+        propagateWatchFiles(watchFiles, ctx);
+        return i18n;
     }
 
     private async schedulePackageMetadataJob(ctx: MetadataContext, packageDir: string) {

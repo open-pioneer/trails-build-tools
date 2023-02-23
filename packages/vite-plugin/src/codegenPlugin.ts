@@ -24,7 +24,7 @@ export function codegenPlugin(): Plugin {
     const manualDeps = new Map<string, Set<string>>();
 
     let config!: ResolvedConfig;
-    let metadata!: MetadataRepository;
+    let repository!: MetadataRepository;
     let devServer: ViteDevServer | undefined;
 
     let reactIntegrationId!: string;
@@ -34,7 +34,7 @@ export function codegenPlugin(): Plugin {
 
         async buildStart(this: PluginContext) {
             manualDeps.clear();
-            metadata?.reset();
+            repository?.reset();
 
             // TODO: use require.resolve instead (requires built js?).
             const resolve = async (rawModuleId: string) => {
@@ -51,7 +51,7 @@ export function codegenPlugin(): Plugin {
 
         configResolved(resolvedConfig) {
             config = resolvedConfig;
-            metadata = new MetadataRepository(config.root);
+            repository = new MetadataRepository(config.root);
         },
 
         configureServer(server) {
@@ -65,7 +65,7 @@ export function codegenPlugin(): Plugin {
                 }
 
                 isDebug && debug(`File changed: ${path}`);
-                metadata.onFileChanged(path);
+                repository.onFileChanged(path);
                 for (const moduleId of moduleIds) {
                     const mod = server.moduleGraph.getModuleById(moduleId);
                     if (mod) {
@@ -139,7 +139,7 @@ export function codegenPlugin(): Plugin {
 
                 const context = buildMetadataContext(this, moduleId, devServer, manualDeps);
                 const appDir = dirname(pkgJsonPath);
-                const appMetadata = await metadata.getAppMetadata(context, appDir);
+                const appMetadata = await repository.getAppMetadata(context, appDir);
                 switch (virtualModule.type) {
                     case "app-packages": {
                         const generatedSourceCode = generatePackagesMetadata(appMetadata.packages);
@@ -160,12 +160,14 @@ export function codegenPlugin(): Plugin {
                         return generatedSourceCode;
                     }
                     case "app-i18n": {
-                        const generatedSourceCode = generateI18nMessages(
-                            context,
-                            virtualModule.locale,
-                            appMetadata.name,
-                            appMetadata.packages
-                        );
+                        const generatedSourceCode = await generateI18nMessages({
+                            locale: virtualModule.locale,
+                            appName: appMetadata.name,
+                            packages: appMetadata.packages,
+                            loadI18n(path) {
+                                return repository.getI18nFile(context, path);
+                            }
+                        });
                         isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
                         return generatedSourceCode;
                     }
