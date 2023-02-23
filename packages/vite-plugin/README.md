@@ -6,7 +6,7 @@ Usage:
 
 ```js
 // In your vite configuration file
-import { pioneer } from "vite-plugin-pioneer";
+import { pioneer } from "@open-pioneer/vite-plugin-pioneer";
 
 export default defineConfig({
     // ...
