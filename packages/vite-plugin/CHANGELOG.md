@@ -1,5 +1,9 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.2.3
+
+-   Add caching for i18n files
+
 ## v0.2.2
 
 -   Make type of app metadata required

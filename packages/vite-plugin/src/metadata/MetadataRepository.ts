@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { readFile, realpath } from "fs/promises";
 import { dirname, join } from "path";
-import { PluginContext } from "rollup";
+import { PluginContext, RollupWarning } from "rollup";
 import { normalizePath } from "vite";
 import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
@@ -94,9 +94,10 @@ export type PackageLocation = ResolvedPackageLocation | UnresolvedPackageLocatio
  * watchFiles should be propagated when a caller receives a cached result,
  * otherwise hot reloading may not be triggered correctly on file changes.
  */
-interface MetadataCacheEntry {
+interface MetadataEntry {
     metadata: PackageMetadata;
     watchFiles: ReadonlySet<string>;
+    warnings: RollupWarning[];
 }
 
 interface I18nEntry {
@@ -113,14 +114,7 @@ export class MetadataRepository {
     private sourceRoot: string;
 
     // Key: package directory on disk, value: existing metadata
-    private packageMetadataCache = new Map<string, MetadataCacheEntry>();
-
-    // Key: package name (known to cache), value: metadata
-    private packageMetadataByName = new Map<string, PackageMetadata>();
-
-    // Deduplicated jobs (only visit a directory once).
-    // Key: package directory on disk
-    private packageMetadataJobs = new Map<string, Promise<MetadataCacheEntry>>();
+    private packageMetadataCache: Cache<string, MetadataEntry, [ctx: MetadataContext]>;
 
     // Cache for the contents of i18n files.
     // Key: path on disk.
@@ -131,36 +125,13 @@ export class MetadataRepository {
      */
     constructor(sourceRoot: string) {
         this.sourceRoot = sourceRoot;
-        this.i18nCache = new Cache({
-            getId(path) {
-                return normalizePath(path);
-            },
-            async getValue(path, ctx) {
-                isDebug && debug(`Loading i18n file %O`, path);
-
-                // watch before loading. this protects against rare race conditions
-                // caused by our manual watch workaround in the codegen plugin.
-                // essentially, we must watch for changes BEFORE the files are loaded
-                // to get reliable notifications.
-                ctx.addWatchFile(path);
-                const entry: I18nEntry = {
-                    i18n: await loadI18nFile(path),
-                    watchFiles: new Set([path])
-                };
-                return entry;
-            },
-            onInvalidate(path) {
-                isDebug && debug(`Removed cache entry for i18n file ${path}`);
-            },
-            onCachedReturn(path) {
-                isDebug && debug(`Returning cached entry for i18n file ${path}`);
-            }
-        });
+        this.packageMetadataCache = this.createPackageMetadataCache();
+        this.i18nCache = this.createI18nCache();
     }
 
     reset() {
-        this.packageMetadataCache.clear();
-        this.packageMetadataJobs.clear();
+        this.packageMetadataCache = this.createPackageMetadataCache();
+        this.i18nCache = this.createI18nCache();
     }
 
     /**
@@ -169,7 +140,7 @@ export class MetadataRepository {
      */
     onFileChanged(path: string) {
         if (isPackageJson(path) || isBuildConfig(path)) {
-            this.invalidatePackageMetadata(dirname(path));
+            this.packageMetadataCache.invalidate(dirname(path));
         }
         this.i18nCache.invalidate(path);
     }
@@ -237,6 +208,9 @@ export class MetadataRepository {
         return appMetadata;
     }
 
+    /**
+     * Returns package metadata associated with the given package.
+     */
     async getPackageMetadata(
         ctx: MetadataContext,
         loc: PackageLocation
@@ -251,90 +225,21 @@ export class MetadataRepository {
             return undefined;
         }
 
-        // Check the cache
-        const cacheEntry = this.getPackageMetadataFromCache(packageDir);
-        if (cacheEntry) {
-            isDebug && debug(`Returning cached metadata for '${cacheEntry.metadata.name}'`);
-            propagateWatchFiles(cacheEntry.watchFiles, ctx);
-            return cacheEntry.metadata;
+        const entry = await this.packageMetadataCache.get(packageDir, ctx);
+        propagateWatchFiles(entry.watchFiles, ctx);
+        for (const warning of entry.warnings) {
+            ctx.warn(warning);
         }
-        return await this.schedulePackageMetadataJob(ctx, packageDir);
+        return entry.metadata;
     }
 
+    /**
+     * Returns the parsed contents of the given i18n file.
+     */
     async getI18nFile(ctx: MetadataContext, path: string): Promise<I18nFile> {
         const { i18n, watchFiles } = await this.i18nCache.get(path, ctx);
         propagateWatchFiles(watchFiles, ctx);
         return i18n;
-    }
-
-    private async schedulePackageMetadataJob(ctx: MetadataContext, packageDir: string) {
-        // Deduplicate concurrent jobs for the same directory.
-        const jobs = this.packageMetadataJobs;
-        let job = jobs.get(packageDir);
-        if (job) {
-            isDebug && debug(`Waiting for already running analysis of ${packageDir}`);
-            const entry = await job;
-            propagateWatchFiles(entry.watchFiles, ctx);
-            return entry.metadata;
-        }
-
-        const watchFiles = new Set<string>();
-        const trackingCtx: MetadataContext = {
-            ...ctx,
-            addWatchFile(id) {
-                ctx.addWatchFile(id);
-                watchFiles.add(id);
-            }
-        };
-        job = parsePackageMetadata(trackingCtx, packageDir)
-            .then((metadata) => {
-                isDebug && debug(`Metadata for '${metadata.name}': %O`, metadata);
-                const entry: MetadataCacheEntry = {
-                    metadata,
-                    watchFiles
-                };
-                if (jobs.get(packageDir) === job) {
-                    this.putPackageMetadataInCache(packageDir, entry);
-                }
-                return entry;
-            })
-            .finally(() => {
-                if (jobs.get(packageDir) === job) {
-                    jobs.delete(packageDir);
-                }
-            });
-        this.packageMetadataJobs.set(packageDir, job);
-        return (await job).metadata;
-    }
-
-    private getPackageMetadataFromCache(packageDir: string): MetadataCacheEntry | undefined {
-        return this.packageMetadataCache.get(packageCacheKey(packageDir));
-    }
-
-    private putPackageMetadataInCache(packageDir: string, entry: MetadataCacheEntry) {
-        const metadata = entry.metadata;
-        const name = metadata.name;
-        const key = packageCacheKey(packageDir);
-
-        // Ensure only one version of a package exists in the app
-        const existingMetadata = this.packageMetadataByName.get(name);
-        if (existingMetadata && existingMetadata.directory !== metadata.directory) {
-            throw new ReportableError(
-                `Found package '${name}' at two different locations ${existingMetadata.directory} and ${metadata.directory}`
-            );
-        }
-
-        this.packageMetadataCache.set(key, entry);
-        this.packageMetadataByName.set(name, metadata);
-    }
-
-    private invalidatePackageMetadata(packageDir: string) {
-        const key = packageCacheKey(packageDir);
-        const entry = this.packageMetadataCache.get(key);
-        if (entry) {
-            this.packageMetadataByName.delete(entry.metadata.name);
-            this.packageMetadataCache.delete(key);
-        }
     }
 
     private async resolvePackageLocation(ctx: MetadataContext, loc: PackageLocation) {
@@ -361,16 +266,94 @@ export class MetadataRepository {
         isDebug && debug(`Found package '${loc.packageName}' at ${packageDir}`);
         return packageDir;
     }
+
+    private createI18nCache(): Cache<string, I18nEntry, [ctx: MetadataContext]> {
+        return new Cache({
+            getId(path) {
+                return normalizePath(path);
+            },
+            async getValue(path, ctx) {
+                isDebug && debug(`Loading i18n file ${path}`);
+
+                // watch before loading. this protects against rare race conditions
+                // caused by our manual watch workaround in the codegen plugin.
+                // essentially, we must watch for changes BEFORE the files are loaded
+                // to get reliable notifications.
+                ctx.addWatchFile(path);
+                const entry: I18nEntry = {
+                    i18n: await loadI18nFile(path),
+                    watchFiles: new Set([path])
+                };
+                return entry;
+            },
+            onInvalidate(path) {
+                isDebug && debug(`Removed cache entry for i18n file ${path}`);
+            },
+            onCachedReturn(path) {
+                isDebug && debug(`Returning cached entry for i18n file ${path}`);
+            }
+        });
+    }
+
+    private createPackageMetadataCache(): Cache<string, MetadataEntry, [ctx: MetadataContext]> {
+        const provider = {
+            _byName: new Map<string, PackageMetadata>(),
+
+            getId(directory: string) {
+                return normalizePath(directory);
+            },
+            async getValue(directory: string, ctx: MetadataContext): Promise<MetadataEntry> {
+                isDebug && debug(`Loading metadata for package at ${directory}`);
+
+                const watchFiles = new Set<string>();
+                const warnings: RollupWarning[] = [];
+                const trackingCtx: MetadataContext = {
+                    resolve: ctx.resolve,
+                    addWatchFile(id) {
+                        ctx.addWatchFile(id);
+                        watchFiles.add(id);
+                    },
+                    warn(msg: string | RollupWarning) {
+                        warnings.push(typeof msg === "string" ? { message: msg } : msg);
+                    }
+                };
+                const metadata = await parsePackageMetadata(trackingCtx, directory);
+                isDebug && debug(`Metadata for '${metadata.name}': %O`, metadata);
+
+                // Ensure only one version of a package exists in the app
+                const existingMetadata = this._byName.get(metadata.name);
+                if (
+                    existingMetadata &&
+                    normalizePath(existingMetadata.directory) !== normalizePath(metadata.directory)
+                ) {
+                    throw new ReportableError(
+                        `Found package '${metadata.name}' at two different locations ${existingMetadata.directory} and ${metadata.directory}`
+                    );
+                }
+                this._byName.set(metadata.name, metadata);
+
+                return {
+                    metadata,
+                    watchFiles,
+                    warnings
+                };
+            },
+            onInvalidate(directory: string, entry: MetadataEntry) {
+                isDebug && debug(`Removed cache entry for '${entry.metadata.name}'`);
+                this._byName.delete(entry.metadata.name);
+            },
+            onCachedReturn(directory: string, entry: MetadataEntry) {
+                isDebug && debug(`Returning cached metadata for '${entry.metadata.name}'`);
+            }
+        };
+        return new Cache(provider);
+    }
 }
 
 function propagateWatchFiles(watchFiles: Iterable<string>, ctx: MetadataContext) {
     for (const file of watchFiles) {
         ctx.addWatchFile(file);
     }
-}
-
-function packageCacheKey(packageDir: string) {
-    return normalizePath(packageDir);
 }
 
 export async function parsePackageMetadata(
