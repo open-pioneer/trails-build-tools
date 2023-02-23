@@ -60,6 +60,9 @@ describe("codegen support", function () {
         assert.include(appJs, '"import.from.app"');
         assert.include(appJs, '"import.from.package1"');
         assert.include(appJs, '"import.from.package2"');
+        assert.include(appJs, "useServiceInternal");
+        assert.include(appJs, "usePropertiesInternal");
+        assert.include(appJs, "useIntlInternal");
     });
 
     it("fails if build config is missing", async function () {

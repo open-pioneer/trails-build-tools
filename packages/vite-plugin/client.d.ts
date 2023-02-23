@@ -16,8 +16,8 @@ declare module "open-pioneer:app" {
  */
 declare module "open-pioneer:react-hooks" {
     // eslint-disable-next-line unused-imports/no-unused-imports
-    import { type ServiceType, type InterfaceName } from "@open-pioneer/runtime";
-    import { type UseServiceOptions } from "@open-pioneer/react-integration";
+    import { type ServiceType, type InterfaceName, type PackageIntl } from "@open-pioneer/runtime";
+    import { type UseServiceOptions } from "@open-pioneer/runtime/react-integration";
     export { type UseServiceOptions };
 
     /**
@@ -49,4 +49,9 @@ declare module "open-pioneer:react-hooks" {
      * Returns the properties of the calling component's package.
      */
     export function useProperties(): Readonly<Record<string, unknown>>;
+
+    /**
+     * Returns the i18n object for the calling component's package.
+     */
+    export function useIntl(): PackageIntl;
 }
