@@ -1,4 +1,4 @@
-# Pioneer vite plugin
+# @open-pioneer/vite-plugin-pioneer
 
 Implements certain build-time features required by pioneer apps.
 
