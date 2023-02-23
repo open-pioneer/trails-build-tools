@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/vite-plugin-pioneer",
-    "version": "0.2.3",
+    "version": "0.2.4-dev",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "commonjs",
