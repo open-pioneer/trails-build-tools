@@ -38,12 +38,12 @@ const MESSAGES_SCHEMA: z.ZodType<RecursiveMessages> = z.lazy(() =>
 );
 
 // allow null for empty yaml objects
-const I18N_SCHEMA: z.ZodType<RawI18nFile> = z
-    .object({
-        messages: MESSAGES_SCHEMA.or(z.null()).optional(),
-        overrides: z.record(MESSAGES_SCHEMA).or(z.null()).optional()
+const I18N_SCHEMA: z.ZodType<RawI18nFile | null | undefined> = z
+    .strictObject({
+        messages: MESSAGES_SCHEMA.nullish().optional(),
+        overrides: z.record(MESSAGES_SCHEMA).nullish().optional()
     })
-    .strict();
+    .nullish();
 
 /**
  * Loads an i18n.yaml file from the file system and parses it.
@@ -57,11 +57,18 @@ export async function loadI18nFile(path: string): Promise<I18nFile> {
     }
 
     try {
-        const data = loadYaml(content);
-        return parseI18nFile(data);
+        return parseI18nYaml(content);
     } catch (e) {
         throw new ReportableError(`Failed to parse ${path}: ${e}`);
     }
+}
+
+/**
+ * Parses an i18n yaml document.
+ */
+export function parseI18nYaml(yaml: string): I18nFile {
+    const data = loadYaml(yaml);
+    return parseI18nFile(data);
 }
 
 /**
@@ -75,8 +82,8 @@ export function parseI18nFile(data: unknown): I18nFile {
 
     const rawI18n = result.data;
     return {
-        messages: gatherMessages(rawI18n.messages ?? undefined),
-        overrides: gatherOverrides(rawI18n.overrides ?? undefined)
+        messages: gatherMessages(rawI18n?.messages ?? undefined),
+        overrides: gatherOverrides(rawI18n?.overrides ?? undefined)
     };
 }
 

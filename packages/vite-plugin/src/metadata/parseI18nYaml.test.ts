@@ -1,9 +1,29 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { assert } from "chai";
-import { parseI18nFile } from "./parseI18nYaml";
+import { parseI18nYaml, parseI18nFile } from "./parseI18nYaml";
 
 describe("parseI18nFile", function () {
+    it("parses empty yaml", function () {
+        const result = parseI18nYaml("");
+        assert.deepEqual(result, {
+            messages: new Map(),
+            overrides: new Map()
+        });
+    });
+
+    it("parses empty messages", function () {
+        const result = parseI18nYaml(`messages:`);
+        assert.deepEqual(result, {
+            messages: new Map(),
+            overrides: new Map()
+        });
+    });
+
+    it("throws for unexpected keys", function () {
+        assert.throws(() => parseI18nYaml(`foo:`), /Unrecognized key\(s\)/);
+    });
+
     it("parses an empty i18n object", function () {
         const input = {};
         const result = parseI18nFile(input);
