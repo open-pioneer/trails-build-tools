@@ -1,5 +1,10 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.3.0
+
+-   Add support for advanced app configuration (with custom paths)
+-   Change configuration of sites to allow for more flexible locations
+
 ## v0.2.4
 
 -   Add support for the `useIntl` hook

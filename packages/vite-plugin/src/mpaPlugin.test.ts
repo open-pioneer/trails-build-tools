@@ -53,6 +53,28 @@ describe("multi page support", function () {
         assert.isFalse(siteExists);
     });
 
+    it("should include apps with advanced locations", async function () {
+        const outDir = resolve(TEMP_DATA, "multi-page-advanced-apps");
+        const rootDir = resolve(TEST_DATA, "multi-page-advanced-apps");
+
+        await runViteBuild({
+            outDir,
+            rootDir: rootDir,
+            pluginOptions: {
+                apps: {
+                    "app-1": "custom/location/app.ts",
+                    "app-2": "my/deeply/nested/app/custom-name.js"
+                }
+            }
+        });
+
+        const app1 = readFileSync(join(outDir, "app-1.js"), "utf-8");
+        assert.include(app1, '"hello from custom location"');
+
+        const app2 = readFileSync(join(outDir, "app-2.js"), "utf-8");
+        assert.include(app2, '"hello from deeply nested app"');
+    });
+
     it("should include additional sites if configured", async function () {
         const outDir = resolve(TEMP_DATA, "multi-page-sites");
         const rootDir = resolve(TEST_DATA, "multi-page");
@@ -61,7 +83,7 @@ describe("multi page support", function () {
             outDir,
             rootDir: rootDir,
             pluginOptions: {
-                sites: ["site1", "site2"]
+                sites: ["sites/site1", "sites/site2"]
             }
         });
 
