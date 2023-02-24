@@ -121,9 +121,8 @@ function gatherOverrides(
     const overrides = new Map<string, Map<string, string>>();
     if (data) {
         for (const [key, value] of Object.entries(data)) {
-            if (value) {
-                overrides.set(key, gatherMessages(value));
-            }
+            const messages = gatherMessages(value ?? undefined);
+            overrides.set(key, messages);
         }
     }
     return overrides;

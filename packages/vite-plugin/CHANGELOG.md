@@ -1,5 +1,9 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.3.2
+
+-   Initialize overrides to an empty map when a package name is mentioned.
+
 ## v0.3.1
 
 -   Relax i18n schema validation: More nulls are allowed in yaml to allow for empty object syntax

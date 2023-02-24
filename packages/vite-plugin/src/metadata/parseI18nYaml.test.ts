@@ -51,7 +51,7 @@ overrides:
         );
         assert.deepEqual(result, {
             messages: new Map(),
-            overrides: new Map()
+            overrides: new Map([["package-name", new Map()]])
         });
     });
 
