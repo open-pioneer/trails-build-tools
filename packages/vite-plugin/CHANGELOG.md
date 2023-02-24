@@ -1,5 +1,9 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.3.3
+
+-   Improve i18n override detection
+
 ## v0.3.2
 
 -   Initialize overrides to an empty map when a package name is mentioned.

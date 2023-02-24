@@ -88,13 +88,12 @@ export async function generateI18nMessages(options: I18nMessageOptions): Promise
         }
 
         const { messages, overrides } = await loadI18n(filePath);
-        if (overrides.size !== 0) {
-            if (pkg.name !== appName) {
-                throw new ReportableError(
-                    `Unexpected 'overrides' block in '${filePath}'. Overrides are only supported in the app.`
-                );
-            }
+        if (pkg.name === appName) {
             packageOverrides = overrides;
+        } else if (overrides.size !== 0) {
+            throw new ReportableError(
+                `Unexpected 'overrides' block in '${filePath}'. Overrides are only supported in the app.`
+            );
         }
 
         packageMessages.set(pkg.name, messages);
