@@ -20,6 +20,41 @@ describe("parseI18nFile", function () {
         });
     });
 
+    it("parses empty block in messages", function () {
+        const result = parseI18nYaml(
+            `
+messages:
+  group:
+  key: "hi"
+`.trim()
+        );
+        assert.deepEqual(result, {
+            messages: new Map([["key", "hi"]]),
+            overrides: new Map()
+        });
+    });
+
+    it("parses empty overrides", function () {
+        const result = parseI18nYaml(`overrides:`);
+        assert.deepEqual(result, {
+            messages: new Map(),
+            overrides: new Map()
+        });
+    });
+
+    it("parses empty messages in overrides", function () {
+        const result = parseI18nYaml(
+            `
+overrides:
+  package-name:
+`.trim()
+        );
+        assert.deepEqual(result, {
+            messages: new Map(),
+            overrides: new Map()
+        });
+    });
+
     it("throws for unexpected keys", function () {
         assert.throws(() => parseI18nYaml(`foo:`), /Unrecognized key\(s\)/);
     });

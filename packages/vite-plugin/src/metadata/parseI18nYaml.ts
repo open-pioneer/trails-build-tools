@@ -26,15 +26,15 @@ export interface I18nFile {
 
 interface RawI18nFile {
     messages?: RecursiveMessages | null | undefined;
-    overrides?: Record<string, RecursiveMessages> | null | undefined;
+    overrides?: Record<string, RecursiveMessages | null | undefined> | null | undefined;
 }
 
 interface RecursiveMessages {
-    [key: string]: string | RecursiveMessages;
+    [key: string]: null | undefined | string | RecursiveMessages;
 }
 
-const MESSAGES_SCHEMA: z.ZodType<RecursiveMessages> = z.lazy(() =>
-    z.record(z.union([z.string(), MESSAGES_SCHEMA]))
+const MESSAGES_SCHEMA: z.ZodType<RecursiveMessages | null | undefined> = z.lazy(() =>
+    z.record(z.union([z.string(), MESSAGES_SCHEMA])).nullish()
 );
 
 // allow null for empty yaml objects
@@ -116,12 +116,14 @@ function gatherMessages(data: RecursiveMessages | undefined): Map<string, string
 }
 
 function gatherOverrides(
-    data: Record<string, RecursiveMessages> | undefined
+    data: Record<string, RecursiveMessages | null | undefined> | undefined
 ): Map<string, Map<string, string>> {
     const overrides = new Map<string, Map<string, string>>();
     if (data) {
         for (const [key, value] of Object.entries(data)) {
-            overrides.set(key, gatherMessages(value));
+            if (value) {
+                overrides.set(key, gatherMessages(value));
+            }
         }
     }
     return overrides;
