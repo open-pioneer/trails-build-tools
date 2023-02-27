@@ -40,9 +40,9 @@ declare module "open-pioneer:react-hooks" {
      *
      * In order to use all services, it must be declared as an UI-dependency (`all: true`) in the package's configuration file.
      */
-    export function useServices<InterfaceName extends InterfaceName>(
-        interfaceName: InterfaceName
-    ): ServiceType<InterfaceName>[];
+    export function useServices<IFace extends InterfaceName>(
+        interfaceName: IFace
+    ): ServiceType<IFace>[];
     export function useServices(serviceName: string): unknown[];
 
     /**
