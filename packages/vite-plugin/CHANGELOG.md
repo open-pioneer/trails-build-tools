@@ -1,5 +1,9 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.4.0
+
+-   Read services from `./services` by default
+
 ## v0.3.3
 
 -   Improve i18n override detection

@@ -14,6 +14,7 @@ export const BUILD_CONFIG_NAME = "build.config.mjs";
 
 export interface NormalizedPackageConfig {
     services: NormalizedServiceConfig[];
+    servicesModule: string | undefined;
     styles: string | undefined;
     i18n: string[] | undefined;
     ui: NormalizedUiConfig;
@@ -76,6 +77,7 @@ function normalizeConfig(rawConfig: BuildConfig): NormalizedPackageConfig {
         services: Object.entries(rawConfig.services ?? {}).map(([serviceName, serviceConfig]) => {
             return normalizeServiceConfig(serviceName, serviceConfig);
         }),
+        servicesModule: rawConfig.servicesModule,
         ui: normalizeUiConfig(rawConfig.ui),
         properties: normalizeProperties(rawConfig.properties, rawConfig.propertiesMeta)
     };

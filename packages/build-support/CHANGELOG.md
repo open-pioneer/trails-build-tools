@@ -1,5 +1,9 @@
 # Changelog @open-pioneer/build-support
 
+## v0.3.0
+
+-   Add type definitions for `servicesModule` property
+
 ## v0.2.0
 
 -   Add support for the `i18n` property

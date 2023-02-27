@@ -37,6 +37,7 @@ describe("generatePackagesMetadata", function () {
                             }
                         }
                     ],
+                    servicesModule: undefined,
                     ui: {
                         references: [
                             { name: "foo.ServiceE" },
@@ -68,7 +69,7 @@ describe("generatePackagesMetadata", function () {
                         }
                     ]
                 },
-                entryPointPath: "entryPoint"
+                servicesModulePath: "entryPoint"
             }
         ]);
 

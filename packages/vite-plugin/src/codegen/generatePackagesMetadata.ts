@@ -5,6 +5,7 @@ import template from "@babel/template";
 import * as nodes from "@babel/types";
 import { ReferenceConfig } from "@open-pioneer/build-support";
 import { PackageMetadata } from "../metadata/MetadataRepository";
+import { ReportableError } from "../ReportableError";
 import { IdGenerator } from "./IdGenerator";
 
 const SERVICE_IMPORT = template.statement(`
@@ -57,7 +58,7 @@ const PROPERTY_OBJECT = template.expression(`
     }
 `);
 
-export type PackageMetadataInput = Pick<PackageMetadata, "name" | "config" | "entryPointPath">;
+export type PackageMetadataInput = Pick<PackageMetadata, "name" | "config" | "servicesModulePath">;
 
 /**
  * Generates a combined metadata structure that is essentially a Record<string, metadata.PackageMetadata>.
@@ -69,12 +70,12 @@ export function generatePackagesMetadata(packages: PackageMetadataInput[]): stri
     const imports: nodes.Statement[] = [];
     for (const pkg of packages) {
         const packageMetadata = generatePackageMetadata(pkg, {
-            importServiceClass(variableName, className, entryPoint) {
+            importServiceClass(variableName, className, moduleId) {
                 const id = idGenerator.generate(variableName);
                 const renderedImporter = SERVICE_IMPORT({
                     SERVICE_NAME: nodes.identifier(className),
                     IMPORT_NAME: nodes.identifier(id),
-                    IMPORT_SOURCE: nodes.stringLiteral(entryPoint)
+                    IMPORT_SOURCE: nodes.stringLiteral(moduleId)
                 });
                 imports.push(renderedImporter);
                 return id;
@@ -105,17 +106,17 @@ function generatePackageMetadata(
 ): nodes.Expression {
     const servicesObject = nodes.objectExpression([]);
     for (const service of pkg.config.services) {
-        if (!pkg.entryPointPath) {
-            throw new Error(
-                `Package '${pkg.name}' must have a valid entry point (typically index.ts or index.js).\n` +
-                    "The entry point can be configured by setting the 'main' property in the package.json file."
+        if (!pkg.servicesModulePath) {
+            throw new ReportableError(
+                `Package '${pkg.name}' must have a valid services module (typically 'services.ts' or 'services.js').\n` +
+                    "The entry point can be configured by setting the 'servicesModule' property in the build.config.mjs."
             );
         }
 
         const importName = options.importServiceClass(
             pkg.name + "_" + service.name,
             service.name,
-            pkg.entryPointPath
+            pkg.servicesModulePath
         );
         const serviceObject = SERVICE_OBJECT({
             SERVICE_NAME: nodes.stringLiteral(service.name),

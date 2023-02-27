@@ -56,7 +56,7 @@ export interface PackageMetadata {
     packageJsonPath: string;
 
     /** Path to entry point (contains service exports). */
-    entryPointPath: string | undefined;
+    servicesModulePath: string | undefined;
 
     /** Path to the resolved css file (if any). */
     cssFilePath: string | undefined;
@@ -258,7 +258,7 @@ export class MetadataRepository {
         );
         if (!packageJsonLocation || packageJsonLocation.external) {
             throw new ReportableError(
-                `Request for '${unresolvedPackageJson}' did not result in a local file (required by '${loc.importedFrom}').`
+                `Failed to find '${unresolvedPackageJson}' (from '${loc.importedFrom}'), is the dependency installed correctly?`
             );
         }
 
@@ -382,10 +382,14 @@ export async function parsePackageMetadata(
         throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
     }
 
-    let entryPoint: string | undefined;
+    let servicesModule: string | undefined;
     if (buildConfig.services.length) {
         try {
-            entryPoint = (await ctx.resolve(packageDir))?.id;
+            servicesModule = await resolveLocalFile(
+                ctx,
+                packageDir,
+                buildConfig.servicesModule ?? "./services"
+            );
         } catch (e) {
             ctx.warn(`Failed to resolve entry point for package ${packageDir}: ${e}`);
         }
@@ -428,7 +432,7 @@ export async function parsePackageMetadata(
         name: packageName,
         directory: packageDir,
         packageJsonPath: packageJsonPath,
-        entryPointPath: entryPoint,
+        servicesModulePath: servicesModule,
         cssFilePath: cssFile,
         i18nPaths,
         dependencies,

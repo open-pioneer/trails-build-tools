@@ -7,5 +7,6 @@ export default {
                 }
             ]
         }
-    }
+    },
+    servicesModule: "./customServices"
 };

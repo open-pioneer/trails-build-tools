@@ -52,6 +52,7 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     styles: z.string().optional(),
     i18n: z.array(z.string()).optional(),
     services: z.record(z.string(), SERVICE_CONFIG_SCHEMA).optional(),
+    servicesModule: z.string().optional(),
     ui: UI_CONFIG_SCHEMA.optional(),
     properties: z.record(z.string(), JSON_SCHEMA).optional(),
     propertiesMeta: z.record(z.string(), PROPERTY_META_SCHEMA).optional()

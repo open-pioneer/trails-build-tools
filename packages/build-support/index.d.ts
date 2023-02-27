@@ -27,7 +27,8 @@ export interface BuildConfig {
 
     /**
      * Services provided by this package.
-     * The service name must match an exported class from the package's main entry point (usually `index.{js,ts}`).
+     *
+     * The service name must match an exported class from the package's services module (usually `services.{js,ts}`).
      *
      * @example
      *
@@ -43,6 +44,27 @@ export interface BuildConfig {
      * ```
      */
     services?: Record<string, ServiceConfig>;
+
+    /**
+     * The module that exports service classes.
+     *
+     * For every service defined in `services`, this module must export a service implementation class
+     * with the same name.
+     *
+     * @example
+     *
+     * Import services from a different file:
+     *
+     * ```js
+     * {
+     *      // ...
+     *      servicesModule: "./myServices"
+     * }
+     * ```
+     *
+     * @default "./services"
+     */
+    servicesModule?: string;
 
     /**
      * UI configuration.
