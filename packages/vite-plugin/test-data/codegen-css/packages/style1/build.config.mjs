@@ -1,3 +1,3 @@
 export default {
-    styles: "./styles.css"
+    styles: "./styles.scss"
 }

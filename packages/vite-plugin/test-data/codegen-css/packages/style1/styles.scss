@@ -1,0 +1,11 @@
+.class-from-style1 {
+    color: green;
+
+    nested {
+        font-size: 2em;
+    }
+
+    &-suffix {
+        display: inline;
+    }
+}

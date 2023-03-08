@@ -9,7 +9,7 @@ import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import { MetadataContext, MetadataRepository } from "./metadata/MetadataRepository";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
-import { APP_META_QUERY, PACKAGE_HOOKS, parseVirtualAppModuleId } from "./codegen/shared";
+import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
 import { readFile } from "node:fs/promises";
 import { generateReactHooks } from "./codegen/generateReactHooks";
 import { ReportableError } from "./ReportableError";
@@ -80,24 +80,37 @@ export function codegenPlugin(): Plugin {
 
         async resolveId(this: PluginContext, moduleId, importer) {
             try {
-                if (moduleId === "open-pioneer:app") {
-                    if (!importer) {
-                        throw new ReportableError("Must be imported from a source file.");
-                    }
-                    return importer + "?" + APP_META_QUERY;
+                if (!importer) {
+                    return undefined;
                 }
-                if (moduleId === "open-pioneer:react-hooks") {
-                    if (!importer) {
-                        throw new ReportableError("Must be imported from a source file.");
-                    }
 
+                if (parseVirtualModuleId(moduleId)) {
+                    return moduleId;
+                }
+
+                const getPackageDirectory = () => {
                     const packageJsonPath = findPackageJson(dirname(importer), config.root);
                     if (!packageJsonPath) {
                         throw new ReportableError(
                             `Failed to find package.json for package from '${importer}'.`
                         );
                     }
-                    return `${dirname(packageJsonPath)}/${PACKAGE_HOOKS}`;
+
+                    const packageDir = dirname(packageJsonPath);
+                    return normalizePath(packageDir);
+                };
+
+                if (moduleId === "open-pioneer:app") {
+                    return serializeModuleId({
+                        type: "app-meta",
+                        packageDirectory: getPackageDirectory()
+                    });
+                }
+                if (moduleId === "open-pioneer:react-hooks") {
+                    return serializeModuleId({
+                        type: "package-hooks",
+                        packageDirectory: getPackageDirectory()
+                    });
                 }
             } catch (e) {
                 reportError(this, e);
@@ -106,13 +119,26 @@ export function codegenPlugin(): Plugin {
 
         async load(this: PluginContext, moduleId) {
             try {
-                const virtualModule = parseVirtualAppModuleId(moduleId);
-                if (!virtualModule) {
+                const mod = parseVirtualModuleId(moduleId);
+                if (!mod) {
                     return undefined;
                 }
 
-                if (virtualModule.type === "package-hooks") {
-                    const directory = virtualModule.packageDirectory;
+                isDebug && debug("Loading virtual module %O", mod);
+
+                // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
+                // This uses the dev server to attempt to resolve the directory back to a complete path.
+                // Hit me up if you know a better way to do this.
+                const packageJsonPath = (await this.resolve(mod.packageDirectory + "/package.json"))
+                    ?.id;
+                if (!packageJsonPath) {
+                    throw new ReportableError(
+                        `Failed to resolve package.json in ${mod.packageDirectory}`
+                    );
+                }
+
+                if (mod.type === "package-hooks") {
+                    const directory = mod.packageDirectory;
                     // use forward slashes instead of platform separator
                     const packageJsonPath = (await this.resolve(directory + "/package.json"))?.id;
                     if (!packageJsonPath) {
@@ -125,22 +151,16 @@ export function codegenPlugin(): Plugin {
                     return generatedSourceCode;
                 }
 
-                const importer = virtualModule.importer;
-                if (virtualModule.type === "app-meta") {
-                    return generateAppMetadata(virtualModule.importer, metadataId);
-                }
-
-                const pkgJsonPath = findPackageJson(dirname(importer), config.root);
-                if (!pkgJsonPath) {
-                    throw new ReportableError(
-                        `Failed to find package.json for app from '${importer}'.`
-                    );
+                if (mod.type === "app-meta") {
+                    return generateAppMetadata(mod.packageDirectory, metadataId);
                 }
 
                 const context = buildMetadataContext(this, moduleId, devServer, manualDeps);
-                const appDir = dirname(pkgJsonPath);
-                const appMetadata = await repository.getAppMetadata(context, appDir);
-                switch (virtualModule.type) {
+                const appMetadata = await repository.getAppMetadata(
+                    context,
+                    dirname(packageJsonPath)
+                );
+                switch (mod.type) {
                     case "app-packages": {
                         const generatedSourceCode = generatePackagesMetadata(appMetadata.packages);
                         isDebug && debug("Generated app metadata: %O", generatedSourceCode);
@@ -153,7 +173,7 @@ export function codegenPlugin(): Plugin {
                     }
                     case "app-i18n-index": {
                         const generatedSourceCode = generateI18nIndex(
-                            importer,
+                            mod.packageDirectory,
                             appMetadata.locales
                         );
                         isDebug && debug("Generated i18n lookup: %O", generatedSourceCode);
@@ -161,7 +181,7 @@ export function codegenPlugin(): Plugin {
                     }
                     case "app-i18n": {
                         const generatedSourceCode = await generateI18nMessages({
-                            locale: virtualModule.locale,
+                            locale: mod.locale,
                             appName: appMetadata.name,
                             packages: appMetadata.packages,
                             loadI18n(path) {

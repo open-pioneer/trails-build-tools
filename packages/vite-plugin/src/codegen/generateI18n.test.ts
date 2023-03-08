@@ -10,7 +10,11 @@ import { generateI18nIndex, generateI18nMessages } from "./generateI18n";
 describe("generateI18n", function () {
     it("should generate an i18n index module", function () {
         const testDataFile = resolve(TEST_DATA, "codegen-i18n-index.js");
-        const generatedIndex = generateI18nIndex("my-importer.ts", ["de", "en", "de-simple"]);
+        const generatedIndex = generateI18nIndex("test-package-directory", [
+            "de",
+            "en",
+            "de-simple"
+        ]);
 
         if (GENERATE_SNAPSHOTS) {
             writeFileSync(testDataFile, generatedIndex, "utf-8");

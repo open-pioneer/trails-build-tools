@@ -1,5 +1,10 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## v0.5.0
+
+-   Implement support for SCSS in package `styles`.
+    `sass` must now be installed as a dependency.
+
 ## v0.4.0
 
 -   Read services from `./services` by default

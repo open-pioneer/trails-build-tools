@@ -1,20 +1,19 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { APP_CSS_QUERY, APP_I18N_INDEX_QUERY, APP_PACKAGES_QUERY } from "./shared";
+import { serializeModuleId } from "./shared";
 
 /**
  * Generates the main app metadata module.
  * It delegates the actual metadata generation to auxiliary modules.
  */
-export function generateAppMetadata(importer: string, metadataModuleId: string) {
+export function generateAppMetadata(packageDirectory: string, metadataModuleId: string) {
     /*
         CSS loading: 
-        - 'inline' loads the css as a string literal.
-        - the suffix (e.g. '.css') at the very end is important to trigger the correct vite plugin!
+        - 'inline' loads the (s)css as a string literal.
+        - the suffix (e.g. '.scss') at the very end is important to trigger the correct vite plugin!
+          using .scss supports both .css and .scss, since .css files can be imported from .scss when using vite.
         - I would like to import css as an url instead (separate file),
           but that currently hinges on https://github.com/vitejs/vite/pull/11084
-
-        - TODO: .scss support (will currently trigger the esbuild plugin and an error because the file contains both .ts and .scss)
 
         Hot reloading:
         - See https://vitejs.dev/guide/api-hmr.html for vite's HMR API
@@ -25,9 +24,10 @@ export function generateAppMetadata(importer: string, metadataModuleId: string) 
         - The code below takes care to use the _correct_ `styles` box (every module has its own, even the new version).
           `import.meta.hot.data` is shared between all versions of the module, so we always use the first box.
     */
-    const packagesModule = `${importer}?${APP_PACKAGES_QUERY}`;
-    const cssModule = `${importer}?${APP_CSS_QUERY}&inline&lang.css`;
-    const i18nModule = `${importer}?${APP_I18N_INDEX_QUERY}`;
+    const packagesModule = serializeModuleId({ type: "app-packages", packageDirectory });
+    const cssModule =
+        serializeModuleId({ type: "app-css", packageDirectory }) + "&inline&lang.scss";
+    const i18nModule = serializeModuleId({ type: "app-i18n-index", packageDirectory });
     return `
 import { createBox } from ${JSON.stringify(metadataModuleId)};
 import packages from ${JSON.stringify(packagesModule)};

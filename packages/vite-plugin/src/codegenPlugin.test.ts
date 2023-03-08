@@ -40,7 +40,14 @@ describe("codegen support", function () {
 
         const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
         assert.include(testAppJs, ".class-from-app");
+
+        // SCSS
         assert.include(testAppJs, ".class-from-style1");
+        assert.include(testAppJs, ".class-from-style1 nested {");
+        assert.include(testAppJs, ".class-from-style1-suffix {");
+        assert.notInclude(testAppJs, "&-suffix"); // SCSS resolves & to parent selector
+
+        // Normal css
         assert.include(testAppJs, ".class-from-style2");
     });
 

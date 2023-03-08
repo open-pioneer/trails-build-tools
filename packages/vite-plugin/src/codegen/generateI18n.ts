@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import * as nodes from "@babel/types";
 import template from "@babel/template";
-import { appLocaleFileId } from "./shared";
+import { serializeModuleId } from "./shared";
 import generate from "@babel/generator";
 import { PackageMetadata } from "../metadata/MetadataRepository";
 import { ReportableError } from "../ReportableError";
@@ -29,14 +29,18 @@ const MESSAGES_TEMPLATE = template.program(`
 /**
  * Generates a lookup table for the languages supported by the given application.
  */
-export function generateI18nIndex(importer: string, locales: string[]): string {
+export function generateI18nIndex(packageDirectory: string, locales: string[]): string {
     const localesArray = nodes.arrayExpression(
         locales.map((locale) => nodes.stringLiteral(locale))
     );
     const switchStmt = nodes.switchStatement(
         nodes.identifier("locale"),
         locales.map((locale) => {
-            const localeModuleId = appLocaleFileId(importer, locale);
+            const localeModuleId = serializeModuleId({
+                type: "app-i18n",
+                packageDirectory,
+                locale
+            });
             const importStatement = IMPORT_TEMPLATE({
                 MODULE_ID: nodes.stringLiteral(localeModuleId)
             });

@@ -2,14 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 export interface BuildConfig {
     /**
-     * Path to a file containing CSS.
-     * The CSS file will be automatically loaded when the package
+     * Path to a file containing CSS or SCSS.
+     * The file will be automatically loaded when the package
      * is part of an application.
      *
      * @example
      *
      * ```js
      * styles: "./styles.css"
+     * ```
+     *
+     * ```js
+     * styles: "./some-path.scss"
      * ```
      */
     styles?: string;

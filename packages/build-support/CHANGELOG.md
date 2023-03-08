@@ -1,5 +1,9 @@
 # Changelog @open-pioneer/build-support
 
+## v0.3.1
+
+-   Update documentation for `styles` to indicate that scss is supported.
+
 ## v0.3.0
 
 -   Add type definitions for `servicesModule` property
