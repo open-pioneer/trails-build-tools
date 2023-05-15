@@ -10,6 +10,7 @@ on:
         options:
           - "vite-plugin-pioneer"
           - "build-support"
+          - "build-package"
 
       version:
         type: string
@@ -43,7 +44,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
       - name: Install dependencies
@@ -63,7 +64,7 @@ jobs:
           pnpm run --filter "${{ inputs.package }}" --if-present build
 
       - name: Publish package
-        run: | 
+        run: |
           pnpm publish --filter "${{ inputs.package }}" --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -76,10 +77,10 @@ jobs:
           git config pull.rebase false;
           git config --global user.email "publish-workflow[bot]@automation";
           git config --global user.name "Publish Workflow [Bot]";
-          
+
           # Do not commit changes to npmrc
           git restore .npmrc
-     
+
           # Release commit
           git add . && git commit -m "Publish: ${{ inputs.package }} v${{ inputs.version }}" --no-verify --allow-empty;
           git tag "${{ inputs.package }}-v${{ inputs.version }}";
@@ -93,4 +94,3 @@ jobs:
           git rebase;
           git push origin main;
           git push origin main --tags;
-

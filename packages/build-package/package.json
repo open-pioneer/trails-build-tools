@@ -1,0 +1,29 @@
+{
+    "name": "@open-pioneer/build-package",
+    "version": "0.1.0-dev",
+    "main": "dist/index.js",
+    "types": "types.d.ts",
+    "type": "commonjs",
+    "license": "Apache-2.0",
+    "scripts": {
+        "clean": "rimraf dist temp",
+        "build": "node esbuild.config.js build",
+        "build-dev": "node esbuild.config.js buildDev",
+        "dev": "node esbuild.config.js watch",
+        "test": "pnpm run build-dev && rimraf temp && mocha dist/all.test.js",
+        "test-debug": "pnpm run build-dev && rimraf temp && mocha --node-option inspect-brk dist/all.test.js"
+    },
+    "files": [
+        "dist/**/*.js",
+        "dist/**/*.js.map",
+        "types.d.ts",
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
+    "dependencies": {},
+    "devDependencies": {
+        "@open-pioneer/build-support": "workspace:^",
+        "esbuild": "^0.17.19"
+    }
+}
