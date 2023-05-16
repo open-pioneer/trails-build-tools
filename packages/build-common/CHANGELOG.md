@@ -1,1 +1,1 @@
-# Changelog @open-pioneer/internal-build-common
+# Changelog @open-pioneer/build-common
