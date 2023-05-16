@@ -8,6 +8,7 @@ import { cleanDir, readText } from "./testUtils/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
 
 const DEFAULTS = {
+    packageName: "test",
     silent: true,
     sourcemap: false
 } satisfies Partial<BuildJSOptions>;
@@ -77,10 +78,51 @@ describe("buildJS", function () {
             packageDirectory,
             outputDirectory,
             entryPoints,
+            packageName: "@custom/packageName",
             sourcemap: true
         });
 
-        expect(existsSync(resolve(outputDirectory, "entryPointA.js.map")));
+        // Expect sourcemap comment at the bottom of the file
+        expect(readText(resolve(outputDirectory, "entryPointA.js"))).toMatchInlineSnapshot(`
+          "import { log } from './dir/log.js';
+          import 'somewhere-external';
+          import '@scope/somewhere-external';
+          import 'open-pioneer:react-hooks';
+
+          function helloA() {
+            log(\\"hello from entry point A\\");
+          }
+
+          export { helloA };
+          //# sourceMappingURL=entryPointA.js.map
+          "
+        `);
+
+        // Sourcemap exists
+        const sourcemapPath = resolve(outputDirectory, "entryPointA.js.map");
+        expect(existsSync(sourcemapPath));
+
+        // Expect pretty source file paths instead of relative local file paths.
+        // Also expect that the actual source file content is embedded into the sourcemap.
+        const sourcemapData = JSON.parse(readText(sourcemapPath));
+        expect(sourcemapData.sources).toMatchInlineSnapshot(`
+          [
+            "packages/@custom/packageName/entryPointA.js",
+          ]
+        `);
+        expect(sourcemapData.sourcesContent).toMatchInlineSnapshot(`
+          [
+            "import { log } from \\"./dir/log\\";
+          import something from \\"somewhere-external\\";
+          import somethingElse from \\"@scope/somewhere-external\\";
+          import hooks from \\"open-pioneer:react-hooks\\";
+
+          export function helloA() {
+              log(\\"hello from entry point A\\");
+          }
+          ",
+          ]
+        `);
     });
 
     it("transpiles jsx to js", async function () {

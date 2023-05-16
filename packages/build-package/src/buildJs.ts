@@ -4,10 +4,13 @@ import { resolve } from "node:path";
 import { rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
+import { normalizePath } from "@rollup/pluginutils";
+import posix from "node:path/posix";
 
 const SUPPORTED_EXTENSIONS = [".js", ".jsx", ".ts", ".tsx"];
 
 export interface BuildJSOptions {
+    packageName: string;
     packageDirectory: string;
     outputDirectory: string;
     entryPoints: string[];
@@ -18,6 +21,7 @@ export interface BuildJSOptions {
 }
 
 export async function buildJS({
+    packageName,
     packageDirectory,
     outputDirectory,
     entryPoints,
@@ -54,8 +58,25 @@ export async function buildJS({
         minifyInternalExports: false,
         compact: false,
         format: "es",
-        sourcemap: sourcemap
-        // TODO
-        // sourcemapPathTransform
+        sourcemap: sourcemap,
+
+        // Prettier sourcemap paths.
+        // See https://rollupjs.org/configuration-options/#output-sourcemappathtransform
+        sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
+            relativeSourcePath = normalizePath(relativeSourcePath);
+            sourcemapPath = normalizePath(sourcemapPath);
+            const absolutePath = posix.resolve(posix.dirname(sourcemapPath), relativeSourcePath);
+            if (isInDirectory(absolutePath, packageDirectory)) {
+                const relative = posix.relative(packageDirectory, absolutePath);
+                return `packages/${packageName}/${relative}`;
+            }
+            return relativeSourcePath;
+        }
     });
+}
+
+function isInDirectory(file: string, directory: string): boolean {
+    const rel = posix.relative(directory, file);
+    const isChild = rel && !rel.startsWith("..") && !posix.isAbsolute(rel);
+    return !!isChild;
 }
