@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { assert } from "chai";
 import { parseI18nYaml, parseI18nFile } from "./parseI18nYaml";
+import { describe, it, assert } from "vitest";
 
 describe("parseI18nFile", function () {
     it("parses empty yaml", function () {

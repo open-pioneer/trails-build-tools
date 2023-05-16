@@ -3,12 +3,18 @@
 import { resolve } from "node:path";
 import { build } from "vite";
 import { pioneer, PioneerPluginOptions } from "..";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
-// Assumes cwd is package dir
-export const TEST_DATA = resolve("./test-data");
-export const TEMP_DATA = resolve("./temp");
+// Assumes tests invoked from package root
+export const PACKAGE_DIR = resolve(fileURLToPath(import.meta.url), "../../..");
+export const TEST_DATA_DIR = resolve(PACKAGE_DIR, "test-data");
+export const TEMP_DATA_DIR = resolve(PACKAGE_DIR, "temp");
 
-export const GENERATE_SNAPSHOTS = process.env.SNAPSHOTS === "1";
+const PACKAGE_JSON_FILE = resolve(PACKAGE_DIR, "package.json");
+if (!existsSync(PACKAGE_JSON_FILE)) {
+    throw new Error(`No package.json in current directory. Invoke from package root.`);
+}
 
 export async function runViteBuild(options: {
     outDir: string;

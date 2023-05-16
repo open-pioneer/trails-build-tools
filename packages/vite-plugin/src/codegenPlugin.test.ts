@@ -1,15 +1,15 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { assert } from "chai";
+import glob from "fast-glob";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { runViteBuild, TEMP_DATA, TEST_DATA } from "./utils/testUtils";
-import glob from "fast-glob";
+import { assert, describe, it } from "vitest";
+import { TEMP_DATA_DIR, TEST_DATA_DIR, runViteBuild } from "./utils/testUtils";
 
 describe("codegen support", function () {
     it("generates app packages content", async function () {
-        const rootDir = resolve(TEST_DATA, "codegen-packages");
-        const outDir = resolve(TEMP_DATA, "codegen-packages");
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-packages");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-packages");
 
         await runViteBuild({
             outDir,
@@ -27,8 +27,8 @@ describe("codegen support", function () {
     });
 
     it("generates app css content", async function () {
-        const rootDir = resolve(TEST_DATA, "codegen-css");
-        const outDir = resolve(TEMP_DATA, "codegen-css");
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-css");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-css");
 
         await runViteBuild({
             outDir,
@@ -52,8 +52,8 @@ describe("codegen support", function () {
     });
 
     it("generates react hooks module for packages and apps", async function () {
-        const rootDir = resolve(TEST_DATA, "codegen-react-hooks");
-        const outDir = resolve(TEMP_DATA, "codegen-react-hooks");
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-react-hooks");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-react-hooks");
 
         await runViteBuild({
             outDir,
@@ -73,8 +73,8 @@ describe("codegen support", function () {
     });
 
     it("fails if build config is missing", async function () {
-        const rootDir = resolve(TEST_DATA, "codegen-build-config-required");
-        const outDir = resolve(TEMP_DATA, "codegen-build-config-required");
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-build-config-required");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-build-config-required");
 
         const error = await expectAsyncError(() =>
             runViteBuild({
@@ -102,8 +102,8 @@ describe("codegen support", function () {
     });
 
     it("generates an app with multiple languages", async function () {
-        const rootDir = resolve(TEST_DATA, "codegen-i18n");
-        const outDir = resolve(TEMP_DATA, "codegen-i18n");
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n");
 
         await runViteBuild({
             outDir,
@@ -134,8 +134,8 @@ describe("codegen support", function () {
     });
 
     it("generates an error if an unsupported locale is requested", async function () {
-        const rootDir = resolve(TEST_DATA, "codegen-i18n-unsupported-locale");
-        const outDir = resolve(TEMP_DATA, "codegen-i18n-unsupported-locale");
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-unsupported-locale");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-unsupported-locale");
 
         const error = await expectAsyncError(() =>
             runViteBuild({
@@ -151,8 +151,8 @@ describe("codegen support", function () {
     });
 
     it("generates an error if 'overrides' is used from a package", async function () {
-        const rootDir = resolve(TEST_DATA, "codegen-i18n-illegal-overrides");
-        const outDir = resolve(TEMP_DATA, "codegen-i18n-illegal-overrides");
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-illegal-overrides");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-illegal-overrides");
 
         const error = await expectAsyncError(() =>
             runViteBuild({

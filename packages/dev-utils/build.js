@@ -41,7 +41,6 @@ const modes = {
  * <package>
  *  |- src/
  *     |- index.ts       # entry point
- *     |- all.test.ts    # imports all tests
  * ```
  *
  * @param mode          build / buildDev / watch
@@ -56,7 +55,7 @@ export async function build(mode, customOptions) {
         throw new Error(`Unknown mode: '${mode}'`);
     }
 
-    const { minify, sourcemap, tests, watch } = options;
+    const { minify, sourcemap, watch } = options;
 
     /** @type {import("esbuild").BuildOptions} */
     const esbuildOptions = {
@@ -71,10 +70,6 @@ export async function build(mode, customOptions) {
         logLevel: "info",
         format: "cjs"
     };
-
-    if (tests) {
-        esbuildOptions.entryPoints.push("./src/all.test.ts");
-    }
 
     if (watch) {
         const context = await esbuild.context(esbuildOptions);

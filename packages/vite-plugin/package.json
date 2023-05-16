@@ -10,8 +10,7 @@
         "build": "node build.mjs build",
         "build-dev": "node build.mjs buildDev",
         "dev": "node build.mjs watch",
-        "test": "pnpm run build-dev && rimraf temp && mocha dist/all.test.js",
-        "test-debug": "pnpm run build-dev && rimraf temp && mocha --node-option inspect-brk dist/all.test.js"
+        "test": "vitest"
     },
     "files": [
         "dist/**/*.js",

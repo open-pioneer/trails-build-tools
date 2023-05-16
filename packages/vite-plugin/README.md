@@ -139,11 +139,7 @@ This plugin internally configures the rollup options inside vite's config to ach
 To manually build the plugin, run `pnpm run build`.
 This build does _not_ include tests.
 
-`pnpm run dev` will continuously rebuild the code (including tests files).
-
-`pnpm run test` will execute all tests using mocha.
-If you create a new test file, make sure to list it in `src/all.test.ts`.
-It will not run otherwise.
+`pnpm run test` will execute all tests using vitest.
 
 ### Debugging the vite plugin
 
@@ -167,21 +163,6 @@ open-pioneer:codegen Adding manual watch for /home/michael/projects/starter/src/
 ```
 
 You can also add a `--debug` flag to `vite` to show vite's internal log messages.
-
-### Snapshots
-
-We're using an ad-hoc implementation of snapshot tests for some generated files.
-Pass the environment variable `SNAPSHOTS=1` to (re-) generate snapshots:
-
-```bash
-$ SNAPSHOTS=1 pnpm run test
-```
-
-In your test code, reference the `GENERATE_SNAPSHOTS` constant (which is initialized from the environment variable):
-
-```js
-import { GENERATE_SNAPSHOTS } from "../utils/testUtils";
-```
 
 ## License
 

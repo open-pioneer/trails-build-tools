@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { assert } from "chai";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { runViteBuild, TEMP_DATA, TEST_DATA } from "./utils/testUtils";
+import { runViteBuild, TEMP_DATA_DIR, TEST_DATA_DIR } from "./utils/testUtils";
+import { describe, it, assert } from "vitest";
 
 describe("multi page support", function () {
     it("should include the root site if configured", async function () {
-        const outDir = resolve(TEMP_DATA, "multi-page-root-site");
-        const rootDir = resolve(TEST_DATA, "multi-page");
+        const outDir = resolve(TEMP_DATA_DIR, "multi-page-root-site");
+        const rootDir = resolve(TEST_DATA_DIR, "multi-page");
 
         await runViteBuild({
             outDir,
@@ -29,8 +29,8 @@ describe("multi page support", function () {
     });
 
     it("should include app entry points if configured", async function () {
-        const outDir = resolve(TEMP_DATA, "multi-page-apps");
-        const rootDir = resolve(TEST_DATA, "multi-page");
+        const outDir = resolve(TEMP_DATA_DIR, "multi-page-apps");
+        const rootDir = resolve(TEST_DATA_DIR, "multi-page");
 
         await runViteBuild({
             outDir,
@@ -54,8 +54,8 @@ describe("multi page support", function () {
     });
 
     it("should include apps with advanced locations", async function () {
-        const outDir = resolve(TEMP_DATA, "multi-page-advanced-apps");
-        const rootDir = resolve(TEST_DATA, "multi-page-advanced-apps");
+        const outDir = resolve(TEMP_DATA_DIR, "multi-page-advanced-apps");
+        const rootDir = resolve(TEST_DATA_DIR, "multi-page-advanced-apps");
 
         await runViteBuild({
             outDir,
@@ -76,8 +76,8 @@ describe("multi page support", function () {
     });
 
     it("should include additional sites if configured", async function () {
-        const outDir = resolve(TEMP_DATA, "multi-page-sites");
-        const rootDir = resolve(TEST_DATA, "multi-page");
+        const outDir = resolve(TEMP_DATA_DIR, "multi-page-sites");
+        const rootDir = resolve(TEST_DATA_DIR, "multi-page");
 
         await runViteBuild({
             outDir,
@@ -101,8 +101,8 @@ describe("multi page support", function () {
     });
 
     it("should throw an error if no entry points are configured", async function () {
-        const outDir = resolve(TEMP_DATA, "multi-page-no-entry-points");
-        const rootDir = resolve(TEST_DATA, "multi-page");
+        const outDir = resolve(TEMP_DATA_DIR, "multi-page-no-entry-points");
+        const rootDir = resolve(TEST_DATA_DIR, "multi-page");
         let message = "";
         try {
             await runViteBuild({
