@@ -13,7 +13,9 @@
         "prettier-check": "pnpm prettier:common -c",
         "prettier": "pnpm prettier:common -w",
         "prettier:common": "prettier ./packages --ignore-path .eslintignore --cache",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "ci:test": "pnpm run clean && pnpm run check-types && pnpm run lint && pnpm run test",
+        "ci:publish": "pnpm run ci:test && pnpm run clean && pnpm run build && pnpm publish -r"
     },
     "devDependencies": {
         "@changesets/cli": "^2.26.1",
