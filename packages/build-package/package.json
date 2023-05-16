@@ -30,6 +30,8 @@
         "rollup-plugin-esbuild": "^5.0.0"
     },
     "devDependencies": {
+        "@rollup/pluginutils": "^5.0.2",
+        "@types/react": "^18.2.6",
         "dev-utils": "workspace:*",
         "typescript": "^5.0.4"
     }
