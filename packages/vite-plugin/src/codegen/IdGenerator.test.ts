@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { assert } from "chai";
+import { assert, describe, it } from "vitest";
 import { IdGenerator } from "./IdGenerator";
 
 describe("IdGenerator", function () {

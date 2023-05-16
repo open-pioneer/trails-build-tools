@@ -1,31 +1,35 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { assert } from "chai";
-import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { loadI18nFile } from "../metadata/parseI18nYaml";
-import { GENERATE_SNAPSHOTS, TEST_DATA } from "../utils/testUtils";
 import { generateI18nIndex, generateI18nMessages } from "./generateI18n";
+import { describe, it, expect } from "vitest";
+import { TEST_DATA_DIR } from "../utils/testUtils";
 
 describe("generateI18n", function () {
     it("should generate an i18n index module", function () {
-        const testDataFile = resolve(TEST_DATA, "codegen-i18n-index.js");
         const generatedIndex = generateI18nIndex("test-package-directory", [
             "de",
             "en",
             "de-simple"
         ]);
-
-        if (GENERATE_SNAPSHOTS) {
-            writeFileSync(testDataFile, generatedIndex, "utf-8");
-        }
-
-        const expected = readFileSync(testDataFile, "utf-8").trim();
-        assert.equal(generatedIndex, expected);
+        expect(generatedIndex).toMatchInlineSnapshot(`
+          "export const locales = [\\"de\\", \\"en\\", \\"de-simple\\"];
+          export function loadMessages(locale) {
+            switch (locale) {
+              case \\"de\\":
+                return import(\\"test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=de\\").then(mod => mod.default);
+              case \\"en\\":
+                return import(\\"test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=en\\").then(mod => mod.default);
+              case \\"de-simple\\":
+                return import(\\"test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=de-simple\\").then(mod => mod.default);
+            }
+            throw new Error(\`Unsupported locale: '\${locale}'\`);
+          }"
+        `);
     });
 
     it("should generate an i18n messages module", async function () {
-        const testDataFile = resolve(TEST_DATA, "codegen-i18n-messages.js");
         const generatedMessages = await generateI18nMessages({
             locale: "de",
             appName: "app-name",
@@ -33,13 +37,13 @@ describe("generateI18n", function () {
                 {
                     name: "package-foo",
                     i18nPaths: new Map([
-                        ["de", resolve(TEST_DATA, "codegen-i18n-yaml/package-foo.yaml")]
+                        ["de", resolve(TEST_DATA_DIR, "codegen-i18n-yaml/package-foo.yaml")]
                     ])
                 },
                 {
                     name: "package-bar",
                     i18nPaths: new Map([
-                        ["de", resolve(TEST_DATA, "codegen-i18n-yaml/package-bar.yaml")],
+                        ["de", resolve(TEST_DATA_DIR, "codegen-i18n-yaml/package-bar.yaml")],
                         ["en", "/does/not/exist.yaml"] // not an error; only read "de"
                     ])
                 }
@@ -49,16 +53,13 @@ describe("generateI18n", function () {
             }
         });
 
-        if (GENERATE_SNAPSHOTS) {
-            writeFileSync(testDataFile, generatedMessages, "utf-8");
-        }
-
-        const expected = readFileSync(testDataFile, "utf-8").trim();
-        assert.equal(generatedMessages, expected);
+        expect(generatedMessages).toMatchInlineSnapshot(`
+          "const messages = JSON.parse(\\"{\\\\\\"package-foo\\\\\\":{\\\\\\"from-foo.greeting\\\\\\":\\\\\\"Hello World!\\\\\\\\n\\\\\\"},\\\\\\"package-bar\\\\\\":{\\\\\\"from-bar\\\\\\":\\\\\\"Hello from bar\\\\\\"}}\\");
+          export default messages;"
+        `);
     });
 
     it("should generate an i18n messages module with overrides from app", async function () {
-        const testDataFile = resolve(TEST_DATA, "codegen-i18n-messages-override.js");
         const generatedMessages = await generateI18nMessages({
             locale: "de",
             appName: "app",
@@ -66,24 +67,23 @@ describe("generateI18n", function () {
                 {
                     name: "package-foo",
                     i18nPaths: new Map([
-                        ["de", resolve(TEST_DATA, "codegen-i18n-yaml/package-foo.yaml")]
+                        ["de", resolve(TEST_DATA_DIR, "codegen-i18n-yaml/package-foo.yaml")]
                     ])
                 },
                 {
                     name: "app",
-                    i18nPaths: new Map([["de", resolve(TEST_DATA, "codegen-i18n-yaml/app.yaml")]])
+                    i18nPaths: new Map([
+                        ["de", resolve(TEST_DATA_DIR, "codegen-i18n-yaml/app.yaml")]
+                    ])
                 }
             ],
             loadI18n(path) {
                 return loadI18nFile(path);
             }
         });
-
-        if (GENERATE_SNAPSHOTS) {
-            writeFileSync(testDataFile, generatedMessages, "utf-8");
-        }
-
-        const expected = readFileSync(testDataFile, "utf-8").trim();
-        assert.equal(generatedMessages, expected);
+        expect(generatedMessages).toMatchInlineSnapshot(`
+          "const messages = JSON.parse(\\"{\\\\\\"package-foo\\\\\\":{\\\\\\"from-foo.greeting\\\\\\":\\\\\\"Changed from app\\\\\\"},\\\\\\"app\\\\\\":{}}\\");
+          export default messages;"
+        `);
     });
 });

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { assert } from "chai";
 import { Cache, CacheProvider } from "./Cache";
+import { describe, it, assert } from "vitest";
 
 describe("Cache", function () {
     it("should cache computed values until invalidated", async function () {
