@@ -5,7 +5,7 @@ on:
   - push
 
 jobs:
-  test-and-build:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -28,11 +28,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check code style
+      - name: Runs checks
         run: |
           pnpm run ci:test
-
-      - name: Build
-        run: |
-          pnpm run clean;
-          pnpm run build;

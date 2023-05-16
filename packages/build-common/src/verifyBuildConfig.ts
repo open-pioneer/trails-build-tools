@@ -64,7 +64,7 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
  *
  * @returns `value` but casted to the appropriate type.
  */
-export function verifyBuildConfigSchema(value: unknown): BuildConfig {
+export function verifyBuildConfig(value: unknown): BuildConfig {
     const result = BUILD_CONFIG_SCHEMA.safeParse(value);
     if (result.success) {
         return result.data;

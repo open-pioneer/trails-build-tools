@@ -3,7 +3,7 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { BuildJSOptions, buildJS } from "./buildJs";
+import { BuildJsOptions, buildJs } from "./buildJs";
 import { cleanDir, readText } from "./testUtils/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
 
@@ -11,7 +11,7 @@ const DEFAULTS = {
     packageName: "test",
     silent: true,
     sourcemap: false
-} satisfies Partial<BuildJSOptions>;
+} satisfies Partial<BuildJsOptions>;
 
 describe("buildJS", function () {
     it("transpiles a simple javascript project", async function () {
@@ -20,7 +20,7 @@ describe("buildJS", function () {
         const entryPoints = ["entryPointA", "entryPointB"];
 
         await cleanDir(outputDirectory);
-        await buildJS({
+        await buildJs({
             ...DEFAULTS,
             packageDirectory,
             outputDirectory,
@@ -73,7 +73,7 @@ describe("buildJS", function () {
         const entryPoints = ["entryPointA", "entryPointB"];
 
         await cleanDir(outputDirectory);
-        await buildJS({
+        await buildJs({
             ...DEFAULTS,
             packageDirectory,
             outputDirectory,
@@ -131,7 +131,7 @@ describe("buildJS", function () {
         const entryPoints = ["index"];
 
         await cleanDir(outputDirectory);
-        await buildJS({
+        await buildJs({
             ...DEFAULTS,
             packageDirectory,
             outputDirectory,
@@ -156,7 +156,7 @@ describe("buildJS", function () {
         const entryPoints = ["index"];
 
         await cleanDir(outputDirectory);
-        await buildJS({
+        await buildJs({
             ...DEFAULTS,
             packageDirectory,
             outputDirectory,
@@ -183,7 +183,7 @@ describe("buildJS", function () {
         const entryPoints = ["index"];
 
         await cleanDir(outputDirectory);
-        await buildJS({
+        await buildJs({
             ...DEFAULTS,
             packageDirectory,
             outputDirectory,
@@ -208,7 +208,7 @@ describe("buildJS", function () {
         const entryPoints = ["index"];
 
         await cleanDir(outputDirectory);
-        await buildJS({
+        await buildJs({
             ...DEFAULTS,
             packageDirectory,
             outputDirectory,
@@ -240,7 +240,7 @@ describe("buildJS", function () {
 
         await cleanDir(outputDirectory);
         await expect(() =>
-            buildJS({
+            buildJs({
                 ...DEFAULTS,
                 packageDirectory,
                 outputDirectory,
