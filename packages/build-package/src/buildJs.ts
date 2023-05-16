@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { resolve } from "node:path";
 import { rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
@@ -54,7 +53,7 @@ export async function buildJS({
     });
     await result.write({
         preserveModules: true,
-        dir: resolve(outputDirectory),
+        dir: outputDirectory,
         minifyInternalExports: false,
         compact: false,
         format: "es",
