@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.5.1
+
+### Patch Changes
+
+-   4f271c8: Build using new build script.
+
 ## v0.5.0
 
 -   Implement support for SCSS in package `styles`.
