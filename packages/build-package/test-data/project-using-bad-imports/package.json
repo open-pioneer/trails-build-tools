@@ -1,0 +1,8 @@
+{
+    "name": "project-using-vite-imports",
+    "version": "0.0.1",
+    "license": "MIT",
+    "dependencies": {
+        "foo": "^1.2.3"
+    }
+}
