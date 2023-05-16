@@ -1,0 +1,13 @@
+{
+    "name": "dev-utils",
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "esbuild": "^0.17.19"
+    },
+    "exports": {
+        "./build": {
+            "import": "./build.js"
+        }
+    }
+}

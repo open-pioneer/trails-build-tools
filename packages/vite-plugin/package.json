@@ -7,9 +7,9 @@
     "license": "Apache-2.0",
     "scripts": {
         "clean": "rimraf dist temp",
-        "build": "node esbuild.config.js build",
-        "build-dev": "node esbuild.config.js buildDev",
-        "dev": "node esbuild.config.js watch",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch",
         "test": "pnpm run build-dev && rimraf temp && mocha dist/all.test.js",
         "test-debug": "pnpm run build-dev && rimraf temp && mocha --node-option inspect-brk dist/all.test.js"
     },
@@ -49,6 +49,7 @@
         "rimraf": "^5.0.0",
         "rollup": "^3.21.7",
         "sass": "^1.62.1",
-        "vite": "^4.3.6"
+        "vite": "^4.3.6",
+        "dev-utils": "workspace:*"
     }
 }
