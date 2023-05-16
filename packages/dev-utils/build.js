@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 /* eslint-disable @typescript-eslint/no-var-requires */
-const esbuild = require("esbuild");
+import esbuild from "esbuild";
 
 const buildOptions = {
     minify: true,
@@ -27,13 +27,30 @@ const modes = {
     watch: watchOpts
 };
 
-const mode = process.argv[2];
-build(mode).catch((e) => {
-    console.error(e);
-    process.exit(1);
-});
+/**
+ * Returns a builder that is configured with default esbuild settings.
+ *
+ * NOTE: This function works relative to the current working directory,
+ * invoke it from the correct package.
+ *
+ * This is the common build script for packages in this workspace.
+ *
+ * It expects the following minimal source folder structure:
+ *
+ * ```plain
+ * <package>
+ *  |- src/
+ *     |- index.ts       # entry point
+ *     |- all.test.ts    # imports all tests
+ * ```
+ *
+ * @param mode          build / buildDev / watch
+ * @param customOptions Custom package options to override defaults.
+ *                      Not used yet.
+ */
+export async function build(mode, customOptions) {
+    void customOptions;
 
-async function build(mode) {
     const options = modes[mode];
     if (!options) {
         throw new Error(`Unknown mode: '${mode}'`);

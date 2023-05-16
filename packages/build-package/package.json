@@ -7,9 +7,9 @@
     "license": "Apache-2.0",
     "scripts": {
         "clean": "rimraf dist temp",
-        "build": "node esbuild.config.js build",
-        "build-dev": "node esbuild.config.js buildDev",
-        "dev": "node esbuild.config.js watch",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch",
         "test": "pnpm run build-dev && rimraf temp && mocha dist/all.test.js",
         "test-debug": "pnpm run build-dev && rimraf temp && mocha --node-option inspect-brk dist/all.test.js"
     },
@@ -24,6 +24,6 @@
     "dependencies": {},
     "devDependencies": {
         "@open-pioneer/build-support": "workspace:^",
-        "esbuild": "^0.17.19"
+        "dev-utils": "workspace:*"
     }
 }
