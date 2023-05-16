@@ -22,10 +22,16 @@ again from scratch to avoid problems with link creation.
 This repository uses [Changesets](https://github.com/changesets/changesets) to manage versioning and publishing.
 When implementing a change, don't forget to add an appropriate changeset by running `pnpm changeset add`.
 
-TODO: Describe/Implement workflow for changesets
+The publish workflow (see `.github/workflows` directory) automatically creates a prepared pull request
+with version updates and changelog entries derived from the changesets in the repository.
+To release changed packages, simply merge the pull request.
 
-Use the [publish action](https://github.com/open-pioneer/build-tools/actions/workflows/publish.yml) to trigger an npm release of a package.
-The action accepts two version numbers: the version to release (may be the same as in the current package.json) and the next development version (which must be different).
+Useful local commands:
+
+```bash
+$ pnpm changeset        # Create a new changeset ("add" is optional)
+$ pnpm changeset status # Show which packages would be published, verify configuration
+```
 
 ## License
 
