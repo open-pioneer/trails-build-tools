@@ -47,7 +47,7 @@ export async function buildJS({
             esbuild({
                 jsx: "automatic",
                 jsxDev: false,
-                target: "es2020"
+                target: "es2022"
             })
         ],
         onwarn: silent ? () => undefined : undefined
