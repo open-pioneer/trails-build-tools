@@ -65,7 +65,7 @@ importers:
         specifier: workspace:^
         version: link:../build-support
       dev-utils:
-        specifier: 'workspace:'
+        specifier: workspace:*
         version: link:../dev-utils
 
   packages/build-support: {}
@@ -119,7 +119,7 @@ importers:
         specifier: ^4.0.5
         version: 4.0.5
       dev-utils:
-        specifier: 'workspace:'
+        specifier: workspace:*
         version: link:../dev-utils
       esbuild:
         specifier: ^0.17.19
