@@ -33,6 +33,11 @@ $ pnpm changeset        # Create a new changeset ("add" is optional)
 $ pnpm changeset status # Show which packages would be published, verify configuration
 ```
 
+Things to keep in mind:
+
+-   There should currently be no pending changesets for ignored packages (`ignore` in `.changeset/config.json`).
+    Otherwise the merged versions PR will not trigger a publish.
+
 ## License
 
 ```
