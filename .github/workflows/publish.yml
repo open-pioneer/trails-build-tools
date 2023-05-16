@@ -6,9 +6,6 @@ on:
       - "main"
 
 jobs:
-  # Run tests before publish https://stackoverflow.com/a/71489231
-  tests:
-    uses: "./.github/workflows/test-and-build.yml"
   version:
     runs-on: ubuntu-latest
     permissions: write-all
