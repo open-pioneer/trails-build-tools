@@ -8,9 +8,8 @@ import {
     ReferenceConfig,
     ServiceConfig
 } from "@open-pioneer/build-support";
-import { verifyBuildConfigSchema } from "./BuildConfigSchema";
-
-export const BUILD_CONFIG_NAME = "build.config.mjs";
+import { BUILD_CONFIG_NAME, verifyBuildConfig } from "@open-pioneer/build-common";
+import { basename } from "node:path";
 
 export interface NormalizedPackageConfig {
     services: NormalizedServiceConfig[];
@@ -60,14 +59,12 @@ export async function loadBuildConfig(path: string): Promise<NormalizedPackageCo
  * Parses a build configuration object and validates it.
  */
 export function parseBuildConfig(object: unknown): NormalizedPackageConfig {
-    const rawConfig = verifyBuildConfigSchema(object);
+    const rawConfig = verifyBuildConfig(object);
     return normalizeConfig(rawConfig);
 }
 
-const BUILD_CONFIG_RE = /[\\/]build\.config\.mjs($|\?)/;
-
 export function isBuildConfig(file: string) {
-    return BUILD_CONFIG_RE.test(file);
+    return basename(file) === BUILD_CONFIG_NAME;
 }
 
 function normalizeConfig(rawConfig: BuildConfig): NormalizedPackageConfig {

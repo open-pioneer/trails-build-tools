@@ -1,5 +1,5 @@
 {
-    "name": "dev-utils",
+    "name": "internal-dev-utils",
     "version": "0.0.1",
     "private": true,
     "type": "module",

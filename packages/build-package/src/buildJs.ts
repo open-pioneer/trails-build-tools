@@ -8,7 +8,7 @@ import posix from "node:path/posix";
 
 const SUPPORTED_EXTENSIONS = [".js", ".jsx", ".ts", ".tsx"];
 
-export interface BuildJSOptions {
+export interface BuildJsOptions {
     packageName: string;
     packageDirectory: string;
     outputDirectory: string;
@@ -19,14 +19,14 @@ export interface BuildJSOptions {
     silent?: boolean;
 }
 
-export async function buildJS({
+export async function buildJs({
     packageName,
     packageDirectory,
     outputDirectory,
     entryPoints,
     sourcemap,
     silent
-}: BuildJSOptions) {
+}: BuildJsOptions) {
     // Ensure entry points start with "./".
     // Relative imports are handled by the resolveExtensions plugin, but paths
     // that look like absolute ids are skipped.

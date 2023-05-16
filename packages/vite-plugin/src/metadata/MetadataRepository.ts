@@ -8,13 +8,9 @@ import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists, isInDirectory } from "../utils/fileUtils";
 import { Cache } from "../utils/Cache";
-import {
-    BUILD_CONFIG_NAME,
-    isBuildConfig,
-    loadBuildConfig,
-    NormalizedPackageConfig
-} from "./parseBuildConfig";
+import { isBuildConfig, loadBuildConfig, NormalizedPackageConfig } from "./parseBuildConfig";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
+import { BUILD_CONFIG_NAME } from "@open-pioneer/build-common";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");

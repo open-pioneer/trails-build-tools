@@ -7,14 +7,16 @@ fi
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo '--- run linting --- '
-pnpm lint
+pnpm run lint
 
 echo '--- run prettier ---'
-pnpm prettier-check
+pnpm run prettier-check
 
 echo '--- run typescript check ---'
-pnpm check-types
+pnpm run check-types
 
 echo '--- run tests ---'
-pnpm test run
+pnpm run clean
+pnpm run build
+pnpm run test run
 
