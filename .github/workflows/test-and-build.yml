@@ -1,5 +1,5 @@
 name: Build and deploy
-on: 
+on:
   workflow_dispatch:
   workflow_call:
   push:
@@ -30,11 +30,7 @@ jobs:
 
       - name: Check code style
         run: |
-          pnpm run lint;
-          pnpm run check-types;
-
-      - name: Run tests
-        run: pnpm run test
+          pnpm run ci:test
 
       - name: Build
         run: |
