@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.5.2
+
+### Patch Changes
+
+-   434cc23: Migrate all tests to vitest.
+-   41399fa: Use new shared package to validate build.config.mjs
+-   Updated dependencies [41399fa]
+    -   @open-pioneer/build-common@0.1.0
+
 ## 0.5.1
 
 ### Patch Changes
