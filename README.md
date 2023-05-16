@@ -19,6 +19,11 @@ again from scratch to avoid problems with link creation.
 
 ### Releasing
 
+This repository uses [Changesets](https://github.com/changesets/changesets) to manage versioning and publishing.
+When implementing a change, don't forget to add an appropriate changeset by running `pnpm changeset add`.
+
+TODO: Describe/Implement workflow for changesets
+
 Use the [publish action](https://github.com/open-pioneer/build-tools/actions/workflows/publish.yml) to trigger an npm release of a package.
 The action accepts two version numbers: the version to release (may be the same as in the current package.json) and the next development version (which must be different).
 
