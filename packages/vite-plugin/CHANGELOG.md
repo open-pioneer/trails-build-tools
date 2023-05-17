@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.5.3
+
+### Patch Changes
+
+-   ef54f35: Move loading of build config file into common package.
+-   Updated dependencies [ef54f35]
+-   Updated dependencies [125fd57]
+-   Updated dependencies [37413f4]
+    -   @open-pioneer/build-common@0.2.0
+
 ## 0.5.2
 
 ### Patch Changes
