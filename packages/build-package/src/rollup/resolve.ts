@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { existsSync, lstatSync } from "node:fs";
-import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type { Plugin } from "rollup";
 import { normalizePath } from "@rollup/pluginutils";
+import { getExtension } from "../helpers";
 
 export interface ResolvePluginOptions {
     packageDirectory: string;
@@ -85,11 +86,6 @@ function appendQuery(id: string, query: string) {
         return id;
     }
     return `${id}?${query}`;
-}
-
-function getExtension(path: string) {
-    const filename = basename(path);
-    return filename.match(/^.*?(\..*)?$/)?.[1] ?? "";
 }
 
 function resolveFile(file: string, extensions: string[]) {

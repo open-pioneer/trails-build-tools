@@ -3,9 +3,10 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { BuildJsOptions, buildJs } from "./buildJs";
+import { BuildJsOptions, SUPPORTED_EXTENSIONS, buildJs } from "./buildJs";
 import { cleanDir, readText } from "./testUtils/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
+import { normalizeEntryPoints } from "./helpers";
 
 const DEFAULTS = {
     packageName: "test",
@@ -17,7 +18,7 @@ describe("buildJS", function () {
     it("transpiles a simple javascript project", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
         const outputDirectory = resolve(TEMP_DATA_DIR, "simple-js-transpile");
-        const entryPoints = ["entryPointA", "entryPointB"];
+        const entryPoints = normalize(["entryPointA", "entryPointB"]);
 
         await cleanDir(outputDirectory);
         await buildJs({
@@ -70,7 +71,7 @@ describe("buildJS", function () {
     it("generates source maps when enabled", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
         const outputDirectory = resolve(TEMP_DATA_DIR, "simple-js-sourcemaps");
-        const entryPoints = ["entryPointA", "entryPointB"];
+        const entryPoints = normalize(["entryPointA", "entryPointB"]);
 
         await cleanDir(outputDirectory);
         await buildJs({
@@ -128,7 +129,7 @@ describe("buildJS", function () {
     it("transpiles jsx to js", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "simple-jsx-project");
         const outputDirectory = resolve(TEMP_DATA_DIR, "simple-jsx-transpile");
-        const entryPoints = ["index"];
+        const entryPoints = normalize(["index"]);
 
         await cleanDir(outputDirectory);
         await buildJs({
@@ -153,7 +154,7 @@ describe("buildJS", function () {
     it("transpiles ts to js", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "simple-ts-project");
         const outputDirectory = resolve(TEMP_DATA_DIR, "simple-ts-transpile");
-        const entryPoints = ["index"];
+        const entryPoints = normalize(["index"]);
 
         await cleanDir(outputDirectory);
         await buildJs({
@@ -180,7 +181,7 @@ describe("buildJS", function () {
     it("transpiles tsx to js", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "simple-tsx-project");
         const outputDirectory = resolve(TEMP_DATA_DIR, "simple-tsx-transpile");
-        const entryPoints = ["index"];
+        const entryPoints = normalize(["index"]);
 
         await cleanDir(outputDirectory);
         await buildJs({
@@ -205,7 +206,7 @@ describe("buildJS", function () {
     it("passes through vite-style imports", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "project-using-vite-imports");
         const outputDirectory = resolve(TEMP_DATA_DIR, "vite-imports-passthrough");
-        const entryPoints = ["index"];
+        const entryPoints = normalize(["index"]);
 
         await cleanDir(outputDirectory);
         await buildJs({
@@ -233,10 +234,28 @@ describe("buildJS", function () {
         `);
     });
 
+    it("supports various ways to spell entry points", async function () {
+        const packageDirectory = resolve(TEST_DATA_DIR, "project-with-mixed-entry-points");
+        const outputDirectory = resolve(TEMP_DATA_DIR, "mixed-entry-points");
+        const entryPoints = normalize(["index", "./relative.tsx", "deeply/nested/module"]);
+        await cleanDir(outputDirectory);
+        await buildJs({
+            ...DEFAULTS,
+            packageDirectory,
+            outputDirectory,
+            entryPoints
+        });
+
+        // Everything is transpiled to ".js"
+        expect(existsSync(resolve(outputDirectory, "index.js")));
+        expect(existsSync(resolve(outputDirectory, "relative.js")));
+        expect(existsSync(resolve(outputDirectory, "deeply/nested/module.js")));
+    });
+
     it("throws an error if an imported file does not exist", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "project-using-bad-imports");
         const outputDirectory = resolve(TEMP_DATA_DIR, "vite-bad-imports");
-        const entryPoints = ["index"];
+        const entryPoints = normalize(["index"]);
 
         await cleanDir(outputDirectory);
         await expect(() =>
@@ -251,3 +270,7 @@ describe("buildJS", function () {
         );
     });
 });
+
+function normalize(entryPoints: string[]) {
+    return normalizeEntryPoints(entryPoints, SUPPORTED_EXTENSIONS);
+}

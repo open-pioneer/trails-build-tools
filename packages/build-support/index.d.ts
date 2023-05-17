@@ -2,6 +2,30 @@
 // SPDX-License-Identifier: Apache-2.0
 export interface BuildConfig {
     /**
+     * Lists entry points exposed by this package.
+     *
+     * Entry points are JavaScript / TypeScript modules that can be
+     * imported by consumers of the published package.
+     * Other modules will not be importable by consumers to enforce
+     * encapsulation and to allow for future optimizations.
+     *
+     * This option is required when building a package for publishing
+     * and is optional otherwise.
+     *
+     * @example
+     *
+     * ```js
+     * // Extensions are optional
+     * entryPoints: [
+     *   "./index"
+     * ]
+     * ```
+     *
+     * NOTE: There is no need to list the {@link servicesModule} in here.
+     */
+    entryPoints?: string[];
+
+    /**
      * Path to a file containing CSS or SCSS.
      * The file will be automatically loaded when the package
      * is part of an application.

@@ -5,14 +5,15 @@ import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
 import { normalizePath } from "@rollup/pluginutils";
 import posix from "node:path/posix";
+import { NormalizedEntryPoint } from "./helpers";
 
-const SUPPORTED_EXTENSIONS = [".js", ".jsx", ".ts", ".tsx"];
+export const SUPPORTED_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
 
 export interface BuildJsOptions {
     packageName: string;
     packageDirectory: string;
     outputDirectory: string;
-    entryPoints: string[];
+    entryPoints: NormalizedEntryPoint[];
     sourcemap: boolean;
 
     /** Disable warnings. Used for tests. */
@@ -27,17 +28,8 @@ export async function buildJs({
     sourcemap,
     silent
 }: BuildJsOptions) {
-    // Ensure entry points start with "./".
-    // Relative imports are handled by the resolveExtensions plugin, but paths
-    // that look like absolute ids are skipped.
-    const relativeEntryPoints = entryPoints.map((e) => {
-        if (e.startsWith("./")) {
-            return e;
-        }
-        return `./${e}`;
-    });
     const result = await rollup({
-        input: relativeEntryPoints,
+        input: Object.fromEntries(entryPoints.map((e) => [e.outputModuleId, e.inputModulePath])),
         plugins: [
             resolvePlugin({
                 packageDirectory,
