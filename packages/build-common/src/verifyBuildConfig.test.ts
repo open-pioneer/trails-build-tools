@@ -3,7 +3,7 @@
 import { assert, describe, it } from "vitest";
 import { verifyBuildConfig } from "./verifyBuildConfig";
 
-describe("BuildConfigSchema", () => {
+describe("verifyBuildConfigSchema", () => {
     it("allows valid values", () => {
         verifyBuildConfig({ styles: "foo" });
     });

@@ -68,6 +68,9 @@ importers:
 
   packages/build-package:
     dependencies:
+      '@open-pioneer/build-common':
+        specifier: workspace:^
+        version: link:../build-common
       '@open-pioneer/build-support':
         specifier: workspace:^
         version: link:../build-support
