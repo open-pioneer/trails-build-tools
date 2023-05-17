@@ -5,8 +5,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { cleanDir, readText } from "./testUtils/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
-import { build } from ".";
 import { existsSync } from "fs";
+import { internalBuild } from "./index";
 
 describe("build", function () {
     it("should build package to `dist`", async function () {
@@ -19,7 +19,7 @@ describe("build", function () {
             recursive: true,
             force: true
         });
-        await build({ packageDirectory: tempPackage, silent: true });
+        await internalBuild({ packageDirectory: tempPackage, silent: true });
 
         const entryPointA = resolve(distDirectory, "entryPointA.js");
         expect(readText(entryPointA)).toMatchInlineSnapshot(`
