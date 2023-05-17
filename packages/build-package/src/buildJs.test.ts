@@ -269,6 +269,22 @@ describe("buildJS", function () {
             "[RollupError: Imported file does not exist: ./does_not-exist.txt]"
         );
     });
+
+    it("throws if a file without an extension is being imported and the real extension is not supported", async function () {
+        const packageDirectory = resolve(TEST_DATA_DIR, "project-importing-unknown-extension");
+        const outputDirectory = resolve(TEMP_DATA_DIR, "unknown-extension");
+        const entryPoints = normalize(["index"]);
+
+        await cleanDir(outputDirectory);
+        await expect(() =>
+            buildJs({
+                ...DEFAULTS,
+                packageDirectory,
+                outputDirectory,
+                entryPoints
+            })
+        ).rejects.toMatchInlineSnapshot("[RollupError: Imported file does not exist: ./Foo]");
+    });
 });
 
 function normalize(entryPoints: string[]) {
