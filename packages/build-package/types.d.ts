@@ -14,4 +14,9 @@ export interface BuildResult {
     todo?: void;
 }
 
+/**
+ * Builds a package to be published.
+ *
+ * Compiled output is written to the package's `dist` directory.
+ */
 export function build(options: BuildOptions): Promise<BuildResult>;

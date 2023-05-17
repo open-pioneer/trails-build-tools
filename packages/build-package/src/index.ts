@@ -7,7 +7,7 @@ import { BUILD_CONFIG_NAME, loadBuildConfig } from "@open-pioneer/build-common";
 import { buildPackage } from "./buildPackage";
 
 export interface HiddenBuildOptions {
-    // Disable logs for tests
+    /** Disable warnings. Used for tests. */
     silent?: boolean;
 }
 
