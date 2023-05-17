@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { BuildConfig } from "@open-pioneer/build-support";
+export { BuildConfig } from "@open-pioneer/build-support";
 
 /**
  * The name of the build config file expected in a pioneer page.

@@ -49,6 +49,7 @@ const SERVICE_CONFIG_SCHEMA: z.ZodType<ServiceConfig> = z.strictObject({
 });
 
 const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
+    entryPoints: z.string().array().optional(),
     styles: z.string().optional(),
     i18n: z.array(z.string()).optional(),
     services: z.record(z.string(), SERVICE_CONFIG_SCHEMA).optional(),

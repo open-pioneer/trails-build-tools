@@ -21,7 +21,7 @@
         "LICENSE"
     ],
     "devDependencies": {
-        "@open-pioneer/build-support": "^0.3.2",
+        "@open-pioneer/build-support": "workspace:^",
         "internal-dev-utils": "workspace:*"
     },
     "dependencies": {

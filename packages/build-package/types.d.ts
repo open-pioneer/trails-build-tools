@@ -1,7 +1,13 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
+
+/** Options accepted by the {@link build} function. */
 export interface BuildOptions {
-    todo?: void;
+    /**
+     * The package to be built.
+     * The output is placed into `dist` within that package.
+     */
+    packageDirectory: string;
 }
 
 export interface BuildResult {
