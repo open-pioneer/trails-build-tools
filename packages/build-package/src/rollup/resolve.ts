@@ -38,7 +38,7 @@ export function resolvePlugin({
             //
             //  ./foo
             //  ./foo.js
-            //  ./foo.ext&query
+            //  ./foo.ext?query
             const directory = parent ? dirname(parent) : packageDirectory;
             const { fileName, query } = getFileNameWithQuery(id);
             const resolved = resolveFile(resolve(directory, fileName), allowedExtensions);
@@ -95,6 +95,7 @@ function resolveFile(file: string, extensions: string[]) {
     return tryExtensions(file, extensions);
 }
 
+// TODO: Check for all extensions and require that the match is unique
 function tryExtensions(file: string, extensions: string[]) {
     if (existsSync(file)) {
         return file;
