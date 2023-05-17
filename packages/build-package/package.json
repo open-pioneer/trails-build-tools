@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/build-package",
     "private": true,
-    "version": "0.1.0-dev",
+    "version": "0.1.0",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "commonjs",
