@@ -1,20 +1,25 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { resolve } from "node:path";
-import type { BuildOptions, BuildResult } from "../types";
 import { existsSync, readFileSync } from "node:fs";
 import { BUILD_CONFIG_NAME, loadBuildConfig } from "@open-pioneer/build-common";
 import { buildPackage } from "./buildPackage";
+import type * as API from "..";
+import type { BuildOptions } from "..";
+
+type Build = typeof API.build;
 
 export interface HiddenBuildOptions {
     /** Disable warnings. Used for tests. */
     silent?: boolean;
 }
 
-export async function build({
+export const build: Build = internalBuild;
+
+export async function internalBuild({
     packageDirectory,
     silent
-}: BuildOptions & HiddenBuildOptions): Promise<BuildResult> {
+}: BuildOptions & HiddenBuildOptions) {
     const packageJson = loadPackageJson(packageDirectory);
     const buildConfigPath = resolve(packageDirectory, BUILD_CONFIG_NAME);
     const buildConfig = await loadBuildConfig(buildConfigPath);

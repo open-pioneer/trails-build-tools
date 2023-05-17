@@ -10,6 +10,9 @@ import {
     UiConfig
 } from "@open-pioneer/build-support";
 import { fromZodError } from "zod-validation-error";
+import type * as API from "..";
+
+type VerifyBuildConfig = typeof API.verifyBuildConfig;
 
 const LITERAL_SCHEMA = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 
@@ -65,10 +68,10 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
  *
  * @returns `value` but casted to the appropriate type.
  */
-export function verifyBuildConfig(value: unknown): BuildConfig {
+export const verifyBuildConfig: VerifyBuildConfig = function verifyBuildConfig(value) {
     const result = BUILD_CONFIG_SCHEMA.safeParse(value);
     if (result.success) {
         return result.data;
     }
     throw fromZodError(result.error);
-}
+};
