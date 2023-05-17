@@ -26,6 +26,7 @@
     },
     "dependencies": {
         "@open-pioneer/build-support": "workspace:^",
+        "@open-pioneer/build-common": "workspace:^",
         "esbuild": "^0.17.19",
         "rollup": "^3.21.7",
         "rollup-plugin-esbuild": "^5.0.0"

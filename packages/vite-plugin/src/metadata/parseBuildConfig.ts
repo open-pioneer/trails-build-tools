@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { pathToFileURL } from "node:url";
 import {
     BuildConfig,
     PropertyMetaConfig,
@@ -8,7 +7,11 @@ import {
     ReferenceConfig,
     ServiceConfig
 } from "@open-pioneer/build-support";
-import { BUILD_CONFIG_NAME, verifyBuildConfig } from "@open-pioneer/build-common";
+import {
+    BUILD_CONFIG_NAME,
+    verifyBuildConfig,
+    loadBuildConfig as loadBuildConfigCommon
+} from "@open-pioneer/build-common";
 import { basename } from "node:path";
 
 export interface NormalizedPackageConfig {
@@ -36,23 +39,12 @@ export interface NormalizedProperty {
     required: boolean;
 }
 
-let requestId = 0;
-
 /**
  * Loads and parses a build configuration file from the given path on disk.
  */
 export async function loadBuildConfig(path: string): Promise<NormalizedPackageConfig> {
-    const fileURL = pathToFileURL(path);
-    const importedModule = (await import(`${fileURL}?id=${++requestId}`)) as Record<
-        string,
-        unknown
-    >;
-    if (!importedModule || !importedModule.default) {
-        throw new Error(`The module must contain a default export.`);
-    }
-
-    const config = importedModule.default;
-    return parseBuildConfig(config);
+    const rawConfig = await loadBuildConfigCommon(path);
+    return normalizeConfig(rawConfig);
 }
 
 /**
