@@ -43,6 +43,7 @@ export async function buildJs({
         ],
         onwarn: silent ? () => undefined : undefined
     });
+    const normalizePackageDirectory = normalizePath(packageDirectory);
     await result.write({
         preserveModules: true,
         dir: outputDirectory,
@@ -57,8 +58,8 @@ export async function buildJs({
             relativeSourcePath = normalizePath(relativeSourcePath);
             sourcemapPath = normalizePath(sourcemapPath);
             const absolutePath = posix.resolve(posix.dirname(sourcemapPath), relativeSourcePath);
-            if (isInDirectory(absolutePath, packageDirectory)) {
-                const relative = posix.relative(packageDirectory, absolutePath);
+            if (isInDirectory(absolutePath, normalizePackageDirectory)) {
+                const relative = posix.relative(normalizePackageDirectory, absolutePath);
                 return `/external-packages/${packageName}/${relative}`;
             }
             return relativeSourcePath;
