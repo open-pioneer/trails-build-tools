@@ -36,8 +36,8 @@ jobs:
         with:
           version: "pnpm run ci:version"
           publish: "pnpm run ci:publish"
-          commit: "Update package versions"
-          title: "Update package versions"
+          commit: "[RELEASE] Update package versions"
+          title: "[RELEASE] Update package versions"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
