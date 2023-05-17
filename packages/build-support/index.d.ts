@@ -54,6 +54,31 @@ export interface BuildConfig {
     i18n?: string[];
 
     /**
+     * An array of file patterns matching asset files.
+     *
+     * Assets will be included with the package when it is being built for publishing.
+     * _Asset files not listed here will not be available to external consumers._
+     *
+     * By default, all files in `assets/**` will be included.
+     *
+     * For the syntax supported in patterns, see [micromatch](https://github.com/micromatch/micromatch#matching-features)
+     *
+     * > NOTE: File names with leading `.` in their name are always ignored for security reasons.
+     *
+     * @example
+     *
+     * ```js
+     * {
+     *   assets: [
+     *     "assets/**",
+     *     "fonts/**"
+     *   ]
+     * }
+     * ```
+     */
+    assets?: string[];
+
+    /**
      * Services provided by this package.
      *
      * The service name must match an exported class from the package's services module (usually `services.{js,ts}`).
