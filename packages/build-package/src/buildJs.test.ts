@@ -108,7 +108,7 @@ describe("buildJS", function () {
         const sourcemapData = JSON.parse(readText(sourcemapPath));
         expect(sourcemapData.sources).toMatchInlineSnapshot(`
           [
-            "packages/@custom/packageName/entryPointA.js",
+            "/external-packages/@custom/packageName/entryPointA.js",
           ]
         `);
         expect(sourcemapData.sourcesContent).toMatchInlineSnapshot(`

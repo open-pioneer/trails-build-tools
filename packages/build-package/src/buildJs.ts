@@ -59,7 +59,7 @@ export async function buildJs({
             const absolutePath = posix.resolve(posix.dirname(sourcemapPath), relativeSourcePath);
             if (isInDirectory(absolutePath, packageDirectory)) {
                 const relative = posix.relative(packageDirectory, absolutePath);
-                return `packages/${packageName}/${relative}`;
+                return `/external-packages/${packageName}/${relative}`;
             }
             return relativeSourcePath;
         }
