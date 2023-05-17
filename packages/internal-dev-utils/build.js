@@ -5,14 +5,12 @@ import esbuild from "esbuild";
 
 const buildOptions = {
     minify: true,
-    sourcemap: true,
-    tests: false
+    sourcemap: true
 };
 
 const buildDevOpts = {
     ...buildOptions,
     sourcemap: true,
-    tests: true,
     minify: false
 };
 
