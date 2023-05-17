@@ -1,3 +1,5 @@
 packages:
     - "packages/**"
+    - "!**/dist/**"
+    - "!**/temp/**"
     - "!**/test-data/**"

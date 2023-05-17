@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { BuildConfig } from "@open-pioneer/build-common";
-import { createDebugger } from "./debug";
 import { rm } from "fs/promises";
 import { SUPPORTED_EXTENSIONS, buildJs } from "./buildJs";
+import { copyAssets } from "./copyAssets";
+import { createDebugger } from "./debug";
 import { normalizeEntryPoints } from "./helpers";
 
 const isDebug = !!process.env.DEBUG;
@@ -45,5 +46,10 @@ export async function buildPackage({
         packageName,
         sourcemap: false, // TODO
         silent
+    });
+    await copyAssets({
+        packageDirectory,
+        outputDirectory,
+        patterns: buildConfig?.assets ?? ["assets/**"]
     });
 }
