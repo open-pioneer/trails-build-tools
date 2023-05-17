@@ -61,7 +61,7 @@ export interface BuildConfig {
      *
      * By default, all files in `assets/**` will be included.
      *
-     * For the syntax supported in patterns, see [micromatch](https://github.com/micromatch/micromatch#matching-features)
+     * For the syntax supported in patterns, see [micromatch](https://github.com/micromatch/micromatch#matching-features).
      *
      * > NOTE: File names with leading `.` in their name are always ignored for security reasons.
      *
