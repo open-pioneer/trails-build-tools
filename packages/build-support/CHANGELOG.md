@@ -1,5 +1,12 @@
 # Changelog @open-pioneer/build-support
 
+## 0.4.0
+
+### Minor Changes
+
+-   125fd57: Introduce support for entryPoints in build.config.mjs
+-   37413f4: Add support for copying assets.
+
 ## v0.3.1
 
 -   Update documentation for `styles` to indicate that scss is supported.
