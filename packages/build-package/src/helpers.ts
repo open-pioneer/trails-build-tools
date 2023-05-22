@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
+import { normalizePath } from "@rollup/pluginutils";
 import { basename } from "node:path";
+import { posix } from "path/posix";
 
 /** A normalized entry point, parsed from the build config file. */
 export interface NormalizedEntryPoint {
@@ -64,9 +66,28 @@ export function normalizeEntryPoints(entryPoints: string[], supportedExtensions:
 }
 
 /**
+ * Single argument version of {@link normalizeEntryPoints}.
+ */
+export function normalizeEntryPoint(entryPoint: string, supportedExtensions: string[]) {
+    const normalized = normalizeEntryPoints([entryPoint], supportedExtensions)[0];
+    if (!normalized) {
+        throw new Error(`Internal error: expected a normalized entry point`);
+    }
+    return normalized;
+}
+
+/**
  * Returns the extension of the given path, starting from (and including) the first `.` in the file's name.
  */
 export function getExtension(path: string) {
     const filename = basename(path);
     return filename.match(/^.*?(\..*)?$/)?.[1] ?? "";
+}
+
+/**
+ * Returns a 'pretty' path for source files.
+ * These are shown in the user's browser dev tools.
+ */
+export function getSourcePathForSourceMap(packageName: string, fileInPackage: string) {
+    return posix.resolve("/external-packages/", packageName, normalizePath(fileInPackage));
 }

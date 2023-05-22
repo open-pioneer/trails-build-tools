@@ -1,0 +1,20 @@
+/* This import must not be bundled because it points to an external dependency */
+@import "ol/ol.css";
+@import "./otherFile.css";
+
+/* 
+    From postcss-import examples.
+    None of these should be bundled.
+*/
+@import "https://example.com/styles.css";
+@import "cssrecipes-defaults";
+@import "normalize.css";
+@import "foo.css";
+@import url(foo-1.css);
+@import url("foo-2.css");
+@import "bar.css" (min-width: 25em);
+@import "baz.css" layer(baz-layer);
+
+.main {
+    padding: 1;
+}

@@ -5,15 +5,24 @@ import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
 import { normalizePath } from "@rollup/pluginutils";
 import posix from "node:path/posix";
-import { NormalizedEntryPoint } from "./helpers";
+import { NormalizedEntryPoint, getSourcePathForSourceMap } from "./helpers";
 
 export const SUPPORTED_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
 
 export interface BuildJsOptions {
+    /** Package name from package.json */
     packageName: string;
+
+    /** Package source directory. */
     packageDirectory: string;
+
+    /** Destination directory. */
     outputDirectory: string;
+
+    /** Exported modules. */
     entryPoints: NormalizedEntryPoint[];
+
+    /** Whether to emit .map files */
     sourcemap: boolean;
 
     /** Disable warnings. Used for tests. */
@@ -60,7 +69,7 @@ export async function buildJs({
             const absolutePath = posix.resolve(posix.dirname(sourcemapPath), relativeSourcePath);
             if (isInDirectory(absolutePath, normalizePackageDirectory)) {
                 const relative = posix.relative(normalizePackageDirectory, absolutePath);
-                return `/external-packages/${packageName}/${relative}`;
+                return getSourcePathForSourceMap(packageName, relative);
             }
             return relativeSourcePath;
         }

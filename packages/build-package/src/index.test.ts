@@ -48,7 +48,17 @@ describe("build", function () {
           "
         `);
 
+        // Not included
         const hiddenFile = resolve(distDirectory, "hiddenFile.js");
         expect(existsSync(hiddenFile)).toBe(false);
+
+        // Styles are present
+        const styles = resolve(distDirectory, "my-styles.css");
+        expect(readText(styles)).toMatchInlineSnapshot(`
+          ".main {
+              color: green;
+          }
+          "
+        `);
     });
 });

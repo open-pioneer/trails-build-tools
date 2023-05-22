@@ -23,21 +23,13 @@ export async function internalBuild({
     const packageJson = loadPackageJson(packageDirectory);
     const buildConfigPath = resolve(packageDirectory, BUILD_CONFIG_NAME);
     const buildConfig = await loadBuildConfig(buildConfigPath);
-
-    const entryPoints = buildConfig.entryPoints;
-    if (!entryPoints) {
-        throw new Error(
-            `${buildConfigPath} must define the 'entryPoints' property in order to be built.`
-        );
-    }
-
     const outputDirectory = resolve(packageDirectory, "dist");
     await buildPackage({
         packageDirectory,
         outputDirectory,
         packageJson,
+        buildConfigPath,
         buildConfig,
-        entryPoints,
         silent,
         clean: true
     });
