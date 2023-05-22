@@ -1,0 +1,17 @@
+@use "./localSassModule.scss";
+@use "package/externalModule.scss";
+
+
+@import "ol/ol.css";
+@import "./localCssFile.css";
+
+@import "https://example.com/styles.css";
+@import "normalize.css";
+@import "foo.css";
+@import url(foo-1.css);
+@import url("foo-2.css");
+@import "bar.css" (min-width: 25em);
+
+.main {
+    padding: 1;
+}

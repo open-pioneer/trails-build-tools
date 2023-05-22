@@ -21,7 +21,16 @@
         "LICENSE"
     ],
     "peerDependencies": {
-        "typescript": ">= 4 && < 6"
+        "typescript": "*",
+        "sass": "*"
+    },
+    "peerDependenciesMeta": {
+        "typescript": {
+            "optional": true
+        },
+        "sass": {
+            "optional": true
+        }
     },
     "dependencies": {
         "@open-pioneer/build-common": "workspace:^",
@@ -42,6 +51,7 @@
         "@types/react": "^18.2.6",
         "build-tools": "workspace:*",
         "postcss-import": "^15.1.0",
-        "typescript": "^5.0.4"
+        "typescript": "^5.0.4",
+        "sass": "^1.62.1"
     }
 }

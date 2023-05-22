@@ -1,0 +1,9 @@
+@import "./test_module";
+
+.a {
+    .b {
+        &-c {
+            color: green;
+        }
+    }
+}

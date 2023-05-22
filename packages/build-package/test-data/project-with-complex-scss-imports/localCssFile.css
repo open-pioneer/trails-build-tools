@@ -1,0 +1,5 @@
+@import "ol/ol.css";
+
+.from-local-css-module {
+    color: white;
+}

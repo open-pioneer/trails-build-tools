@@ -91,3 +91,14 @@ export function getExtension(path: string) {
 export function getSourcePathForSourceMap(packageName: string, fileInPackage: string) {
     return posix.resolve("/external-packages/", packageName, normalizePath(fileInPackage));
 }
+
+/**
+ * Returns true if `file` is a child of `directory` or `directory` itself.
+ *
+ * Expects posix style paths (forward slashes).
+ */
+export function isInDirectoryPosix(file: string, directory: string): boolean {
+    const rel = posix.relative(directory, file);
+    const isChild = rel && !rel.startsWith("..") && !posix.isAbsolute(rel);
+    return !!isChild;
+}

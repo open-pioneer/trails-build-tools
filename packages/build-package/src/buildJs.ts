@@ -5,7 +5,7 @@ import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
 import { normalizePath } from "@rollup/pluginutils";
 import posix from "node:path/posix";
-import { NormalizedEntryPoint, getSourcePathForSourceMap } from "./helpers";
+import { NormalizedEntryPoint, getSourcePathForSourceMap, isInDirectoryPosix } from "./helpers";
 
 export const SUPPORTED_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
 
@@ -67,17 +67,11 @@ export async function buildJs({
             relativeSourcePath = normalizePath(relativeSourcePath);
             sourceMapPath = normalizePath(sourceMapPath);
             const absolutePath = posix.resolve(posix.dirname(sourceMapPath), relativeSourcePath);
-            if (isInDirectory(absolutePath, normalizePackageDirectory)) {
+            if (isInDirectoryPosix(absolutePath, normalizePackageDirectory)) {
                 const relative = posix.relative(normalizePackageDirectory, absolutePath);
                 return getSourcePathForSourceMap(packageName, relative);
             }
             return relativeSourcePath;
         }
     });
-}
-
-function isInDirectory(file: string, directory: string): boolean {
-    const rel = posix.relative(directory, file);
-    const isChild = rel && !rel.startsWith("..") && !posix.isAbsolute(rel);
-    return !!isChild;
 }

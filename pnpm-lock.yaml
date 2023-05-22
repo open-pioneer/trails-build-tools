@@ -120,6 +120,9 @@ importers:
       postcss-import:
         specifier: ^15.1.0
         version: 15.1.0(postcss@8.4.23)
+      sass:
+        specifier: ^1.62.1
+        version: 1.62.1
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
