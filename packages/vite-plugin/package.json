@@ -50,6 +50,6 @@
         "rollup": "^3.21.7",
         "sass": "^1.62.1",
         "vite": "^4.3.6",
-        "internal-dev-utils": "workspace:*"
+        "build-tools": "workspace:*"
     }
 }

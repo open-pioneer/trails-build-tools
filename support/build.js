@@ -3,6 +3,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import esbuild from "esbuild";
 
+/*
+    This file contains the common build script used when building a 
+    package in this repository for npm.
+*/
+
 const buildOptions = {
     minify: true,
     sourcemap: true

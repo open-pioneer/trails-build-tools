@@ -22,7 +22,7 @@
     ],
     "devDependencies": {
         "@open-pioneer/build-support": "workspace:^",
-        "internal-dev-utils": "workspace:*"
+        "build-tools": "workspace:*"
     },
     "dependencies": {
         "zod": "^3.21.4",
