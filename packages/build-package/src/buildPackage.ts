@@ -89,6 +89,13 @@ export async function buildPackage({
     await copyAssets({
         packageDirectory,
         outputDirectory,
-        patterns: buildConfig?.assets ?? ["assets/**"]
+        patterns: toArray(buildConfig.publishConfig?.assets ?? "assets/**")
     });
+}
+
+function toArray<T>(value: T | T[]): T[] {
+    if (Array.isArray(value)) {
+        return value;
+    }
+    return [value];
 }

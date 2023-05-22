@@ -54,33 +54,6 @@ export interface BuildConfig {
     i18n?: string[];
 
     /**
-     * An array of file patterns matching asset files.
-     *
-     * Assets will be included with the package when it is being built for publishing.
-     * _Asset files not listed here will not be available to external consumers._
-     *
-     * By default, all files in `assets/**` will be included.
-     *
-     * For the syntax supported in patterns, see [micromatch](https://github.com/micromatch/micromatch#matching-features).
-     *
-     * > NOTE: File names with leading `.` in their name are always ignored for security reasons.
-     *
-     * > NOTE: Directories cannot match by themselves, you must configure a pattern that matches the individual files.
-     *
-     * @example
-     *
-     * ```js
-     * {
-     *   assets: [
-     *     "assets/**",
-     *     "fonts/**"
-     *   ]
-     * }
-     * ```
-     */
-    assets?: string[];
-
-    /**
      * Services provided by this package.
      *
      * The service name must match an exported class from the package's services module (usually `services.{js,ts}`).
@@ -147,6 +120,11 @@ export interface BuildConfig {
      * Names in this record should match the property name in {@link properties}.
      */
     propertiesMeta?: Record<string, PropertyMetaConfig>;
+
+    /**
+     * Contains options interpreted when building a package for publishing.
+     */
+    publishConfig?: PublishConfig;
 }
 
 /**
@@ -224,6 +202,38 @@ export interface PropertyMetaConfig {
      * to a valid (non null or undefined) value.
      */
     required?: boolean;
+}
+
+/**
+ * Contains options interpreted when building a package for publishing.
+ */
+export interface PublishConfig {
+    /**
+     * An array of file patterns matching asset files.
+     *
+     * Assets will be included with the package when it is being built for publishing.
+     * _Asset files not listed here will not be available to external consumers._
+     *
+     * By default, all files in `assets/**` will be included.
+     *
+     * For the syntax supported in patterns, see [micromatch](https://github.com/micromatch/micromatch#matching-features).
+     *
+     * > NOTE: File names with leading `.` in their name are always ignored for security reasons.
+     *
+     * > NOTE: Directories cannot match by themselves, you must configure a pattern that matches the individual files.
+     *
+     * @example
+     *
+     * ```js
+     * {
+     *   assets: [
+     *     "assets/**",
+     *     "fonts/*.woff2"
+     *   ]
+     * }
+     * ```
+     */
+    assets?: string | string[];
 }
 
 /**

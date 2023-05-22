@@ -5,6 +5,7 @@ import {
     BuildConfig,
     PropertyMetaConfig,
     ProvidesConfig,
+    PublishConfig,
     ReferenceConfig,
     ServiceConfig,
     UiConfig
@@ -51,6 +52,10 @@ const SERVICE_CONFIG_SCHEMA: z.ZodType<ServiceConfig> = z.strictObject({
     references: z.record(z.string(), z.string().or(REFERENCE_CONFIG_SCHEMA)).optional()
 });
 
+const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
+    assets: z.string().or(z.array(z.string()))
+});
+
 const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     entryPoints: z.string().array().optional(),
     styles: z.string().optional(),
@@ -59,7 +64,8 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     servicesModule: z.string().optional(),
     ui: UI_CONFIG_SCHEMA.optional(),
     properties: z.record(z.string(), JSON_SCHEMA).optional(),
-    propertiesMeta: z.record(z.string(), PROPERTY_META_SCHEMA).optional()
+    propertiesMeta: z.record(z.string(), PROPERTY_META_SCHEMA).optional(),
+    publishConfig: PUBLISH_CONFIG_SCHEMA.optional()
 });
 
 /**
