@@ -10,7 +10,7 @@ import { normalizeEntryPoint } from "./helpers";
 const DEFAULTS = {
     packageName: "test",
     silent: true,
-    sourcemap: false
+    sourceMap: false
 } satisfies Partial<BuildCssOptions>;
 
 describe("buildCss", function () {
@@ -113,7 +113,7 @@ describe("buildCss", function () {
             packageDirectory,
             outputDirectory,
             cssEntryPoint: normalize("styles.css"),
-            sourcemap: true
+            sourceMap: true
         });
 
         /*
@@ -132,14 +132,14 @@ describe("buildCss", function () {
         `);
 
         // Paths should be consistent with the paths generated for javascript files.
-        const sourcemapData = JSON.parse(readText(resolve(outputDirectory, "styles.css.map")));
-        expect(sourcemapData.sources).toMatchInlineSnapshot(`
+        const sourceMapData = JSON.parse(readText(resolve(outputDirectory, "styles.css.map")));
+        expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
             "/external-packages/@my-scope/my-test-package/importedStyles.css",
             "/external-packages/@my-scope/my-test-package/styles.css",
           ]
         `);
-        expect(sourcemapData.sourcesContent).toMatchInlineSnapshot(`
+        expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
           [
             ".imported {
               color: green;

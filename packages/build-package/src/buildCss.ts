@@ -23,7 +23,7 @@ export interface BuildCssOptions {
     cssEntryPoint: NormalizedEntryPoint;
 
     /** Whether to emit .map files */
-    sourcemap: boolean;
+    sourceMap: boolean;
 
     /** Disable warnings. Used for tests. */
     silent?: boolean;
@@ -34,7 +34,7 @@ export async function buildCss({
     packageDirectory,
     outputDirectory,
     cssEntryPoint,
-    sourcemap,
+    sourceMap,
     silent
 }: BuildCssOptions): Promise<void> {
     const postcss = (await import("postcss")).default;
@@ -68,9 +68,9 @@ export async function buildCss({
     try {
         const cssCode = await readFile(cssSrcPath, "utf-8");
 
-        let sourcemapOptions: PostCss.SourceMapOptions | undefined = undefined;
-        if (sourcemap) {
-            sourcemapOptions = {
+        let sourceMapOptions: PostCss.SourceMapOptions | undefined = undefined;
+        if (sourceMap) {
+            sourceMapOptions = {
                 inline: false,
                 sourcesContent: true,
                 absolute: false
@@ -79,7 +79,7 @@ export async function buildCss({
         result = await processor.process(cssCode, {
             from: cssSrcPath,
             to: cssSrcPath,
-            map: sourcemapOptions
+            map: sourceMapOptions
         });
     } catch (e) {
         throw new Error(`Failed to process styles`, { cause: e });
@@ -95,9 +95,9 @@ export async function buildCss({
         await mkdir(outputDirectory, { recursive: true });
         await writeFile(cssDestPath, result.css, "utf-8");
 
-        if (sourcemap) {
-            const sourcemapJSON = fixSourceMapPaths(result.map.toJSON(), packageName);
-            await writeFile(cssDestPath + ".map", JSON.stringify(sourcemapJSON), "utf-8");
+        if (sourceMap) {
+            const sourceMapJson = fixSourceMapPaths(result.map.toJSON(), packageName);
+            await writeFile(cssDestPath + ".map", JSON.stringify(sourceMapJson), "utf-8");
         }
     } catch (e) {
         throw new Error(`Failed to write css output`, { cause: e });
@@ -109,10 +109,10 @@ export async function buildCss({
  * source package root.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fixSourceMapPaths(sourcemapJSON: any, packageName: string) {
+function fixSourceMapPaths(sourceMapJson: any, packageName: string) {
     return {
-        ...sourcemapJSON,
-        sources: sourcemapJSON.sources?.map((sourceFile: string) =>
+        ...sourceMapJson,
+        sources: sourceMapJson.sources?.map((sourceFile: string) =>
             getSourcePathForSourceMap(packageName, sourceFile)
         )
     };

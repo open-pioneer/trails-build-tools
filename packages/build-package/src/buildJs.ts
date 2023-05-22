@@ -23,7 +23,7 @@ export interface BuildJsOptions {
     entryPoints: NormalizedEntryPoint[];
 
     /** Whether to emit .map files */
-    sourcemap: boolean;
+    sourceMap: boolean;
 
     /** Disable warnings. Used for tests. */
     silent?: boolean;
@@ -34,7 +34,7 @@ export async function buildJs({
     packageDirectory,
     outputDirectory,
     entryPoints,
-    sourcemap,
+    sourceMap: sourceMap,
     silent
 }: BuildJsOptions) {
     const result = await rollup({
@@ -59,14 +59,14 @@ export async function buildJs({
         minifyInternalExports: false,
         compact: false,
         format: "es",
-        sourcemap: sourcemap,
+        sourcemap: sourceMap,
 
-        // Prettier sourcemap paths.
+        // Prettier source map paths.
         // See https://rollupjs.org/configuration-options/#output-sourcemappathtransform
-        sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
+        sourcemapPathTransform: (relativeSourcePath, sourceMapPath) => {
             relativeSourcePath = normalizePath(relativeSourcePath);
-            sourcemapPath = normalizePath(sourcemapPath);
-            const absolutePath = posix.resolve(posix.dirname(sourcemapPath), relativeSourcePath);
+            sourceMapPath = normalizePath(sourceMapPath);
+            const absolutePath = posix.resolve(posix.dirname(sourceMapPath), relativeSourcePath);
             if (isInDirectory(absolutePath, normalizePackageDirectory)) {
                 const relative = posix.relative(normalizePackageDirectory, absolutePath);
                 return getSourcePathForSourceMap(packageName, relative);

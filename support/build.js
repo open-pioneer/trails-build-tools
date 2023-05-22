@@ -10,12 +10,12 @@ import esbuild from "esbuild";
 
 const buildOptions = {
     minify: true,
-    sourcemap: true
+    sourceMap: true
 };
 
 const buildDevOpts = {
     ...buildOptions,
-    sourcemap: true,
+    sourceMap: true,
     minify: false
 };
 
@@ -58,7 +58,7 @@ export async function build(mode, customOptions) {
         throw new Error(`Unknown mode: '${mode}'`);
     }
 
-    const { minify, sourcemap, watch } = options;
+    const { minify, sourceMap, watch } = options;
 
     /** @type {import("esbuild").BuildOptions} */
     const esbuildOptions = {
@@ -66,7 +66,7 @@ export async function build(mode, customOptions) {
         bundle: true,
         outdir: "dist",
         minify: minify ?? false,
-        sourcemap: sourcemap ?? false,
+        sourcemap: sourceMap ?? false,
         target: "node16",
         platform: "node",
         packages: "external",

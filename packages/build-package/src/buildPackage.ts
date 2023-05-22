@@ -67,7 +67,7 @@ export async function buildPackage({
             outputDirectory,
             entryPoints: normalizeEntryPoints(jsEntryPoints, SUPPORTED_JS_EXTENSIONS),
             packageName,
-            sourcemap: false, // TODO
+            sourceMap: false, // TODO
             silent
         });
     }
@@ -80,7 +80,7 @@ export async function buildPackage({
             packageDirectory,
             outputDirectory,
             cssEntryPoint: normalizeEntryPoint(cssEntryPoint, SUPPORTED_CSS_EXTENSIONS),
-            sourcemap: false, // TODO
+            sourceMap: false, // TODO
             silent
         });
     }

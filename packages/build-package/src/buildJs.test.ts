@@ -11,7 +11,7 @@ import { normalizeEntryPoints } from "./helpers";
 const DEFAULTS = {
     packageName: "test",
     silent: true,
-    sourcemap: false
+    sourceMap: false
 } satisfies Partial<BuildJsOptions>;
 
 describe("buildJS", function () {
@@ -80,10 +80,10 @@ describe("buildJS", function () {
             outputDirectory,
             entryPoints,
             packageName: "@custom/packageName",
-            sourcemap: true
+            sourceMap: true
         });
 
-        // Expect sourcemap comment at the bottom of the file
+        // Expect source map comment at the bottom of the file
         expect(readText(resolve(outputDirectory, "entryPointA.js"))).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
           import 'somewhere-external';
@@ -100,18 +100,18 @@ describe("buildJS", function () {
         `);
 
         // Sourcemap exists
-        const sourcemapPath = resolve(outputDirectory, "entryPointA.js.map");
-        expect(existsSync(sourcemapPath));
+        const sourceMapPath = resolve(outputDirectory, "entryPointA.js.map");
+        expect(existsSync(sourceMapPath));
 
         // Expect pretty source file paths instead of relative local file paths.
         // Also expect that the actual source file content is embedded into the sourcemap.
-        const sourcemapData = JSON.parse(readText(sourcemapPath));
-        expect(sourcemapData.sources).toMatchInlineSnapshot(`
+        const sourceMapData = JSON.parse(readText(sourceMapPath));
+        expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
             "/external-packages/@custom/packageName/entryPointA.js",
           ]
         `);
-        expect(sourcemapData.sourcesContent).toMatchInlineSnapshot(`
+        expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
           [
             "import { log } from \\"./dir/log\\";
           import something from \\"somewhere-external\\";
