@@ -8,6 +8,11 @@ export interface BuildOptions {
      * The output is placed into `dist` within that package.
      */
     packageDirectory: string;
+
+    /**
+     * Disable logging. Defaults to `false`.
+     */
+    silent?: boolean;
 }
 
 export interface BuildResult {

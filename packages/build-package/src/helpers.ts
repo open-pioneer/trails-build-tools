@@ -24,6 +24,8 @@ export interface NormalizedEntryPoint {
  * Normalizes the entry points configured by the user.
  *
  * NOTE: Does not check whether any of the specified files actually exist.
+ *
+ * TODO: Resolve paths to concrete files
  */
 export function normalizeEntryPoints(entryPoints: string[], supportedExtensions: string[]) {
     const extLookup = new Set(supportedExtensions);
@@ -101,4 +103,9 @@ export function isInDirectoryPosix(file: string, directory: string): boolean {
     const rel = posix.relative(directory, file);
     const isChild = rel && !rel.startsWith("..") && !posix.isAbsolute(rel);
     return !!isChild;
+}
+
+export function indent(str: string, indent: string) {
+    const pattern = /^(?!\s*$)/gm;
+    return str.replace(pattern, indent);
 }

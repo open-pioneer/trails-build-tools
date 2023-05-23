@@ -1,27 +1,15 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { BuildConfig } from "@open-pioneer/build-common";
-import { NormalizedEntryPoint } from "./helpers";
 import { Logger } from "./Logger";
+import { PackageModel } from "./PackageModel";
+
+type SimplePackageModel = Pick<
+    PackageModel,
+    "input" | "jsEntryPoints" | "servicesEntryPoint" | "cssEntryPoint"
+>;
 
 export interface GeneratePackageJsonOptions {
-    /** Path to parsed source package.json */
-    sourcePackageJsonPath: string;
-
-    /** Parsed package.json */
-    sourcePackageJson: Record<string, unknown>;
-
-    /** Path to build config file */
-    buildConfigPath: string;
-
-    /** Parsed build config file */
-    buildConfig: BuildConfig;
-
-    /** Contains emitted js files that must be available for import. */
-    jsEntryPoints: NormalizedEntryPoint[];
-
-    /** Contains emitted css file that must be available for import. */
-    cssEntryPoint: NormalizedEntryPoint | undefined;
+    model: SimplePackageModel;
 
     logger: Logger;
 
@@ -62,16 +50,17 @@ const COPY_FIELDS = [
  * read by the vite plugin in the app).
  */
 export async function generatePackageJson({
-    sourcePackageJsonPath,
-    sourcePackageJson,
-    buildConfigPath,
-    buildConfig,
-    jsEntryPoints,
-    cssEntryPoint,
+    model,
     logger,
     strict
 }: GeneratePackageJsonOptions): Promise<Record<string, unknown>> {
-    const validationErrors = createValidationErrorReporter(logger, sourcePackageJsonPath, strict);
+    const sourcePackageJson = model.input.packageJson;
+    const sourcePackageJsonPath = model.input.packageJsonPath;
+    const validationErrors = createValidationErrorReporter(
+        logger,
+        model.input.packageDirectory,
+        strict
+    );
 
     // Check source package.json
     validatePackageJson(sourcePackageJson, sourcePackageJsonPath, validationErrors);
@@ -85,13 +74,8 @@ export async function generatePackageJson({
             packageJson[field] = sourcePackageJson[field];
         }
     }
-    packageJson.exports = generateExports(jsEntryPoints, cssEntryPoint, validationErrors);
-    packageJson.openPioneerFramework = generateMetadata(
-        buildConfig,
-        jsEntryPoints,
-        cssEntryPoint,
-        validationErrors
-    );
+    packageJson.exports = generateExports(model, validationErrors);
+    packageJson.openPioneerFramework = generateMetadata(model, validationErrors);
 
     // Throw if strict
     validationErrors.finish();
@@ -127,10 +111,10 @@ function validatePackageJson(
     if (!sourcePackageJson.license) {
         validationErrors.report(`${sourcePackageJsonPath} should define a license.`);
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     if (
         !sourcePackageJson.publishConfig ||
-        (sourcePackageJson.publishConfig as any).directory !== "dist"
+        (sourcePackageJson.publishConfig as any).directory !== "dist" // eslint-disable-line @typescript-eslint/no-explicit-any
     ) {
         validationErrors.report(
             `${sourcePackageJsonPath} should define 'publishConfig.directory' to point to the 'dist' directory (see https://pnpm.io/package_json#publishconfigdirectory).`
@@ -138,11 +122,7 @@ function validatePackageJson(
     }
 }
 
-function generateExports(
-    jsEntryPoints: NormalizedEntryPoint[],
-    cssEntryPoint: NormalizedEntryPoint | undefined,
-    validationErrors: ValidationErrorReporter
-) {
+function generateExports(model: SimplePackageModel, validationErrors: ValidationErrorReporter) {
     // Assemble the `exports` field. This makes the files defined here "importable".
     // See https://nodejs.org/api/packages.html#package-entry-points
     const exportedModules: Record<string, unknown> = {};
@@ -159,7 +139,7 @@ function generateExports(
         exportedModules[key] = value;
     };
     addEntryPoint("./package.json", "./package.json");
-    for (const entryPoint of jsEntryPoints) {
+    for (const entryPoint of model.jsEntryPoints) {
         const exportedName =
             entryPoint.outputModuleId === "index" ? "." : `./${entryPoint.outputModuleId}`;
         addEntryPoint(exportedName, {
@@ -167,29 +147,26 @@ function generateExports(
             // TODO: types for typescript
         });
     }
-    if (cssEntryPoint) {
-        const exportedName = `./${cssEntryPoint.outputModuleId}.css`;
+    if (model.cssEntryPoint) {
+        const exportedName = `./${model.cssEntryPoint.outputModuleId}.css`;
         addEntryPoint(exportedName, exportedName);
     }
     return exportedModules;
 }
 
 function generateMetadata(
-    buildConfig: BuildConfig,
-    jsEntryPoints: NormalizedEntryPoint[],
-    cssEntryPoint: NormalizedEntryPoint | undefined,
+    model: SimplePackageModel,
     _validationErrors: ValidationErrorReporter
 ): Record<string, unknown> {
     // TODO: Typings!
+    const buildConfig = model.input.buildConfig;
     const metadata: Record<string, unknown> = {
         packageFormatVersion: "0.1",
-        styles:
-            buildConfig.styles && cssEntryPoint
-                ? `./${cssEntryPoint.outputModuleId}.css`
-                : undefined,
-        servicesModules: buildConfig.servicesModule, // TODO: Find real entry point from jsEntryPoints!
-        i18n: buildConfig.i18n, // TODO: Copy not implemented yet #81
+        styles: model.cssEntryPoint ? `./${model.cssEntryPoint.outputModuleId}.css` : undefined,
+        servicesModules: model.servicesEntryPoint?.outputModuleId,
 
+        // TODO: These will have to be normalized in some way to keep it simple
+        i18n: buildConfig.i18n, // TODO: Copy not implemented yet #81
         services: buildConfig.services,
         ui: buildConfig.ui,
         properties: buildConfig.properties,

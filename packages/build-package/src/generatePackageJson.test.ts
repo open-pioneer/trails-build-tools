@@ -3,22 +3,23 @@
 import { describe, expect, it } from "vitest";
 import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePackageJson";
 import { createMemoryLogger } from "./Logger";
+import { createInputModelFromData } from "./InputModel";
+import { NormalizedEntryPoint } from "./helpers";
 
 describe("generatePackageJson", function () {
     it("generates a minimal package.json", async function () {
-        const options = testDefaults();
-        const pkgJson = await generatePackageJson({
-            ...options,
-            strict: false,
-            sourcePackageJson: {
+        const options = testDefaults({
+            packageJson: {
                 name: "my-package",
                 version: "1.0.0",
                 license: "MIT",
                 publishConfig: {
                     directory: "dist"
                 }
-            }
+            },
+            strict: false
         });
+        const pkgJson = await generatePackageJson(options);
         expect(pkgJson).toMatchInlineSnapshot(`
           {
             "exports": {
@@ -37,24 +38,23 @@ describe("generatePackageJson", function () {
     });
 
     it("emits a warning when a required fields is missing", async function () {
-        const options = testDefaults();
-        await generatePackageJson({
-            ...options,
-            strict: false,
-            sourcePackageJson: {
+        const options = testDefaults({
+            packageJson: {
                 name: "my-package",
                 // missing version
                 license: "MIT",
                 publishConfig: {
                     directory: "dist"
                 }
-            }
+            },
+            strict: false
         });
+        await generatePackageJson(options);
         expect(options.logger.messages).toMatchInlineSnapshot(`
           [
             {
               "args": [
-                "./test-package.json should define a version.",
+                "./test/package-json should define a version.",
               ],
               "type": "warn",
             },
@@ -63,41 +63,38 @@ describe("generatePackageJson", function () {
     });
 
     it("throws an error when enabling strict validation", async function () {
-        const options = testDefaults();
-        await expect(() =>
-            generatePackageJson({
-                ...options,
-                sourcePackageJson: {
-                    // all required fields missing
-                },
-                strict: true
-            })
-        ).rejects.toThrowErrorMatchingInlineSnapshot(
-            '"Aborting due to previous validation errors in ./test-package.json (strict validation is enabled)."'
+        const options = testDefaults({
+            packageJson: {
+                // all required fields missing
+            },
+            strict: true
+        });
+        await expect(() => generatePackageJson(options)).rejects.toThrowErrorMatchingInlineSnapshot(
+            '"Aborting due to previous validation errors in ./test/package (strict validation is enabled)."'
         );
         expect(options.logger.messages).toMatchInlineSnapshot(`
           [
             {
               "args": [
-                "./test-package.json should define a name.",
+                "./test/package-json should define a name.",
               ],
               "type": "error",
             },
             {
               "args": [
-                "./test-package.json should define a version.",
+                "./test/package-json should define a version.",
               ],
               "type": "error",
             },
             {
               "args": [
-                "./test-package.json should define a license.",
+                "./test/package-json should define a license.",
               ],
               "type": "error",
             },
             {
               "args": [
-                "./test-package.json should define 'publishConfig.directory' to point to the 'dist' directory (see https://pnpm.io/package_json#publishconfigdirectory).",
+                "./test/package-json should define 'publishConfig.directory' to point to the 'dist' directory (see https://pnpm.io/package_json#publishconfigdirectory).",
               ],
               "type": "error",
             },
@@ -106,9 +103,7 @@ describe("generatePackageJson", function () {
     });
 
     it("includes javascript entry points in 'exports'", async function () {
-        const options = testDefaults();
-        const { exports } = await generatePackageJson({
-            ...options,
+        const options = testDefaults({
             jsEntryPoints: [
                 {
                     inputModulePath: "./does-not-matter1.js",
@@ -120,6 +115,7 @@ describe("generatePackageJson", function () {
                 }
             ]
         });
+        const { exports } = await generatePackageJson(options);
         expect(exports).toMatchInlineSnapshot(`
           {
             ".": {
@@ -134,14 +130,13 @@ describe("generatePackageJson", function () {
     });
 
     it("includes css entry point in 'exports'", async function () {
-        const options = testDefaults();
-        const { exports } = await generatePackageJson({
-            ...options,
+        const options = testDefaults({
             cssEntryPoint: {
                 inputModulePath: "./does-not-matter1.css",
                 outputModuleId: "my-styles"
             }
         });
+        const { exports } = await generatePackageJson(options);
         expect(exports).toMatchInlineSnapshot(`
           {
             "./my-styles.css": "./my-styles.css",
@@ -186,16 +181,17 @@ describe("generatePackageJson", function () {
             },
             private: true
         };
-        const pkgJson = await generatePackageJson({
-            ...testDefaults(),
-            sourcePackageJson: {
-                ...sourcePkgJson,
-                // Just to pass validation
-                publishConfig: {
-                    directory: "dist"
+        const pkgJson = await generatePackageJson(
+            testDefaults({
+                packageJson: {
+                    ...sourcePkgJson,
+                    // Just to pass validation
+                    publishConfig: {
+                        directory: "dist"
+                    }
                 }
-            }
-        });
+            })
+        );
 
         for (const key of Object.keys(sourcePkgJson)) {
             expect(pkgJson[key], `validating key '${key}'`).toEqual(sourcePkgJson[key]);
@@ -203,22 +199,33 @@ describe("generatePackageJson", function () {
     });
 });
 
-function testDefaults() {
+function testDefaults(options?: {
+    packageJson?: Record<string, unknown>;
+    strict?: boolean;
+    jsEntryPoints?: NormalizedEntryPoint[];
+    cssEntryPoint?: NormalizedEntryPoint | undefined;
+}) {
     return {
-        buildConfig: {},
-        buildConfigPath: "./test-build-config",
-        sourcePackageJson: {
-            name: "test-package",
-            version: "1.0.0",
-            license: "MIT",
-            publishConfig: {
-                directory: "dist"
-            }
+        model: {
+            input: createInputModelFromData({
+                packageDirectory: "./test/package",
+                buildConfig: {},
+                buildConfigPath: "./test/build-config",
+                packageJson: options?.packageJson ?? {
+                    name: "test-package",
+                    version: "1.0.0",
+                    license: "MIT",
+                    publishConfig: {
+                        directory: "dist"
+                    }
+                },
+                packageJsonPath: "./test/package-json"
+            }),
+            cssEntryPoint: options?.cssEntryPoint ?? undefined,
+            jsEntryPoints: options?.jsEntryPoints ?? [],
+            servicesEntryPoint: undefined
         },
-        sourcePackageJsonPath: "./test-package.json",
         logger: createMemoryLogger(),
-        strict: true,
-        jsEntryPoints: [],
-        cssEntryPoint: undefined
-    } satisfies Partial<GeneratePackageJsonOptions>;
+        strict: options?.strict ?? true
+    } satisfies GeneratePackageJsonOptions;
 }

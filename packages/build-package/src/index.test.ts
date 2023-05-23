@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { cleanDir, readText } from "./testUtils/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
 import { existsSync } from "fs";
-import { internalBuild } from "./index";
+import { build } from ".";
 
 describe("build", function () {
     it("should build package to `dist`", async function () {
@@ -19,15 +19,16 @@ describe("build", function () {
             recursive: true,
             force: true
         });
-        await internalBuild({ packageDirectory: tempPackage, silent: true });
+        await build({ packageDirectory: tempPackage, silent: true });
 
         const entryPointA = resolve(distDirectory, "entryPointA.js");
         expect(readText(entryPointA)).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
-          import 'somewhere-external';
-          import '@scope/somewhere-external';
-          import 'open-pioneer:react-hooks';
+          import something from 'somewhere-external';
+          import somethingElse from '@scope/somewhere-external';
+          import hooks from 'open-pioneer:react-hooks';
 
+          console.log(something, somethingElse, hooks);
           function helloA() {
             log(\\"hello from entry point A\\");
           }

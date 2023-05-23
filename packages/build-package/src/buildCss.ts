@@ -8,9 +8,15 @@ import posix from "node:path/posix";
 import type * as PostCss from "postcss";
 import { fileURLToPath, pathToFileURL } from "url";
 import type * as Sass from "sass";
-import { NormalizedEntryPoint, getSourcePathForSourceMap, isInDirectoryPosix } from "./helpers";
+import {
+    NormalizedEntryPoint,
+    getSourcePathForSourceMap,
+    indent,
+    isInDirectoryPosix
+} from "./helpers";
+import { Logger } from "./Logger";
 
-export const SUPPORTED_EXTENSIONS = [".css", ".scss"];
+export const SUPPORTED_CSS_EXTENSIONS = [".css", ".scss"];
 
 export interface BuildCssOptions {
     /** Package name from package.json */
@@ -28,8 +34,7 @@ export interface BuildCssOptions {
     /** Whether to emit .map files */
     sourceMap: boolean;
 
-    /** Disable warnings. Used for tests. */
-    silent?: boolean;
+    logger: Logger;
 }
 
 export async function buildCss({
@@ -38,7 +43,7 @@ export async function buildCss({
     outputDirectory,
     cssEntryPoint,
     sourceMap,
-    silent
+    logger
 }: BuildCssOptions): Promise<void> {
     const sourcePath = resolve(packageDirectory, cssEntryPoint.inputModulePath);
     if (!existsSync(sourcePath)) {
@@ -47,12 +52,13 @@ export async function buildCss({
 
     // Load preprocessor (e.g. SCSS)
     const preprocessorLang = parsePreprocessorLang(cssEntryPoint.inputModulePath);
-    const preprocessor = preprocessorLang ? await loadPreprocessor(preprocessorLang) : undefined;
+    const preprocessor = preprocessorLang
+        ? await loadPreprocessor(preprocessorLang, logger)
+        : undefined;
 
     // Read code and preprocess. This step may produce inlined source maps (if enabled).
     let code = await readFile(sourcePath, "utf-8");
     if (preprocessor) {
-        // TODO: Logging
         const result = await preprocessor.preprocess(code, {
             path: sourcePath,
             sourceMap,
@@ -105,11 +111,8 @@ export async function buildCss({
         throw new Error(`Failed to process styles`, { cause: e });
     }
 
-    if (!silent) {
-        const warnings = result.warnings();
-        for (const w of warnings) {
-            console.warn(w); // TODO: Pretty logging
-        }
+    for (const warning of result.warnings()) {
+        logger.warn(warning.toString());
     }
 
     // Write output, including source map.
@@ -127,7 +130,11 @@ export async function buildCss({
     }
 }
 
-async function loadPreprocessor(_lang: "scss") {
+async function loadPreprocessor(lang: "scss", logger: Logger) {
+    if (lang !== "scss") {
+        throw new Error(`Unsupported preprocessor language '${lang}'`);
+    }
+
     let sass: typeof Sass;
     try {
         sass = await import("sass");
@@ -148,7 +155,19 @@ async function loadPreprocessor(_lang: "scss") {
                 syntax: "scss",
                 url: pathToFileURL(path),
                 sourceMap: sourceMap,
-                sourceMapIncludeSources: true
+                sourceMapIncludeSources: true,
+
+                // https://sass-lang.com/documentation/js-api/interfaces/Logger-1
+                logger: {
+                    debug: () => undefined, // Do nothing
+                    warn(message, options) {
+                        let output = message;
+                        if (options.stack) {
+                            output += "\n" + indent(options.stack, "    ");
+                        }
+                        logger.warn(output);
+                    }
+                }
             });
 
             let map = result.sourceMap;

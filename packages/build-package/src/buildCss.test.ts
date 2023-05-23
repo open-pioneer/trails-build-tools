@@ -1,17 +1,12 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { describe, expect, it } from "vitest";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
 import { resolve } from "node:path";
-import { cleanDir, readText } from "./testUtils/io";
-import { BuildCssOptions, SUPPORTED_EXTENSIONS, buildCss } from "./buildCss";
+import { describe, expect, it } from "vitest";
+import { createMemoryLogger } from "./Logger";
+import { BuildCssOptions, SUPPORTED_CSS_EXTENSIONS, buildCss } from "./buildCss";
 import { normalizeEntryPoint } from "./helpers";
-
-const DEFAULTS = {
-    packageName: "test",
-    silent: true,
-    sourceMap: false
-} satisfies Partial<BuildCssOptions>;
+import { cleanDir, readText } from "./testUtils/io";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
 
 describe("buildCss", function () {
     it("bundles local css files", async function () {
@@ -20,7 +15,7 @@ describe("buildCss", function () {
 
         await cleanDir(outputDirectory);
         await buildCss({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             cssEntryPoint: normalize("styles.css")
@@ -47,7 +42,7 @@ describe("buildCss", function () {
 
         await cleanDir(outputDirectory);
         await buildCss({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             cssEntryPoint: normalize("./myStyles.css")
@@ -90,7 +85,7 @@ describe("buildCss", function () {
         await cleanDir(outputDirectory);
         await expect(() =>
             buildCss({
-                ...DEFAULTS,
+                ...testDefaults(),
                 packageDirectory,
                 outputDirectory,
                 cssEntryPoint: normalize("styles.css")
@@ -108,7 +103,7 @@ describe("buildCss", function () {
 
         await cleanDir(outputDirectory);
         await buildCss({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageName: "@my-scope/my-test-package",
             packageDirectory,
             outputDirectory,
@@ -161,7 +156,7 @@ describe("buildCss", function () {
 
         await cleanDir(outputDirectory);
         await buildCss({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             cssEntryPoint: normalize("my-styles.scss")
@@ -189,7 +184,7 @@ describe("buildCss", function () {
 
         await cleanDir(outputDirectory);
         await buildCss({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             cssEntryPoint: normalize("./main.scss")
@@ -234,7 +229,7 @@ describe("buildCss", function () {
 
         await cleanDir(outputDirectory);
         await buildCss({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageName: "@my-scope/my-test-package",
             packageDirectory,
             outputDirectory,
@@ -292,8 +287,50 @@ describe("buildCss", function () {
           ]
         `);
     });
+
+    it("generates exceptions for errors in scss", async function () {
+        const options = testDefaults();
+        const packageDirectory = resolve(TEST_DATA_DIR, "project-with-bad-scss");
+        const outputDirectory = resolve(TEMP_DATA_DIR, "bad-scss");
+
+        await cleanDir(outputDirectory);
+        await expect(() =>
+            buildCss({
+                ...options,
+                packageName: "@my-scope/my-test-package",
+                packageDirectory,
+                outputDirectory,
+                cssEntryPoint: normalize("styles.scss")
+            })
+        ).rejects.toThrowError(/Undefined mixin/);
+    });
+
+    it("generates warn messages for warnings from scss", async function () {
+        const options = testDefaults();
+        const packageDirectory = resolve(TEST_DATA_DIR, "project-with-scss-warn");
+        const outputDirectory = resolve(TEMP_DATA_DIR, "warn-scss");
+
+        await cleanDir(outputDirectory);
+        await buildCss({
+            ...options,
+            packageName: "@my-scope/my-test-package",
+            packageDirectory,
+            outputDirectory,
+            cssEntryPoint: normalize("warn.scss")
+        });
+
+        await expect(options.logger.messages[0]?.args?.[0]).toMatch(/this is a warning/);
+    });
 });
 
+function testDefaults() {
+    return {
+        packageName: "test",
+        sourceMap: false,
+        logger: createMemoryLogger()
+    } satisfies Partial<BuildCssOptions>;
+}
+
 function normalize(entryPoints: string) {
-    return normalizeEntryPoint(entryPoints, SUPPORTED_EXTENSIONS);
+    return normalizeEntryPoint(entryPoints, SUPPORTED_CSS_EXTENSIONS);
 }

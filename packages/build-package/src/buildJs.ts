@@ -1,13 +1,16 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { rollup } from "rollup";
+import { RollupLog, rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
 import { normalizePath } from "@rollup/pluginutils";
+import nativePath from "node:path";
 import posix from "node:path/posix";
 import { NormalizedEntryPoint, getSourcePathForSourceMap, isInDirectoryPosix } from "./helpers";
+import { Logger } from "./Logger";
+import { cwd } from "node:process";
 
-export const SUPPORTED_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
+export const SUPPORTED_JS_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
 
 export interface BuildJsOptions {
     /** Package name from package.json */
@@ -25,8 +28,7 @@ export interface BuildJsOptions {
     /** Whether to emit .map files */
     sourceMap: boolean;
 
-    /** Disable warnings. Used for tests. */
-    silent?: boolean;
+    logger: Logger;
 }
 
 export async function buildJs({
@@ -34,15 +36,15 @@ export async function buildJs({
     packageDirectory,
     outputDirectory,
     entryPoints,
-    sourceMap: sourceMap,
-    silent
+    sourceMap,
+    logger
 }: BuildJsOptions) {
     const result = await rollup({
         input: Object.fromEntries(entryPoints.map((e) => [e.outputModuleId, e.inputModulePath])),
         plugins: [
             resolvePlugin({
                 packageDirectory,
-                allowedExtensions: SUPPORTED_EXTENSIONS
+                allowedExtensions: SUPPORTED_JS_EXTENSIONS
             }),
             esbuild({
                 jsx: "automatic",
@@ -50,7 +52,9 @@ export async function buildJs({
                 target: "es2022"
             })
         ],
-        onwarn: silent ? () => undefined : undefined
+        onwarn(warning) {
+            logger.warn(formatMessage(warning));
+        }
     });
     const normalizePackageDirectory = normalizePath(packageDirectory);
     await result.write({
@@ -74,4 +78,39 @@ export async function buildJs({
             return relativeSourcePath;
         }
     });
+}
+
+// See example in https://rollupjs.org/configuration-options/#onwarn
+function formatMessage(props: RollupLog): string {
+    const { plugin, message, frame, loc, id } = props;
+
+    let output = "";
+    function write(str: string) {
+        output += str;
+    }
+
+    let description = message;
+    if (plugin) {
+        description = `[plugin ${plugin}] ${description}`;
+    }
+
+    write(`${description}\n`);
+    if (loc) {
+        if (frame) {
+            write(`${frame}\n`);
+        }
+        write(`... in ${formatId(loc.file || id || "")}:${loc.line}:${loc.column}\n`);
+    } else if (id) {
+        write(`... in ${formatId(id)}\n`);
+    }
+
+    return output.trimEnd();
+}
+
+function formatId(id: string): string {
+    if (!id) {
+        return "N/A";
+    }
+
+    return nativePath.relative(cwd(), id);
 }

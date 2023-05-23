@@ -38,3 +38,11 @@ export function createMemoryLogger(): Logger & { messages: MemoryLogMessage[] } 
         error: logWithType.bind(undefined, "error")
     };
 }
+
+const NO_OP = () => undefined;
+
+export const SILENT_LOGGER: Logger = {
+    info: NO_OP,
+    warn: NO_OP,
+    error: NO_OP
+};

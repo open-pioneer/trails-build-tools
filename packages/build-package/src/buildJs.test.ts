@@ -3,16 +3,11 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { BuildJsOptions, SUPPORTED_EXTENSIONS, buildJs } from "./buildJs";
+import { BuildJsOptions, SUPPORTED_JS_EXTENSIONS, buildJs } from "./buildJs";
 import { cleanDir, readText } from "./testUtils/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
 import { normalizeEntryPoints } from "./helpers";
-
-const DEFAULTS = {
-    packageName: "test",
-    silent: true,
-    sourceMap: false
-} satisfies Partial<BuildJsOptions>;
+import { createMemoryLogger } from "./Logger";
 
 describe("buildJS", function () {
     it("transpiles a simple javascript project", async function () {
@@ -22,7 +17,7 @@ describe("buildJS", function () {
 
         await cleanDir(outputDirectory);
         await buildJs({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
@@ -36,10 +31,11 @@ describe("buildJS", function () {
         */
         expect(readText(resolve(outputDirectory, "entryPointA.js"))).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
-          import 'somewhere-external';
-          import '@scope/somewhere-external';
-          import 'open-pioneer:react-hooks';
+          import something from 'somewhere-external';
+          import somethingElse from '@scope/somewhere-external';
+          import hooks from 'open-pioneer:react-hooks';
 
+          console.log(something, somethingElse, hooks);
           function helloA() {
             log(\\"hello from entry point A\\");
           }
@@ -75,7 +71,7 @@ describe("buildJS", function () {
 
         await cleanDir(outputDirectory);
         await buildJs({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints,
@@ -86,10 +82,11 @@ describe("buildJS", function () {
         // Expect source map comment at the bottom of the file
         expect(readText(resolve(outputDirectory, "entryPointA.js"))).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
-          import 'somewhere-external';
-          import '@scope/somewhere-external';
-          import 'open-pioneer:react-hooks';
+          import something from 'somewhere-external';
+          import somethingElse from '@scope/somewhere-external';
+          import hooks from 'open-pioneer:react-hooks';
 
+          console.log(something, somethingElse, hooks);
           function helloA() {
             log(\\"hello from entry point A\\");
           }
@@ -118,6 +115,9 @@ describe("buildJS", function () {
           import somethingElse from \\"@scope/somewhere-external\\";
           import hooks from \\"open-pioneer:react-hooks\\";
 
+          // Use to prevent warnings
+          console.log(something, somethingElse, hooks);
+
           export function helloA() {
               log(\\"hello from entry point A\\");
           }
@@ -133,7 +133,7 @@ describe("buildJS", function () {
 
         await cleanDir(outputDirectory);
         await buildJs({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
@@ -158,7 +158,7 @@ describe("buildJS", function () {
 
         await cleanDir(outputDirectory);
         await buildJs({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
@@ -185,7 +185,7 @@ describe("buildJS", function () {
 
         await cleanDir(outputDirectory);
         await buildJs({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
@@ -210,7 +210,7 @@ describe("buildJS", function () {
 
         await cleanDir(outputDirectory);
         await buildJs({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
@@ -240,7 +240,7 @@ describe("buildJS", function () {
         const entryPoints = normalize(["index", "./relative.tsx", "deeply/nested/module"]);
         await cleanDir(outputDirectory);
         await buildJs({
-            ...DEFAULTS,
+            ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
@@ -260,7 +260,7 @@ describe("buildJS", function () {
         await cleanDir(outputDirectory);
         await expect(() =>
             buildJs({
-                ...DEFAULTS,
+                ...testDefaults(),
                 packageDirectory,
                 outputDirectory,
                 entryPoints
@@ -278,7 +278,7 @@ describe("buildJS", function () {
         await cleanDir(outputDirectory);
         await expect(() =>
             buildJs({
-                ...DEFAULTS,
+                ...testDefaults(),
                 packageDirectory,
                 outputDirectory,
                 entryPoints
@@ -287,6 +287,14 @@ describe("buildJS", function () {
     });
 });
 
+function testDefaults() {
+    return {
+        packageName: "test",
+        sourceMap: false,
+        logger: createMemoryLogger()
+    } satisfies Partial<BuildJsOptions>;
+}
+
 function normalize(entryPoints: string[]) {
-    return normalizeEntryPoints(entryPoints, SUPPORTED_EXTENSIONS);
+    return normalizeEntryPoints(entryPoints, SUPPORTED_JS_EXTENSIONS);
 }
