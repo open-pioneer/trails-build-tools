@@ -218,9 +218,10 @@ export interface PublishConfig {
      *
      * For the syntax supported in patterns, see [micromatch](https://github.com/micromatch/micromatch#matching-features).
      *
-     * > NOTE: File names with leading `.` in their name are always ignored for security reasons.
+     * > NOTE: File names starting with `.` are always ignored for security reasons.
      *
-     * > NOTE: Directories cannot match by themselves, you must configure a pattern that matches the individual files.
+     * > NOTE: Directories cannot match by themselves, you must configure a pattern that matches the individual files
+     * > (e.g. `assets/**` instead of `assets/`).
      *
      * @example
      *
