@@ -3,8 +3,8 @@
 import { cp } from "fs/promises";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { cleanDir, readText } from "./testUtils/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
+import { cleanDir, readText } from "./testing/io";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { existsSync } from "fs";
 import { build } from ".";
 

@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 import { existsSync, lstatSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
-import type { Plugin } from "rollup";
+import type { Plugin, PluginContext } from "rollup";
 import { normalizePath } from "@rollup/pluginutils";
-import { getExtension } from "../helpers";
+import { resolveWithExtensions } from "../utils/resolve";
+import { getExtension } from "../utils/pathUtils";
 
 export interface ResolvePluginOptions {
     packageDirectory: string;
@@ -22,7 +23,7 @@ export function resolvePlugin({
     return {
         name: "resolve",
 
-        async resolveId(id, parent) {
+        async resolveId(this: PluginContext, id, parent) {
             // absolute paths are left untouched
             if (isAbsolute(id)) {
                 return id;
@@ -41,36 +42,53 @@ export function resolvePlugin({
             //  ./foo.ext?query
             const directory = parent ? dirname(parent) : packageDirectory;
             const { fileName, query } = getFileNameWithQuery(id);
-            const resolved = resolveFile(resolve(directory, fileName), allowedExtensions);
-            if (resolved) {
-                // No query -> must be code
-                if (!query) {
-                    return resolved;
+            const resolveResult = resolveFile(resolve(directory, fileName), allowedExtensions);
+            if (resolveResult.type === "error") {
+                let message;
+                switch (resolveResult.kind) {
+                    case "ambiguous": {
+                        const exts = resolveResult.extensions.join(", ");
+                        message = `Imported module ${fileName} matches multiple extensions: ${exts}. Use an explicit extension instead.`;
+                        break;
+                    }
+                    case "not-found": {
+                        const exts = allowedExtensions.join(", ");
+                        message = `Imported module ${fileName} does not exist. Attempted lookup with extensions ${exts}.`;
+                        break;
+                    }
                 }
 
-                // If query and a code file, emit it as a JavaScript chunk
-                // to ensure that the file is present in the output.
-                // Otherwise, we assume this is asset.
-                //
-                // In any event, we must mark the export as external because rollup does not understand the query protocol.
-                const emitName = normalizePath(relative(packageDirectory, resolved));
-                if (allowedExtensions.includes(getExtension(resolved))) {
-                    this.emitFile({
-                        type: "chunk",
-                        id: resolved,
-                        fileName: emitName
-                    });
-                }
-                return {
-                    id: appendQuery(resolved, query),
-                    external: true
-                };
+                this.error({
+                    id: parent,
+                    message: message
+                });
             }
 
-            this.error({
-                id: parent,
-                message: `Imported file does not exist: ${fileName}`
-            });
+            // Lookup succeeded.
+            const path = resolveResult.path;
+
+            // No query -> must be code
+            if (!query) {
+                return path;
+            }
+
+            // If query and a code file, emit it as a JavaScript chunk
+            // to ensure that the file is present in the output.
+            // Otherwise, we assume this is asset.
+            //
+            // In any event, we must mark the export as external because rollup does not understand the query protocol.
+            const emitName = normalizePath(relative(packageDirectory, path));
+            if (allowedExtensions.includes(getExtension(path))) {
+                this.emitFile({
+                    type: "chunk",
+                    id: path,
+                    fileName: emitName
+                });
+            }
+            return {
+                id: appendQuery(path, query),
+                external: true
+            };
         }
     };
 }
@@ -88,26 +106,11 @@ function appendQuery(id: string, query: string) {
     return `${id}?${query}`;
 }
 
-function resolveFile(file: string, extensions: string[]) {
-    if (isDir(file)) {
-        return tryExtensions(join(file, "index"), extensions);
+function resolveFile(path: string, extensions: string[]) {
+    if (isDir(path)) {
+        path = join(path, "index");
     }
-    return tryExtensions(file, extensions);
-}
-
-// TODO: Check for all extensions and require that the match is unique
-function tryExtensions(file: string, extensions: string[]) {
-    if (existsSync(file)) {
-        return file;
-    }
-
-    for (const ext of extensions) {
-        const fileAttempt = file + ext;
-        if (existsSync(fileAttempt)) {
-            return fileAttempt;
-        }
-    }
-    return undefined;
+    return resolveWithExtensions(path, extensions);
 }
 
 function isDir(path: string) {

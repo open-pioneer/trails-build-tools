@@ -1,10 +1,14 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { InputModel } from "./InputModel";
-import { NormalizedEntryPoint, normalizeEntryPoint, normalizeEntryPoints } from "./helpers";
 import { SUPPORTED_JS_EXTENSIONS } from "./buildJs";
 import { BuildConfig } from "@open-pioneer/build-common";
 import { SUPPORTED_CSS_EXTENSIONS } from "./buildCss";
+import {
+    NormalizedEntryPoint,
+    normalizeEntryPoint,
+    normalizeEntryPoints
+} from "./utils/entryPoints";
 
 export interface PackageModel {
     /** Destination directory, usually './dist'. */

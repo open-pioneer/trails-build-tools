@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from "vitest";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { resolve } from "node:path";
 import { copyAssets } from "./copyAssets";
 import { existsSync } from "node:fs";
-import { cleanDir } from "./testUtils/io";
+import { cleanDir } from "./testing/io";
 
 describe("copyAssets", function () {
     it("copies assets matching the configured patterns", async function () {

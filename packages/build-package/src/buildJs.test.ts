@@ -4,10 +4,10 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BuildJsOptions, SUPPORTED_JS_EXTENSIONS, buildJs } from "./buildJs";
-import { cleanDir, readText } from "./testUtils/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
-import { normalizeEntryPoints } from "./helpers";
+import { cleanDir, readText } from "./testing/io";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { createMemoryLogger } from "./Logger";
+import { normalizeEntryPoints } from "./utils/entryPoints";
 
 describe("buildJS", function () {
     it("transpiles a simple javascript project", async function () {
@@ -266,7 +266,7 @@ describe("buildJS", function () {
                 entryPoints
             })
         ).rejects.toMatchInlineSnapshot(
-            "[RollupError: Imported file does not exist: ./does_not-exist.txt]"
+            "[RollupError: Imported module ./does_not-exist.txt does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]"
         );
     });
 
@@ -283,7 +283,27 @@ describe("buildJS", function () {
                 outputDirectory,
                 entryPoints
             })
-        ).rejects.toMatchInlineSnapshot("[RollupError: Imported file does not exist: ./Foo]");
+        ).rejects.toMatchInlineSnapshot(
+            "[RollupError: Imported module ./Foo does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]"
+        );
+    });
+
+    it("throws if an import would match multiple files", async function () {
+        const packageDirectory = resolve(TEST_DATA_DIR, "project-with-ambiguous-js-imports");
+        const outputDirectory = resolve(TEMP_DATA_DIR, "ambiguous-extension");
+        const entryPoints = normalize(["entryPoint"]);
+
+        await cleanDir(outputDirectory);
+        await expect(() =>
+            buildJs({
+                ...testDefaults(),
+                packageDirectory,
+                outputDirectory,
+                entryPoints
+            })
+        ).rejects.toMatchInlineSnapshot(
+            "[RollupError: Imported module ./file matches multiple extensions: .mts, .tsx, .js. Use an explicit extension instead.]"
+        );
     });
 });
 

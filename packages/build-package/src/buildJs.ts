@@ -6,9 +6,10 @@ import { resolvePlugin } from "./rollup/resolve";
 import { normalizePath } from "@rollup/pluginutils";
 import nativePath from "node:path";
 import posix from "node:path/posix";
-import { NormalizedEntryPoint, getSourcePathForSourceMap, isInDirectoryPosix } from "./helpers";
 import { Logger } from "./Logger";
 import { cwd } from "node:process";
+import { NormalizedEntryPoint } from "./utils/entryPoints";
+import { getSourcePathForSourceMap, isInDirectoryPosix } from "./utils/pathUtils";
 
 export const SUPPORTED_JS_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
 

@@ -4,9 +4,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createMemoryLogger } from "./Logger";
 import { BuildCssOptions, SUPPORTED_CSS_EXTENSIONS, buildCss } from "./buildCss";
-import { normalizeEntryPoint } from "./helpers";
-import { cleanDir, readText } from "./testUtils/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testUtils/paths";
+import { normalizeEntryPoint } from "./utils/entryPoints";
+import { cleanDir, readText } from "./testing/io";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 
 describe("buildCss", function () {
     it("bundles local css files", async function () {

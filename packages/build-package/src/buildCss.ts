@@ -8,13 +8,10 @@ import posix from "node:path/posix";
 import type * as PostCss from "postcss";
 import { fileURLToPath, pathToFileURL } from "url";
 import type * as Sass from "sass";
-import {
-    NormalizedEntryPoint,
-    getSourcePathForSourceMap,
-    indent,
-    isInDirectoryPosix
-} from "./helpers";
 import { Logger } from "./Logger";
+import { NormalizedEntryPoint } from "./utils/entryPoints";
+import { indent } from "./utils/indent";
+import { getSourcePathForSourceMap, isInDirectoryPosix } from "./utils/pathUtils";
 
 export const SUPPORTED_CSS_EXTENSIONS = [".css", ".scss"];
 

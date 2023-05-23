@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from "vitest";
-import { normalizeEntryPoints } from "./helpers";
+import { normalizeEntryPoints } from "./entryPoints";
 
 const EXTS = [".js", ".ts"];
 
-describe("normalizeEntryPoints", function () {
+describe("entryPoints", function () {
     it("normalizes valid entry point specifiers", function () {
         const rawEntryPoints = [
             "./index",

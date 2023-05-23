@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePackageJson";
 import { createMemoryLogger } from "./Logger";
 import { createInputModelFromData } from "./InputModel";
-import { NormalizedEntryPoint } from "./helpers";
+import { NormalizedEntryPoint } from "./utils/entryPoints";
 
 describe("generatePackageJson", function () {
     it("generates a minimal package.json", async function () {
