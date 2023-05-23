@@ -4,5 +4,8 @@
     "license": "MIT",
     "dependencies": {
         "foo": "^1.2.3"
+    },
+    "publishConfig": {
+        "directory": "dist"
     }
 }

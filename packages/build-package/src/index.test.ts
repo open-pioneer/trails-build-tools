@@ -11,7 +11,7 @@ import { internalBuild } from "./index";
 describe("build", function () {
     it("should build package to `dist`", async function () {
         const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project");
-        const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project-copy");
+        const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project");
         const distDirectory = resolve(tempPackage, "dist");
 
         await cleanDir(tempPackage);
@@ -59,6 +59,34 @@ describe("build", function () {
               color: green;
           }
           "
+        `);
+
+        // Package.json was generated
+        const packageJson = resolve(distDirectory, "package.json");
+        expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
+          {
+            "dependencies": {
+              "foo": "^1.2.3",
+            },
+            "exports": {
+              "./entryPointA": {
+                "import": "./entryPointA.js",
+              },
+              "./entryPointB": {
+                "import": "./entryPointB.js",
+              },
+              "./my-styles.css": "./my-styles.css",
+              "./package.json": "./package.json",
+            },
+            "license": "MIT",
+            "name": "simple-js-project",
+            "openPioneerFramework": {
+              "packageFormatVersion": "0.1",
+              "styles": "./my-styles.css",
+            },
+            "type": "module",
+            "version": "0.0.1",
+          }
         `);
     });
 });
