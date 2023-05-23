@@ -5,6 +5,7 @@ import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePacka
 import { createMemoryLogger } from "./Logger";
 import { createInputModelFromData } from "./InputModel";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
+import { BuildConfig } from "@open-pioneer/build-common";
 
 describe("generatePackageJson", function () {
     it("generates a minimal package.json", async function () {
@@ -197,19 +198,97 @@ describe("generatePackageJson", function () {
             expect(pkgJson[key], `validating key '${key}'`).toEqual(sourcePkgJson[key]);
         }
     });
+
+    it("includes framework metadata in package.json", async function () {
+        const servicesEntryPoint: NormalizedEntryPoint = {
+            inputModulePath: "./does-not-matter.js",
+            outputModuleId: "custom-services-name"
+        };
+        const { exports, openPioneerFramework } = await generatePackageJson(
+            testDefaults({
+                jsEntryPoints: [servicesEntryPoint],
+                servicesEntryPoint,
+                buildConfig: {
+                    i18n: ["en", "de"],
+                    services: {
+                        MyService: {
+                            references: {
+                                a: "b"
+                            },
+                            provides: "c"
+                        }
+                    },
+                    ui: {
+                        references: ["d"]
+                    },
+                    properties: {
+                        a: 1,
+                        b: null
+                    },
+                    propertiesMeta: {
+                        b: {
+                            required: false
+                        }
+                    }
+                }
+            })
+        );
+        expect(exports).toMatchInlineSnapshot(`
+          {
+            "./custom-services-name": {
+              "import": "./custom-services-name.js",
+            },
+            "./package.json": "./package.json",
+          }
+        `);
+        expect(openPioneerFramework).toMatchInlineSnapshot(`
+          {
+            "i18n": [
+              "en",
+              "de",
+            ],
+            "packageFormatVersion": "0.1",
+            "properties": {
+              "a": 1,
+              "b": null,
+            },
+            "propertiesMeta": {
+              "b": {
+                "required": false,
+              },
+            },
+            "services": {
+              "MyService": {
+                "provides": "c",
+                "references": {
+                  "a": "b",
+                },
+              },
+            },
+            "servicesModules": "custom-services-name",
+            "ui": {
+              "references": [
+                "d",
+              ],
+            },
+          }
+        `);
+    });
 });
 
 function testDefaults(options?: {
     packageJson?: Record<string, unknown>;
+    buildConfig?: BuildConfig;
     strict?: boolean;
     jsEntryPoints?: NormalizedEntryPoint[];
     cssEntryPoint?: NormalizedEntryPoint | undefined;
+    servicesEntryPoint?: NormalizedEntryPoint | undefined;
 }) {
     return {
         model: {
             input: createInputModelFromData({
                 packageDirectory: "./test/package",
-                buildConfig: {},
+                buildConfig: options?.buildConfig ?? {},
                 buildConfigPath: "./test/build-config",
                 packageJson: options?.packageJson ?? {
                     name: "test-package",
@@ -221,9 +300,9 @@ function testDefaults(options?: {
                 },
                 packageJsonPath: "./test/package-json"
             }),
-            cssEntryPoint: options?.cssEntryPoint ?? undefined,
             jsEntryPoints: options?.jsEntryPoints ?? [],
-            servicesEntryPoint: undefined
+            servicesEntryPoint: options?.servicesEntryPoint ?? undefined,
+            cssEntryPoint: options?.cssEntryPoint ?? undefined
         },
         logger: createMemoryLogger(),
         strict: options?.strict ?? true
