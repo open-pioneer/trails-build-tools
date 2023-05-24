@@ -8,7 +8,12 @@ import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists, isInDirectory } from "../utils/fileUtils";
 import { Cache } from "../utils/Cache";
-import { isBuildConfig, loadBuildConfig, NormalizedPackageConfig } from "./parseBuildConfig";
+import {
+    isBuildConfig,
+    loadBuildConfig,
+    normalizeConfig,
+    NormalizedPackageConfig
+} from "./parseBuildConfig";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 import { BUILD_CONFIG_NAME } from "@open-pioneer/build-common";
 
@@ -42,6 +47,9 @@ export interface AppMetadata {
  * Contains build-time information about a package.
  */
 export interface PackageMetadata {
+    /** */
+    type: "pioneer-package";
+
     /** Package name. */
     name: string;
 
@@ -70,6 +78,10 @@ export interface PackageMetadata {
     config: NormalizedPackageConfig;
 }
 
+export type IgnoredPackageMetadata = Pick<PackageMetadata, "name" | "directory"> & {
+    type: "ignore";
+};
+
 export type MetadataContext = Pick<PluginContext, "addWatchFile" | "resolve" | "warn">;
 
 export interface ResolvedPackageLocation {
@@ -91,7 +103,7 @@ export type PackageLocation = ResolvedPackageLocation | UnresolvedPackageLocatio
  * otherwise hot reloading may not be triggered correctly on file changes.
  */
 interface MetadataEntry {
-    metadata: PackageMetadata;
+    metadata: PackageMetadata | IgnoredPackageMetadata;
     watchFiles: ReadonlySet<string>;
     warnings: RollupWarning[];
 }
@@ -215,17 +227,17 @@ export class MetadataRepository {
 
         const packageDir = await this.resolvePackageLocation(ctx, loc);
 
-        // This would have to be changed when packages from the 'outside' are also supported in the future.
-        if (!isLocalPackage(packageDir, this.sourceRoot)) {
-            isDebug && debug(`Skipping non-local package '${packageDir}'.`);
-            return undefined;
-        }
-
         const entry = await this.packageMetadataCache.get(packageDir, ctx);
         propagateWatchFiles(entry.watchFiles, ctx);
         for (const warning of entry.warnings) {
             ctx.warn(warning);
         }
+
+        if (entry.metadata.type === "ignore") {
+            isDebug && debug(`Skipping package '${packageDir}'.`);
+            return undefined;
+        }
+
         return entry.metadata;
     }
 
@@ -292,8 +304,9 @@ export class MetadataRepository {
     }
 
     private createPackageMetadataCache(): Cache<string, MetadataEntry, [ctx: MetadataContext]> {
+        const sourceRoot = this.sourceRoot;
         const provider = {
-            _byName: new Map<string, PackageMetadata>(),
+            _byName: new Map<string, PackageMetadata | IgnoredPackageMetadata>(),
 
             getId(directory: string) {
                 return normalizePath(directory);
@@ -313,7 +326,7 @@ export class MetadataRepository {
                         warnings.push(typeof msg === "string" ? { message: msg } : msg);
                     }
                 };
-                const metadata = await parsePackageMetadata(trackingCtx, directory);
+                const metadata = await parsePackageMetadata(trackingCtx, directory, sourceRoot);
                 isDebug && debug(`Metadata for '${metadata.name}': %O`, metadata);
 
                 // Ensure only one version of a package exists in the app
@@ -354,37 +367,69 @@ function propagateWatchFiles(watchFiles: Iterable<string>, ctx: MetadataContext)
 
 export async function parsePackageMetadata(
     ctx: MetadataContext,
-    packageDir: string
-): Promise<PackageMetadata> {
-    isDebug && debug(`Visiting package directory ${packageDir}.`);
+    packageDir: string,
+    sourceRoot: string
+): Promise<PackageMetadata | IgnoredPackageMetadata> {
+    const mode = isLocalPackage(packageDir, sourceRoot) ? "local" : "external";
+
+    isDebug && debug(`Visiting package directory ${packageDir} in mode ${mode}.`);
 
     const packageJsonPath = join(packageDir, "package.json");
 
     ctx.addWatchFile(packageJsonPath);
-    const { name: packageName, dependencies } = await parsePackageJson(ctx, packageJsonPath);
+    const {
+        name: packageName,
+        dependencies,
+        openPioneerFramework: frameworkMetadata
+    } = await parsePackageJson(ctx, packageJsonPath);
 
-    const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
-    let buildConfig: NormalizedPackageConfig | undefined;
-    ctx.addWatchFile(normalizePath(buildConfigPath));
-    if (await fileExists(buildConfigPath)) {
-        try {
-            buildConfig = await loadBuildConfig(buildConfigPath);
-        } catch (e) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const msg = (e as any).message || "Unknown error";
-            throw new ReportableError(`Failed to load build config ${buildConfigPath}: ${msg}`);
+    let config: NormalizedPackageConfig;
+    let configPath: string;
+
+    switch (mode) {
+        case "local": {
+            const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
+            let buildConfig: NormalizedPackageConfig | undefined;
+            ctx.addWatchFile(normalizePath(buildConfigPath));
+            if (await fileExists(buildConfigPath)) {
+                try {
+                    buildConfig = await loadBuildConfig(buildConfigPath);
+                } catch (e) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const msg = (e as any).message || "Unknown error";
+                    throw new ReportableError(
+                        `Failed to load build config ${buildConfigPath}: ${msg}`
+                    );
+                }
+            } else {
+                throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
+            }
+            configPath = buildConfigPath;
+            config = buildConfig;
+            break;
         }
-    } else {
-        throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
+        case "external": {
+            if (!frameworkMetadata) {
+                return {
+                    type: "ignore",
+                    name: packageName,
+                    directory: packageDir
+                };
+            }
+
+            configPath = packageJsonPath;
+            config = normalizeConfig(frameworkMetadata);
+            break;
+        }
     }
 
     let servicesModule: string | undefined;
-    if (buildConfig.services.length) {
+    if (config.services.length) {
         try {
             servicesModule = await resolveLocalFile(
                 ctx,
                 packageDir,
-                buildConfig.servicesModule ?? "./services"
+                config.servicesModule ?? "./services"
             );
         } catch (e) {
             ctx.warn(`Failed to resolve entry point for package ${packageDir}: ${e}`);
@@ -392,26 +437,24 @@ export async function parsePackageMetadata(
     }
 
     let cssFile: string | undefined;
-    if (buildConfig.styles) {
+    if (config.styles) {
         try {
-            cssFile = await resolveLocalFile(ctx, packageDir, buildConfig.styles);
+            cssFile = await resolveLocalFile(ctx, packageDir, config.styles);
         } catch (e) {
             throw new ReportableError(`Failed to resolve css file for package ${packageDir}: ${e}`);
         }
         if (!cssFile) {
             throw new ReportableError(
-                `Failed to find css file '${buildConfig.styles}' in ${packageDir}`
+                `Failed to find css file '${config.styles}' in ${packageDir}`
             );
         }
     }
 
     const i18nPaths = new Map<string, string>();
-    if (buildConfig.i18n) {
-        for (const locale of buildConfig.i18n) {
+    if (config.i18n) {
+        for (const locale of config.i18n) {
             if (i18nPaths.has(locale)) {
-                throw new ReportableError(
-                    `Locale '${locale}' was defined twice in ${buildConfigPath}`
-                );
+                throw new ReportableError(`Locale '${locale}' was defined twice in ${configPath}`);
             }
 
             const path = join(packageDir, "i18n", `${locale}.yaml`);
@@ -425,6 +468,7 @@ export async function parsePackageMetadata(
     }
 
     return {
+        type: "pioneer-package",
         name: packageName,
         directory: packageDir,
         packageJsonPath: packageJsonPath,
@@ -432,7 +476,7 @@ export async function parsePackageMetadata(
         cssFilePath: cssFile,
         i18nPaths,
         dependencies,
-        config: buildConfig
+        config: config
     };
 }
 
@@ -453,15 +497,20 @@ async function parsePackageJson(ctx: MetadataContext, packageJsonPath: string) {
         throw new ReportableError(`Expected 'name' to be a string in ${packageJsonPath}`);
     }
 
+    // TODO handle peer dependencies
     const dependencies = packageJsonContent.dependencies ?? {};
     if (typeof dependencies !== "object") {
         throw new ReportableError(`Expected a valid 'dependencies' object in ${packageJsonPath}`);
     }
 
+    // TODO typings + validation
+    const openPioneerFramework = packageJsonContent.openPioneerFramework ?? undefined;
+
     const dependencyNames = Object.keys(dependencies);
     return {
         name: packageName,
-        dependencies: dependencyNames
+        dependencies: dependencyNames,
+        openPioneerFramework: openPioneerFramework
     };
 }
 
