@@ -208,7 +208,7 @@ function addSourceMap(code: string, sourceMap: unknown) {
     code += "/*";
     code += "# sourceMappingURL=data:application/json;";
     code += `charset=utf-8;base64,${encodedMap}`;
-    code += "*/ ";
+    code += "*/";
     return code;
 }
 

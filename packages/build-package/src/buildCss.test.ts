@@ -178,7 +178,7 @@ describe("buildCss", function () {
         `);
     });
 
-    it("does not bundle external scss files", async function () {
+    it("does not bundle external css files when using scss", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "project-with-complex-scss-imports");
         const outputDirectory = resolve(TEMP_DATA_DIR, "complex-scss-imports");
 
@@ -249,12 +249,15 @@ describe("buildCss", function () {
           }
           .a .b-c {
             color: green;
-          } 
+          }
           /*# sourceMappingURL=my-styles.css.map */"
         `);
 
         // Paths should be consistent with the paths generated for javascript files.
         const sourceMapData = JSON.parse(readText(resolve(outputDirectory, "my-styles.css.map")));
+
+        expect(sourceMapData.file).toEqual(`my-styles.css`);
+
         expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
             "/external-packages/@my-scope/my-test-package/cssFile.css",

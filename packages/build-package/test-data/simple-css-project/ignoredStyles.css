@@ -1,1 +1,4 @@
 /* ignored during build because not imported */
+.ignored {
+    color: blue;
+}
