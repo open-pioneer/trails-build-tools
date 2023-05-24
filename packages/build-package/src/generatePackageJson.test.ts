@@ -113,6 +113,10 @@ describe("generatePackageJson", function () {
                 {
                     inputModulePath: "./does-not-matter2.js",
                     outputModuleId: "other-entry-point"
+                },
+                {
+                    inputModulePath: "./does-not-matter3.js",
+                    outputModuleId: "foo/bar/index"
                 }
             ]
         });
@@ -121,6 +125,9 @@ describe("generatePackageJson", function () {
           {
             ".": {
               "import": "./index.js",
+            },
+            "./foo/bar": {
+              "import": "./foo/bar/index.js",
             },
             "./other-entry-point": {
               "import": "./other-entry-point.js",
@@ -208,6 +215,10 @@ describe("generatePackageJson", function () {
             testDefaults({
                 jsEntryPoints: [servicesEntryPoint],
                 servicesEntryPoint,
+                cssEntryPoint: {
+                    inputModulePath: "./does-not-matter1.css",
+                    outputModuleId: "my-styles"
+                },
                 buildConfig: {
                     i18n: ["en", "de"],
                     services: {
@@ -238,6 +249,7 @@ describe("generatePackageJson", function () {
             "./custom-services-name": {
               "import": "./custom-services-name.js",
             },
+            "./my-styles.css": "./my-styles.css",
             "./package.json": "./package.json",
           }
         `);
@@ -265,7 +277,8 @@ describe("generatePackageJson", function () {
                 },
               },
             },
-            "servicesModules": "custom-services-name",
+            "servicesModules": "./custom-services-name",
+            "styles": "./my-styles.css",
             "ui": {
               "references": [
                 "d",

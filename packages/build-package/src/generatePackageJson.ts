@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Logger } from "./Logger";
 import { PackageModel } from "./PackageModel";
+import posix from "node:path/posix";
 
 type SimplePackageModel = Pick<
     PackageModel,
@@ -140,8 +141,7 @@ function generateExports(model: SimplePackageModel, validationErrors: Validation
     };
     addEntryPoint("./package.json", "./package.json");
     for (const entryPoint of model.jsEntryPoints) {
-        const exportedName =
-            entryPoint.outputModuleId === "index" ? "." : `./${entryPoint.outputModuleId}`;
+        const exportedName = getExportName(entryPoint.outputModuleId);
         addEntryPoint(exportedName, {
             import: `./${entryPoint.outputModuleId}.js`
             // TODO: types for typescript
@@ -154,6 +154,16 @@ function generateExports(model: SimplePackageModel, validationErrors: Validation
     return exportedModules;
 }
 
+function getExportName(moduleId: string) {
+    if (moduleId === "index") {
+        return ".";
+    }
+    if (posix.basename(moduleId) === "index") {
+        return "./" + posix.dirname(moduleId);
+    }
+    return `./${moduleId}`;
+}
+
 function generateMetadata(
     model: SimplePackageModel,
     _validationErrors: ValidationErrorReporter
@@ -163,7 +173,9 @@ function generateMetadata(
     const metadata: Record<string, unknown> = {
         packageFormatVersion: "0.1",
         styles: model.cssEntryPoint ? `./${model.cssEntryPoint.outputModuleId}.css` : undefined,
-        servicesModules: model.servicesEntryPoint?.outputModuleId,
+        servicesModules: model.servicesEntryPoint?.outputModuleId
+            ? `./${model.servicesEntryPoint.outputModuleId}`
+            : undefined,
 
         // TODO: These will have to be normalized in some way to keep it simple
         i18n: buildConfig.i18n, // TODO: Copy not implemented yet #81
