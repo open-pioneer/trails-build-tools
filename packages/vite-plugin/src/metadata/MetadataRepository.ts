@@ -3,7 +3,7 @@
 import { readFile, realpath } from "fs/promises";
 import { dirname, join } from "path";
 import { PluginContext, RollupWarning } from "rollup";
-import { normalizePath } from "vite";
+import { PackageData, normalizePath, resolvePackageData } from "vite";
 import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists, isInDirectory } from "../utils/fileUtils";
@@ -145,6 +145,9 @@ export class MetadataRepository {
     // Key: path on disk.
     private i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
 
+    // Cache for package locations & package.json contents
+    private packageDataCache = new Map<string, PackageData>();
+
     /**
      * @param sourceRoot Source folder on disk, needed to detect 'local' packages
      */
@@ -157,6 +160,7 @@ export class MetadataRepository {
     reset() {
         this.packageMetadataCache = this.createPackageMetadataCache();
         this.i18nCache = this.createI18nCache();
+        this.packageDataCache.clear();
     }
 
     /**
@@ -239,13 +243,13 @@ export class MetadataRepository {
     /**
      * Returns package metadata associated with the given package.
      */
-    async getPackageMetadata(
+    private async getPackageMetadata(
         ctx: MetadataContext,
         loc: PackageLocation
     ): Promise<PackageMetadata | undefined> {
         isDebug && debug(`Request for package metadata of ${formatPackageLocation(loc)}`);
 
-        const packageDir = await this.resolvePackageLocation(ctx, loc);
+        const packageDir = await this.resolvePackageLocation(loc);
         if (!packageDir) {
             // Optional package does not exist
             return undefined;
@@ -274,37 +278,30 @@ export class MetadataRepository {
         return i18n;
     }
 
-    private async resolvePackageLocation(ctx: MetadataContext, loc: PackageLocation) {
+    private async resolvePackageLocation(loc: PackageLocation) {
         if (loc.type === "absolute") {
             return await realpath(loc.directory);
         }
 
         const { packageName, optional } = loc.dependency;
-
-        // Try to locate the package via rollup resolve.
-        // TODO: Check if lookup for package.json is good enough, maybe
-        // find a different way to locate the package on disk.
-        const unresolvedPackageJson = `${packageName}/package.json`;
-        const packageJsonLocation = await ctx.resolve(
-            unresolvedPackageJson,
-            normalizePath(loc.importedFrom),
-            {
-                skipSelf: true
-            }
+        const packageData = await resolvePackageData(
+            packageName,
+            loc.importedFrom,
+            false,
+            this.packageDataCache
         );
+        if (!packageData) {
+            if (optional) {
+                isDebug && debug(`Optional package '${packageName}' was not found.`);
+                return undefined;
+            }
 
-        if (!packageJsonLocation && optional) {
-            isDebug && debug(`Optional package '${packageName}' was not found.`);
-            return undefined;
-        }
-
-        if (!packageJsonLocation || packageJsonLocation.external) {
             throw new ReportableError(
-                `Failed to find '${unresolvedPackageJson}' (from '${loc.importedFrom}'), is the dependency installed correctly?`
+                `Failed to find package '${packageName}' (from '${loc.importedFrom}'), is the dependency installed correctly?`
             );
         }
 
-        const packageDir = await realpath(dirname(packageJsonLocation.id));
+        const packageDir = await realpath(packageData.dir);
         isDebug && debug(`Found package '${packageName}' at ${packageDir}`);
         return packageDir;
     }
@@ -340,7 +337,7 @@ export class MetadataRepository {
     private createPackageMetadataCache(): Cache<string, MetadataEntry, [ctx: MetadataContext]> {
         const sourceRoot = this.sourceRoot;
         const provider = {
-            _byName: new Map<string, InternalPackageMetadata>(),
+            _byName: new Map<string, PackageMetadata>(),
 
             getId(directory: string) {
                 return normalizePath(directory);
@@ -360,20 +357,24 @@ export class MetadataRepository {
                         warnings.push(typeof msg === "string" ? { message: msg } : msg);
                     }
                 };
+
                 const metadata = await parsePackageMetadata(trackingCtx, directory, sourceRoot);
                 isDebug && debug(`Metadata for '${metadata.name}': %O`, metadata);
 
                 // Ensure only one version of a package exists in the app
-                const existingMetadata = this._byName.get(metadata.name);
-                if (
-                    existingMetadata &&
-                    normalizePath(existingMetadata.directory) !== normalizePath(metadata.directory)
-                ) {
-                    throw new ReportableError(
-                        `Found package '${metadata.name}' at two different locations ${existingMetadata.directory} and ${metadata.directory}`
-                    );
+                if (metadata.type === "pioneer-package") {
+                    const existingMetadata = this._byName.get(metadata.name);
+                    if (
+                        existingMetadata &&
+                        normalizePath(existingMetadata.directory) !==
+                            normalizePath(metadata.directory)
+                    ) {
+                        throw new ReportableError(
+                            `Found package '${metadata.name}' at two different locations ${existingMetadata.directory} and ${metadata.directory}`
+                        );
+                    }
+                    this._byName.set(metadata.name, metadata);
                 }
-                this._byName.set(metadata.name, metadata);
 
                 return {
                     metadata,
@@ -450,7 +451,10 @@ export async function parsePackageMetadata(
                 config.servicesModule ?? "./services"
             );
         } catch (e) {
-            ctx.warn(`Failed to resolve entry point for package ${packageDir}: ${e}`);
+            ctx.warn({
+                message: `Failed to resolve entry point for package ${packageDir}`,
+                cause: e
+            });
         }
     }
 
@@ -459,7 +463,9 @@ export async function parsePackageMetadata(
         try {
             cssFile = await resolveLocalFile(ctx, packageDir, config.styles);
         } catch (e) {
-            throw new ReportableError(`Failed to resolve css file for package ${packageDir}: ${e}`);
+            throw new ReportableError(`Failed to resolve css file for package ${packageDir}`, {
+                cause: e
+            });
         }
         if (!cssFile) {
             throw new ReportableError(
@@ -546,7 +552,7 @@ async function parsePackageJson(ctx: MetadataContext, packageJsonPath: string) {
     try {
         packageJsonContent = JSON.parse(await readFile(packageJsonPath, "utf-8"));
     } catch (e) {
-        throw new ReportableError(`Failed to read ${packageJsonPath}: ${e}`);
+        throw new ReportableError(`Failed to read ${packageJsonPath}`, { cause: e });
     }
 
     const packageName = packageJsonContent.name;

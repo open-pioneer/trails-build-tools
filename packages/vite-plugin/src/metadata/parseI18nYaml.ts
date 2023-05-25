@@ -53,13 +53,13 @@ export async function loadI18nFile(path: string): Promise<I18nFile> {
     try {
         content = await readFile(path, "utf-8");
     } catch (e) {
-        throw new ReportableError(`Failed to read ${path}: ${e}`);
+        throw new ReportableError(`Failed to read ${path}`, { cause: e });
     }
 
     try {
         return parseI18nYaml(content);
     } catch (e) {
-        throw new ReportableError(`Failed to parse ${path}: ${e}`);
+        throw new ReportableError(`Failed to parse ${path}`, { cause: e });
     }
 }
 

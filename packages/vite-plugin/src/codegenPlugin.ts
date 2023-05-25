@@ -71,7 +71,7 @@ export function codegenPlugin(): Plugin {
                     if (mod) {
                         isDebug && debug(`Triggering hmr of ${moduleId}`);
                         server.reloadModule(mod).catch((err) => {
-                            config.logger.error(`Failed to trigger hmr: ${err}`);
+                            config.logger.error(`Failed to trigger hmr`, { error: err });
                         });
                     }
                 }
@@ -265,7 +265,7 @@ async function getPackageName(ctx: PluginContext, packageJsonPath: string) {
         const content = await readFile(packageJsonPath, "utf-8");
         name = JSON.parse(content).name;
     } catch (e) {
-        throw new ReportableError(`Failed to read package.json file: ${e}`);
+        throw new ReportableError(`Failed to read package.json file`, { cause: e });
     }
     if (!name) {
         throw new ReportableError(`Failed to read package name from ${packageJsonPath}.`);

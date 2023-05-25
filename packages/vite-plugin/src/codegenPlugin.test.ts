@@ -82,7 +82,8 @@ describe("codegen support", function () {
                 }
             })
         );
-        assert.match(error.message, /Failed to find 'peer-required\/package.json'/);
+
+        assert.match(error.message, /Failed to find package 'peer-required'/);
     });
 
     it("generates app css content", async function () {
