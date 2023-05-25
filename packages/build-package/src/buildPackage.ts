@@ -6,10 +6,12 @@ import { copyAssets } from "./copyAssets";
 import { createDebugger } from "./debug";
 import { buildCss } from "./buildCss";
 import { generatePackageJson } from "./generatePackageJson";
-import { Logger } from "./Logger";
+import { Logger } from "./utils/Logger";
 import { resolve } from "path";
 import { InputModel } from "./InputModel";
 import { createPackageModel } from "./PackageModel";
+import { ValidationReporter } from "./utils/ValidationReporter";
+import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:build-package");
@@ -42,6 +44,7 @@ export async function buildPackage({
     logger
 }: BuildPackageOptions): Promise<void> {
     const model = createPackageModel(input, outputDirectory);
+    const reporter = new ValidationReporter(logger, strict);
 
     // Prepare output directory
     if (clean) {
@@ -89,11 +92,21 @@ export async function buildPackage({
     const packageJsonContent = await generatePackageJson({
         model,
         logger,
-        strict
+        reporter
     });
     await writeFile(
         resolve(outputDirectory, "package.json"),
         JSON.stringify(packageJsonContent, undefined, 4),
         "utf-8"
     );
+
+    logger.info("Copying auxiliary files...");
+    await copyAuxiliaryFiles({
+        packageDirectory: model.input.packageDirectory,
+        outputDirectory: model.outputDirectory,
+        validation: model.input.validation,
+        reporter
+    });
+
+    reporter.finish();
 }

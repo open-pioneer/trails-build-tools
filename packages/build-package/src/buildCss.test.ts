@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createMemoryLogger } from "./Logger";
+import { createMemoryLogger } from "./utils/Logger";
 import { BuildCssOptions, SUPPORTED_CSS_EXTENSIONS, buildCss } from "./buildCss";
 import { normalizeEntryPoint } from "./utils/entryPoints";
 import { cleanDir, readText } from "./testing/io";

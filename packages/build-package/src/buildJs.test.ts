@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { BuildJsOptions, SUPPORTED_JS_EXTENSIONS, buildJs } from "./buildJs";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { createMemoryLogger } from "./Logger";
+import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
 
 describe("buildJS", function () {

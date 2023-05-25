@@ -6,7 +6,7 @@ import { resolvePlugin } from "./rollup/resolve";
 import { normalizePath } from "@rollup/pluginutils";
 import nativePath from "node:path";
 import posix from "node:path/posix";
-import { Logger } from "./Logger";
+import { Logger } from "./utils/Logger";
 import { cwd } from "node:process";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { getSourcePathForSourceMap, isInDirectoryPosix } from "./utils/pathUtils";

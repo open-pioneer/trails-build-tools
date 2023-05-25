@@ -1,8 +1,10 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { Logger } from "./Logger";
+import { Logger } from "./utils/Logger";
 import { PackageModel } from "./PackageModel";
 import posix from "node:path/posix";
+import { ValidationReporter } from "./utils/ValidationReporter";
+import { ValidationOptions } from "../types";
 
 type SimplePackageModel = Pick<
     PackageModel,
@@ -14,8 +16,7 @@ export interface GeneratePackageJsonOptions {
 
     logger: Logger;
 
-    /** Perform strict validation (throw instead of warn for problems). */
-    strict: boolean;
+    reporter: ValidationReporter;
 }
 
 // These fields are simply copied to the destination package.json
@@ -52,19 +53,13 @@ const COPY_FIELDS = [
  */
 export async function generatePackageJson({
     model,
-    logger,
-    strict
+    reporter
 }: GeneratePackageJsonOptions): Promise<Record<string, unknown>> {
     const sourcePackageJson = model.input.packageJson;
     const sourcePackageJsonPath = model.input.packageJsonPath;
-    const validationErrors = createValidationErrorReporter(
-        logger,
-        model.input.packageDirectory,
-        strict
-    );
 
     // Check source package.json
-    validatePackageJson(sourcePackageJson, sourcePackageJsonPath, validationErrors);
+    validatePackageJson(sourcePackageJson, sourcePackageJsonPath, model.input.validation, reporter);
 
     // Generate package.json for publishing
     const packageJson: Record<string, unknown> = {
@@ -75,28 +70,18 @@ export async function generatePackageJson({
             packageJson[field] = sourcePackageJson[field];
         }
     }
-    packageJson.exports = generateExports(model, validationErrors);
-    packageJson.openPioneerFramework = generateMetadata(model, validationErrors);
-
-    // Throw if strict
-    validationErrors.finish();
+    packageJson.exports = generateExports(model, reporter);
+    packageJson.openPioneerFramework = generateMetadata(model);
 
     // Clone (for safety) and also strip 'undefined' values.
     return JSON.parse(JSON.stringify(packageJson));
 }
 
-interface ValidationErrorReporter {
-    // Reports a problem
-    report(...args: unknown[]): void;
-
-    // Throws if strict mode is enabled.
-    finish(): void;
-}
-
 function validatePackageJson(
     sourcePackageJson: Record<string, unknown>,
     sourcePackageJsonPath: string,
-    validationErrors: ValidationErrorReporter
+    validation: Required<ValidationOptions>,
+    validationErrors: ValidationReporter
 ) {
     if (!sourcePackageJson.name) {
         validationErrors.report(`${sourcePackageJsonPath} should define a name.`);
@@ -109,7 +94,7 @@ function validatePackageJson(
             `${sourcePackageJsonPath} contains 'exports', these will be overwritten by generated exports.`
         );
     }
-    if (!sourcePackageJson.license) {
+    if (validation.requireLicense && !sourcePackageJson.license) {
         validationErrors.report(`${sourcePackageJsonPath} should define a license.`);
     }
 
@@ -123,7 +108,7 @@ function validatePackageJson(
     }
 }
 
-function generateExports(model: SimplePackageModel, validationErrors: ValidationErrorReporter) {
+function generateExports(model: SimplePackageModel, validationErrors: ValidationReporter) {
     // Assemble the `exports` field. This makes the files defined here "importable".
     // See https://nodejs.org/api/packages.html#package-entry-points
     const exportedModules: Record<string, unknown> = {};
@@ -164,10 +149,7 @@ function getExportName(moduleId: string) {
     return `./${moduleId}`;
 }
 
-function generateMetadata(
-    model: SimplePackageModel,
-    _validationErrors: ValidationErrorReporter
-): Record<string, unknown> {
+function generateMetadata(model: SimplePackageModel): Record<string, unknown> {
     // TODO: Typings!
     const buildConfig = model.input.buildConfig;
     const metadata: Record<string, unknown> = {
@@ -185,25 +167,4 @@ function generateMetadata(
         propertiesMeta: buildConfig.propertiesMeta
     };
     return metadata;
-}
-
-function createValidationErrorReporter(
-    logger: Logger,
-    path: string,
-    strict: boolean
-): ValidationErrorReporter {
-    let hasValidationError = false;
-    return {
-        report(...args) {
-            (strict ? logger.error : logger.warn)(...args);
-            hasValidationError = true;
-        },
-        finish() {
-            if (strict && hasValidationError) {
-                throw new Error(
-                    `Aborting due to previous validation errors in ${path} (strict validation is enabled).`
-                );
-            }
-        }
-    };
 }

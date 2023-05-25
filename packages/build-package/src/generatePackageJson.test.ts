@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from "vitest";
 import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePackageJson";
-import { createMemoryLogger } from "./Logger";
+import { createMemoryLogger } from "./utils/Logger";
 import { createInputModelFromData } from "./InputModel";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { BuildConfig } from "@open-pioneer/build-common";
+import { ValidationReporter } from "./utils/ValidationReporter";
 
 describe("generatePackageJson", function () {
     it("generates a minimal package.json", async function () {
@@ -70,8 +71,11 @@ describe("generatePackageJson", function () {
             },
             strict: true
         });
-        await expect(() => generatePackageJson(options)).rejects.toThrowErrorMatchingInlineSnapshot(
-            '"Aborting due to previous validation errors in ./test/package (strict validation is enabled)."'
+        await expect(async () => {
+            await generatePackageJson(options);
+            options.reporter.finish();
+        }).rejects.toThrowErrorMatchingInlineSnapshot(
+            '"Aborting due to validation errors (strict validation is enabled)."'
         );
         expect(options.logger.messages).toMatchInlineSnapshot(`
           [
@@ -297,6 +301,7 @@ function testDefaults(options?: {
     cssEntryPoint?: NormalizedEntryPoint | undefined;
     servicesEntryPoint?: NormalizedEntryPoint | undefined;
 }) {
+    const logger = createMemoryLogger();
     return {
         model: {
             input: createInputModelFromData({
@@ -311,13 +316,18 @@ function testDefaults(options?: {
                         directory: "dist"
                     }
                 },
-                packageJsonPath: "./test/package-json"
+                packageJsonPath: "./test/package-json",
+                validation: {
+                    requireChangelog: true,
+                    requireLicense: true,
+                    requireReadme: true
+                }
             }),
             jsEntryPoints: options?.jsEntryPoints ?? [],
             servicesEntryPoint: options?.servicesEntryPoint ?? undefined,
             cssEntryPoint: options?.cssEntryPoint ?? undefined
         },
-        logger: createMemoryLogger(),
-        strict: options?.strict ?? true
+        logger,
+        reporter: new ValidationReporter(logger, options?.strict ?? true)
     } satisfies GeneratePackageJsonOptions;
 }

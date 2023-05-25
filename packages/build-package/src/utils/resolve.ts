@@ -51,3 +51,21 @@ export function resolveWithExtensions(path: string, supportedExtensions: string[
         kind: "not-found"
     };
 }
+
+/**
+ * Like {@link resolveWithExtensions}, but an ambiguous match is not a problem: it simply
+ * takes the first match.
+ */
+export function resolveFirstMatchWithExtensions(
+    path: string,
+    supportedExtensions: string[]
+): string | undefined {
+    const result = resolveWithExtensions(path, supportedExtensions);
+    if (result.type === "error" && result.kind === "ambiguous") {
+        return path + result.extensions[0];
+    }
+    if (result.type === "error") {
+        return undefined;
+    }
+    return result.path;
+}

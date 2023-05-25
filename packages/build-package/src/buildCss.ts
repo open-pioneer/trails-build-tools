@@ -8,7 +8,7 @@ import posix from "node:path/posix";
 import type * as PostCss from "postcss";
 import { fileURLToPath, pathToFileURL } from "url";
 import type * as Sass from "sass";
-import { Logger } from "./Logger";
+import { Logger } from "./utils/Logger";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { indent } from "./utils/indent";
 import { getSourcePathForSourceMap, isInDirectoryPosix } from "./utils/pathUtils";

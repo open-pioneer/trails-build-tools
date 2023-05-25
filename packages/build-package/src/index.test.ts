@@ -92,5 +92,24 @@ describe("build", function () {
             "version": "0.0.1",
           }
         `);
+
+        // License, changelog and readme were copied
+        const readme = resolve(distDirectory, "README.md");
+        expect(readText(readme)).toMatchInlineSnapshot(`
+          "# README for simple package
+          "
+        `);
+
+        const changelog = resolve(distDirectory, "CHANGELOG.md");
+        expect(readText(changelog)).toMatchInlineSnapshot(`
+          "# Changelog for simple package
+          "
+        `);
+
+        const license = resolve(distDirectory, "LICENSE");
+        expect(readText(license)).toMatchInlineSnapshot(`
+          "LICENSE
+          "
+        `);
     });
 });

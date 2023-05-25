@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import type * as API from "..";
 import { createInputModel } from "./InputModel";
 import { buildPackage } from "./buildPackage";
-import { SILENT_LOGGER, createConsoleLogger } from "./Logger";
+import { SILENT_LOGGER, createConsoleLogger } from "./utils/Logger";
 
 type Build = typeof API.build;
 
@@ -12,10 +12,15 @@ export const build: Build = async ({
     packageDirectory,
     silent,
     sourceMaps = true,
-    strict = true
+    strict = true,
+    validation = {}
 }) => {
     const outputDirectory = resolve(packageDirectory, "dist");
-    const input = await createInputModel(packageDirectory);
+    const input = await createInputModel(packageDirectory, {
+        requireReadme: validation.requireReadme ?? true,
+        requireLicense: validation.requireLicense ?? true,
+        requireChangelog: validation.requireChangelog ?? true
+    });
     const logger = silent ? SILENT_LOGGER : createConsoleLogger();
     await buildPackage({
         input,
