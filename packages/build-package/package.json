@@ -40,15 +40,15 @@
         "fast-glob": "^3.2.12",
         "fs-extra": "^11.1.1",
         "postcss": "^8.4.23",
-        "rollup": "^3.21.7",
+        "rollup": "^3.23.0",
         "rollup-plugin-esbuild": "^5.0.0"
     },
     "devDependencies": {
         "@rollup/pluginutils": "^5.0.2",
-        "@types/debug": "^4.1.7",
+        "@types/debug": "^4.1.8",
         "@types/fs-extra": "^11.0.1",
         "@types/postcss-import": "^14.0.0",
-        "@types/react": "^18.2.6",
+        "@types/react": "^18.2.7",
         "build-tools": "workspace:*",
         "postcss-import": "^15.1.0",
         "typescript": "^5.0.4",

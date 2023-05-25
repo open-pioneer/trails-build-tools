@@ -27,8 +27,8 @@
         "sass": "^1.58.3"
     },
     "dependencies": {
-        "@babel/generator": "^7.21.5",
-        "@babel/template": "^7.20.7",
+        "@babel/generator": "^7.21.9",
+        "@babel/template": "^7.21.9",
         "@babel/types": "^7.21.5",
         "@open-pioneer/build-common": "workspace:^",
         "debug": "^4.3.4",
@@ -41,15 +41,15 @@
         "@open-pioneer/vite-plugin-pioneer": "workspace:^",
         "@types/babel__generator": "^7.6.4",
         "@types/babel__template": "^7.4.1",
-        "@types/debug": "^4.1.7",
+        "@types/debug": "^4.1.8",
         "@types/js-yaml": "^4.0.5",
         "esbuild": "^0.17.19",
         "fast-glob": "^3.2.12",
         "npm-run-all": "^4.1.5",
-        "rimraf": "^5.0.0",
-        "rollup": "^3.21.7",
+        "rimraf": "^5.0.1",
+        "rollup": "^3.23.0",
         "sass": "^1.62.1",
-        "vite": "^4.3.6",
+        "vite": "^4.3.8",
         "build-tools": "workspace:*"
     }
 }
