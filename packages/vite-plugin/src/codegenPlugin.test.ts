@@ -26,6 +26,26 @@ describe("codegen support", function () {
         assert.include(testAppJs, 'console.log("Hello from LogService!!");');
     });
 
+    it("generates app when referencing external open pioneer package", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-packages-external/src");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-external");
+
+        await runViteBuild({
+            outDir,
+            rootDir, // does not contain package ol-map
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        // metadata was read from package.json and contents were found
+        const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+        assert.include(testAppJs, 'console.log("in MapContainer");');
+        assert.include(testAppJs, 'console.log("in OlMapRegistry");');
+        assert.include(testAppJs, 'console.log("in useMap");');
+        assert.include(testAppJs, '".map {\\n    color: black;\\n}"');
+    });
+
     it("generates app css content", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-css");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-css");

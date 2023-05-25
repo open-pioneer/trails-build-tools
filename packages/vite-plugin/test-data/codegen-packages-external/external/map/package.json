@@ -1,0 +1,41 @@
+{
+    "type": "module",
+    "name": "ol-map",
+    "version": "0.0.1",
+    "license": "Apache-2.0",
+    "dependencies": {
+    },
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": "./entryPoint.js"
+        },
+        "./services": {
+            "import": "./services.js"
+        },
+        "./styles.css": "./styles.css"
+    },
+    "openPioneerFramework": {
+        "packageFormatVersion": "0.1",
+        "styles": "./styles.css",
+        "servicesModules": "./services",
+        "services": {
+            "OlMapRegistry": {
+                "provides": [
+                    "ol-map.MapRegistry"
+                ],
+                "references": {
+                    "providers": {
+                        "name": "ol-map.MapConfigProvider",
+                        "all": true
+                    }
+                }
+            }
+        },
+        "ui": {
+            "references": [
+                "ol-map.MapRegistry"
+            ]
+        }
+    }
+}

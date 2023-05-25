@@ -59,7 +59,7 @@ export function isBuildConfig(file: string) {
     return basename(file) === BUILD_CONFIG_NAME;
 }
 
-function normalizeConfig(rawConfig: BuildConfig): NormalizedPackageConfig {
+export function normalizeConfig(rawConfig: BuildConfig): NormalizedPackageConfig {
     return {
         styles: rawConfig.styles,
         i18n: rawConfig.i18n,
