@@ -78,9 +78,21 @@ export interface PackageMetadata {
     config: NormalizedPackageConfig;
 }
 
-export type IgnoredPackageMetadata = Pick<PackageMetadata, "name" | "directory"> & {
-    type: "ignore";
-};
+/**
+ * Package that was discovered during dependency analysis which does not have open-pioneer metadata.
+ * We cache such objects to remember the result of the analysis.
+ */
+interface PlainPackageMetadata {
+    type: "plain";
+
+    /** Package name. */
+    name: string;
+
+    /** Directory on disk. */
+    directory: string;
+}
+
+type InternalPackageMetadata = PackageMetadata | PlainPackageMetadata;
 
 export type MetadataContext = Pick<PluginContext, "addWatchFile" | "resolve" | "warn">;
 
@@ -103,7 +115,7 @@ export type PackageLocation = ResolvedPackageLocation | UnresolvedPackageLocatio
  * otherwise hot reloading may not be triggered correctly on file changes.
  */
 interface MetadataEntry {
-    metadata: PackageMetadata | IgnoredPackageMetadata;
+    metadata: InternalPackageMetadata;
     watchFiles: ReadonlySet<string>;
     warnings: RollupWarning[];
 }
@@ -233,7 +245,7 @@ export class MetadataRepository {
             ctx.warn(warning);
         }
 
-        if (entry.metadata.type === "ignore") {
+        if (entry.metadata.type === "plain") {
             isDebug && debug(`Skipping package '${packageDir}'.`);
             return undefined;
         }
@@ -306,7 +318,7 @@ export class MetadataRepository {
     private createPackageMetadataCache(): Cache<string, MetadataEntry, [ctx: MetadataContext]> {
         const sourceRoot = this.sourceRoot;
         const provider = {
-            _byName: new Map<string, PackageMetadata | IgnoredPackageMetadata>(),
+            _byName: new Map<string, InternalPackageMetadata>(),
 
             getId(directory: string) {
                 return normalizePath(directory);
@@ -365,11 +377,17 @@ function propagateWatchFiles(watchFiles: Iterable<string>, ctx: MetadataContext)
     }
 }
 
+/**
+ * Is called if package metadata of a package are parsed
+ * (for internal and external packages).
+ * Depending on the location of the package either reads build config (source package)
+ * or serialized metadata from package.json.
+ */
 export async function parsePackageMetadata(
     ctx: MetadataContext,
     packageDir: string,
     sourceRoot: string
-): Promise<PackageMetadata | IgnoredPackageMetadata> {
+): Promise<InternalPackageMetadata> {
     const mode = isLocalPackage(packageDir, sourceRoot) ? "local" : "external";
 
     isDebug && debug(`Visiting package directory ${packageDir} in mode ${mode}.`);
@@ -383,45 +401,23 @@ export async function parsePackageMetadata(
         openPioneerFramework: frameworkMetadata
     } = await parsePackageJson(ctx, packageJsonPath);
 
-    let config: NormalizedPackageConfig;
-    let configPath: string;
-
-    switch (mode) {
-        case "local": {
-            const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
-            let buildConfig: NormalizedPackageConfig | undefined;
-            ctx.addWatchFile(normalizePath(buildConfigPath));
-            if (await fileExists(buildConfigPath)) {
-                try {
-                    buildConfig = await loadBuildConfig(buildConfigPath);
-                } catch (e) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const msg = (e as any).message || "Unknown error";
-                    throw new ReportableError(
-                        `Failed to load build config ${buildConfigPath}: ${msg}`
-                    );
-                }
-            } else {
-                throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
-            }
-            configPath = buildConfigPath;
-            config = buildConfig;
-            break;
-        }
-        case "external": {
-            if (!frameworkMetadata) {
-                return {
-                    type: "ignore",
-                    name: packageName,
-                    directory: packageDir
-                };
-            }
-
-            configPath = packageJsonPath;
-            config = normalizeConfig(frameworkMetadata);
-            break;
-        }
+    const configResult = await readConfig(
+        ctx,
+        packageDir,
+        mode,
+        frameworkMetadata,
+        packageName,
+        packageJsonPath
+    );
+    if (!configResult) {
+        return {
+            type: "plain",
+            name: packageName,
+            directory: packageDir
+        };
     }
+
+    const { config, configPath } = configResult;
 
     let servicesModule: string | undefined;
     if (config.services.length) {
@@ -478,6 +474,44 @@ export async function parsePackageMetadata(
         dependencies,
         config: config
     };
+}
+
+async function readConfig(
+    ctx: MetadataContext,
+    packageDir: string,
+    mode: "local" | "external",
+    frameworkMetadata: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    packageName: string,
+    packageJsonPath: string
+) {
+    switch (mode) {
+        case "local": {
+            const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
+            let buildConfig: NormalizedPackageConfig | undefined;
+            ctx.addWatchFile(normalizePath(buildConfigPath));
+            if (await fileExists(buildConfigPath)) {
+                try {
+                    buildConfig = await loadBuildConfig(buildConfigPath);
+                } catch (e) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const msg = (e as any).message || "Unknown error";
+                    throw new ReportableError(
+                        `Failed to load build config ${buildConfigPath}: ${msg}`
+                    );
+                }
+            } else {
+                throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
+            }
+            return { configPath: buildConfigPath, config: buildConfig };
+        }
+        case "external": {
+            if (!frameworkMetadata) {
+                return undefined;
+            }
+
+            return { configPath: packageJsonPath, config: normalizeConfig(frameworkMetadata) };
+        }
+    }
 }
 
 async function parsePackageJson(ctx: MetadataContext, packageJsonPath: string) {
