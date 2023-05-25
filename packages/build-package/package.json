@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "main": "dist/index.js",
     "types": "types.d.ts",
-    "type": "commonjs",
+    "type": "module",
     "license": "Apache-2.0",
     "scripts": {
         "clean": "rimraf dist temp",
