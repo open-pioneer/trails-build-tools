@@ -72,10 +72,15 @@ export interface PackageMetadata {
     i18nPaths: Map<string, string>;
 
     /** Runtime dependencies (from package.json). */
-    dependencies: string[];
+    dependencies: PackageDependency[];
 
     /** Parsed metadata (from build config file). */
     config: NormalizedPackageConfig;
+}
+
+export interface PackageDependency {
+    packageName: string;
+    optional: boolean;
 }
 
 /**
@@ -101,13 +106,13 @@ export interface ResolvedPackageLocation {
     directory: string;
 }
 
-export interface UnresolvedPackageLocation {
+export interface UnresolvedDependency {
     type: "unresolved";
-    packageName: string;
+    dependency: PackageDependency;
     importedFrom: string;
 }
 
-export type PackageLocation = ResolvedPackageLocation | UnresolvedPackageLocation;
+export type PackageLocation = ResolvedPackageLocation | UnresolvedDependency;
 
 /**
  * Tracks metadata and the files that were used to parse that metadata.
@@ -194,11 +199,14 @@ export class MetadataRepository {
 
         // Recursively visit all dependencies.
         // Detected metadata is placed into `packageMetadata`.
-        const visitDependencies = async (dependencies: string[], importedFrom: string) => {
-            const jobs = dependencies.map(async (packageName) => {
+        const visitDependencies = async (
+            dependencies: PackageDependency[],
+            importedFrom: string
+        ) => {
+            const jobs = dependencies.map(async (dependency) => {
                 const packageMetadata = await this.getPackageMetadata(ctx, {
                     type: "unresolved",
-                    packageName,
+                    dependency,
                     importedFrom
                 });
                 if (packageMetadata) {
@@ -238,6 +246,10 @@ export class MetadataRepository {
         isDebug && debug(`Request for package metadata of ${formatPackageLocation(loc)}`);
 
         const packageDir = await this.resolvePackageLocation(ctx, loc);
+        if (!packageDir) {
+            // Optional package does not exist
+            return undefined;
+        }
 
         const entry = await this.packageMetadataCache.get(packageDir, ctx);
         propagateWatchFiles(entry.watchFiles, ctx);
@@ -267,8 +279,12 @@ export class MetadataRepository {
             return await realpath(loc.directory);
         }
 
+        const { packageName, optional } = loc.dependency;
+
         // Try to locate the package via rollup resolve.
-        const unresolvedPackageJson = `${loc.packageName}/package.json`;
+        // TODO: Check if lookup for package.json is good enough, maybe
+        // find a different way to locate the package on disk.
+        const unresolvedPackageJson = `${packageName}/package.json`;
         const packageJsonLocation = await ctx.resolve(
             unresolvedPackageJson,
             normalizePath(loc.importedFrom),
@@ -276,6 +292,12 @@ export class MetadataRepository {
                 skipSelf: true
             }
         );
+
+        if (!packageJsonLocation && optional) {
+            isDebug && debug(`Optional package '${packageName}' was not found.`);
+            return undefined;
+        }
+
         if (!packageJsonLocation || packageJsonLocation.external) {
             throw new ReportableError(
                 `Failed to find '${unresolvedPackageJson}' (from '${loc.importedFrom}'), is the dependency installed correctly?`
@@ -283,7 +305,7 @@ export class MetadataRepository {
         }
 
         const packageDir = await realpath(dirname(packageJsonLocation.id));
-        isDebug && debug(`Found package '${loc.packageName}' at ${packageDir}`);
+        isDebug && debug(`Found package '${packageName}' at ${packageDir}`);
         return packageDir;
     }
 
@@ -519,7 +541,8 @@ async function parsePackageJson(ctx: MetadataContext, packageJsonPath: string) {
         throw new ReportableError(`Expected a 'package.json' file at ${packageJsonPath}`);
     }
 
-    let packageJsonContent;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let packageJsonContent: any;
     try {
         packageJsonContent = JSON.parse(await readFile(packageJsonPath, "utf-8"));
     } catch (e) {
@@ -537,13 +560,34 @@ async function parsePackageJson(ctx: MetadataContext, packageJsonPath: string) {
         throw new ReportableError(`Expected a valid 'dependencies' object in ${packageJsonPath}`);
     }
 
+    const peerDependencies = packageJsonContent.peerDependencies ?? {};
+    if (typeof peerDependencies !== "object") {
+        throw new ReportableError(
+            `Expected a valid 'peerDependencies' object in ${packageJsonPath}`
+        );
+    }
+
+    const optionalDependencies = packageJsonContent.optionalDependencies ?? {};
+    if (typeof optionalDependencies !== "object") {
+        throw new ReportableError(
+            `Expected a valid 'optionalDependencies' object in ${packageJsonPath}`
+        );
+    }
+
+    const allDependencies: PackageDependency[] = [
+        ...Object.keys(dependencies).map((packageName) => ({ packageName, optional: false })),
+        ...Object.keys(peerDependencies).map((packageName) => ({
+            packageName,
+            optional: packageJsonContent?.peerDependenciesMeta?.[packageName]?.optional ?? false
+        })),
+        ...Object.keys(optionalDependencies).map((packageName) => ({ packageName, optional: true }))
+    ];
+
     // TODO typings + validation
     const openPioneerFramework = packageJsonContent.openPioneerFramework ?? undefined;
-
-    const dependencyNames = Object.keys(dependencies);
     return {
         name: packageName,
-        dependencies: dependencyNames,
+        dependencies: allDependencies,
         openPioneerFramework: openPioneerFramework
     };
 }
@@ -559,8 +603,13 @@ function formatPackageLocation(loc: PackageLocation) {
     switch (loc.type) {
         case "absolute":
             return `${loc.directory}`;
-        case "unresolved":
-            return `'${loc.packageName}' required by ${loc.importedFrom}`;
+        case "unresolved": {
+            let name = `'${loc.dependency.packageName}'`;
+            if (loc.dependency.optional) {
+                name += " (optional)";
+            }
+            return `${name} required by ${loc.importedFrom}`;
+        }
     }
 }
 

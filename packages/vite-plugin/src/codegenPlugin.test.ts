@@ -46,6 +46,45 @@ describe("codegen support", function () {
         assert.include(testAppJs, '".map {\\n    color: black;\\n}"');
     });
 
+    it("generates app packages content when using peer- and optional dependencies", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-complex-dependencies");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-complex-dependencies");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        /*
+         * Normal deps, required peer dependencies and installed optional dependencies
+         * are discovered. Non-existing optional peer dependencies and non existing
+         * optional dependencies are not an error.
+         */
+        const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+        assert.include(testAppJs, `console.log("from normal dep");`);
+        assert.include(testAppJs, `console.log("from peer dep");`);
+        assert.include(testAppJs, `console.log("from optional dep");`);
+    });
+
+    it("generates an error if a required peer's metadata cannot be read", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-missing-peer-dependency");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-missing-peer-dependency");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+        assert.match(error.message, /Failed to find 'peer-required\/package.json'/);
+    });
+
     it("generates app css content", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-css");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-css");

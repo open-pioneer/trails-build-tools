@@ -1,0 +1,7 @@
+{
+    "name": "test-app",
+    "private": true,
+    "peerDependencies": {
+        "peer-required": "1"
+    }
+}

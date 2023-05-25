@@ -1,0 +1,20 @@
+{
+    "name": "test-app",
+    "private": true,
+    "dependencies": {
+        "normal-dep": "x.x"
+    },
+    "optionalDependencies": {
+        "optional-exists": "1",
+        "optional-does-not-exist": "2"
+    },
+    "peerDependencies": {
+        "peer-exists": "3",
+        "peer-does-not-exist": "4"
+    },
+    "peerDependenciesMeta": {
+        "peer-does-not-exist": {
+            "optional": true
+        }
+    }
+}
