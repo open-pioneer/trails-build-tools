@@ -34,6 +34,7 @@ describe("build", function () {
           }
 
           export { helloA };
+          //# sourceMappingURL=entryPointA.js.map
           "
         `);
 
@@ -46,6 +47,7 @@ describe("build", function () {
           }
 
           export { helloB };
+          //# sourceMappingURL=entryPointB.js.map
           "
         `);
 
@@ -59,7 +61,8 @@ describe("build", function () {
           ".main {
               color: green;
           }
-          "
+
+          /*# sourceMappingURL=my-styles.css.map */"
         `);
 
         // Package.json was generated

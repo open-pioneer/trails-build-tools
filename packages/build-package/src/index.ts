@@ -8,15 +8,21 @@ import { SILENT_LOGGER, createConsoleLogger } from "./Logger";
 
 type Build = typeof API.build;
 
-export const build: Build = async ({ packageDirectory, silent }) => {
+export const build: Build = async ({
+    packageDirectory,
+    silent,
+    sourceMaps = true,
+    strict = true
+}) => {
     const outputDirectory = resolve(packageDirectory, "dist");
     const input = await createInputModel(packageDirectory);
     const logger = silent ? SILENT_LOGGER : createConsoleLogger();
     await buildPackage({
-        outputDirectory,
         input,
+        outputDirectory,
+        sourceMaps,
+        strict,
         clean: true,
         logger
     });
-    return {};
 };

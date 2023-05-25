@@ -24,6 +24,12 @@ interface BuildPackageOptions {
     /** True: erase {@link outputDirectory} before building the package. */
     clean: boolean;
 
+    /** True: warnings become fatal. */
+    strict: boolean;
+
+    /** True: enable generation of .map files for all supported file types. */
+    sourceMaps: boolean;
+
     logger: Logger;
 }
 
@@ -31,6 +37,8 @@ export async function buildPackage({
     outputDirectory,
     input,
     clean,
+    strict,
+    sourceMaps,
     logger
 }: BuildPackageOptions): Promise<void> {
     const model = createPackageModel(input, outputDirectory);
@@ -50,7 +58,7 @@ export async function buildPackage({
             outputDirectory: model.outputDirectory,
             entryPoints: model.jsEntryPoints,
             packageName: model.packageName,
-            sourceMap: false, // TODO
+            sourceMap: sourceMaps,
             logger
         });
     }
@@ -63,7 +71,7 @@ export async function buildPackage({
             packageDirectory: model.input.packageDirectory,
             outputDirectory,
             cssEntryPoint: model.cssEntryPoint,
-            sourceMap: false, // TODO
+            sourceMap: sourceMaps,
             logger
         });
     }
@@ -81,7 +89,7 @@ export async function buildPackage({
     const packageJsonContent = await generatePackageJson({
         model,
         logger,
-        strict: true //TODO
+        strict
     });
     await writeFile(
         resolve(outputDirectory, "package.json"),
