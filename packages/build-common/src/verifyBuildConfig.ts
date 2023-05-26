@@ -1,15 +1,17 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { z } from "zod";
 import {
     BuildConfig,
+    PackageOverridesConfig,
     PropertyMetaConfig,
     ProvidesConfig,
     PublishConfig,
     ReferenceConfig,
     ServiceConfig,
+    ServiceOverridesConfig,
     UiConfig
 } from "@open-pioneer/build-support";
+import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import type * as API from "..";
 
@@ -52,6 +54,14 @@ const SERVICE_CONFIG_SCHEMA: z.ZodType<ServiceConfig> = z.strictObject({
     references: z.record(z.string(), z.string().or(REFERENCE_CONFIG_SCHEMA)).optional()
 });
 
+const SERVICE_OVERRIDES_SCHEMA: z.ZodType<ServiceOverridesConfig> = z.strictObject({
+    enabled: z.boolean().optional()
+});
+
+const PACKAGE_OVERRIDES_SCHEMA: z.ZodType<PackageOverridesConfig> = z.strictObject({
+    services: z.record(z.string(), SERVICE_OVERRIDES_SCHEMA).optional()
+});
+
 const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
     assets: z.string().or(z.array(z.string()))
 });
@@ -65,6 +75,7 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     ui: UI_CONFIG_SCHEMA.optional(),
     properties: z.record(z.string(), JSON_SCHEMA).optional(),
     propertiesMeta: z.record(z.string(), PROPERTY_META_SCHEMA).optional(),
+    overrides: z.record(z.string(), PACKAGE_OVERRIDES_SCHEMA).optional(),
     publishConfig: PUBLISH_CONFIG_SCHEMA.optional()
 });
 

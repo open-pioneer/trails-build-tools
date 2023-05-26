@@ -7,6 +7,7 @@ import { ReferenceConfig } from "@open-pioneer/build-support";
 import { PackageMetadata } from "../metadata/MetadataRepository";
 import { ReportableError } from "../ReportableError";
 import { IdGenerator } from "./IdGenerator";
+import { NormalizedPackageOverrides } from "../metadata/parseBuildConfig";
 
 const SERVICE_IMPORT = template.statement(`
     import { %%SERVICE_NAME%% as %%IMPORT_NAME%% } from %%IMPORT_SOURCE%%;
@@ -60,16 +61,45 @@ const PROPERTY_OBJECT = template.expression(`
 
 export type PackageMetadataInput = Pick<PackageMetadata, "name" | "config" | "servicesModulePath">;
 
+export interface PackageMetadataOptions {
+    /**
+     * The name of the current application.
+     * Used to detect the application page for overrides.
+     */
+    appName: string;
+
+    /**
+     * Set of packages to generate code for.
+     */
+    packages: PackageMetadataInput[];
+}
+
 /**
  * Generates a combined metadata structure that is essentially a Record<string, metadata.PackageMetadata>.
  * The object contents must match the shape required by the runtime (declared in runtime/metadata/index.ts).
  */
-export function generatePackagesMetadata(packages: PackageMetadataInput[]): string {
+export function generatePackagesMetadata({ appName, packages }: PackageMetadataOptions): string {
     const idGenerator = new IdGenerator();
     const packagesMetadata = nodes.objectExpression([]);
     const imports: nodes.Statement[] = [];
+
+    let overrides: Map<string, NormalizedPackageOverrides> | undefined;
     for (const pkg of packages) {
+        if (pkg.name === appName) {
+            overrides = pkg.config.overrides;
+        } else if (pkg.config.overrides.size > 0) {
+            throw new ReportableError(
+                `Unexpected 'overrides' in package '${pkg.name}'. Overrides are only supported in the app.`
+            );
+        }
+    }
+
+    for (const pkg of packages) {
+        const packageOverrides = overrides?.get(pkg.name);
         const packageMetadata = generatePackageMetadata(pkg, {
+            enableService(serviceName) {
+                return packageOverrides?.services?.get(serviceName)?.enabled ?? true;
+            },
             importServiceClass(variableName, className, moduleId) {
                 const id = idGenerator.generate(variableName);
                 const renderedImporter = SERVICE_IMPORT({
@@ -102,10 +132,19 @@ function generatePackageMetadata(
          * Returns the actual variable name associated with the service.
          */
         importServiceClass(variableName: string, className: string, entryPoint: string): string;
+
+        /**
+         * Returns true if the service shall be included in the generated code, false otherwise.
+         */
+        enableService(serviceName: string): boolean;
     }
 ): nodes.Expression {
     const servicesObject = nodes.objectExpression([]);
     for (const service of pkg.config.services) {
+        if (!options.enableService(service.name)) {
+            continue;
+        }
+
         if (!pkg.servicesModulePath) {
             throw new ReportableError(
                 `Package '${pkg.name}' must have a valid services module (typically 'services.ts' or 'services.js').\n` +

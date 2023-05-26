@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 import {
     BuildConfig,
+    PackageOverridesConfig,
     PropertyMetaConfig,
     ProvidesConfig,
     ReferenceConfig,
-    ServiceConfig
+    ServiceConfig,
+    ServiceOverridesConfig
 } from "@open-pioneer/build-support";
 import {
     BUILD_CONFIG_NAME,
@@ -21,6 +23,8 @@ export interface NormalizedPackageConfig {
     i18n: string[] | undefined;
     ui: NormalizedUiConfig;
     properties: NormalizedProperty[];
+    // package name -> overrides
+    overrides: Map<string, NormalizedPackageOverrides>;
 }
 
 export interface NormalizedServiceConfig {
@@ -37,6 +41,14 @@ export interface NormalizedProperty {
     name: string;
     defaultValue: unknown;
     required: boolean;
+}
+
+export interface NormalizedPackageOverrides {
+    services: Map<string, NormalizedServiceOverrides>;
+}
+
+export interface NormalizedServiceOverrides {
+    enabled: boolean;
 }
 
 /**
@@ -68,7 +80,8 @@ export function normalizeConfig(rawConfig: BuildConfig): NormalizedPackageConfig
         }),
         servicesModule: rawConfig.servicesModule,
         ui: normalizeUiConfig(rawConfig.ui),
-        properties: normalizeProperties(rawConfig.properties, rawConfig.propertiesMeta)
+        properties: normalizeProperties(rawConfig.properties, rawConfig.propertiesMeta),
+        overrides: normalizePackageOverrides(rawConfig.overrides)
     };
 }
 
@@ -141,4 +154,30 @@ function normalizeProperties(
         });
     }
     return result;
+}
+
+function normalizePackageOverrides(
+    packages: Record<string, PackageOverridesConfig> | undefined
+): Map<string, NormalizedPackageOverrides> {
+    return new Map(
+        Object.entries(packages ?? {}).map(([packageName, packageOverrides]) => [
+            packageName,
+            {
+                services: normalizeServiceOverrides(packageOverrides.services)
+            }
+        ])
+    );
+}
+
+function normalizeServiceOverrides(
+    services: Record<string, ServiceOverridesConfig> | undefined
+): Map<string, NormalizedServiceOverrides> {
+    return new Map(
+        Object.entries(services ?? {}).map(([serviceId, serviceOverrides]) => [
+            serviceId,
+            {
+                enabled: serviceOverrides?.enabled ?? true
+            }
+        ])
+    );
 }

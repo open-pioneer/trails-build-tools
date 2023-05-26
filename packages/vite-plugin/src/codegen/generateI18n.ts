@@ -59,7 +59,10 @@ export interface I18nMessageOptions {
     /** The locale to generate. */
     locale: string;
 
-    /** The name of the current application. */
+    /**
+     * The name of the current application.
+     * Used to detect the application page for overrides.
+     */
     appName: string;
 
     /** All packages in the application (including the app). */

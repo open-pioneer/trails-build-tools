@@ -162,7 +162,10 @@ export function codegenPlugin(): Plugin {
                 );
                 switch (mod.type) {
                     case "app-packages": {
-                        const generatedSourceCode = generatePackagesMetadata(appMetadata.packages);
+                        const generatedSourceCode = generatePackagesMetadata({
+                            appName: appMetadata.name,
+                            packages: appMetadata.packages
+                        });
                         isDebug && debug("Generated app metadata: %O", generatedSourceCode);
                         return generatedSourceCode;
                     }

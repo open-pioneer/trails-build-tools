@@ -122,6 +122,15 @@ export interface BuildConfig {
     propertiesMeta?: Record<string, PropertyMetaConfig>;
 
     /**
+     * Apply overrides to the default configuration of another package.
+     *
+     * Only has an effect when used from the `build.config.mjs` of an application package.
+     *
+     * Key: package name (e.g. `@open-pioneer/runtime`). Value: Overrides for that package.
+     */
+    overrides?: Record<string, PackageOverridesConfig>;
+
+    /**
      * Contains options interpreted when building a package for publishing.
      */
     publishConfig?: PublishConfig;
@@ -235,6 +244,37 @@ export interface PublishConfig {
      * ```
      */
     assets?: string | string[];
+}
+
+/**
+ * Overrides for a certain package.
+ */
+export interface PackageOverridesConfig {
+    /**
+     * Overrides for a given service.
+     * The key to this object is the `id` of that service within its package.
+     */
+    services?: Record<string, ServiceOverridesConfig>;
+}
+
+/**
+ * Overrides for a single service.
+ */
+export interface ServiceOverridesConfig {
+    /**
+     * Set this value to `false` to disable the given service implementation entirely.
+     *
+     * When a service is disabled, it will not be loaded when the app starts.
+     * This will often require the app to also provide an alternative implementation of that
+     * service since other services may depend on it.
+     *
+     * > NOTE: Keep in mind that this is an expert feature designed to 'fix' (or replace) a service
+     * > when other, simpler strategies (configuration options, well defined interfaces, etc.) cannot help anymore.
+     * > This feature should not be overused.
+     *
+     * @default true
+     */
+    enabled?: boolean;
 }
 
 /**

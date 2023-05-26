@@ -521,11 +521,9 @@ async function readConfig(
                 try {
                     buildConfig = await loadBuildConfig(buildConfigPath);
                 } catch (e) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const msg = (e as any).message || "Unknown error";
-                    throw new ReportableError(
-                        `Failed to load build config ${buildConfigPath}: ${msg}`
-                    );
+                    throw new ReportableError(`Failed to load build config ${buildConfigPath}`, {
+                        cause: e
+                    });
                 }
             } else {
                 throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);

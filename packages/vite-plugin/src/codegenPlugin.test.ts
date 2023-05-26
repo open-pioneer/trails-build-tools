@@ -210,9 +210,42 @@ describe("codegen support", function () {
         assert.match(error.message, /requires messages for locale 'de-simple'/);
     });
 
-    it("generates an error if 'overrides' is used from a package", async function () {
+    it("generates an error if 'overrides' is used from a package's i18n file", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-illegal-overrides");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-illegal-overrides");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+        assert.match(error.message, /Overrides are only supported in the app/);
+    });
+
+    it("excludes a service from the generated code if it's disabled by the app", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-disabled-service");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-disabled-service");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+        assert.include(appJs, `console.log("from A");`);
+        assert.notInclude(appJs, `console.log("from B");`); // excluded because disabled and therefore never imported
+    });
+
+    it("generates an error if 'overrides' is used in the build.config.mjs of a package", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-illegal-overrides-in-package");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-illegal-overrides-in-package");
 
         const error = await expectAsyncError(() =>
             runViteBuild({
