@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.6.1
+
+### Patch Changes
+
+-   0692aa2: Revert back to commonjs
+-   Updated dependencies [0692aa2]
+    -   @open-pioneer/build-common@0.3.1
+
 ## 0.6.0
 
 ### Minor Changes

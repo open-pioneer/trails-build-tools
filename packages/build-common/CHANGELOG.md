@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 0.3.1
+
+### Patch Changes
+
+-   0692aa2: Revert back to commonjs
+
 ## 0.3.0
 
 ### Minor Changes
