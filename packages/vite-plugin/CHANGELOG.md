@@ -1,5 +1,19 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.6.0
+
+### Minor Changes
+
+-   393b294: Distribute package as ESM.
+-   39ee4c0: Use stable metadata facilities from @open-pioneer/build-common
+
+### Patch Changes
+
+-   Updated dependencies [393b294]
+-   Updated dependencies [454ea2b]
+-   Updated dependencies [39855ce]
+    -   @open-pioneer/build-common@0.3.0
+
 ## 0.5.3
 
 ### Patch Changes
