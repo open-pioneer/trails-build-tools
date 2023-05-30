@@ -3,7 +3,7 @@
 import { readFile, realpath } from "fs/promises";
 import { dirname, join } from "path";
 import { PluginContext, RollupWarning } from "rollup";
-import { PackageData, normalizePath, resolvePackageData } from "vite";
+import { PackageData, normalizePath } from "vite";
 import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists, isInDirectory } from "../utils/fileUtils";
@@ -285,6 +285,7 @@ export class MetadataRepository {
         }
 
         const { packageName, optional } = loc.dependency;
+        const { resolvePackageData } = await import("vite");
         const packageData = await resolvePackageData(
             packageName,
             loc.importedFrom,

@@ -71,7 +71,7 @@ export async function build(mode, customOptions) {
         platform: "node",
         packages: "external",
         logLevel: "info",
-        format: "esm"
+        format: "cjs"
     };
 
     if (watch) {

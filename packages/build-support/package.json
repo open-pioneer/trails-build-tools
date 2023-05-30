@@ -5,6 +5,11 @@
     "version": "0.5.0",
     "license": "Apache-2.0",
     "type": "module",
+    "exports": {
+        "import": "./index.js",
+        "require": "./index.cjs",
+        "types": "./index.d.ts"
+    },
     "files": [
         "index.js",
         "index.d.ts",
