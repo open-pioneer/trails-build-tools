@@ -3,8 +3,7 @@
     "name": "ol-map",
     "version": "0.0.1",
     "license": "Apache-2.0",
-    "dependencies": {
-    },
+    "dependencies": {},
     "exports": {
         "./package.json": "./package.json",
         ".": {
@@ -16,25 +15,32 @@
         "./styles.css": "./styles.css"
     },
     "openPioneerFramework": {
-        "packageFormatVersion": "0.1",
+        "packageFormatVersion": "1.0.0",
         "styles": "./styles.css",
         "servicesModules": "./services",
-        "services": {
-            "OlMapRegistry": {
+        "services": [
+            {
+                "serviceName": "OlMapRegistry",
                 "provides": [
-                    "ol-map.MapRegistry"
-                ],
-                "references": {
-                    "providers": {
-                        "name": "ol-map.MapConfigProvider",
-                        "all": true
+                    {
+                        "interfaceName": "ol-map.MapRegistry"
                     }
-                }
+                ],
+                "references": [
+                    {
+                        "referenceName": "providers",
+                        "interfaceName": "ol-map.MapConfigProvider",
+                        "type": "all"
+                    }
+                ]
             }
-        },
+        ],
         "ui": {
             "references": [
-                "ol-map.MapRegistry"
+                {
+                    "interfaceName": "ol-map.MapRegistry",
+                    "type": "unique"
+                }
             ]
         }
     }

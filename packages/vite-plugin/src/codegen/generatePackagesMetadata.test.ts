@@ -1,79 +1,71 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
+import { createPackageConfigFromBuildConfig } from "@open-pioneer/build-common";
 import { describe, expect, it } from "vitest";
 import { generatePackagesMetadata } from "./generatePackagesMetadata";
 
 describe("generatePackagesMetadata", function () {
     it("should generate package metadata", function () {
-        const pkgMetadata = generatePackagesMetadata({
+        const pkgConfig = createPackageConfigFromBuildConfig({
+            services: {
+                ServiceA: {
+                    provides: [],
+                    references: {}
+                },
+                ServiceB: {
+                    provides: [
+                        {
+                            name: "ServiceC",
+                            qualifier: "C"
+                        }
+                    ],
+                    references: {
+                        asd: {
+                            name: "ServiceD",
+                            qualifier: "D"
+                        }
+                    }
+                }
+            },
+            ui: {
+                references: [{ name: "foo.ServiceE" }, { name: "foo.ServiceF", qualifier: "F" }]
+            },
+            properties: {
+                some_property: "default_value",
+                complex_property: {
+                    array: [
+                        1,
+                        2,
+                        {
+                            a: 3
+                        },
+                        [[[[[1]]]]]
+                    ],
+                    bool: false,
+                    n: 123132,
+                    str: "foo"
+                }
+            },
+            propertiesMeta: {
+                some_property: {
+                    required: true
+                }
+            },
+            overrides: {}
+        });
+
+        const code = generatePackagesMetadata({
             appName: "test",
             packages: [
                 {
                     name: "test",
-                    config: {
-                        styles: undefined,
-                        i18n: undefined,
-                        services: [
-                            {
-                                name: "ServiceA",
-                                provides: [],
-                                references: {}
-                            },
-                            {
-                                name: "ServiceB",
-                                provides: [
-                                    {
-                                        name: "ServiceC",
-                                        qualifier: "C"
-                                    }
-                                ],
-                                references: {
-                                    asd: {
-                                        name: "ServiceD",
-                                        qualifier: "D"
-                                    }
-                                }
-                            }
-                        ],
-                        servicesModule: undefined,
-                        ui: {
-                            references: [
-                                { name: "foo.ServiceE" },
-                                { name: "foo.ServiceF", qualifier: "F" }
-                            ]
-                        },
-                        properties: [
-                            {
-                                name: "some_property",
-                                defaultValue: "default_value",
-                                required: true
-                            },
-                            {
-                                name: "complex_property",
-                                defaultValue: {
-                                    array: [
-                                        1,
-                                        2,
-                                        {
-                                            a: 3
-                                        },
-                                        [[[[[1]]]]]
-                                    ],
-                                    bool: false,
-                                    n: 123132,
-                                    str: "foo"
-                                },
-                                required: false
-                            }
-                        ],
-                        overrides: new Map()
-                    },
-                    servicesModulePath: "entryPoint"
+                    servicesModulePath: "entryPoint",
+                    config: pkgConfig
                 }
             ]
         });
 
-        expect(pkgMetadata).toMatchInlineSnapshot(`
+        expect(code).toMatchInlineSnapshot(`
           "import { ServiceA as test_ServiceA } from \\"entryPoint\\";
           import { ServiceB as test_ServiceB } from \\"entryPoint\\";
           export default {

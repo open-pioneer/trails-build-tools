@@ -231,7 +231,10 @@ function reportError(ctx: PluginContext, error: unknown) {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const message = String((error as any).message) || "Unknown error";
-    ctx.error("Internal error: " + message);
+    ctx.error({
+        message: "Internal error: " + message,
+        cause: error
+    });
 }
 
 function addManualDep(manualDeps: Map<string, Set<string>>, file: string, moduleId: string) {

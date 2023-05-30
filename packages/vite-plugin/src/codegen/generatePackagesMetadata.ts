@@ -3,11 +3,10 @@
 import generate from "@babel/generator";
 import template from "@babel/template";
 import * as nodes from "@babel/types";
-import { ReferenceConfig } from "@open-pioneer/build-support";
 import { PackageMetadata } from "../metadata/MetadataRepository";
 import { ReportableError } from "../ReportableError";
 import { IdGenerator } from "./IdGenerator";
-import { NormalizedPackageOverrides } from "../metadata/parseBuildConfig";
+import { PackageOverrides, Reference, UiReference } from "@open-pioneer/build-common";
 
 const SERVICE_IMPORT = template.statement(`
     import { %%SERVICE_NAME%% as %%IMPORT_NAME%% } from %%IMPORT_SOURCE%%;
@@ -83,7 +82,7 @@ export function generatePackagesMetadata({ appName, packages }: PackageMetadataO
     const packagesMetadata = nodes.objectExpression([]);
     const imports: nodes.Statement[] = [];
 
-    let overrides: Map<string, NormalizedPackageOverrides> | undefined;
+    let overrides: Map<string, PackageOverrides> | undefined;
     for (const pkg of packages) {
         if (pkg.name === appName) {
             overrides = pkg.config.overrides;
@@ -140,8 +139,8 @@ function generatePackageMetadata(
     }
 ): nodes.Expression {
     const servicesObject = nodes.objectExpression([]);
-    for (const service of pkg.config.services) {
-        if (!options.enableService(service.name)) {
+    for (const service of pkg.config.services.values()) {
+        if (!options.enableService(service.serviceName)) {
             continue;
         }
 
@@ -153,24 +152,24 @@ function generatePackageMetadata(
         }
 
         const importName = options.importServiceClass(
-            pkg.name + "_" + service.name,
-            service.name,
+            pkg.name + "_" + service.serviceName,
+            service.serviceName,
             pkg.servicesModulePath
         );
         const serviceObject = SERVICE_OBJECT({
-            SERVICE_NAME: nodes.stringLiteral(service.name),
+            SERVICE_NAME: nodes.stringLiteral(service.serviceName),
             SERVICE_IMPORT: nodes.identifier(importName),
             SERVICE_INTERFACES: nodes.arrayExpression(
                 service.provides.map((p) =>
                     INTERFACE_OBJECT({
-                        INTERFACE_NAME: nodes.stringLiteral(p.name),
+                        INTERFACE_NAME: nodes.stringLiteral(p.interfaceName),
                         QUALIFIER:
                             p.qualifier == null ? undefinedNode() : nodes.stringLiteral(p.qualifier)
                     })
                 )
             ),
             SERVICE_REFERENCES: nodes.objectExpression(
-                Object.entries(service.references).map(([referenceName, referenceConfig]) =>
+                Array.from(service.references.entries()).map(([referenceName, referenceConfig]) =>
                     nodes.objectProperty(
                         nodes.stringLiteral(referenceName),
                         referenceObject(referenceConfig)
@@ -180,20 +179,18 @@ function generatePackageMetadata(
         });
 
         servicesObject.properties.push(
-            nodes.objectProperty(nodes.stringLiteral(service.name), serviceObject)
+            nodes.objectProperty(nodes.stringLiteral(service.serviceName), serviceObject)
         );
     }
 
     const uiObject = UI_OBJECT({
-        UI_REFERENCES: nodes.arrayExpression(
-            pkg.config.ui.references.map((r) => referenceObject(r))
-        )
+        UI_REFERENCES: nodes.arrayExpression(pkg.config.uiReferences.map((r) => referenceObject(r)))
     });
 
     const propertiesObject = nodes.objectExpression(
-        pkg.config.properties.map((prop) =>
+        Array.from(pkg.config.properties.values()).map((prop) =>
             nodes.objectProperty(
-                nodes.stringLiteral(prop.name),
+                nodes.stringLiteral(prop.propertyName),
                 PROPERTY_OBJECT({
                     VALUE: jsonToExpression(prop.defaultValue),
                     REQUIRED: nodes.booleanLiteral(prop.required)
@@ -237,13 +234,11 @@ function jsonToExpression(json: unknown): nodes.Expression {
     throw new Error(`Unexpected value while serializing JSON: ${json}.`);
 }
 
-function referenceObject(referenceConfig: ReferenceConfig): nodes.Expression {
+function referenceObject(ref: Reference | UiReference): nodes.Expression {
     return REFERENCE_OBJECT({
-        INTERFACE_NAME: nodes.stringLiteral(referenceConfig.name),
-        QUALIFIER: referenceConfig.qualifier
-            ? nodes.stringLiteral(referenceConfig.qualifier)
-            : undefinedNode(),
-        ALL: nodes.booleanLiteral(referenceConfig.all ?? false)
+        INTERFACE_NAME: nodes.stringLiteral(ref.interfaceName),
+        QUALIFIER: ref.qualifier ? nodes.stringLiteral(ref.qualifier) : undefinedNode(),
+        ALL: nodes.booleanLiteral(ref.type === "all" ? true : false) // TODO: Rework internal app format
     });
 }
 

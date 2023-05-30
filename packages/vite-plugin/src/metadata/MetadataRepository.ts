@@ -8,14 +8,15 @@ import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists, isInDirectory } from "../utils/fileUtils";
 import { Cache } from "../utils/Cache";
-import {
-    isBuildConfig,
-    loadBuildConfig,
-    normalizeConfig,
-    NormalizedPackageConfig
-} from "./parseBuildConfig";
+import { isBuildConfig, loadBuildConfig } from "./parseBuildConfig";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
-import { BUILD_CONFIG_NAME } from "@open-pioneer/build-common";
+import {
+    BUILD_CONFIG_NAME,
+    PackageConfig,
+    PackageMetadataV1,
+    createPackageConfigFromPackageMetadata
+} from "@open-pioneer/build-common";
+import { PACKAGE_NAME } from "../utils/package";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -75,7 +76,7 @@ export interface PackageMetadata {
     dependencies: PackageDependency[];
 
     /** Parsed metadata (from build config file). */
-    config: NormalizedPackageConfig;
+    config: PackageConfig;
 }
 
 export interface PackageDependency {
@@ -421,7 +422,7 @@ export async function parsePackageMetadata(
     const {
         name: packageName,
         dependencies,
-        openPioneerFramework: frameworkMetadata
+        frameworkMetadata
     } = await parsePackageJson(ctx, packageJsonPath);
 
     const configResult = await readConfig(
@@ -443,7 +444,7 @@ export async function parsePackageMetadata(
     const { config, configPath } = configResult;
 
     let servicesModule: string | undefined;
-    if (config.services.length) {
+    if (config.services.size) {
         try {
             servicesModule = await resolveLocalFile(
                 ctx,
@@ -475,20 +476,18 @@ export async function parsePackageMetadata(
     }
 
     const i18nPaths = new Map<string, string>();
-    if (config.i18n) {
-        for (const locale of config.i18n) {
-            if (i18nPaths.has(locale)) {
-                throw new ReportableError(`Locale '${locale}' was defined twice in ${configPath}`);
-            }
-
-            const path = join(packageDir, "i18n", `${locale}.yaml`);
-            ctx.addWatchFile(path);
-            if (!(await fileExists(path))) {
-                throw new ReportableError(`i18n file '${path}' does not exist.`);
-            }
-
-            i18nPaths.set(locale, normalizePath(path));
+    for (const locale of config.languages) {
+        if (i18nPaths.has(locale)) {
+            throw new ReportableError(`Locale '${locale}' was defined twice in ${configPath}`);
         }
+
+        const path = join(packageDir, "i18n", `${locale}.yaml`);
+        ctx.addWatchFile(path);
+        if (!(await fileExists(path))) {
+            throw new ReportableError(`i18n file '${path}' does not exist.`);
+        }
+
+        i18nPaths.set(locale, normalizePath(path));
     }
 
     return {
@@ -508,14 +507,14 @@ async function readConfig(
     ctx: MetadataContext,
     packageDir: string,
     mode: "local" | "external",
-    frameworkMetadata: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    frameworkMetadata: unknown,
     packageName: string,
     packageJsonPath: string
 ) {
     switch (mode) {
         case "local": {
             const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
-            let buildConfig: NormalizedPackageConfig | undefined;
+            let buildConfig: PackageConfig | undefined;
             ctx.addWatchFile(normalizePath(buildConfigPath));
             if (await fileExists(buildConfigPath)) {
                 try {
@@ -535,7 +534,27 @@ async function readConfig(
                 return undefined;
             }
 
-            return { configPath: packageJsonPath, config: normalizeConfig(frameworkMetadata) };
+            const metadataResult = PackageMetadataV1.parsePackageMetadata(frameworkMetadata);
+            if (metadataResult.type === "error") {
+                if (metadataResult.code === "unsupported-version") {
+                    throw new ReportableError(
+                        `Package '${packageName}' in ${packageDir} uses an unsupported metadata version.` +
+                            ` You will likely have to update ${PACKAGE_NAME}.\n\n` +
+                            metadataResult.message,
+                        { cause: metadataResult.cause }
+                    );
+                }
+
+                throw new ReportableError(
+                    `Failed to parse metadata of package '${packageName}' in ${packageDir}: ${metadataResult.message}`,
+                    { cause: metadataResult.cause }
+                );
+            }
+
+            return {
+                configPath: packageJsonPath,
+                config: createPackageConfigFromPackageMetadata(metadataResult.value)
+            };
         }
     }
 }
@@ -587,12 +606,11 @@ async function parsePackageJson(ctx: MetadataContext, packageJsonPath: string) {
         ...Object.keys(optionalDependencies).map((packageName) => ({ packageName, optional: true }))
     ];
 
-    // TODO typings + validation
-    const openPioneerFramework = packageJsonContent.openPioneerFramework ?? undefined;
+    const frameworkMetadata = packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
     return {
         name: packageName,
         dependencies: allDependencies,
-        openPioneerFramework: openPioneerFramework
+        frameworkMetadata: frameworkMetadata
     };
 }
 

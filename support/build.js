@@ -9,7 +9,7 @@ import esbuild from "esbuild";
 */
 
 const buildOptions = {
-    minify: true,
+    minify: false,
     sourceMap: true
 };
 
