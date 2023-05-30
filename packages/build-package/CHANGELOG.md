@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package
 
+## 0.2.2
+
+### Patch Changes
+
+-   0692aa2: Revert back to commonjs
+-   Updated dependencies [0692aa2]
+    -   @open-pioneer/build-support@0.5.1
+    -   @open-pioneer/build-common@0.3.1
+
 ## 0.2.1
 
 ### Patch Changes
