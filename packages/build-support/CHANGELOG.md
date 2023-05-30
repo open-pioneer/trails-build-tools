@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-support
 
+## 0.5.0
+
+### Minor Changes
+
+-   39855ce: Introduce publishConfig in build.config.mjs
+
 ## 0.4.0
 
 ### Minor Changes

@@ -1,5 +1,18 @@
 # Changelog @open-pioneer/build-common
 
+## 1.0.0
+
+### Minor Changes
+
+-   393b294: Distribute package as ESM.
+-   454ea2b: Introduce new stable metadata format and move internal package representation into this package
+-   39855ce: Introduce publishConfig in build.config.mjs
+
+### Patch Changes
+
+-   Updated dependencies [39855ce]
+    -   @open-pioneer/build-support@0.5.0
+
 ## 0.2.0
 
 ### Minor Changes
