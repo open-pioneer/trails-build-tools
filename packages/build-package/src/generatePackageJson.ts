@@ -5,6 +5,7 @@ import { PackageModel } from "./PackageModel";
 import posix from "node:path/posix";
 import { ValidationReporter } from "./utils/ValidationReporter";
 import { ValidationOptions } from "../types";
+import { Service, PackageMetadataV1 as V1 } from "@open-pioneer/build-common";
 
 type SimplePackageModel = Pick<
     PackageModel,
@@ -149,22 +150,31 @@ function getExportName(moduleId: string) {
     return `./${moduleId}`;
 }
 
-function generateMetadata(model: SimplePackageModel): Record<string, unknown> {
-    // TODO: Typings!
-    const buildConfig = model.input.buildConfig;
-    const metadata: Record<string, unknown> = {
-        packageFormatVersion: "0.1",
+function generateMetadata(model: SimplePackageModel): unknown {
+    const pkgConfig = model.input.packageConfig;
+    const metadata: V1.OutputPackageMetadata = {
         styles: model.cssEntryPoint ? `./${model.cssEntryPoint.outputModuleId}.css` : undefined,
-        servicesModules: model.servicesEntryPoint?.outputModuleId
+        services: writeServices(Array.from(pkgConfig.services.values())),
+        servicesModule: model.servicesEntryPoint?.outputModuleId
             ? `./${model.servicesEntryPoint.outputModuleId}`
             : undefined,
-
-        // TODO: These will have to be normalized in some way to keep it simple
-        i18n: buildConfig.i18n, // TODO: Copy not implemented yet #81
-        services: buildConfig.services,
-        ui: buildConfig.ui,
-        properties: buildConfig.properties,
-        propertiesMeta: buildConfig.propertiesMeta
+        i18n: {
+            languages: Array.from(pkgConfig.languages)
+        },
+        ui: {
+            references: Array.from(pkgConfig.uiReferences)
+        },
+        properties: Array.from(pkgConfig.properties.values())
     };
-    return metadata;
+    return V1.serializePackageMetadata(metadata);
+}
+
+function writeServices(services: Service[]): V1.ServiceConfig[] {
+    return services.map(({ serviceName, provides, references }) => {
+        return {
+            serviceName,
+            provides,
+            references: Array.from(references.values())
+        };
+    });
 }

@@ -30,7 +30,15 @@ describe("generatePackageJson", function () {
             "license": "MIT",
             "name": "my-package",
             "openPioneerFramework": {
-              "packageFormatVersion": "0.1",
+              "i18n": {
+                "languages": [],
+              },
+              "packageFormatVersion": "1.0.0",
+              "properties": [],
+              "services": [],
+              "ui": {
+                "references": [],
+              },
             },
             "type": "module",
             "version": "1.0.0",
@@ -259,33 +267,50 @@ describe("generatePackageJson", function () {
         `);
         expect(openPioneerFramework).toMatchInlineSnapshot(`
           {
-            "i18n": [
-              "en",
-              "de",
-            ],
-            "packageFormatVersion": "0.1",
-            "properties": {
-              "a": 1,
-              "b": null,
+            "i18n": {
+              "languages": [
+                "en",
+                "de",
+              ],
             },
-            "propertiesMeta": {
-              "b": {
+            "packageFormatVersion": "1.0.0",
+            "properties": [
+              {
+                "defaultValue": 1,
+                "propertyName": "a",
                 "required": false,
               },
-            },
-            "services": {
-              "MyService": {
-                "provides": "c",
-                "references": {
-                  "a": "b",
-                },
+              {
+                "defaultValue": null,
+                "propertyName": "b",
+                "required": false,
               },
-            },
-            "servicesModules": "./custom-services-name",
+            ],
+            "services": [
+              {
+                "provides": [
+                  {
+                    "interfaceName": "c",
+                  },
+                ],
+                "references": [
+                  {
+                    "interfaceName": "b",
+                    "referenceName": "a",
+                    "type": "unique",
+                  },
+                ],
+                "serviceName": "MyService",
+              },
+            ],
+            "servicesModule": "./custom-services-name",
             "styles": "./my-styles.css",
             "ui": {
               "references": [
-                "d",
+                {
+                  "interfaceName": "d",
+                  "type": "unique",
+                },
               ],
             },
           }

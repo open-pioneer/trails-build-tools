@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { InputModel } from "./InputModel";
 import { SUPPORTED_JS_EXTENSIONS } from "./buildJs";
-import { BuildConfig } from "@open-pioneer/build-common";
 import { SUPPORTED_CSS_EXTENSIONS } from "./buildCss";
 import {
     NormalizedEntryPoint,
@@ -68,17 +67,22 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
         jsEntryPointsByModuleId.set(key, configuredEp);
     }
 
+    const pkgConfig = input.packageConfig;
+
     let servicesEntryPoint;
-    if (hasServices(input.buildConfig)) {
-        servicesEntryPoint = normalizeEntryPoint(
-            input.buildConfig.servicesModule ?? "./services",
-            SUPPORTED_JS_EXTENSIONS
-        );
+    if (pkgConfig.services.size) {
+        if (!pkgConfig.servicesModule) {
+            throw new Error(
+                `Package at ${input.packageDirectory} defines services but has no services module.`
+            );
+        }
+
+        servicesEntryPoint = normalizeEntryPoint(pkgConfig.servicesModule, SUPPORTED_JS_EXTENSIONS);
         jsEntryPointsByModuleId.set(servicesEntryPoint.outputModuleId, servicesEntryPoint);
     }
 
-    const normalizedCssEntryPoint = input.buildConfig.styles
-        ? normalizeEntryPoint(input.buildConfig.styles, SUPPORTED_CSS_EXTENSIONS)
+    const normalizedCssEntryPoint = pkgConfig.styles
+        ? normalizeEntryPoint(pkgConfig.styles, SUPPORTED_CSS_EXTENSIONS)
         : undefined;
 
     const assetPattern = toArray(input.buildConfig.publishConfig?.assets ?? "assets/**");
@@ -93,10 +97,6 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
         assetPatterns: assetPattern,
         servicesEntryPoint
     };
-}
-
-function hasServices(buildConfig: BuildConfig) {
-    return buildConfig.services && Object.keys(buildConfig.services).length > 0;
 }
 
 function toArray<T>(value: T | T[]): T[] {

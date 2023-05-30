@@ -85,8 +85,16 @@ describe("build", function () {
             "license": "MIT",
             "name": "simple-js-project",
             "openPioneerFramework": {
-              "packageFormatVersion": "0.1",
+              "i18n": {
+                "languages": [],
+              },
+              "packageFormatVersion": "1.0.0",
+              "properties": [],
+              "services": [],
               "styles": "./my-styles.css",
+              "ui": {
+                "references": [],
+              },
             },
             "type": "module",
             "version": "0.0.1",

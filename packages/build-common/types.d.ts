@@ -54,6 +54,12 @@ export namespace PackageMetadataV1 {
     }
 
     /**
+     * Same as {@link PackageMetadata}, but without the format version.
+     * The format version is filled in automatically when writing metadata.
+     */
+    export type OutputPackageMetadata = Omit<PackageMetadata, "packageFormatVersion">;
+
+    /**
      * Represents a service instance.
      */
     export interface ServiceConfig {
@@ -153,9 +159,7 @@ export namespace PackageMetadataV1 {
      *
      * Note: the framework metadata version will be included automatically.
      */
-    export function serializePackageMetadata(
-        metadata: Omit<PackageMetadata, "packageFormatVersion">
-    ): unknown;
+    export function serializePackageMetadata(metadata: OutputPackageMetadata): unknown;
 }
 
 /** Internal representation of a package. */

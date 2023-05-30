@@ -1,6 +1,12 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { BUILD_CONFIG_NAME, BuildConfig, loadBuildConfig } from "@open-pioneer/build-common";
+import {
+    BUILD_CONFIG_NAME,
+    BuildConfig,
+    PackageConfig,
+    createPackageConfigFromBuildConfig,
+    loadBuildConfig
+} from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -21,6 +27,9 @@ export interface InputModel {
 
     /** Path to build.config file (for log messages). */
     buildConfigPath: string;
+
+    /** Normalized package info from build.config. */
+    packageConfig: PackageConfig;
 
     /** Validation options that shall be applied during the build. */
     validation: Required<ValidationOptions>;
@@ -56,7 +65,10 @@ export function createInputModelFromData(data: {
     buildConfig: BuildConfig;
     validation: Required<ValidationOptions>;
 }): InputModel {
-    return data;
+    return {
+        ...data,
+        packageConfig: createPackageConfigFromBuildConfig(data.buildConfig)
+    };
 }
 
 async function loadPackageJson(path: string): Promise<Record<string, unknown>> {
