@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 0.2.1
+
+### Patch Changes
+
+-   003324e: Redo release
+
 ## 0.2.0
 
 ### Minor Changes
