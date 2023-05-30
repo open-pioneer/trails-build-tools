@@ -20,9 +20,7 @@
         "README.md",
         "LICENSE"
     ],
-    "peerDependencies": {
-        "@open-pioneer/build-support": "workspace:^"
-    },
+    "peerDependencies": {},
     "devDependencies": {
         "@open-pioneer/build-support": "workspace:^",
         "@types/semver": "^7.5.0",

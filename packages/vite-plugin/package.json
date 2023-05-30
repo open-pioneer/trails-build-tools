@@ -23,7 +23,6 @@
     ],
     "peerDependencies": {
         "@open-pioneer/runtime": "*",
-        "@open-pioneer/build-support": "workspace:^",
         "vite": "^4.0.0",
         "sass": "^1.58.3"
     },
