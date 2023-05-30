@@ -4,18 +4,26 @@ import { gte, parse, Range } from "semver";
 
 /**
  * Returns `true` if the current version of the parser is compatible with the given `serializedVersion`.
+ *
+ * Given the two versions, the following attempts to parse will succeed:
+ *
+ * - serializedVersion is a newer patch release compatible with currentVersion
+ * - serializedVersion is an older release in the same major version than currentVersion
+ *
+ * All other versions are incompatible as they might either be from an incompatible major version
+ * or from a new minor version that introduces new, required features.
  */
-export function canSupportAsReader(currentVersion: string, serializedVersion: string) {
+export function canParse(currentVersion: string, serializedVersion: string) {
     const currentSemver = parse(currentVersion);
-    const currentMinor = new Range("~" + currentVersion);
-    if (!currentSemver || !currentMinor) {
+    if (!currentSemver) {
         throw new Error("Internal error: invalid current version");
     }
+    const currentMinor = new Range("~" + currentVersion);
 
     const serializedSemver = parse(serializedVersion);
     if (!serializedSemver) {
         throw new Error(
-            `Serialized metadata version is invalid: ${serializedVersion}. Expected a valid semver.`
+            `Serialized metadata version is invalid: '${serializedVersion}'. Expected a valid semver.`
         );
     }
 

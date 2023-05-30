@@ -3,7 +3,7 @@
 import { pathToFileURL } from "node:url";
 import { verifyBuildConfig } from "./verifyBuildConfig";
 import { existsSync } from "node:fs";
-import type * as API from "..";
+import type * as API from "../../types";
 
 type LoadBuildConfig = typeof API.loadBuildConfig;
 

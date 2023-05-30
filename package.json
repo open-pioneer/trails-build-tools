@@ -6,6 +6,7 @@
     "license": "Apache-2.0",
     "scripts": {
         "clean": "pnpm recursive --no-sort run clean",
+        "dev": "pnpm run --parallel --if-present dev",
         "build": "pnpm recursive --sort run build",
         "test": "vitest",
         "check-types": "tsc --noEmit",

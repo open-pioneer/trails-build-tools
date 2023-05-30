@@ -13,7 +13,7 @@ import {
 } from "@open-pioneer/build-support";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import type * as API from "..";
+import type * as API from "../../types";
 
 type VerifyBuildConfig = typeof API.verifyBuildConfig;
 

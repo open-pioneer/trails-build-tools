@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { TEST_DATA_DIR } from "./test-utils/paths";
+import { TEST_DATA_DIR } from "../test-utils/paths";
 import { loadBuildConfig } from "./loadBuildConfig";
 
 describe("loadBuildConfig", function () {

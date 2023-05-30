@@ -18,7 +18,8 @@
 
         "isolatedModules": true,
         "esModuleInterop": false,
-        "skipLibCheck": true
+        "skipLibCheck": true, // TODO: Disable when open pioneer metadata typings available
+        "skipDefaultLibCheck": true
     },
     "include": ["packages"]
 }
