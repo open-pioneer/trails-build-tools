@@ -40,6 +40,7 @@
         "fast-glob": "^3.2.12",
         "fs-extra": "^11.1.1",
         "postcss": "^8.4.23",
+        "postcss-import": "^15.1.0",
         "rollup": "^3.23.0",
         "rollup-plugin-esbuild": "^5.0.0"
     },
@@ -50,7 +51,6 @@
         "@types/postcss-import": "^14.0.0",
         "@types/react": "^18.2.7",
         "build-tools": "workspace:*",
-        "postcss-import": "^15.1.0",
         "typescript": "^5.0.4",
         "sass": "^1.62.1"
     }
