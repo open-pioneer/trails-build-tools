@@ -17,7 +17,7 @@
     "openPioneerFramework": {
         "packageFormatVersion": "1.0.0",
         "styles": "./styles.css",
-        "servicesModules": "./services",
+        "servicesModule": "./my-services",
         "services": [
             {
                 "serviceName": "OlMapRegistry",

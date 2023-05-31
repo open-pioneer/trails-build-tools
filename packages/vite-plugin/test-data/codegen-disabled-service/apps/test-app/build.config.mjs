@@ -7,7 +7,7 @@ export default defineBuildConfig({
                 "B": {
                     enabled: false
                 }
-            }
+            },
         }
-    }
+    },
 });

@@ -33,7 +33,7 @@
  *
  * @module
  */
-import { PackageMetadataV1 as V1 } from "../../types";
+import type { PackageMetadataV1 as V1 } from "../../types";
 import { canParse } from "./versionUtils";
 import { z } from "zod";
 
@@ -137,10 +137,19 @@ export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) 
     };
 };
 
-export const serializePackageMetadata: typeof V1.serializePackageMetadata = (metadata) => {
+export const serializePackageMetadata: typeof V1.serializePackageMetadata = (
+    metadata: V1.OutputPackageMetadata & Partial<Pick<V1.PackageMetadata, typeof VERSION_FIELD>>
+) => {
+    if (metadata[VERSION_FIELD] != null && metadata[VERSION_FIELD] !== CURRENT_VERSION) {
+        throw new Error(
+            `Invalid package metadata version '${metadata[VERSION_FIELD]}': ` +
+                `version should either be omitted or be equal to the current version.`
+        );
+    }
+
     const augmentedMetadata: V1.PackageMetadata = {
         ...metadata,
-        packageFormatVersion: CURRENT_VERSION
+        [VERSION_FIELD]: CURRENT_VERSION
     };
 
     // Sanity check: pass our own validation.

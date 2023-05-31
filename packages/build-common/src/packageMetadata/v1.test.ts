@@ -76,8 +76,7 @@ describe("packageMetadata v1", function () {
     });
 
     it("serializes and parses valid metadata objects", function () {
-        const metadata: PackageMetadataV1.PackageMetadata = {
-            packageFormatVersion: "filled-in",
+        const metadata: PackageMetadataV1.OutputPackageMetadata = {
             services: [
                 {
                     serviceName: "A",
@@ -146,5 +145,14 @@ describe("packageMetadata v1", function () {
             packageFormatVersion: CURRENT_VERSION // filled in during serialize
         };
         expect(value).toMatchObject(expectedValue);
+    });
+
+    it("serializes and parses valid metadata objects", function () {
+        const metadata: PackageMetadataV1.PackageMetadata = {
+            packageFormatVersion: "1.0.9999999"
+        };
+        expect(() => serializePackageMetadata(metadata)).toThrowErrorMatchingInlineSnapshot(
+            "\"Invalid package metadata version '1.0.9999999': version should either be omitted or be equal to the current version.\""
+        );
     });
 });

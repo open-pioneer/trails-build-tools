@@ -252,7 +252,7 @@ export interface PublishConfig {
 export interface PackageOverridesConfig {
     /**
      * Overrides for a given service.
-     * The key to this object is the `id` of that service within its package.
+     * The key to this object is the name of that service within its package.
      */
     services?: Record<string, ServiceOverridesConfig>;
 }

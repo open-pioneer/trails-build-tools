@@ -332,7 +332,7 @@ function addServiceOverrides(
     overrides: API.ServiceOverrides
 ) {
     if (services.has(overrides.serviceName)) {
-        throw new Error(`OVerrides for service '${overrides.serviceName}' are already defined.`);
+        throw new Error(`Overrides for service '${overrides.serviceName}' are already defined.`);
     }
     services.set(overrides.serviceName, overrides);
 }

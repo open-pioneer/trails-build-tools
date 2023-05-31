@@ -539,8 +539,8 @@ async function readConfig(
             if (metadataResult.type === "error") {
                 if (metadataResult.code === "unsupported-version") {
                     throw new ReportableError(
-                        `Package '${packageName}' in ${packageDir} uses an unsupported metadata version.` +
-                            ` You will likely have to update ${PACKAGE_NAME}.\n\n` +
+                        `Package '${packageName}' in ${packageDir} uses an unsupported package metadata version.` +
+                            ` Try updating ${PACKAGE_NAME}.\n\n` +
                             metadataResult.message,
                         { cause: metadataResult.cause }
                     );
@@ -578,7 +578,6 @@ async function parsePackageJson(ctx: MetadataContext, packageJsonPath: string) {
         throw new ReportableError(`Expected 'name' to be a string in ${packageJsonPath}`);
     }
 
-    // TODO handle peer dependencies
     const dependencies = packageJsonContent.dependencies ?? {};
     if (typeof dependencies !== "object") {
         throw new ReportableError(`Expected a valid 'dependencies' object in ${packageJsonPath}`);
