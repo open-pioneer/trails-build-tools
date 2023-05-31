@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 0.3.1
+
+### Patch Changes
+
+-   0a68001: Fix source map paths on windows
+
 ## 0.3.0
 
 ### Minor Changes
