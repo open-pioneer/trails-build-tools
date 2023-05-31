@@ -182,8 +182,11 @@ export interface PackageConfig {
     /** Package properties. */
     properties: Map<string, Property>;
 
-    /** Overrides for other packages, indexed by package name.*/
-    overrides: Map<string, PackageOverrides>;
+    /**
+     * Overrides for other packages, indexed by package name.
+     * This is undefined if the package does not use the 'overrides' property.
+     */
+    overrides: Map<string, PackageOverrides> | undefined;
 }
 
 /** Internal representation of a service. */

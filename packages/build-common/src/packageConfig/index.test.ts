@@ -208,7 +208,7 @@ describe("packageConfig", function () {
               "x",
               "y",
             },
-            "overrides": Map {},
+            "overrides": undefined,
             "properties": Map {
               "x" => {
                 "defaultValue": 123,

@@ -86,7 +86,7 @@ export function generatePackagesMetadata({ appName, packages }: PackageMetadataO
     for (const pkg of packages) {
         if (pkg.name === appName) {
             overrides = pkg.config.overrides;
-        } else if (pkg.config.overrides.size > 0) {
+        } else if (pkg.config.overrides) {
             throw new ReportableError(
                 `Unexpected 'overrides' in package '${pkg.name}'. Overrides are only supported in the app.`
             );

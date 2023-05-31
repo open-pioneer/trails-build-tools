@@ -58,8 +58,9 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
         }
     }
 
-    const overrides = new Map<string, API.PackageOverrides>();
+    let overrides;
     if (rawConfig.overrides) {
+        overrides = new Map<string, API.PackageOverrides>();
         for (const [packageName, packageOverrides] of Object.entries(rawConfig.overrides)) {
             addPackageOverrides(
                 overrides,
@@ -232,7 +233,7 @@ function readConfig(metadata: API.PackageMetadataV1.PackageMetadata): API.Packag
         languages,
         uiReferences: readUiReferences(metadata.ui),
         properties,
-        overrides: new Map()
+        overrides: undefined
     };
 }
 
