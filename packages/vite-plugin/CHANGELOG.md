@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.7.0
+
+### Minor Changes
+
+-   900057b: Allow framework metadata from package.json for local packages. It is still an error to use both in a package at the same time.
+
 ## 0.6.1
 
 ### Patch Changes
