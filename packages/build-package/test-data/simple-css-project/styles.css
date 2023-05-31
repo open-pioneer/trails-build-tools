@@ -1,4 +1,4 @@
-@import "./importedStyles.css";
+@import "./dir/importedStyles.css";
 
 .main {
     padding: 1;

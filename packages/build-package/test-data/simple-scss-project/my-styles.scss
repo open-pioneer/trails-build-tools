@@ -1,4 +1,5 @@
-@import "./test_module";
+@import "./dir/test_module";
+@import "./cssFile.css";
 
 .a {
     .b {

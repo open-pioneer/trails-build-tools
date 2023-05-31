@@ -130,8 +130,8 @@ describe("buildCss", function () {
         const sourceMapData = JSON.parse(readText(resolve(outputDirectory, "styles.css.map")));
         expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
-            "/external-packages/@my-scope/my-test-package/importedStyles.css",
-            "/external-packages/@my-scope/my-test-package/styles.css",
+            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/dir/importedStyles.css",
+            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/styles.css",
           ]
         `);
         expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
@@ -140,7 +140,7 @@ describe("buildCss", function () {
               color: green;
           }
           ",
-            "@import \\"./importedStyles.css\\";
+            "@import \\"./dir/importedStyles.css\\";
 
           .main {
               padding: 1;
@@ -260,9 +260,9 @@ describe("buildCss", function () {
 
         expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
-            "/external-packages/@my-scope/my-test-package/cssFile.css",
-            "/external-packages/@my-scope/my-test-package/_test_module.scss",
-            "/external-packages/@my-scope/my-test-package/my-styles.scss",
+            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/cssFile.css",
+            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/dir/_test_module.scss",
+            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/my-styles.scss",
           ]
         `);
         expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
@@ -271,13 +271,13 @@ describe("buildCss", function () {
               color: white;
           }
           ",
-            "@import \\"./cssFile.css\\";
-
+            "
           body {
               height: 100%;
           }
           ",
-            "@import \\"./test_module\\";
+            "@import \\"./dir/test_module\\";
+          @import \\"./cssFile.css\\";
 
           .a {
               .b {

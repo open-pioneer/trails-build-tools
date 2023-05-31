@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { normalizePath } from "@rollup/pluginutils";
-import { basename } from "node:path";
-import posix from "node:path/posix";
+import { basename, relative, isAbsolute } from "node:path";
 
 /**
  * Returns the extension of the path, starting with the _first_ `.`
@@ -17,12 +16,10 @@ export function getExtension(path: string) {
 
 /**
  * Returns true if `file` is a child of `directory` or `directory` itself.
- *
- * Expects posix style paths (forward slashes).
  */
-export function isInDirectoryPosix(file: string, directory: string): boolean {
-    const rel = posix.relative(directory, file);
-    const isChild = rel && !rel.startsWith("..") && !posix.isAbsolute(rel);
+export function isInDirectory(file: string, directory: string): boolean {
+    const rel = relative(directory, file);
+    const isChild = rel && !rel.startsWith("..") && !isAbsolute(rel);
     return !!isChild;
 }
 
@@ -31,5 +28,7 @@ export function isInDirectoryPosix(file: string, directory: string): boolean {
  * These are shown in the user's browser dev tools.
  */
 export function getSourcePathForSourceMap(packageName: string, fileInPackage: string) {
-    return posix.resolve("/external-packages/", packageName, normalizePath(fileInPackage));
+    return `open-pioneer://external-pioneer-packages/${packageName}/${normalizePath(
+        fileInPackage
+    )}`;
 }

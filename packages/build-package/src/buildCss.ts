@@ -4,14 +4,14 @@ import { normalizePath } from "@rollup/pluginutils";
 import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path, { extname, resolve } from "node:path";
-import posix from "node:path/posix";
 import type * as PostCss from "postcss";
 import { fileURLToPath, pathToFileURL } from "url";
 import type * as Sass from "sass";
 import { Logger } from "./utils/Logger";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { indent } from "./utils/indent";
-import { getSourcePathForSourceMap, isInDirectoryPosix } from "./utils/pathUtils";
+import { getSourcePathForSourceMap, isInDirectory } from "./utils/pathUtils";
+import nativePath from "node:path";
 
 export const SUPPORTED_CSS_EXTENSIONS = [".css", ".scss"];
 
@@ -234,17 +234,17 @@ function prettierPostCssSourceMapPaths(sourceMapJson: any, packageName: string) 
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fixSassSourceMapPaths(sourceMapJson: any, packageDirectory: string) {
-    const normalizedPackageDirectory = normalizePath(packageDirectory);
     return {
         ...sourceMapJson,
         // sass uses file:// urls instead of local paths-
         // this maps them to the same format used by postcss
         sources: sourceMapJson.sources.map((url: string) => {
-            const path = normalizePath(fileURLToPath(url));
-            if (isInDirectoryPosix(path, normalizedPackageDirectory)) {
-                return posix.relative(normalizedPackageDirectory, path);
+            const nativeSourcePath = fileURLToPath(url);
+            if (isInDirectory(nativeSourcePath, packageDirectory)) {
+                const relativeSourcePath = nativePath.relative(packageDirectory, nativeSourcePath);
+                return normalizePath(relativeSourcePath);
             }
-            return path;
+            return normalizePath(nativeSourcePath);
         })
     };
 }

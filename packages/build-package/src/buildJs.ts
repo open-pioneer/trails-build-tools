@@ -5,11 +5,10 @@ import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
 import { normalizePath } from "@rollup/pluginutils";
 import nativePath from "node:path";
-import posix from "node:path/posix";
 import { Logger } from "./utils/Logger";
 import { cwd } from "node:process";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
-import { getSourcePathForSourceMap, isInDirectoryPosix } from "./utils/pathUtils";
+import { getSourcePathForSourceMap, isInDirectory } from "./utils/pathUtils";
 
 export const SUPPORTED_JS_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
 
@@ -57,7 +56,6 @@ export async function buildJs({
             logger.warn(formatMessage(warning));
         }
     });
-    const normalizePackageDirectory = normalizePath(packageDirectory);
     await result.write({
         preserveModules: true,
         dir: outputDirectory,
@@ -69,12 +67,13 @@ export async function buildJs({
         // Prettier source map paths.
         // See https://rollupjs.org/configuration-options/#output-sourcemappathtransform
         sourcemapPathTransform: (relativeSourcePath, sourceMapPath) => {
-            relativeSourcePath = normalizePath(relativeSourcePath);
-            sourceMapPath = normalizePath(sourceMapPath);
-            const absolutePath = posix.resolve(posix.dirname(sourceMapPath), relativeSourcePath);
-            if (isInDirectoryPosix(absolutePath, normalizePackageDirectory)) {
-                const relative = posix.relative(normalizePackageDirectory, absolutePath);
-                return getSourcePathForSourceMap(packageName, relative);
+            const nativeSourcePath = nativePath.resolve(
+                nativePath.dirname(sourceMapPath),
+                relativeSourcePath
+            );
+            if (isInDirectory(nativeSourcePath, packageDirectory)) {
+                const relative = nativePath.relative(packageDirectory, nativeSourcePath);
+                return getSourcePathForSourceMap(packageName, normalizePath(relative));
             }
             return relativeSourcePath;
         }

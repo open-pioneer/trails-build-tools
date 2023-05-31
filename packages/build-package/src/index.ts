@@ -15,12 +15,12 @@ export const build: Build = async ({
     strict = true,
     validation = {}
 }) => {
-    const outputDirectory = resolve(packageDirectory, "dist");
     const input = await createInputModel(packageDirectory, {
         requireReadme: validation.requireReadme ?? true,
         requireLicense: validation.requireLicense ?? true,
         requireChangelog: validation.requireChangelog ?? true
     });
+    const outputDirectory = resolve(input.packageDirectory, "dist");
     const logger = silent ? SILENT_LOGGER : createConsoleLogger();
     await buildPackage({
         input,

@@ -39,6 +39,7 @@ export async function createInputModel(
     packageDirectory: string,
     validation: Required<ValidationOptions>
 ): Promise<InputModel> {
+    packageDirectory = resolve(packageDirectory); // ensure we use absolute path
     if (!existsSync(packageDirectory)) {
         throw new Error(`Package directory ${packageDirectory} does not exist.`);
     }

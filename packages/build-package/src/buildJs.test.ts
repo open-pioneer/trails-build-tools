@@ -105,7 +105,7 @@ describe("buildJS", function () {
         const sourceMapData = JSON.parse(readText(sourceMapPath));
         expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
-            "/external-packages/@custom/packageName/entryPointA.js",
+            "open-pioneer://external-pioneer-packages/@custom/packageName/entryPointA.js",
           ]
         `);
         expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
