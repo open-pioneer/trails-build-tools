@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { PackageMetadata } from "../metadata/MetadataRepository";
+import { PackageMetadata } from "../metadata/Metadata";
 
 export type PackageMetadataInput = Pick<PackageMetadata, "cssFilePath">;
 

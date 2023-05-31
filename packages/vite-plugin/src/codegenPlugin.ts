@@ -6,7 +6,7 @@ import { PluginContext } from "rollup";
 import { normalizePath, Plugin, ResolvedConfig, ViteDevServer } from "vite";
 import { createDebugger } from "./utils/debug";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
-import { MetadataContext, MetadataRepository } from "./metadata/MetadataRepository";
+import { MetadataRepository } from "./metadata/MetadataRepository";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
@@ -14,6 +14,7 @@ import { readFile } from "node:fs/promises";
 import { generateReactHooks } from "./codegen/generateReactHooks";
 import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
+import { MetadataContext } from "./metadata/Metadata";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");

@@ -1,120 +1,26 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { readFile, realpath } from "fs/promises";
-import { dirname, join } from "path";
-import { PluginContext, RollupWarning } from "rollup";
+import { realpath } from "fs/promises";
+import { dirname } from "path";
+import { RollupWarning } from "rollup";
 import { PackageData, normalizePath } from "vite";
 import { ReportableError } from "../ReportableError";
-import { createDebugger } from "../utils/debug";
-import { fileExists, isInDirectory } from "../utils/fileUtils";
 import { Cache } from "../utils/Cache";
-import { isBuildConfig, loadBuildConfig } from "./parseBuildConfig";
+import { createDebugger } from "../utils/debug";
+import { isBuildConfig } from "./parseBuildConfig";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 import {
-    BUILD_CONFIG_NAME,
-    PackageConfig,
-    PackageMetadataV1,
-    createPackageConfigFromPackageMetadata
-} from "@open-pioneer/build-common";
-import { PACKAGE_NAME } from "../utils/package";
-import { existsSync } from "fs";
+    AppMetadata,
+    InternalPackageMetadata,
+    MetadataContext,
+    PackageDependency,
+    PackageLocation,
+    PackageMetadata
+} from "./Metadata";
+import { loadPackageMetadata } from "./loadPackageMetadata";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
-
-/**
- * Contains build-time information about an app.
- */
-export interface AppMetadata {
-    /** App name. */
-    name: string;
-
-    /** Directory on disk. */
-    directory: string;
-
-    /** Path to package.json file. */
-    packageJsonPath: string;
-
-    /** Locales required by the application. */
-    locales: string[];
-
-    /**
-     * Packages used by the app.
-     * Includes the app package itself!
-     */
-    packages: PackageMetadata[];
-}
-
-/**
- * Contains build-time information about a package.
- */
-export interface PackageMetadata {
-    /** */
-    type: "pioneer-package";
-
-    /** Package name. */
-    name: string;
-
-    /** Directory on disk. */
-    directory: string;
-
-    /** Path to package.json file. */
-    packageJsonPath: string;
-
-    /** Path to entry point (contains service exports). */
-    servicesModulePath: string | undefined;
-
-    /** Path to the resolved css file (if any). */
-    cssFilePath: string | undefined;
-
-    /**
-     * Paths to i18n yaml config for any defined lang in build config.
-     * Key: locale, value: file path
-     */
-    i18nPaths: Map<string, string>;
-
-    /** Runtime dependencies (from package.json). */
-    dependencies: PackageDependency[];
-
-    /** Parsed metadata (from build config file). */
-    config: PackageConfig;
-}
-
-export interface PackageDependency {
-    packageName: string;
-    optional: boolean;
-}
-
-/**
- * Package that was discovered during dependency analysis which does not have open-pioneer metadata.
- * We cache such objects to remember the result of the analysis.
- */
-interface PlainPackageMetadata {
-    type: "plain";
-
-    /** Package name. */
-    name: string;
-
-    /** Directory on disk. */
-    directory: string;
-}
-
-type InternalPackageMetadata = PackageMetadata | PlainPackageMetadata;
-
-export type MetadataContext = Pick<PluginContext, "addWatchFile" | "resolve" | "warn">;
-
-export interface ResolvedPackageLocation {
-    type: "absolute";
-    directory: string;
-}
-
-export interface UnresolvedDependency {
-    type: "unresolved";
-    dependency: PackageDependency;
-    importedFrom: string;
-}
-
-export type PackageLocation = ResolvedPackageLocation | UnresolvedDependency;
 
 /**
  * Tracks metadata and the files that were used to parse that metadata.
@@ -361,7 +267,7 @@ export class MetadataRepository {
                     }
                 };
 
-                const metadata = await parsePackageMetadata(trackingCtx, directory, sourceRoot);
+                const metadata = await loadPackageMetadata(trackingCtx, directory, sourceRoot);
                 isDebug && debug(`Metadata for '${metadata.name}': %O`, metadata);
 
                 // Ensure only one version of a package exists in the app
@@ -403,246 +309,6 @@ function propagateWatchFiles(watchFiles: Iterable<string>, ctx: MetadataContext)
     }
 }
 
-/**
- * Is called if package metadata of a package are parsed
- * (for internal and external packages).
- * Depending on the location of the package either reads build config (source package)
- * or serialized metadata from package.json.
- */
-export async function parsePackageMetadata(
-    ctx: MetadataContext,
-    packageDir: string,
-    sourceRoot: string
-): Promise<InternalPackageMetadata> {
-    const mode = isLocalPackage(packageDir, sourceRoot) ? "local" : "external";
-
-    isDebug && debug(`Visiting package directory ${packageDir} in mode ${mode}.`);
-
-    const packageJsonPath = join(packageDir, "package.json");
-
-    ctx.addWatchFile(packageJsonPath);
-    const {
-        name: packageName,
-        dependencies,
-        frameworkMetadata
-    } = await parsePackageJson(ctx, packageJsonPath);
-
-    const configResult = await readConfig(
-        ctx,
-        packageDir,
-        mode,
-        frameworkMetadata,
-        packageName,
-        packageJsonPath
-    );
-    if (!configResult) {
-        return {
-            type: "plain",
-            name: packageName,
-            directory: packageDir
-        };
-    }
-
-    const { config, configPath } = configResult;
-
-    let servicesModule: string | undefined;
-    if (config.services.size) {
-        try {
-            servicesModule = await resolveLocalFile(
-                ctx,
-                packageDir,
-                config.servicesModule ?? "./services"
-            );
-        } catch (e) {
-            ctx.warn({
-                message: `Failed to resolve entry point for package ${packageDir}`,
-                cause: e
-            });
-        }
-    }
-
-    let cssFile: string | undefined;
-    if (config.styles) {
-        try {
-            cssFile = await resolveLocalFile(ctx, packageDir, config.styles);
-        } catch (e) {
-            throw new ReportableError(`Failed to resolve css file for package ${packageDir}`, {
-                cause: e
-            });
-        }
-        if (!cssFile) {
-            throw new ReportableError(
-                `Failed to find css file '${config.styles}' in ${packageDir}`
-            );
-        }
-    }
-
-    const i18nPaths = new Map<string, string>();
-    for (const locale of config.languages) {
-        if (i18nPaths.has(locale)) {
-            throw new ReportableError(`Locale '${locale}' was defined twice in ${configPath}`);
-        }
-
-        const path = join(packageDir, "i18n", `${locale}.yaml`);
-        ctx.addWatchFile(path);
-        if (!(await fileExists(path))) {
-            throw new ReportableError(`i18n file '${path}' does not exist.`);
-        }
-
-        i18nPaths.set(locale, normalizePath(path));
-    }
-
-    return {
-        type: "pioneer-package",
-        name: packageName,
-        directory: packageDir,
-        packageJsonPath: packageJsonPath,
-        servicesModulePath: servicesModule,
-        cssFilePath: cssFile,
-        i18nPaths,
-        dependencies,
-        config: config
-    };
-}
-
-async function readConfig(
-    ctx: MetadataContext,
-    packageDir: string,
-    mode: "local" | "external",
-    frameworkMetadata: unknown,
-    packageName: string,
-    packageJsonPath: string
-) {
-    const parsePackageConfigFromMetadata = () => {
-        const metadataResult = PackageMetadataV1.parsePackageMetadata(frameworkMetadata);
-        if (metadataResult.type === "error") {
-            if (metadataResult.code === "unsupported-version") {
-                throw new ReportableError(
-                    `Package '${packageName}' in ${packageDir} uses an unsupported package metadata version.` +
-                        ` Try updating ${PACKAGE_NAME}.\n\n` +
-                        metadataResult.message,
-                    { cause: metadataResult.cause }
-                );
-            }
-
-            throw new ReportableError(
-                `Failed to parse metadata of package '${packageName}' in ${packageDir}: ${metadataResult.message}`,
-                { cause: metadataResult.cause }
-            );
-        }
-
-        return {
-            configPath: packageJsonPath,
-            config: createPackageConfigFromPackageMetadata(metadataResult.value)
-        };
-    };
-
-    switch (mode) {
-        /** External packages must have framework metadata in their package.json (or they are not considered pioneer packages at all). */
-        case "external": {
-            if (!frameworkMetadata) {
-                return undefined;
-            }
-            return parsePackageConfigFromMetadata();
-        }
-        /** Local packages may have either a build.config (the common case) or a built package.json for testing, but never both. */
-        case "local": {
-            const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
-            const buildConfigExists = existsSync(buildConfigPath);
-            if (buildConfigExists && frameworkMetadata) {
-                throw new Error(
-                    `Package '${packageName}' at ${packageDir} contains both framework metadata in its package.json and a ${BUILD_CONFIG_NAME}.` +
-                        ` Mixing both formats is not supported.` +
-                        ` Metadata in package.json files is only intended for distributed packages.`
-                );
-            }
-
-            if (frameworkMetadata) {
-                ctx.warn(
-                    `Using framework metadata from package.json instead of ${BUILD_CONFIG_NAME} in ${packageDir}, make sure that this intended.`
-                );
-                return parsePackageConfigFromMetadata();
-            }
-
-            let buildConfig: PackageConfig | undefined;
-            ctx.addWatchFile(normalizePath(buildConfigPath));
-            if (await fileExists(buildConfigPath)) {
-                try {
-                    buildConfig = await loadBuildConfig(buildConfigPath);
-                } catch (e) {
-                    throw new ReportableError(`Failed to load build config ${buildConfigPath}`, {
-                        cause: e
-                    });
-                }
-            } else {
-                throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
-            }
-            return { configPath: buildConfigPath, config: buildConfig };
-        }
-    }
-}
-
-async function parsePackageJson(ctx: MetadataContext, packageJsonPath: string) {
-    if (!(await fileExists(packageJsonPath))) {
-        throw new ReportableError(`Expected a 'package.json' file at ${packageJsonPath}`);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let packageJsonContent: any;
-    try {
-        packageJsonContent = JSON.parse(await readFile(packageJsonPath, "utf-8"));
-    } catch (e) {
-        throw new ReportableError(`Failed to read ${packageJsonPath}`, { cause: e });
-    }
-
-    const packageName = packageJsonContent.name;
-    if (typeof packageName !== "string") {
-        throw new ReportableError(`Expected 'name' to be a string in ${packageJsonPath}`);
-    }
-
-    const dependencies = packageJsonContent.dependencies ?? {};
-    if (typeof dependencies !== "object") {
-        throw new ReportableError(`Expected a valid 'dependencies' object in ${packageJsonPath}`);
-    }
-
-    const peerDependencies = packageJsonContent.peerDependencies ?? {};
-    if (typeof peerDependencies !== "object") {
-        throw new ReportableError(
-            `Expected a valid 'peerDependencies' object in ${packageJsonPath}`
-        );
-    }
-
-    const optionalDependencies = packageJsonContent.optionalDependencies ?? {};
-    if (typeof optionalDependencies !== "object") {
-        throw new ReportableError(
-            `Expected a valid 'optionalDependencies' object in ${packageJsonPath}`
-        );
-    }
-
-    const allDependencies: PackageDependency[] = [
-        ...Object.keys(dependencies).map((packageName) => ({ packageName, optional: false })),
-        ...Object.keys(peerDependencies).map((packageName) => ({
-            packageName,
-            optional: packageJsonContent?.peerDependenciesMeta?.[packageName]?.optional ?? false
-        })),
-        ...Object.keys(optionalDependencies).map((packageName) => ({ packageName, optional: true }))
-    ];
-
-    const frameworkMetadata = packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
-    return {
-        name: packageName,
-        dependencies: allDependencies,
-        frameworkMetadata: frameworkMetadata
-    };
-}
-
-async function resolveLocalFile(ctx: MetadataContext, packageDir: string, localModuleId: string) {
-    const result = await ctx.resolve(`./${localModuleId}`, `${packageDir}/package.json`, {
-        skipSelf: true
-    });
-    return result?.id;
-}
-
 function formatPackageLocation(loc: PackageLocation) {
     switch (loc.type) {
         case "absolute":
@@ -655,12 +321,6 @@ function formatPackageLocation(loc: PackageLocation) {
             return `${name} required by ${loc.importedFrom}`;
         }
     }
-}
-
-const NODE_MODULES_RE = /[\\/]node_modules[\\/]/;
-
-function isLocalPackage(file: string, sourceDir: string) {
-    return isInDirectory(file, sourceDir) && !NODE_MODULES_RE.test(file);
 }
 
 const PACKAGE_JSON_RE = /[\\/]package\.json($|\?)/;

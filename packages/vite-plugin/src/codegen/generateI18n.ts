@@ -4,7 +4,7 @@ import * as nodes from "@babel/types";
 import template from "@babel/template";
 import { serializeModuleId } from "./shared";
 import generate from "@babel/generator";
-import { PackageMetadata } from "../metadata/MetadataRepository";
+import { PackageMetadata } from "../metadata/Metadata";
 import { ReportableError } from "../ReportableError";
 import { I18nFile } from "../metadata/parseI18nYaml";
 

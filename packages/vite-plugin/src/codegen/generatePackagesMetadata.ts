@@ -3,7 +3,7 @@
 import generate from "@babel/generator";
 import template from "@babel/template";
 import * as nodes from "@babel/types";
-import { PackageMetadata } from "../metadata/MetadataRepository";
+import { PackageMetadata } from "../metadata/Metadata";
 import { ReportableError } from "../ReportableError";
 import { IdGenerator } from "./IdGenerator";
 import { PackageOverrides, Reference, UiReference } from "@open-pioneer/build-common";
