@@ -17,6 +17,7 @@ import {
     createPackageConfigFromPackageMetadata
 } from "@open-pioneer/build-common";
 import { PACKAGE_NAME } from "../utils/package";
+import { existsSync } from "fs";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -259,7 +260,7 @@ export class MetadataRepository {
         const entry = await this.packageMetadataCache.get(packageDir, ctx);
         propagateWatchFiles(entry.watchFiles, ctx);
         for (const warning of entry.warnings) {
-            ctx.warn(warning);
+            ctx.warn(warning); // TODO: Stupid
         }
 
         if (entry.metadata.type === "plain") {
@@ -512,9 +513,57 @@ async function readConfig(
     packageName: string,
     packageJsonPath: string
 ) {
+    const parsePackageConfigFromMetadata = () => {
+        const metadataResult = PackageMetadataV1.parsePackageMetadata(frameworkMetadata);
+        if (metadataResult.type === "error") {
+            if (metadataResult.code === "unsupported-version") {
+                throw new ReportableError(
+                    `Package '${packageName}' in ${packageDir} uses an unsupported package metadata version.` +
+                        ` Try updating ${PACKAGE_NAME}.\n\n` +
+                        metadataResult.message,
+                    { cause: metadataResult.cause }
+                );
+            }
+
+            throw new ReportableError(
+                `Failed to parse metadata of package '${packageName}' in ${packageDir}: ${metadataResult.message}`,
+                { cause: metadataResult.cause }
+            );
+        }
+
+        return {
+            configPath: packageJsonPath,
+            config: createPackageConfigFromPackageMetadata(metadataResult.value)
+        };
+    };
+
     switch (mode) {
+        /** External packages must have framework metadata in their package.json (or they are not considered pioneer packages at all). */
+        case "external": {
+            if (!frameworkMetadata) {
+                return undefined;
+            }
+            return parsePackageConfigFromMetadata();
+        }
+        /** Local packages may have either a build.config (the common case) or a built package.json for testing, but never both. */
         case "local": {
             const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
+            const buildConfigExists = existsSync(buildConfigPath);
+            if (buildConfigExists && frameworkMetadata) {
+                throw new Error(
+                    `Package '${packageName}' at ${packageDir} contains both framework metadata in its package.json and a ${BUILD_CONFIG_NAME}.` +
+                        ` Mixing both formats is not supported.` +
+                        ` Metadata in package.json files is only intended for distributed packages.`
+                );
+            }
+
+            if (frameworkMetadata) {
+                ctx.warn(
+                    `Using framework metadata from package.json instead of ${BUILD_CONFIG_NAME} in ${packageDir}, make sure that this intended.`
+                );
+                return parsePackageConfigFromMetadata();
+            }
+
             let buildConfig: PackageConfig | undefined;
             ctx.addWatchFile(normalizePath(buildConfigPath));
             if (await fileExists(buildConfigPath)) {
@@ -529,33 +578,6 @@ async function readConfig(
                 throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
             }
             return { configPath: buildConfigPath, config: buildConfig };
-        }
-        case "external": {
-            if (!frameworkMetadata) {
-                return undefined;
-            }
-
-            const metadataResult = PackageMetadataV1.parsePackageMetadata(frameworkMetadata);
-            if (metadataResult.type === "error") {
-                if (metadataResult.code === "unsupported-version") {
-                    throw new ReportableError(
-                        `Package '${packageName}' in ${packageDir} uses an unsupported package metadata version.` +
-                            ` Try updating ${PACKAGE_NAME}.\n\n` +
-                            metadataResult.message,
-                        { cause: metadataResult.cause }
-                    );
-                }
-
-                throw new ReportableError(
-                    `Failed to parse metadata of package '${packageName}' in ${packageDir}: ${metadataResult.message}`,
-                    { cause: metadataResult.cause }
-                );
-            }
-
-            return {
-                configPath: packageJsonPath,
-                config: createPackageConfigFromPackageMetadata(metadataResult.value)
-            };
         }
     }
 }
