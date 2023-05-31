@@ -1,5 +1,4 @@
 messages:
     y: "hello from i18n2"
-overrides:
-    i18n1:
-        x: "this is not allowed"
+# presence is an error:
+overrides: 

@@ -8,7 +8,7 @@ describe("parseI18nFile", function () {
         const result = parseI18nYaml("");
         assert.deepEqual(result, {
             messages: new Map(),
-            overrides: new Map()
+            overrides: undefined
         });
     });
 
@@ -16,7 +16,7 @@ describe("parseI18nFile", function () {
         const result = parseI18nYaml(`messages:`);
         assert.deepEqual(result, {
             messages: new Map(),
-            overrides: new Map()
+            overrides: undefined
         });
     });
 
@@ -30,7 +30,7 @@ messages:
         );
         assert.deepEqual(result, {
             messages: new Map([["key", "hi"]]),
-            overrides: new Map()
+            overrides: undefined
         });
     });
 
@@ -64,7 +64,7 @@ overrides:
         const result = parseI18nFile(input);
         assert.deepEqual(result, {
             messages: new Map(),
-            overrides: new Map()
+            overrides: undefined
         });
     });
 
@@ -122,9 +122,9 @@ overrides:
         };
         const result = parseI18nFile(input);
         const overrides = result.overrides;
-        assert.strictEqual(overrides.size, 1);
+        assert.strictEqual(overrides?.size, 1);
 
-        const packageOverrides = overrides.get("packageName")!;
+        const packageOverrides = overrides!.get("packageName")!;
         assert.deepEqual(Object.fromEntries(packageOverrides), {
             "foo": "hello",
             "bar.baz": "qux"

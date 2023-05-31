@@ -21,7 +21,7 @@ export interface I18nFile {
      *
      * Key: package name, Value: message record as in {@link messages}.
      */
-    overrides: Map<string, Map<string, string>>;
+    overrides: Map<string, Map<string, string>> | undefined;
 }
 
 interface RawI18nFile {
@@ -81,10 +81,12 @@ export function parseI18nFile(data: unknown): I18nFile {
     }
 
     const rawI18n = result.data;
-    return {
-        messages: gatherMessages(rawI18n?.messages ?? undefined),
-        overrides: gatherOverrides(rawI18n?.overrides ?? undefined)
-    };
+    const messages = gatherMessages(rawI18n?.messages ?? undefined);
+    let overrides;
+    if (typeof rawI18n?.overrides === "object") {
+        overrides = gatherOverrides(rawI18n?.overrides ?? undefined);
+    }
+    return { messages, overrides };
 }
 
 function gatherMessages(data: RecursiveMessages | undefined): Map<string, string> {
