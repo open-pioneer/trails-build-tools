@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 0.3.0
+
+### Minor Changes
+
+-   fdc4cae: Fix dependency to postcss-import
+
 ## 0.2.2
 
 ### Patch Changes
