@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.8.1
+
+### Patch Changes
+
+-   9f82090: Use react hooks code generation from @open-pioneer/build-common
+-   Updated dependencies [9f82090]
+    -   @open-pioneer/build-common@0.5.0
+
 ## 0.8.0
 
 ### Minor Changes
