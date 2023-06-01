@@ -1,13 +1,11 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { realpath } from "fs/promises";
-import { dirname } from "path";
-import { RollupWarning } from "rollup";
+import { basename, dirname } from "path";
 import { PackageData, normalizePath } from "vite";
 import { ReportableError } from "../ReportableError";
 import { Cache } from "../utils/Cache";
 import { createDebugger } from "../utils/debug";
-import { isBuildConfig } from "./parseBuildConfig";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 import {
     AppMetadata,
@@ -18,6 +16,7 @@ import {
     PackageMetadata
 } from "./Metadata";
 import { loadPackageMetadata } from "./loadPackageMetadata";
+import { BUILD_CONFIG_NAME } from "@open-pioneer/build-common";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -30,7 +29,6 @@ const debug = createDebugger("open-pioneer:metadata");
 interface MetadataEntry {
     metadata: InternalPackageMetadata;
     watchFiles: ReadonlySet<string>;
-    warnings: RollupWarning[];
 }
 
 interface I18nEntry {
@@ -165,9 +163,6 @@ export class MetadataRepository {
 
         const entry = await this.packageMetadataCache.get(packageDir, ctx);
         propagateWatchFiles(entry.watchFiles, ctx);
-        for (const warning of entry.warnings) {
-            ctx.warn(warning); // TODO: Stupid
-        }
 
         if (entry.metadata.type === "plain") {
             isDebug && debug(`Skipping package '${packageDir}'.`);
@@ -254,17 +249,16 @@ export class MetadataRepository {
             async getValue(directory: string, ctx: MetadataContext): Promise<MetadataEntry> {
                 isDebug && debug(`Loading metadata for package at ${directory}`);
 
+                // Track watch files to ensure that other files also depend on these files
+                // when a cached entry is returned.
                 const watchFiles = new Set<string>();
-                const warnings: RollupWarning[] = [];
                 const trackingCtx: MetadataContext = {
                     resolve: ctx.resolve,
                     addWatchFile(id) {
                         ctx.addWatchFile(id);
                         watchFiles.add(id);
                     },
-                    warn(msg: string | RollupWarning) {
-                        warnings.push(typeof msg === "string" ? { message: msg } : msg);
-                    }
+                    warn: ctx.warn
                 };
 
                 const metadata = await loadPackageMetadata(trackingCtx, directory, sourceRoot);
@@ -287,8 +281,7 @@ export class MetadataRepository {
 
                 return {
                     metadata,
-                    watchFiles,
-                    warnings
+                    watchFiles
                 };
             },
             onInvalidate(directory: string, entry: MetadataEntry) {
@@ -327,4 +320,8 @@ const PACKAGE_JSON_RE = /[\\/]package\.json($|\?)/;
 
 function isPackageJson(file: string) {
     return PACKAGE_JSON_RE.test(file);
+}
+
+function isBuildConfig(file: string) {
+    return basename(file) === BUILD_CONFIG_NAME;
 }

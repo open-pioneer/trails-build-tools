@@ -97,7 +97,7 @@ class PackageMetadataReader {
                 );
             } catch (e) {
                 ctx.warn({
-                    message: `Failed to resolve entry point for package ${packageDir}`,
+                    message: `Failed to resolve services entry point for package ${packageDir}`,
                     cause: e
                 });
             }
