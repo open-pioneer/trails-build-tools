@@ -132,7 +132,10 @@ async function loadPreprocessor(lang: "scss", logger: Logger) {
 
     let sass: typeof Sass;
     try {
-        sass = await import("sass");
+        sass = (await import("sass")).default;
+        if (!sass) {
+            throw new Error("Default export not found.");
+        }
     } catch (e) {
         throw new Error(`The package 'sass' must be installed to enable scss support.`, {
             cause: e
