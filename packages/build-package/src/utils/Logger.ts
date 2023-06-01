@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
+import chalk from "chalk";
 
 export interface Logger {
     info(...args: unknown[]): void;
@@ -10,13 +11,13 @@ export interface Logger {
 export function createConsoleLogger(): Logger {
     return {
         info(...args) {
-            console.info(...args);
+            console.info(chalk.gray(...args));
         },
         warn(...args) {
-            console.warn(...args);
+            console.warn(chalk.yellow(...args));
         },
         error(...args) {
-            console.error(...args);
+            console.error(chalk.red(...args));
         }
     };
 }

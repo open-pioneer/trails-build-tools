@@ -13,8 +13,6 @@ import { indent } from "./utils/indent";
 import { getSourcePathForSourceMap, isInDirectory } from "./utils/pathUtils";
 import nativePath from "node:path";
 
-export const SUPPORTED_CSS_EXTENSIONS = [".css", ".scss"];
-
 export interface BuildCssOptions {
     /** Package name from package.json */
     packageName: string;

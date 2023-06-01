@@ -9,8 +9,7 @@ import { Logger } from "./utils/Logger";
 import { cwd } from "node:process";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { getSourcePathForSourceMap, isInDirectory } from "./utils/pathUtils";
-
-export const SUPPORTED_JS_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
+import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 
 export interface BuildJsOptions {
     /** Package name from package.json */

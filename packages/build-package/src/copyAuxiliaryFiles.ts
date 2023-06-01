@@ -4,7 +4,7 @@ import { relative, resolve } from "node:path";
 import { copy } from "fs-extra";
 import { ValidationReporter } from "./utils/ValidationReporter";
 import { resolveFirstMatchWithExtensions } from "./utils/resolve";
-import { createDebugger } from "./debug";
+import { createDebugger } from "./utils/debug";
 import { lstatSync } from "node:fs";
 import { ValidationOptions } from "../types";
 

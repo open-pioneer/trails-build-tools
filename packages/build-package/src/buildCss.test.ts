@@ -3,10 +3,11 @@
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createMemoryLogger } from "./utils/Logger";
-import { BuildCssOptions, SUPPORTED_CSS_EXTENSIONS, buildCss } from "./buildCss";
+import { BuildCssOptions, buildCss } from "./buildCss";
 import { normalizeEntryPoint } from "./utils/entryPoints";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { SUPPORTED_CSS_EXTENSIONS } from "./model/PackageModel";
 
 describe("buildCss", function () {
     it("bundles local css files", async function () {

@@ -1,13 +1,15 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { InputModel } from "./InputModel";
-import { SUPPORTED_JS_EXTENSIONS } from "./buildJs";
-import { SUPPORTED_CSS_EXTENSIONS } from "./buildCss";
 import {
     NormalizedEntryPoint,
     normalizeEntryPoint,
     normalizeEntryPoints
-} from "./utils/entryPoints";
+} from "../utils/entryPoints";
+import { join } from "node:path";
+
+export const SUPPORTED_JS_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
+export const SUPPORTED_CSS_EXTENSIONS = [".css", ".scss"];
 
 export interface PackageModel {
     /** Destination directory, usually './dist'. */
@@ -40,6 +42,11 @@ export interface PackageModel {
      * This is *not* included in {@link jsEntryPoints}.
      */
     cssEntryPoint: NormalizedEntryPoint | undefined;
+
+    /**
+     * I18n files (if any), relative paths to the package root.
+     */
+    i18nFiles: Set<string>;
 
     /** Glob patterns for copying assets. */
     assetPatterns: string[];
@@ -85,6 +92,15 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
         ? normalizeEntryPoint(pkgConfig.styles, SUPPORTED_CSS_EXTENSIONS)
         : undefined;
 
+    const i18nFiles = new Set<string>();
+    for (const language of input.packageConfig.languages) {
+        // language is a locale name, e.g. "de", "en", or "de-DE"
+        // TODO: Currently some code duplication with the i18n file loading in the vite plugin,
+        // see loadPackageMetadata.ts
+        const i18nPath = join("i18n", `${language}.yaml`);
+        i18nFiles.add(i18nPath);
+    }
+
     const assetPattern = toArray(input.buildConfig.publishConfig?.assets ?? "assets/**");
 
     return {
@@ -94,6 +110,7 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
         jsEntryPoints: Array.from(jsEntryPointsByModuleId.values()),
         jsEntryPointsByModuleId,
         cssEntryPoint: normalizedCssEntryPoint,
+        i18nFiles,
         assetPatterns: assetPattern,
         servicesEntryPoint
     };

@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { Logger } from "./utils/Logger";
-import { PackageModel } from "./PackageModel";
-import posix from "node:path/posix";
-import { ValidationReporter } from "./utils/ValidationReporter";
-import { ValidationOptions } from "../types";
 import { Service, PackageMetadataV1 as V1 } from "@open-pioneer/build-common";
+import posix from "node:path/posix";
+import { ValidationOptions } from "../types";
+import { PackageModel } from "./model/PackageModel";
+import { Logger } from "./utils/Logger";
+import { ValidationReporter } from "./utils/ValidationReporter";
 
 type SimplePackageModel = Pick<
     PackageModel,

@@ -10,7 +10,7 @@ import {
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { ValidationOptions } from "../types";
+import { ValidationOptions } from "../../types";
 
 export interface InputModel {
     /** Path to the package's source directory. */

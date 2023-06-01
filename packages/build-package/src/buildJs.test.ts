@@ -3,11 +3,12 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { BuildJsOptions, SUPPORTED_JS_EXTENSIONS, buildJs } from "./buildJs";
+import { BuildJsOptions, buildJs } from "./buildJs";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
+import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 
 describe("buildJS", function () {
     it("transpiles a simple javascript project", async function () {

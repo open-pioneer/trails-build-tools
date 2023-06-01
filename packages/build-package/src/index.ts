@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { resolve } from "node:path";
 import type * as API from "..";
-import { createInputModel } from "./InputModel";
+import { createInputModel } from "./model/InputModel";
 import { buildPackage } from "./buildPackage";
 import { SILENT_LOGGER, createConsoleLogger } from "./utils/Logger";
 

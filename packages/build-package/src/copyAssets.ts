@@ -3,7 +3,7 @@
 import glob from "fast-glob";
 import { resolve } from "node:path";
 import { copy } from "fs-extra";
-import { createDebugger } from "./debug";
+import { createDebugger } from "./utils/debug";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:copy-assets");

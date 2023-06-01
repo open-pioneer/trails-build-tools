@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePackageJson";
 import { createMemoryLogger } from "./utils/Logger";
-import { createInputModelFromData } from "./InputModel";
+import { createInputModelFromData } from "./model/InputModel";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { BuildConfig } from "@open-pioneer/build-common";
 import { ValidationReporter } from "./utils/ValidationReporter";
