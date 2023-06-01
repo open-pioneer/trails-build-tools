@@ -1,5 +1,20 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.8.0
+
+### Minor Changes
+
+-   23a6f4c: Report an error if a package uses the 'overrides' property in an i18n file (even if there are no actual overrides)
+-   348afd8: An error is now thrown if a package uses the 'overrides' key, even if the object is empty.
+
+### Patch Changes
+
+-   aeb702c: Add supported node versions (>= 16) to package.json
+-   38c8ee0: Don't re-emit warnings when a cached metadata entry is returned.
+-   Updated dependencies [348afd8]
+-   Updated dependencies [aeb702c]
+    -   @open-pioneer/build-common@0.4.0
+
 ## 0.7.0
 
 ### Minor Changes

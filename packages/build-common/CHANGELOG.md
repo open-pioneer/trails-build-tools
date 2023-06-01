@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/build-common
 
+## 0.4.0
+
+### Minor Changes
+
+-   348afd8: 'overrides' are now undefined in PackageConfig if the package does not user overrides at all (instead of an empty map).
+
+### Patch Changes
+
+-   aeb702c: Add supported node versions (>= 16) to package.json
+
 ## 0.3.1
 
 ### Patch Changes

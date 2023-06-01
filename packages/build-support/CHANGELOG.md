@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-support
 
+## 0.5.2
+
+### Patch Changes
+
+-   aeb702c: Add supported node versions (>= 16) to package.json
+
 ## 0.5.1
 
 ### Patch Changes
