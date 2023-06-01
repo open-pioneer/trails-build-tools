@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 0.5.0
+
+### Minor Changes
+
+-   9f82090: Add some common helpers for runtime support, including generation of react hooks
+
 ## 0.4.0
 
 ### Minor Changes

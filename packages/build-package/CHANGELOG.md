@@ -1,5 +1,18 @@
 # Changelog @open-pioneer/build-package
 
+## 0.5.0
+
+### Minor Changes
+
+-   9f82090: Transpile open-pioneer:react-hooks at build time to avoid problems in the toolchain, e.g. when esbuild preoptimizes dependencies in vite.
+-   9f82090: Ensure that a package always imports its external dependencies.
+
+### Patch Changes
+
+-   ac2b275: Import chalk using async import
+-   Updated dependencies [9f82090]
+    -   @open-pioneer/build-common@0.5.0
+
 ## 0.4.0
 
 ### Minor Changes
