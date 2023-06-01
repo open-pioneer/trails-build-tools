@@ -1,5 +1,19 @@
 # Changelog @open-pioneer/build-package
 
+## 0.4.0
+
+### Minor Changes
+
+-   1273a16: Copy i18n files when present
+
+### Patch Changes
+
+-   aeb702c: Add supported node versions (>= 16) to package.json
+-   Updated dependencies [348afd8]
+-   Updated dependencies [aeb702c]
+    -   @open-pioneer/build-common@0.4.0
+    -   @open-pioneer/build-support@0.5.2
+
 ## 0.3.1
 
 ### Patch Changes
