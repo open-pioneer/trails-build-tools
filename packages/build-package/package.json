@@ -53,5 +53,8 @@
         "build-tools": "workspace:*",
         "typescript": "^5.0.4",
         "sass": "^1.62.1"
+    },
+    "engines": {
+        "node": ">= 16"
     }
 }

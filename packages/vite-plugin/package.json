@@ -51,5 +51,8 @@
         "sass": "^1.62.1",
         "vite": "^4.3.8",
         "build-tools": "workspace:*"
+    },
+    "engines": {
+        "node": ">= 16"
     }
 }
