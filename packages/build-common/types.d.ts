@@ -3,6 +3,27 @@
 export { BuildConfig } from "@open-pioneer/build-support";
 import { BuildConfig } from "@open-pioneer/build-support";
 
+export namespace RuntimeSupport {
+    /** Package name of the open pioneer runtime library. */
+    export const RUNTIME_PACKAGE_NAME: string;
+
+    /** The (unresolved) react-integration module id.  */
+    export const REACT_INTEGRATION_MODULE_ID: string;
+
+    /**
+     * Checks if the given module id is a virtual module.
+     * Returns the type of the virtual module or undefined if the module id does not match anything.
+     *
+     * Throws an error if the module id uses the virtual prefix without a match, as that might be a mistake by the user. */
+    export function parseVirtualModule(moduleId: string): "app" | "react-hooks" | undefined;
+
+    /** Returns the module content to implement the `open-pioneer:react-hooks` module. */
+    export function generateReactHooks(
+        packageName: string,
+        reactIntegrationModuleId?: string
+    ): string;
+}
+
 /**
  * Types and helper functions to work with version 1 of the open pioneer package metadata.
  */

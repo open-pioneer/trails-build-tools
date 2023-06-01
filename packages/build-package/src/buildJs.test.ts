@@ -9,6 +9,7 @@ import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
+import { RuntimeSupport } from "@open-pioneer/build-common";
 
 describe("buildJS", function () {
     it("transpiles a simple javascript project", async function () {
@@ -34,9 +35,9 @@ describe("buildJS", function () {
           "import { log } from './dir/log.js';
           import something from 'somewhere-external';
           import somethingElse from '@scope/somewhere-external';
-          import hooks from 'open-pioneer:react-hooks';
+          import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
 
-          console.log(something, somethingElse, hooks);
+          console.log(something, somethingElse, useService);
           function helloA() {
             log(\\"hello from entry point A\\");
           }
@@ -62,6 +63,21 @@ describe("buildJS", function () {
           export { log };
           "
         `);
+
+        // React hooks are transpiled
+        expect(
+            readText(resolve(outputDirectory, "./_virtual/_virtual-pioneer-module_react-hooks.js"))
+        ).toMatchInlineSnapshot(`
+          "import { useServiceInternal } from '@open-pioneer/runtime/react-integration';
+
+          const PACKAGE_NAME = \\"test\\";
+          const useService = /*@__PURE__*/ useServiceInternal.bind(undefined, PACKAGE_NAME);
+
+          export { useService };
+          "
+        `);
+
+        // Not included because never referenced:
         expect(existsSync(resolve(outputDirectory, "dir/hiddenFile.js"))).toBe(false);
     });
 
@@ -85,9 +101,9 @@ describe("buildJS", function () {
           "import { log } from './dir/log.js';
           import something from 'somewhere-external';
           import somethingElse from '@scope/somewhere-external';
-          import hooks from 'open-pioneer:react-hooks';
+          import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
 
-          console.log(something, somethingElse, hooks);
+          console.log(something, somethingElse, useService);
           function helloA() {
             log(\\"hello from entry point A\\");
           }
@@ -114,10 +130,10 @@ describe("buildJS", function () {
             "import { log } from \\"./dir/log\\";
           import something from \\"somewhere-external\\";
           import somethingElse from \\"@scope/somewhere-external\\";
-          import hooks from \\"open-pioneer:react-hooks\\";
+          import { useService } from \\"open-pioneer:react-hooks\\";
 
           // Use to prevent warnings
-          console.log(something, somethingElse, hooks);
+          console.log(something, somethingElse, useService);
 
           export function helloA() {
               log(\\"hello from entry point A\\");
@@ -306,13 +322,56 @@ describe("buildJS", function () {
             "[RollupError: Imported module ./file matches multiple extensions: .mts, .tsx, .js. Use an explicit extension instead.]"
         );
     });
+
+    it("throws when a project uses external dependencies but does not reference it in its package.json", async function () {
+        const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
+        const outputDirectory = resolve(TEMP_DATA_DIR, "simple-js-undeclared-deps");
+        const entryPoints = normalize(["entryPointA", "entryPointB"]);
+
+        const defaults = testDefaults();
+        const logger = defaults.logger;
+
+        await cleanDir(outputDirectory);
+        await expect(() =>
+            buildJs({
+                ...defaults,
+                packageDirectory,
+                outputDirectory,
+                entryPoints,
+                strict: true,
+                packageJson: {
+                    // no deps
+                }
+            })
+        ).rejects.toThrowErrorMatchingInlineSnapshot(
+            '"Aborting due to dependency problems (strict validation is enabled)."'
+        );
+
+        const messages = logger.messages.map((msg) => msg.args[0]! as any).sort();
+        expect(messages[0]).toMatch(
+            /Failed to import '@open-pioneer\/runtime\/react-integration', the package '@open-pioneer\/runtime' must be configured/
+        );
+        expect(messages[1]).toMatch(
+            /Failed to import '@scope\/somewhere-external', the package '@scope\/somewhere-external' must be configured/
+        );
+        expect(messages[2]).toMatch(
+            /Failed to import 'somewhere-external', the package 'somewhere-external' must be configured either as a dependency or as a peerDependency in test\/package\.json/
+        );
+    });
 });
 
 function testDefaults() {
     return {
         packageName: "test",
         sourceMap: false,
-        logger: createMemoryLogger()
+        strict: false,
+        logger: createMemoryLogger(),
+        packageJson: {
+            dependencies: {
+                [RuntimeSupport.RUNTIME_PACKAGE_NAME]: "*"
+            }
+        },
+        packageJsonPath: "test/package.json"
     } satisfies Partial<BuildJsOptions>;
 }
 

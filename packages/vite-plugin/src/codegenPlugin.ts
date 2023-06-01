@@ -11,10 +11,10 @@ import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
 import { readFile } from "node:fs/promises";
-import { generateReactHooks } from "./codegen/generateReactHooks";
 import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { MetadataContext } from "./metadata/Metadata";
+import { RuntimeSupport } from "@open-pioneer/build-common";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
@@ -46,7 +46,7 @@ export function codegenPlugin(): Plugin {
                 return resolvedResult.id;
             };
 
-            reactIntegrationId = await resolve("@open-pioneer/runtime/react-integration");
+            reactIntegrationId = await resolve(RuntimeSupport.REACT_INTEGRATION_MODULE_ID);
             metadataId = await resolve("@open-pioneer/runtime/metadata");
         },
 
@@ -101,17 +101,28 @@ export function codegenPlugin(): Plugin {
                     return normalizePath(packageDir);
                 };
 
-                if (moduleId === "open-pioneer:app") {
-                    return serializeModuleId({
-                        type: "app-meta",
-                        packageDirectory: getPackageDirectory()
+                let virtualModule;
+                try {
+                    virtualModule = RuntimeSupport.parseVirtualModule(moduleId);
+                } catch (e) {
+                    this.error({
+                        id: moduleId,
+                        message: "Invalid virtual module id",
+                        cause: e
                     });
                 }
-                if (moduleId === "open-pioneer:react-hooks") {
-                    return serializeModuleId({
-                        type: "package-hooks",
-                        packageDirectory: getPackageDirectory()
-                    });
+
+                switch (virtualModule) {
+                    case "app":
+                        return serializeModuleId({
+                            type: "app-meta",
+                            packageDirectory: getPackageDirectory()
+                        });
+                    case "react-hooks":
+                        return serializeModuleId({
+                            type: "package-hooks",
+                            packageDirectory: getPackageDirectory()
+                        });
                 }
             } catch (e) {
                 reportError(this, e);
@@ -147,7 +158,10 @@ export function codegenPlugin(): Plugin {
                     }
 
                     const packageName = await getPackageName(this, packageJsonPath);
-                    const generatedSourceCode = generateReactHooks(packageName, reactIntegrationId);
+                    const generatedSourceCode = RuntimeSupport.generateReactHooks(
+                        packageName,
+                        reactIntegrationId
+                    );
                     isDebug && debug("Generated hooks code: %O", generatedSourceCode);
                     return generatedSourceCode;
                 }

@@ -26,9 +26,9 @@ describe("build", function () {
           "import { log } from './dir/log.js';
           import something from 'somewhere-external';
           import somethingElse from '@scope/somewhere-external';
-          import hooks from 'open-pioneer:react-hooks';
+          import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
 
-          console.log(something, somethingElse, hooks);
+          console.log(something, somethingElse, useService);
           function helloA() {
             log(\\"hello from entry point A\\");
           }
@@ -70,7 +70,10 @@ describe("build", function () {
         expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
           {
             "dependencies": {
+              "@open-pioneer/runtime": "*",
+              "@scope/somewhere-external": "*",
               "foo": "^1.2.3",
+              "somewhere-external": "*",
             },
             "exports": {
               "./entryPointA": {

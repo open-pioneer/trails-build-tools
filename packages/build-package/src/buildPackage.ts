@@ -62,7 +62,10 @@ export async function buildPackage({
             outputDirectory: model.outputDirectory,
             entryPoints: model.jsEntryPoints,
             packageName: model.packageName,
+            packageJson: model.input.packageJson,
+            packageJsonPath: model.input.packageJsonPath,
             sourceMap: sourceMaps,
+            strict,
             logger
         });
     }

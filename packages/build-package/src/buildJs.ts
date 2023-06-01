@@ -10,6 +10,8 @@ import { cwd } from "node:process";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { getSourcePathForSourceMap, isInDirectory } from "./utils/pathUtils";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
+import { virtualModulesPlugin } from "./rollup/virtualModules";
+import { checkImportsPlugin } from "./rollup/checkImports";
 
 export interface BuildJsOptions {
     /** Package name from package.json */
@@ -17,6 +19,12 @@ export interface BuildJsOptions {
 
     /** Package source directory. */
     packageDirectory: string;
+
+    /** Path to the package.json file. */
+    packageJsonPath: string;
+
+    /** Package json of the package. */
+    packageJson: Record<string, unknown>;
 
     /** Destination directory. */
     outputDirectory: string;
@@ -27,20 +35,33 @@ export interface BuildJsOptions {
     /** Whether to emit .map files */
     sourceMap: boolean;
 
+    strict: boolean;
     logger: Logger;
 }
 
 export async function buildJs({
     packageName,
     packageDirectory,
+    packageJson,
+    packageJsonPath,
     outputDirectory,
     entryPoints,
     sourceMap,
+    strict,
     logger
 }: BuildJsOptions) {
     const result = await rollup({
         input: Object.fromEntries(entryPoints.map((e) => [e.outputModuleId, e.inputModulePath])),
         plugins: [
+            checkImportsPlugin({
+                packageJson,
+                packageJsonPath,
+                strict
+            }),
+            virtualModulesPlugin({
+                packageName,
+                packageDirectory
+            }),
             resolvePlugin({
                 packageDirectory,
                 allowedExtensions: SUPPORTED_JS_EXTENSIONS
