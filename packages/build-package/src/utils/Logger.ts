@@ -1,14 +1,13 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import chalk from "chalk";
-
 export interface Logger {
     info(...args: unknown[]): void;
     warn(...args: unknown[]): void;
     error(...args: unknown[]): void;
 }
 
-export function createConsoleLogger(): Logger {
+export async function createConsoleLogger(): Promise<Logger> {
+    const { default: chalk } = await import("chalk");
     return {
         info(...args) {
             console.info(chalk.gray(...args));

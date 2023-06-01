@@ -21,7 +21,7 @@ export const build: Build = async ({
         requireChangelog: validation.requireChangelog ?? true
     });
     const outputDirectory = resolve(input.packageDirectory, "dist");
-    const logger = silent ? SILENT_LOGGER : createConsoleLogger();
+    const logger = silent ? SILENT_LOGGER : await createConsoleLogger();
     await buildPackage({
         input,
         outputDirectory,
