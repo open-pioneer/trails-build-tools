@@ -43,3 +43,25 @@ it("copies i18n files when configured in build.config.js", async function () {
       "
     `);
 });
+
+it("copies i18n files when configured in build.config.js", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-missing-i18n-files");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-missing-i18n-files");
+    await cleanDir(outputDirectory);
+
+    const logger = createMemoryLogger();
+    await expect(async () =>
+        buildPackage({
+            input: await createInputModel(packageDirectory, {
+                requireChangelog: false,
+                requireLicense: false,
+                requireReadme: false
+            }),
+            clean: false,
+            logger,
+            outputDirectory,
+            sourceMaps: false,
+            strict: false
+        })
+    ).rejects.toMatch(/I18n file does not exist/);
+});
