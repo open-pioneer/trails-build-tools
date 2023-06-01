@@ -1,5 +1,12 @@
 # Changelog @open-pioneer/build-package
 
+## 0.5.1
+
+### Patch Changes
+
+-   17b58a7: Fix usage of sass package.
+-   45866f0: Improve logging
+
 ## 0.5.0
 
 ### Minor Changes
