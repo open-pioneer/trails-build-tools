@@ -6,7 +6,7 @@ import { copyAssets } from "./copyAssets";
 import { createDebugger } from "./utils/debug";
 import { buildCss } from "./buildCss";
 import { generatePackageJson } from "./generatePackageJson";
-import { Logger } from "./utils/Logger";
+import { Logger, getChalk } from "./utils/Logger";
 import { resolve } from "path";
 import { InputModel } from "./model/InputModel";
 import { createPackageModel } from "./model/PackageModel";
@@ -44,6 +44,9 @@ export async function buildPackage({
     sourceMaps,
     logger
 }: BuildPackageOptions): Promise<void> {
+    const chalk = await getChalk();
+    logger.info(`Building package at ${chalk.underline(input.packageDirectory)}`);
+
     const model = createPackageModel(input, outputDirectory);
     const reporter = new ValidationReporter(logger, strict);
 
@@ -56,7 +59,7 @@ export async function buildPackage({
 
     // Compile javascript
     if (model.jsEntryPoints.length) {
-        logger.info("Building JavaScript...");
+        logger.info(chalk.gray("Building JavaScript..."));
         await buildJs({
             packageDirectory: model.input.packageDirectory,
             outputDirectory: model.outputDirectory,
@@ -72,7 +75,7 @@ export async function buildPackage({
 
     // Build styles
     if (model.cssEntryPoint) {
-        logger.info("Building styles...");
+        logger.info(chalk.gray("Building styles..."));
         await buildCss({
             packageName: model.packageName,
             packageDirectory: model.input.packageDirectory,
@@ -85,7 +88,7 @@ export async function buildPackage({
 
     // Copy i18n
     if (model.i18nFiles.size) {
-        logger.info("Copying i18n files...");
+        logger.info(chalk.gray("Copying i18n files..."));
         await copyI18nFiles({
             packageDirectory: model.input.packageDirectory,
             outputDirectory: model.outputDirectory,
@@ -95,7 +98,7 @@ export async function buildPackage({
 
     // Copy assets
     if (model.assetPatterns.length) {
-        logger.info("Copying assets...");
+        logger.info(chalk.gray("Copying assets..."));
         await copyAssets({
             packageDirectory: model.input.packageDirectory,
             outputDirectory: model.outputDirectory,
@@ -104,7 +107,7 @@ export async function buildPackage({
     }
 
     // Write package.json
-    logger.info("Writing package metadata...");
+    logger.info(chalk.gray("Writing package metadata..."));
     const packageJsonContent = await generatePackageJson({
         model,
         logger,
@@ -117,7 +120,7 @@ export async function buildPackage({
     );
 
     // Write license files etc.
-    logger.info("Copying auxiliary files...");
+    logger.info(chalk.gray("Copying auxiliary files..."));
     await copyAuxiliaryFiles({
         packageDirectory: model.input.packageDirectory,
         outputDirectory: model.outputDirectory,
@@ -126,4 +129,6 @@ export async function buildPackage({
     });
 
     reporter.finish();
+
+    logger.info(chalk.green("Success"));
 }

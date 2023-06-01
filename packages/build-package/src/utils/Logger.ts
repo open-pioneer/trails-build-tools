@@ -7,10 +7,10 @@ export interface Logger {
 }
 
 export async function createConsoleLogger(): Promise<Logger> {
-    const { default: chalk } = await import("chalk");
+    const chalk = await getChalk();
     return {
         info(...args) {
-            console.info(chalk.gray(...args));
+            console.info(...args);
         },
         warn(...args) {
             console.warn(chalk.yellow(...args));
@@ -46,3 +46,8 @@ export const SILENT_LOGGER: Logger = {
     warn: NO_OP,
     error: NO_OP
 };
+
+export async function getChalk() {
+    const { default: chalk } = await import("chalk");
+    return chalk;
+}
