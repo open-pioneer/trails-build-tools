@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 0.5.2
+
+### Patch Changes
+
+-   4942738: Simplify source map paths. Source files appear as if they were files within the built package.
+
 ## 0.5.1
 
 ### Patch Changes
