@@ -3,15 +3,15 @@
 import { RollupLog, rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
-import { normalizePath } from "@rollup/pluginutils";
 import nativePath from "node:path";
 import { Logger } from "./utils/Logger";
 import { cwd } from "node:process";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
-import { getSourcePathForSourceMap, isInDirectory } from "./utils/pathUtils";
+import { isInDirectory } from "./utils/pathUtils";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { virtualModulesPlugin } from "./rollup/virtualModules";
 import { checkImportsPlugin } from "./rollup/checkImports";
+import { rebaseSourcemapPath } from "./utils/sourceMaps";
 
 export interface BuildJsOptions {
     /** Package name from package.json */
@@ -92,8 +92,12 @@ export async function buildJs({
                 relativeSourcePath
             );
             if (isInDirectory(nativeSourcePath, packageDirectory)) {
-                const relative = nativePath.relative(packageDirectory, nativeSourcePath);
-                return getSourcePathForSourceMap(packageName, normalizePath(relative));
+                return rebaseSourcemapPath(
+                    packageDirectory,
+                    nativeSourcePath,
+                    outputDirectory,
+                    sourceMapPath
+                );
             }
             return relativeSourcePath;
         }

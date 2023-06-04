@@ -122,7 +122,7 @@ describe("buildJS", function () {
         const sourceMapData = JSON.parse(readText(sourceMapPath));
         expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
-            "open-pioneer://external-pioneer-packages/@custom/packageName/entryPointA.js",
+            "entryPointA.js",
           ]
         `);
         expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
@@ -182,16 +182,80 @@ describe("buildJS", function () {
         });
 
         expect(readText(resolve(outputDirectory, "index.js"))).toMatchInlineSnapshot(`
-          "import { PI } from './helper.js';
+          "import { PI } from './utils/helper.js';
 
           console.log(PI);
           "
         `);
-        expect(readText(resolve(outputDirectory, "helper.js"))).toMatchInlineSnapshot(`
+        expect(readText(resolve(outputDirectory, "utils/helper.js"))).toMatchInlineSnapshot(`
           "const PI = 3.14;
 
           export { PI };
           "
+        `);
+    });
+
+    it("generates correct sourcemaps for ts", async function () {
+        const packageDirectory = resolve(TEST_DATA_DIR, "simple-ts-project");
+        const outputDirectory = resolve(TEMP_DATA_DIR, "simple-ts-sourcemaps");
+        const entryPoints = normalize(["index"]);
+
+        await cleanDir(outputDirectory);
+        await buildJs({
+            ...testDefaults(),
+            packageDirectory,
+            outputDirectory,
+            entryPoints,
+            sourceMap: true
+        });
+
+        expect(readText(resolve(outputDirectory, "index.js"))).toMatchInlineSnapshot(`
+          "import { PI } from './utils/helper.js';
+
+          console.log(PI);
+          //# sourceMappingURL=index.js.map
+          "
+        `);
+        const { sources: indexSources, sourcesContent: indexSourcesContent } = JSON.parse(
+            readText(resolve(outputDirectory, "index.js.map"))
+        );
+        expect(indexSources).toMatchInlineSnapshot(`
+          [
+            "index.ts",
+          ]
+        `);
+        expect(indexSourcesContent).toMatchInlineSnapshot(`
+          [
+            "import { PI } from \\"./utils/helper\\";
+
+          export interface SomeInterface {
+              foo: number;
+          }
+
+          console.log(PI);
+          ",
+          ]
+        `);
+        expect(readText(resolve(outputDirectory, "utils/helper.js"))).toMatchInlineSnapshot(`
+          "const PI = 3.14;
+
+          export { PI };
+          //# sourceMappingURL=helper.js.map
+          "
+        `);
+        const { sources: helperSources, sourcesContent: helperSourcesContent } = JSON.parse(
+            readText(resolve(outputDirectory, "utils/helper.js.map"))
+        );
+        expect(helperSources).toMatchInlineSnapshot(`
+          [
+            "helper.ts",
+          ]
+        `);
+        expect(helperSourcesContent).toMatchInlineSnapshot(`
+          [
+            "export const PI = 3.14;
+          ",
+          ]
         `);
     });
 

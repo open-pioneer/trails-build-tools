@@ -1,4 +1,4 @@
-import { PI } from "./helper";
+import { PI } from "./utils/helper";
 
 export interface SomeInterface {
     foo: number;

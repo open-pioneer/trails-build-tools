@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { normalizePath } from "@rollup/pluginutils";
 import { basename, relative, isAbsolute } from "node:path";
 
 /**
@@ -21,14 +20,4 @@ export function isInDirectory(file: string, directory: string): boolean {
     const rel = relative(directory, file);
     const isChild = rel && !rel.startsWith("..") && !isAbsolute(rel);
     return !!isChild;
-}
-
-/**
- * Returns a 'pretty' path for source files.
- * These are shown in the user's browser dev tools.
- */
-export function getSourcePathForSourceMap(packageName: string, fileInPackage: string) {
-    return `open-pioneer://external-pioneer-packages/${packageName}/${normalizePath(
-        fileInPackage
-    )}`;
 }

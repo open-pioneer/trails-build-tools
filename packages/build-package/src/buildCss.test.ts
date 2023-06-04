@@ -131,8 +131,8 @@ describe("buildCss", function () {
         const sourceMapData = JSON.parse(readText(resolve(outputDirectory, "styles.css.map")));
         expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
-            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/dir/importedStyles.css",
-            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/styles.css",
+            "dir/importedStyles.css",
+            "styles.css",
           ]
         `);
         expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
@@ -261,9 +261,9 @@ describe("buildCss", function () {
 
         expect(sourceMapData.sources).toMatchInlineSnapshot(`
           [
-            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/cssFile.css",
-            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/dir/_test_module.scss",
-            "open-pioneer://external-pioneer-packages/@my-scope/my-test-package/my-styles.scss",
+            "cssFile.css",
+            "dir/_test_module.scss",
+            "my-styles.scss",
           ]
         `);
         expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
