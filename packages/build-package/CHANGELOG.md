@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 0.6.1
+
+### Patch Changes
+
+-   f83172b: Fix reporting of TypeScript errors.
+
 ## 0.6.0
 
 ### Minor Changes
