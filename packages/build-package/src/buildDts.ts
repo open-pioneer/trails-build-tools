@@ -20,6 +20,7 @@ export interface BuildDtsOptions {
     /** Destination directory. */
     outputDirectory: string;
 
+    strict: boolean;
     logger: Logger;
 }
 
@@ -31,6 +32,7 @@ export async function buildDts({
     packageDirectory,
     outputDirectory,
     entryPoints,
+    strict,
     logger
 }: BuildDtsOptions) {
     const ts = await getTypeScriptAPI();
@@ -52,7 +54,16 @@ export async function buildDts({
         host,
         configFileParsingDiagnostics: errors
     });
+
     program.emit();
+
+    const diagnostics = ts.getPreEmitDiagnostics(program);
+    for (const error of diagnostics) {
+        outputDiagnostic(ts, error, logger);
+    }
+    if (strict && diagnostics.length > 0) {
+        throw new Error(`Aborting due to compilation errors (strict validation is enabled).`);
+    }
 }
 
 /**
@@ -120,10 +131,19 @@ function getTypeScriptConfig(
     options.emitDeclarationOnly = true;
     options.skipLibCheck = true;
     options.noEmitOnError = false;
-    options.allowJs ??= true;
-    options.module ??= ts.ModuleKind.ES2022;
-    options.jsx ??= ts.JsxEmit.ReactJSX;
     options.declarationDir = outputDirectory;
+
+    // Defaults
+    options.allowJs ??= true;
+    options.strict ??= true;
+    options.target ??= ts.ScriptTarget.ES2022;
+    options.module ??= ts.ModuleKind.ES2022;
+    options.moduleResolution ??= ts.ModuleResolutionKind.Bundler;
+    options.jsx ??= ts.JsxEmit.ReactJSX;
+    options.esModuleInterop = true;
+    options.allowSyntheticDefaultImports = true;
+    options.isolatedModules = true;
+
     return { fileNames, options, errors };
 }
 

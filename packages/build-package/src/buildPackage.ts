@@ -85,6 +85,7 @@ export async function buildPackage({
             packageDirectory: model.input.packageDirectory,
             entryPoints: model.jsEntryPoints,
             outputDirectory: model.outputDirectory,
+            strict,
             logger
         });
     }

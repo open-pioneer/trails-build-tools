@@ -133,7 +133,7 @@ describe("buildDts", function () {
         expect(defaults.logger.messages[0]!.args[0]!).matches(/Property assignment expected/);
     });
 
-    it("also emits declarations from invalid TypeScript code", async function () {
+    it("emits declarations from invalid TypeScript code", async function () {
         const packageDirectory = resolve(TEST_DATA_DIR, "project-with-typescript-errors");
         const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-typescript-errors");
         const defaults = testDefaults();
@@ -147,7 +147,37 @@ describe("buildDts", function () {
                 entryPoints: normalize(["index"])
             })
         ).toBeUndefined();
-        expect(defaults.logger.messages).toHaveLength(0);
+
+        expect(readText(resolve(outputDirectory, "index.d.ts"))).toMatchInlineSnapshot(`
+          "import foo from \\"does-not-exist\\";
+          export declare const A = 3;
+          export { foo as Foo123 };
+          "
+        `);
+
+        const messages = defaults.logger.messages.map((m) => m.args[0]!);
+        expect(messages[0]).match(/Cannot find module 'does-not-exist'/);
+        expect(messages[1]).match(/Cannot assign to 'A' because it is a constant/);
+        expect(messages[2]).match(/Cannot find name 'f'/);
+    });
+
+    it("throws when strict mode is enabled and typescript emits compiler errors", async function () {
+        const packageDirectory = resolve(TEST_DATA_DIR, "project-with-typescript-errors");
+        const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-typescript-errors-strict");
+        const defaults = testDefaults();
+
+        await cleanDir(outputDirectory);
+        await expect(
+            buildDts({
+                ...defaults,
+                packageDirectory,
+                outputDirectory,
+                entryPoints: normalize(["index"]),
+                strict: true
+            })
+        ).rejects.toThrowErrorMatchingInlineSnapshot(
+            '"Aborting due to compilation errors (strict validation is enabled)."'
+        );
     });
 });
 
@@ -175,7 +205,8 @@ describe("shouldGenerateTypes", function () {
 
 function testDefaults() {
     return {
-        logger: createMemoryLogger()
+        logger: createMemoryLogger(),
+        strict: false
     };
 }
 
