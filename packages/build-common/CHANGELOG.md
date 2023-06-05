@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 0.5.1
+
+### Patch Changes
+
+-   fdb5347: Use unresolved module ids for generated code.
+
 ## 0.5.0
 
 ### Minor Changes
