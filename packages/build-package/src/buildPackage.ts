@@ -13,6 +13,7 @@ import { createPackageModel } from "./model/PackageModel";
 import { ValidationReporter } from "./utils/ValidationReporter";
 import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { copyI18nFiles } from "./copyI18nFiles";
+import { buildDts } from "./buildDts";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:build-package");
@@ -33,6 +34,9 @@ interface BuildPackageOptions {
     /** True: enable generation of .map files for all supported file types. */
     sourceMaps: boolean;
 
+    /** True: Enable generation of .d.ts files */
+    types: boolean | undefined;
+
     logger: Logger;
 }
 
@@ -42,6 +46,7 @@ export async function buildPackage({
     clean,
     strict,
     sourceMaps,
+    types,
     logger
 }: BuildPackageOptions): Promise<void> {
     const chalk = await getChalk();
@@ -69,6 +74,16 @@ export async function buildPackage({
             packageJsonPath: model.input.packageJsonPath,
             sourceMap: sourceMaps,
             strict,
+            logger
+        });
+    }
+
+    if (types) {
+        logger.info(chalk.gray("Generating TypeScript declaration files..."));
+        await buildDts({
+            packageDirectory: model.input.packageDirectory,
+            entryPoints: model.jsEntryPoints,
+            outputDirectory: model.outputDirectory,
             logger
         });
     }

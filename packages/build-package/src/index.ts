@@ -13,7 +13,8 @@ export const build: Build = async ({
     silent,
     sourceMaps = true,
     strict = true,
-    validation = {}
+    validation = {},
+    types
 }) => {
     const input = await createInputModel(packageDirectory, {
         requireReadme: validation.requireReadme ?? true,
@@ -27,6 +28,7 @@ export const build: Build = async ({
         outputDirectory,
         sourceMaps,
         strict,
+        types,
         clean: true,
         logger
     });

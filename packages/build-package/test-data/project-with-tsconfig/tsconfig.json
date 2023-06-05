@@ -1,0 +1,6 @@
+{
+    "files": ["entryA", "entryB"],
+    "compilerOptions": {
+        "jsx": "preserve"
+    }
+}

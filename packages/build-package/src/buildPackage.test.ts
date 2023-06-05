@@ -21,6 +21,7 @@ it("copies i18n files when configured in build.config.js", async function () {
             requireReadme: false
         }),
         clean: false,
+        types: undefined,
         logger,
         outputDirectory,
         sourceMaps: false,
@@ -58,6 +59,7 @@ it("copies i18n files when configured in build.config.js", async function () {
                 requireReadme: false
             }),
             clean: false,
+            types: undefined,
             logger,
             outputDirectory,
             sourceMaps: false,

@@ -185,6 +185,8 @@ describe("buildJS", function () {
           "import { PI } from './utils/helper.js';
 
           console.log(PI);
+
+          export { PI };
           "
         `);
         expect(readText(resolve(outputDirectory, "utils/helper.js"))).toMatchInlineSnapshot(`
@@ -213,6 +215,8 @@ describe("buildJS", function () {
           "import { PI } from './utils/helper.js';
 
           console.log(PI);
+
+          export { PI };
           //# sourceMappingURL=index.js.map
           "
         `);
@@ -231,6 +235,8 @@ describe("buildJS", function () {
           export interface SomeInterface {
               foo: number;
           }
+
+          export { PI };
 
           console.log(PI);
           ",

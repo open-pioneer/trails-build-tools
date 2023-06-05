@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
 import { Service, PackageMetadataV1 as V1 } from "@open-pioneer/build-common";
+import { existsSync } from "node:fs";
 import posix from "node:path/posix";
+import nativePath from "node:path";
 import { ValidationOptions } from "../types";
 import { PackageModel } from "./model/PackageModel";
 import { Logger } from "./utils/Logger";
@@ -9,7 +11,7 @@ import { ValidationReporter } from "./utils/ValidationReporter";
 
 type SimplePackageModel = Pick<
     PackageModel,
-    "input" | "jsEntryPoints" | "servicesEntryPoint" | "cssEntryPoint"
+    "input" | "jsEntryPoints" | "servicesEntryPoint" | "cssEntryPoint" | "outputDirectory"
 >;
 
 export interface GeneratePackageJsonOptions {
@@ -128,10 +130,17 @@ function generateExports(model: SimplePackageModel, validationErrors: Validation
     addEntryPoint("./package.json", "./package.json");
     for (const entryPoint of model.jsEntryPoints) {
         const exportedName = getExportName(entryPoint.outputModuleId);
-        addEntryPoint(exportedName, {
-            import: `./${entryPoint.outputModuleId}.js`
-            // TODO: types for typescript
-        });
+        const jsPath = `./${entryPoint.outputModuleId}.js`;
+        const exportEntry: Record<string, string> = {
+            import: jsPath
+        };
+
+        const dtsPath = `./${entryPoint.outputModuleId}.d.ts`;
+        if (existsSync(nativePath.resolve(model.outputDirectory, dtsPath))) {
+            exportEntry.types = dtsPath;
+        }
+
+        addEntryPoint(exportedName, exportEntry);
     }
     if (model.cssEntryPoint) {
         const exportedName = `./${model.cssEntryPoint.outputModuleId}.css`;

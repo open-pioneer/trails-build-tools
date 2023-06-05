@@ -8,7 +8,8 @@ import {
 } from "../utils/entryPoints";
 import { join } from "node:path";
 
-export const SUPPORTED_JS_EXTENSIONS = [".ts", ".mts", ".tsx", ".js", ".mjs", ".jsx"];
+export const SUPPORTED_TS_EXTENSIONS = [".ts", ".mts", ".tsx"];
+export const SUPPORTED_JS_EXTENSIONS = [...SUPPORTED_TS_EXTENSIONS, ".js", ".mjs", ".jsx"];
 export const SUPPORTED_CSS_EXTENSIONS = [".css", ".scss"];
 
 export interface PackageModel {

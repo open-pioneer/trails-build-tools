@@ -348,6 +348,7 @@ function testDefaults(options?: {
                     requireReadme: true
                 }
             }),
+            outputDirectory: "./test/package/dist",
             jsEntryPoints: options?.jsEntryPoints ?? [],
             servicesEntryPoint: options?.servicesEntryPoint ?? undefined,
             cssEntryPoint: options?.cssEntryPoint ?? undefined

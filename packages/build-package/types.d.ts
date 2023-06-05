@@ -10,6 +10,15 @@ export interface BuildOptions {
     packageDirectory: string;
 
     /**
+     * Enables or disables generation of TypeScript declaration files (`.d.ts`).
+     *
+     * Generation of declaration files requires a (minimal) `tsconfig.json` in the package's directory.
+     *
+     * Defaults to `true` if a `tsconfig.json` is present, `false` otherwise.
+     */
+    types?: boolean;
+
+    /**
      * Enables or disables generation of [source maps](https://web.dev/source-maps/).
      *
      * Note that generated source maps will contain the entire, unprocessed source code

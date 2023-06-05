@@ -4,4 +4,6 @@ export interface SomeInterface {
     foo: number;
 }
 
+export { PI };
+
 console.log(PI);

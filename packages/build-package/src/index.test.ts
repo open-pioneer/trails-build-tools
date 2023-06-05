@@ -19,7 +19,7 @@ describe("build", function () {
             recursive: true,
             force: true
         });
-        await build({ packageDirectory: tempPackage, silent: true });
+        await build({ packageDirectory: tempPackage, silent: true, types: true });
 
         const entryPointA = resolve(distDirectory, "entryPointA.js");
         expect(readText(entryPointA)).toMatchInlineSnapshot(`
@@ -78,9 +78,11 @@ describe("build", function () {
             "exports": {
               "./entryPointA": {
                 "import": "./entryPointA.js",
+                "types": "./entryPointA.d.ts",
               },
               "./entryPointB": {
                 "import": "./entryPointB.js",
+                "types": "./entryPointB.d.ts",
               },
               "./my-styles.css": "./my-styles.css",
               "./package.json": "./package.json",
