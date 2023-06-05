@@ -13,7 +13,7 @@ import { createPackageModel } from "./model/PackageModel";
 import { ValidationReporter } from "./utils/ValidationReporter";
 import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { copyI18nFiles } from "./copyI18nFiles";
-import { buildDts } from "./buildDts";
+import { buildDts, shouldGenerateTypes } from "./buildDts";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:build-package");
@@ -78,7 +78,8 @@ export async function buildPackage({
         });
     }
 
-    if (types) {
+    // Emit declaration files
+    if (await shouldGenerateTypes(model.input.packageDirectory, types)) {
         logger.info(chalk.gray("Generating TypeScript declaration files..."));
         await buildDts({
             packageDirectory: model.input.packageDirectory,
