@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 0.6.0
+
+### Minor Changes
+
+-   e30bf30: Implement generation of TypeScript declaration files (.d.ts).
+
 ## 0.5.2
 
 ### Patch Changes
