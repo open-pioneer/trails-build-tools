@@ -1,5 +1,12 @@
 # Changelog @open-pioneer/build-package
 
+## 0.6.2
+
+### Patch Changes
+
+-   Updated dependencies [fdb5347]
+    -   @open-pioneer/build-common@0.5.1
+
 ## 0.6.1
 
 ### Patch Changes

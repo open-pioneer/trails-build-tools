@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.8.2
+
+### Patch Changes
+
+-   fdb5347: Use unresolved module ids for generated code.
+-   Updated dependencies [fdb5347]
+    -   @open-pioneer/build-common@0.5.1
+
 ## 0.8.1
 
 ### Patch Changes
