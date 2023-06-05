@@ -7,6 +7,10 @@ import { Logger } from "./utils/Logger";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import glob from "fast-glob";
 import { SUPPORTED_TS_EXTENSIONS } from "./model/PackageModel";
+import { createDebugger } from "./utils/debug";
+
+const isDebug = !!process.env.DEBUG;
+const debug = createDebugger("open-pioneer:buildDts");
 
 type TsModule = typeof Ts;
 
@@ -55,13 +59,18 @@ export async function buildDts({
         configFileParsingDiagnostics: errors
     });
 
+    isDebug && debug("Using compiler options %O", options);
     program.emit();
 
     const diagnostics = ts.getPreEmitDiagnostics(program);
+    let hasError = false;
     for (const error of diagnostics) {
         outputDiagnostic(ts, error, logger);
+        if (error.category === ts.DiagnosticCategory.Error) {
+            hasError = true;
+        }
     }
-    if (strict && diagnostics.length > 0) {
+    if (strict && hasError) {
         throw new Error(`Aborting due to compilation errors (strict validation is enabled).`);
     }
 }
@@ -92,16 +101,22 @@ function getTypeScriptConfig(
     entryPoints: NormalizedEntryPoint[],
     logger: Logger
 ) {
-    const tsConfigPath = getTsConfigPath(packageDirectory);
+    const tsConfigPath = ts.findConfigFile(packageDirectory, ts.sys.fileExists, "tsconfig.json");
 
-    let fileNames = entryPoints.map((e) => resolve(packageDirectory, e.inputModulePath));
+    isDebug && debug(`Using tsconfig %s`, tsConfigPath);
+
+    const fileNames = entryPoints.map((e) => resolve(packageDirectory, e.inputModulePath));
     let options: Ts.CompilerOptions = {};
     let errors: Ts.Diagnostic[] = [];
-    if (existsSync(tsConfigPath)) {
+    if (tsConfigPath && existsSync(tsConfigPath)) {
         const configFile = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
         if (configFile.error) {
             outputDiagnostic(ts, configFile.error, logger);
             throw new Error("Failed to read TypeScript configuration file.");
+        }
+
+        if (configFile.config) {
+            configFile.config.compilerOptions = Object.assign({});
         }
 
         const {
@@ -112,43 +127,41 @@ function getTypeScriptConfig(
             configFile.config,
             ts.sys,
             packageDirectory,
-            undefined,
+            // TODO: These override present options instead of serving as defaults ;-(
+            {
+                allowJs: true,
+                strict: true,
+                target: ts.ScriptTarget.ES2022,
+                module: ts.ModuleKind.ES2022,
+                moduleResolution: ts.ModuleResolutionKind.Bundler,
+                jsx: ts.JsxEmit.ReactJSX,
+                esModuleInterop: true,
+                allowSyntheticDefaultImports: true,
+                isolatedModules: true
+            },
             tsConfigPath
         );
 
+        // Also read all referenced .d.ts files
+        for (const fileName of configFileNames) {
+            if (/\.d\.ts$/.test(fileName)) {
+                fileNames.push(fileName);
+            }
+        }
+
         options = configOptions;
         errors = configErrors;
-        if (configFileNames.length) {
-            fileNames = configFileNames;
-        } else {
-            fileNames = entryPoints.map((e) => resolve(packageDirectory, e.inputModulePath));
-        }
     }
 
     // Enforce some required options
+    options.rootDir = packageDirectory;
     options.noEmit = false;
     options.declaration = true;
     options.emitDeclarationOnly = true;
     options.skipLibCheck = true;
     options.noEmitOnError = false;
     options.declarationDir = outputDirectory;
-
-    // Defaults
-    options.allowJs ??= true;
-    options.strict ??= true;
-    options.target ??= ts.ScriptTarget.ES2022;
-    options.module ??= ts.ModuleKind.ES2022;
-    options.moduleResolution ??= ts.ModuleResolutionKind.Bundler;
-    options.jsx ??= ts.JsxEmit.ReactJSX;
-    options.esModuleInterop = true;
-    options.allowSyntheticDefaultImports = true;
-    options.isolatedModules = true;
-
     return { fileNames, options, errors };
-}
-
-function getTsConfigPath(packageDirectory: string) {
-    return resolve(packageDirectory, "tsconfig.json");
 }
 
 // https://github.com/microsoft/TypeScript-wiki/blob/main/Using-the-Compiler-API.md#a-minimal-compiler

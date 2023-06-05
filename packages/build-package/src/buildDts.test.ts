@@ -8,7 +8,6 @@ import { buildDts, shouldGenerateTypes } from "./buildDts";
 import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
-import { existsSync } from "node:fs";
 
 describe("buildDts", function () {
     it("generates .d.ts files for a simple typescript package", async function () {
@@ -87,32 +86,6 @@ describe("buildDts", function () {
           "export function log(...args: any[]): void;
           "
         `);
-        expect(defaults.logger.messages).toHaveLength(0);
-    });
-
-    it("allows overrides from local tsconfig.json", async function () {
-        const packageDirectory = resolve(TEST_DATA_DIR, "project-with-tsconfig");
-        const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-tsconfig");
-        const defaults = testDefaults();
-
-        await cleanDir(outputDirectory);
-        await buildDts({
-            ...defaults,
-            packageDirectory,
-            outputDirectory,
-            entryPoints: normalize(["entryA", "entryB", "entryC"]) // entryC not generated because of tsconfig
-        });
-
-        expect(readText(resolve(outputDirectory, "entryA.d.ts"))).toMatchInlineSnapshot(`
-          "export declare const A = 123;
-          "
-        `);
-        expect(readText(resolve(outputDirectory, "entryB.d.ts"))).toMatchInlineSnapshot(`
-          "/// <reference types=\\"react\\" />
-          export declare function B(): import(\\"react\\").JSX.Element;
-          "
-        `);
-        expect(existsSync(resolve(outputDirectory, "entryC.d.ts"))).toBe(false);
         expect(defaults.logger.messages).toHaveLength(0);
     });
 
