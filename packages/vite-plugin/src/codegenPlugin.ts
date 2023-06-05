@@ -28,26 +28,12 @@ export function codegenPlugin(): Plugin {
     let repository!: MetadataRepository;
     let devServer: ViteDevServer | undefined;
 
-    let reactIntegrationId!: string;
-    let metadataId!: string;
     return {
         name: "pioneer:codegen",
 
         async buildStart(this: PluginContext) {
             manualDeps.clear();
             repository?.reset();
-
-            // TODO: use require.resolve instead (requires built js?).
-            const resolve = async (rawModuleId: string) => {
-                const resolvedResult = await this.resolve(rawModuleId, __filename);
-                if (!resolvedResult) {
-                    this.error(`Failed to find '${rawModuleId}'.`);
-                }
-                return resolvedResult.id;
-            };
-
-            reactIntegrationId = await resolve(RuntimeSupport.REACT_INTEGRATION_MODULE_ID);
-            metadataId = await resolve("@open-pioneer/runtime/metadata");
         },
 
         configResolved(resolvedConfig) {
@@ -160,14 +146,17 @@ export function codegenPlugin(): Plugin {
                     const packageName = await getPackageName(this, packageJsonPath);
                     const generatedSourceCode = RuntimeSupport.generateReactHooks(
                         packageName,
-                        reactIntegrationId
+                        RuntimeSupport.REACT_INTEGRATION_MODULE_ID
                     );
                     isDebug && debug("Generated hooks code: %O", generatedSourceCode);
                     return generatedSourceCode;
                 }
 
                 if (mod.type === "app-meta") {
-                    return generateAppMetadata(mod.packageDirectory, metadataId);
+                    return generateAppMetadata(
+                        mod.packageDirectory,
+                        RuntimeSupport.METADATA_MODULE_ID
+                    );
                 }
 
                 const context = buildMetadataContext(this, moduleId, devServer, manualDeps);

@@ -10,6 +10,9 @@ export namespace RuntimeSupport {
     /** The (unresolved) react-integration module id.  */
     export const REACT_INTEGRATION_MODULE_ID: string;
 
+    /** The (unresolved) metadata module id. */
+    export const METADATA_MODULE_ID: string;
+
     /**
      * Checks if the given module id is a virtual module.
      * Returns the type of the virtual module or undefined if the module id does not match anything.

@@ -4,10 +4,12 @@ import type * as API from "../../types";
 
 const PACKAGE_NAME = "@open-pioneer/runtime";
 const REACT_INTEGRATION_MODULE_ID = "@open-pioneer/runtime/react-integration";
+const METADATA_MODULE_ID = "@open-pioneer/runtime/metadata";
 
 export const RuntimeSupport: typeof API.RuntimeSupport = {
     RUNTIME_PACKAGE_NAME: PACKAGE_NAME,
     REACT_INTEGRATION_MODULE_ID,
+    METADATA_MODULE_ID,
     generateReactHooks,
     parseVirtualModule
 };
