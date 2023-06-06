@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.8.3
+
+### Patch Changes
+
+-   e6bbbfb: Simplify license comment in README
+-   Updated dependencies [b6f55fe]
+-   Updated dependencies [e6bbbfb]
+    -   @open-pioneer/build-common@0.6.0
+
 ## 0.8.2
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/build-support
 
+## 0.6.0
+
+### Minor Changes
+
+-   b6f55fe: Move most package build options into the publishConfig section of build.config.mjs files.
+
+### Patch Changes
+
+-   e6bbbfb: Simplify license comment in README
+
 ## 0.5.2
 
 ### Patch Changes
