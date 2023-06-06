@@ -1,5 +1,20 @@
 # Changelog @open-pioneer/build-package
 
+## 0.7.0
+
+### Minor Changes
+
+-   b6f55fe: Move most package build options into the publishConfig section of build.config.mjs files.
+-   e6bbbfb: Change the way output is configured in the 'build' function. A logger (e.g. console) can now be passed directly.
+
+### Patch Changes
+
+-   e6bbbfb: Simplify license comment in README
+-   Updated dependencies [b6f55fe]
+-   Updated dependencies [e6bbbfb]
+    -   @open-pioneer/build-common@0.6.0
+    -   @open-pioneer/build-support@0.6.0
+
 ## 0.6.2
 
 ### Patch Changes
