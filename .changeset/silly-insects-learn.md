@@ -6,4 +6,4 @@
 "@open-pioneer/vite-plugin-pioneer": patch
 ---
 
-Simplify license commend in README
+Simplify license comment in README
