@@ -10,9 +10,12 @@ export interface BuildOptions {
     packageDirectory: string;
 
     /**
-     * Disable logging. Defaults to `false`.
+     * Custom logger for output.
+     * Explicitly set this to `null` to disable output.
+     *
+     * Defaults to the global `console`.
      */
-    silent?: boolean;
+    logger?: Pick<Console, "error" | "warn" | "info"> | null;
 }
 
 /**

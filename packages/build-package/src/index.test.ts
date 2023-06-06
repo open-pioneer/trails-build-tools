@@ -19,7 +19,7 @@ describe("build", function () {
             recursive: true,
             force: true
         });
-        await build({ packageDirectory: tempPackage, silent: true });
+        await build({ packageDirectory: tempPackage, logger: null });
 
         const entryPointA = resolve(distDirectory, "entryPointA.js");
         expect(readText(entryPointA)).toMatchInlineSnapshot(`
@@ -38,6 +38,12 @@ describe("build", function () {
           "
         `);
 
+        const entryPointADts = resolve(distDirectory, "entryPointA.d.ts");
+        expect(readText(entryPointADts)).toMatchInlineSnapshot(`
+          "export function helloA(): void;
+          "
+        `);
+
         const entryPointB = resolve(distDirectory, "entryPointB.js");
         expect(readText(entryPointB)).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
@@ -48,6 +54,12 @@ describe("build", function () {
 
           export { helloB };
           //# sourceMappingURL=entryPointB.js.map
+          "
+        `);
+
+        const entryPointBDts = resolve(distDirectory, "entryPointB.d.ts");
+        expect(readText(entryPointBDts)).toMatchInlineSnapshot(`
+          "export function helloB(): void;
           "
         `);
 

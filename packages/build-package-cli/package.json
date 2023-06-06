@@ -1,0 +1,33 @@
+{
+    "name": "@open-pioneer/build-package-cli",
+    "version": "0.0.0",
+    "type": "commonjs",
+    "license": "Apache-2.0",
+    "bin": {
+        "build-package": "./dist/index.js"
+    },
+    "scripts": {
+        "clean": "rimraf dist",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch"
+    },
+    "files": [
+        "dist/**/*.js",
+        "dist/**/*.js.map",
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
+    "dependencies": {
+        "@open-pioneer/build-package": "workspace:^",
+        "chalk": "^5.2.0",
+        "commander": "^10.0.1"
+    },
+    "devDependencies": {
+        "build-tools": "workspace:*"
+    },
+    "engines": {
+        "node": ">= 16"
+    }
+}

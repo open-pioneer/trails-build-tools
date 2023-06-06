@@ -6,7 +6,9 @@ export interface Logger {
     error(...args: unknown[]): void;
 }
 
-export async function createConsoleLogger(): Promise<Logger> {
+export async function createConsoleLogger(
+    console: Pick<Console, "info" | "warn" | "error">
+): Promise<Logger> {
     const chalk = await getChalk();
     return {
         info(...args) {
