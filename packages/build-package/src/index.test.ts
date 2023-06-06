@@ -19,7 +19,7 @@ describe("build", function () {
             recursive: true,
             force: true
         });
-        await build({ packageDirectory: tempPackage, silent: true, types: true });
+        await build({ packageDirectory: tempPackage, silent: true });
 
         const entryPointA = resolve(distDirectory, "entryPointA.js");
         expect(readText(entryPointA)).toMatchInlineSnapshot(`

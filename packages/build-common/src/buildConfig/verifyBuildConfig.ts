@@ -9,7 +9,8 @@ import {
     ReferenceConfig,
     ServiceConfig,
     ServiceOverridesConfig,
-    UiConfig
+    UiConfig,
+    ValidationOptions
 } from "@open-pioneer/build-support";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
@@ -62,12 +63,22 @@ const PACKAGE_OVERRIDES_SCHEMA: z.ZodType<PackageOverridesConfig> = z.strictObje
     services: z.record(z.string(), SERVICE_OVERRIDES_SCHEMA).optional()
 });
 
+const VALIDATION_OPTIONS_SCHEMA: z.ZodType<ValidationOptions> = z.strictObject({
+    requireLicense: z.boolean().optional(),
+    requireReadme: z.boolean().optional(),
+    requireChangelog: z.boolean().optional()
+});
+
 const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
-    assets: z.string().or(z.array(z.string()))
+    assets: z.string().or(z.array(z.string())).optional(),
+    types: z.boolean().optional(),
+    sourceMaps: z.boolean().optional(),
+    strict: z.boolean().optional(),
+    validation: VALIDATION_OPTIONS_SCHEMA.optional()
 });
 
 const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
-    entryPoints: z.string().array().optional(),
+    entryPoints: z.string().or(z.string().array()).optional(),
     styles: z.string().optional(),
     i18n: z.array(z.string()).optional(),
     services: z.record(z.string(), SERVICE_CONFIG_SCHEMA).optional(),

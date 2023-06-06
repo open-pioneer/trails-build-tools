@@ -67,7 +67,10 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
     }
 
     const jsEntryPointsByModuleId = new Map<string, NormalizedEntryPoint>();
-    for (const configuredEp of normalizeEntryPoints(jsEntryPoints, SUPPORTED_JS_EXTENSIONS)) {
+    for (const configuredEp of normalizeEntryPoints(
+        toArray(jsEntryPoints),
+        SUPPORTED_JS_EXTENSIONS
+    )) {
         const key = configuredEp.outputModuleId;
         if (jsEntryPointsByModuleId.has(key)) {
             throw new Error(`Entry point '${key}' is defined multiple times.`);
@@ -102,7 +105,7 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
         i18nFiles.add(i18nPath);
     }
 
-    const assetPattern = toArray(input.buildConfig.publishConfig?.assets ?? "assets/**");
+    const assetPatterns = toArray(input.buildConfig.publishConfig?.assets ?? "assets/**");
 
     return {
         outputDirectory,
@@ -112,7 +115,7 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
         jsEntryPointsByModuleId,
         cssEntryPoint: normalizedCssEntryPoint,
         i18nFiles,
-        assetPatterns: assetPattern,
+        assetPatterns,
         servicesEntryPoint
     };
 }

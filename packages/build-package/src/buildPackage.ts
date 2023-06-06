@@ -13,54 +13,31 @@ import { createPackageModel } from "./model/PackageModel";
 import { ValidationReporter } from "./utils/ValidationReporter";
 import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { copyI18nFiles } from "./copyI18nFiles";
-import { buildDts, shouldGenerateTypes } from "./buildDts";
+import { buildDts } from "./buildDts";
+import { ResolvedOptions } from "./model/Options";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:build-package");
 
 interface BuildPackageOptions {
-    /** Input Configuration. */
     input: InputModel;
-
-    /** Destination directory. */
-    outputDirectory: string;
-
-    /** True: erase {@link outputDirectory} before building the package. */
-    clean: boolean;
-
-    /** True: warnings become fatal. */
-    strict: boolean;
-
-    /** True: enable generation of .map files for all supported file types. */
-    sourceMaps: boolean;
-
-    /** True: Enable generation of .d.ts files */
-    types: boolean | undefined;
-
+    options: ResolvedOptions;
     logger: Logger;
 }
 
-export async function buildPackage({
-    outputDirectory,
-    input,
-    clean,
-    strict,
-    sourceMaps,
-    types,
-    logger
-}: BuildPackageOptions): Promise<void> {
+export async function buildPackage({ input, options, logger }: BuildPackageOptions): Promise<void> {
     const chalk = await getChalk();
     logger.info(`Building package at ${chalk.underline(input.packageDirectory)}`);
 
-    const model = createPackageModel(input, outputDirectory);
-    const reporter = new ValidationReporter(logger, strict);
+    const model = createPackageModel(input, options.outputDirectory);
+    const reporter = new ValidationReporter(logger, options.strict);
 
     // Prepare output directory
-    if (clean) {
-        isDebug && debug("Clearing output directory %s", outputDirectory);
-        await rm(outputDirectory, { recursive: true, force: true });
+    if (options.clean) {
+        isDebug && debug("Clearing output directory %s", options.outputDirectory);
+        await rm(options.outputDirectory, { recursive: true, force: true });
     }
-    await mkdir(outputDirectory, { recursive: true });
+    await mkdir(options.outputDirectory, { recursive: true });
 
     // Compile javascript
     if (model.jsEntryPoints.length) {
@@ -72,20 +49,20 @@ export async function buildPackage({
             packageName: model.packageName,
             packageJson: model.input.packageJson,
             packageJsonPath: model.input.packageJsonPath,
-            sourceMap: sourceMaps,
-            strict,
+            sourceMap: options.sourceMaps,
+            strict: options.strict,
             logger
         });
     }
 
     // Emit declaration files
-    if (await shouldGenerateTypes(model.input.packageDirectory, types)) {
+    if (options.types) {
         logger.info(chalk.gray("Generating TypeScript declaration files..."));
         await buildDts({
             packageDirectory: model.input.packageDirectory,
             entryPoints: model.jsEntryPoints,
             outputDirectory: model.outputDirectory,
-            strict,
+            strict: options.strict,
             logger
         });
     }
@@ -96,9 +73,9 @@ export async function buildPackage({
         await buildCss({
             packageName: model.packageName,
             packageDirectory: model.input.packageDirectory,
-            outputDirectory,
+            outputDirectory: options.outputDirectory,
             cssEntryPoint: model.cssEntryPoint,
-            sourceMap: sourceMaps,
+            sourceMap: options.sourceMaps,
             logger
         });
     }
@@ -127,11 +104,12 @@ export async function buildPackage({
     logger.info(chalk.gray("Writing package metadata..."));
     const packageJsonContent = await generatePackageJson({
         model,
+        validation: options.validation,
         logger,
         reporter
     });
     await writeFile(
-        resolve(outputDirectory, "package.json"),
+        resolve(options.outputDirectory, "package.json"),
         JSON.stringify(packageJsonContent, undefined, 4),
         "utf-8"
     );
@@ -141,7 +119,7 @@ export async function buildPackage({
     await copyAuxiliaryFiles({
         packageDirectory: model.input.packageDirectory,
         outputDirectory: model.outputDirectory,
-        validation: model.input.validation,
+        validation: options.validation,
         reporter
     });
 

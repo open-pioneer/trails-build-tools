@@ -10,7 +10,6 @@ import {
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { ValidationOptions } from "../../types";
 
 export interface InputModel {
     /** Path to the package's source directory. */
@@ -30,15 +29,9 @@ export interface InputModel {
 
     /** Normalized package info from build.config. */
     packageConfig: PackageConfig;
-
-    /** Validation options that shall be applied during the build. */
-    validation: Required<ValidationOptions>;
 }
 
-export async function createInputModel(
-    packageDirectory: string,
-    validation: Required<ValidationOptions>
-): Promise<InputModel> {
+export async function createInputModel(packageDirectory: string): Promise<InputModel> {
     packageDirectory = resolve(packageDirectory); // ensure we use absolute path
     if (!existsSync(packageDirectory)) {
         throw new Error(`Package directory ${packageDirectory} does not exist.`);
@@ -53,8 +46,7 @@ export async function createInputModel(
         packageJsonPath,
         packageJson,
         buildConfigPath,
-        buildConfig,
-        validation
+        buildConfig
     });
 }
 
@@ -64,7 +56,6 @@ export function createInputModelFromData(data: {
     packageJson: Record<string, unknown>;
     buildConfigPath: string;
     buildConfig: BuildConfig;
-    validation: Required<ValidationOptions>;
 }): InputModel {
     return {
         ...data,

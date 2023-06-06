@@ -341,17 +341,17 @@ function testDefaults(options?: {
                         directory: "dist"
                     }
                 },
-                packageJsonPath: "./test/package-json",
-                validation: {
-                    requireChangelog: true,
-                    requireLicense: true,
-                    requireReadme: true
-                }
+                packageJsonPath: "./test/package-json"
             }),
             outputDirectory: "./test/package/dist",
             jsEntryPoints: options?.jsEntryPoints ?? [],
             servicesEntryPoint: options?.servicesEntryPoint ?? undefined,
             cssEntryPoint: options?.cssEntryPoint ?? undefined
+        },
+        validation: {
+            requireChangelog: true,
+            requireLicense: true,
+            requireReadme: true
         },
         logger,
         reporter: new ValidationReporter(logger, options?.strict ?? true)

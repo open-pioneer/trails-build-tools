@@ -4,10 +4,10 @@ import { Service, PackageMetadataV1 as V1 } from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
 import posix from "node:path/posix";
 import nativePath from "node:path";
-import { ValidationOptions } from "../types";
 import { PackageModel } from "./model/PackageModel";
 import { Logger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
+import { ResolvedValidationOptions } from "./model/Options";
 
 type SimplePackageModel = Pick<
     PackageModel,
@@ -16,10 +16,9 @@ type SimplePackageModel = Pick<
 
 export interface GeneratePackageJsonOptions {
     model: SimplePackageModel;
-
-    logger: Logger;
-
+    validation: ResolvedValidationOptions;
     reporter: ValidationReporter;
+    logger: Logger;
 }
 
 // These fields are simply copied to the destination package.json
@@ -56,13 +55,14 @@ const COPY_FIELDS = [
  */
 export async function generatePackageJson({
     model,
+    validation,
     reporter
 }: GeneratePackageJsonOptions): Promise<Record<string, unknown>> {
     const sourcePackageJson = model.input.packageJson;
     const sourcePackageJsonPath = model.input.packageJsonPath;
 
     // Check source package.json
-    validatePackageJson(sourcePackageJson, sourcePackageJsonPath, model.input.validation, reporter);
+    validatePackageJson(sourcePackageJson, sourcePackageJsonPath, validation, reporter);
 
     // Generate package.json for publishing
     const packageJson: Record<string, unknown> = {
@@ -83,7 +83,7 @@ export async function generatePackageJson({
 function validatePackageJson(
     sourcePackageJson: Record<string, unknown>,
     sourcePackageJsonPath: string,
-    validation: Required<ValidationOptions>,
+    validation: ResolvedValidationOptions,
     validationErrors: ValidationReporter
 ) {
     if (!sourcePackageJson.name) {

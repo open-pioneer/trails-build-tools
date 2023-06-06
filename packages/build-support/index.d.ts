@@ -23,7 +23,7 @@ export interface BuildConfig {
      *
      * NOTE: There is no need to list the {@link servicesModule} in here.
      */
-    entryPoints?: string[];
+    entryPoints?: string | string[];
 
     /**
      * Path to a file containing CSS or SCSS.
@@ -214,7 +214,7 @@ export interface PropertyMetaConfig {
 }
 
 /**
- * Contains options interpreted when building a package for publishing.
+ * Contains options interpreted when building a package for publishing with the `@open-pioneer/build-package` tool.
  */
 export interface PublishConfig {
     /**
@@ -244,6 +244,71 @@ export interface PublishConfig {
      * ```
      */
     assets?: string | string[];
+
+    /**
+     * Enables or disables generation of TypeScript declaration files (`.d.ts`).
+     *
+     * Generation of declaration files requires a (minimal) `tsconfig.json` in the package's directory.
+     *
+     * Defaults to `true` if a TypeScript file is present in the package, `false` otherwise.
+     */
+    types?: boolean;
+
+    /**
+     * Enables or disables generation of [source maps](https://web.dev/source-maps/).
+     *
+     * Note that generated source maps will contain the entire, unprocessed source code
+     * if the source files.
+     *
+     * Defaults to `true`.
+     */
+    sourceMaps?: boolean;
+
+    /**
+     * Enables or disables strict checks.
+     *
+     * When strict checks are enabled, certain errors (such as a missing license file)
+     * become fatal and abort the build.
+     *
+     * This can be set to `false` during development to update a package bit by bit,
+     * but it should otherwise be `true` to detect common errors.
+     *
+     * Defaults to `true`.
+     */
+    strict?: boolean;
+
+    /**
+     * Optional validation options.
+     *
+     * Validation problems result in warnings (or errors, if {@link strict}) during the build.
+     */
+    validation?: ValidationOptions;
+}
+
+/**
+ * Validation options accepted during package compilation.
+ */
+export interface ValidationOptions {
+    /**
+     * Whether a LICENSE file is required.
+     *
+     * Defaults to `true`.
+     */
+    requireLicense?: boolean;
+
+    /**
+     * Whether a README file is required.
+     *
+     * Defaults to `true`.
+     */
+    requireReadme?: boolean;
+
+    /**
+     * Whether a CHANGELOG file is required.
+     *
+     * Defaults to `true`.
+     */
+    requireChangelog?: boolean;
 }
 
 /**

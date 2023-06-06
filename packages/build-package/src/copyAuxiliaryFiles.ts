@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { relative, resolve } from "node:path";
 import { copy } from "fs-extra";
-import { ValidationReporter } from "./utils/ValidationReporter";
-import { resolveFirstMatchWithExtensions } from "./utils/resolve";
-import { createDebugger } from "./utils/debug";
 import { lstatSync } from "node:fs";
-import { ValidationOptions } from "../types";
+import { relative, resolve } from "node:path";
+import { ResolvedValidationOptions } from "./model/Options";
+import { ValidationReporter } from "./utils/ValidationReporter";
+import { createDebugger } from "./utils/debug";
+import { resolveFirstMatchWithExtensions } from "./utils/resolve";
 
 export interface CopyAuxiliaryFilesOptions {
     /** Package source directory. */
@@ -16,7 +16,7 @@ export interface CopyAuxiliaryFilesOptions {
     outputDirectory: string;
 
     /** Validation options. */
-    validation: Required<ValidationOptions>;
+    validation: ResolvedValidationOptions;
 
     reporter: ValidationReporter;
 }
