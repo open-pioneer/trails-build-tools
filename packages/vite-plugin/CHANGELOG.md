@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.8.4
+
+### Patch Changes
+
+-   57a81cd: Improve error logging in dev mode.
+
 ## 0.8.3
 
 ### Patch Changes
