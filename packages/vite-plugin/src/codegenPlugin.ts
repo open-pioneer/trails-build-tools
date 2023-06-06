@@ -28,6 +28,8 @@ export function codegenPlugin(): Plugin {
     let repository!: MetadataRepository;
     let devServer: ViteDevServer | undefined;
 
+    devServer?.httpServer;
+
     return {
         name: "pioneer:codegen",
 
@@ -111,7 +113,7 @@ export function codegenPlugin(): Plugin {
                         });
                 }
             } catch (e) {
-                reportError(this, e);
+                reportError(this, e, !!devServer);
             }
         },
 
@@ -200,7 +202,7 @@ export function codegenPlugin(): Plugin {
                     }
                 }
             } catch (e) {
-                reportError(this, e);
+                reportError(this, e, !!devServer);
             }
         }
     };
@@ -229,15 +231,28 @@ function buildMetadataContext(
     };
 }
 
-function reportError(ctx: PluginContext, error: unknown) {
+function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
+    let message: string;
     if (error instanceof ReportableError) {
-        ctx.error(error);
+        message = error.message;
+    } else {
+        message = "Internal error: " + (String((error as Error)?.message) || "Unknown error");
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const message = String((error as any).message) || "Unknown error";
+
+    // Vite will currently only render the top level error, not its causes.
+    if (isDev) {
+        for (const cause of getCauseMessages(error)) {
+            message += "\n\n";
+            message += `Caused by: ${cause}`;
+        }
+    }
+
     ctx.error({
-        message: "Internal error: " + message,
-        cause: error
+        message: message,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        cause: (error as any).cause,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        stack: (error as any).stack
     });
 }
 
@@ -281,4 +296,25 @@ async function getPackageName(ctx: PluginContext, packageJsonPath: string) {
         throw new ReportableError(`Failed to read package name from ${packageJsonPath}.`);
     }
     return name;
+}
+
+function getCauseMessages(error: unknown): string[] {
+    const causes: string[] = [];
+    // eslint-disable-next-line no-constant-condition
+    while (1) {
+        const cause = (error as Error)?.cause;
+        if (!cause) {
+            break;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const message = (cause as any).message;
+        if (!message || typeof message !== "string") {
+            break;
+        }
+
+        causes.push(message);
+        error = cause;
+    }
+    return causes;
 }
