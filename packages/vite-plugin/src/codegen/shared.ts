@@ -82,6 +82,12 @@ function parseAppModuleId(sourceFile: string, moduleId: string): VirtualModule |
         const type = "app-packages";
         return { type, packageDirectory };
     } else if (moduleId.match(APP_CSS_RE)) {
+        // TODO: Workaround. Vite will also request source maps for the inline css
+        // which we can't really serve right now because the importer is wrong (index.html instead of the app directory).
+        if (moduleId.endsWith(".map")) {
+            return undefined;
+        }
+
         const type = "app-css";
         return { type, packageDirectory };
     } else if (moduleId.match(APP_I18N_INDEX_RE)) {
