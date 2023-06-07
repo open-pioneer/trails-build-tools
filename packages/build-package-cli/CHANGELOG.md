@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 0.2.0
+
+### Minor Changes
+
+-   8c6e72d: Rename to build-pioneer-package
+
 ## 0.1.0
 
 ### Minor Changes
