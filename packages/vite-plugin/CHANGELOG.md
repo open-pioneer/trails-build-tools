@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.8.5
+
+### Patch Changes
+
+-   ab271dc: Don't consider virtual app-css modules if they end in '.map'. This is a workaround for vite currently requesting source maps for inline css with the 'wrong' importer.
+
 ## 0.8.4
 
 ### Patch Changes
