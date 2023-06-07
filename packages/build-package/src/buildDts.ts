@@ -167,7 +167,7 @@ function createTypeScriptConfig(
         errors = configErrors;
     }
 
-    const requiredValues = {
+    const requiredValues: Partial<Ts.CompilerOptions> = {
         rootDir: packageDirectory,
         noEmit: false,
         declaration: true,
