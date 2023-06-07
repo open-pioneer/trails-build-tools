@@ -1,28 +1,38 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { cp } from "fs/promises";
+import { cp, mkdir } from "fs/promises";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { existsSync } from "fs";
 import { build } from ".";
 
-describe("build", function () {
-    it("should build package to `dist`", async function () {
-        const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project");
-        const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project");
-        const distDirectory = resolve(tempPackage, "dist");
-
-        await cleanDir(tempPackage);
-        await cp(srcPackage, tempPackage, {
-            recursive: true,
-            force: true
+describe(
+    "build",
+    function () {
+        beforeAll(async () => {
+            await mkdir(TEMP_DATA_DIR, { recursive: true });
+            await cp(
+                resolve(TEST_DATA_DIR, "tsconfig.json"),
+                resolve(TEMP_DATA_DIR, "tsconfig.json")
+            );
         });
-        await build({ packageDirectory: tempPackage, logger: null });
 
-        const entryPointA = resolve(distDirectory, "entryPointA.js");
-        expect(readText(entryPointA)).toMatchInlineSnapshot(`
+        it("should build package to `dist`", async function () {
+            const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project");
+            const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project");
+            const distDirectory = resolve(tempPackage, "dist");
+
+            await cleanDir(tempPackage);
+            await cp(srcPackage, tempPackage, {
+                recursive: true,
+                force: true
+            });
+            await build({ packageDirectory: tempPackage, logger: null });
+
+            const entryPointA = resolve(distDirectory, "entryPointA.js");
+            expect(readText(entryPointA)).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
           import something from 'somewhere-external';
           import somethingElse from '@scope/somewhere-external';
@@ -38,14 +48,14 @@ describe("build", function () {
           "
         `);
 
-        const entryPointADts = resolve(distDirectory, "entryPointA.d.ts");
-        expect(readText(entryPointADts)).toMatchInlineSnapshot(`
+            const entryPointADts = resolve(distDirectory, "entryPointA.d.ts");
+            expect(readText(entryPointADts)).toMatchInlineSnapshot(`
           "export function helloA(): void;
           "
         `);
 
-        const entryPointB = resolve(distDirectory, "entryPointB.js");
-        expect(readText(entryPointB)).toMatchInlineSnapshot(`
+            const entryPointB = resolve(distDirectory, "entryPointB.js");
+            expect(readText(entryPointB)).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
 
           function helloB() {
@@ -57,19 +67,19 @@ describe("build", function () {
           "
         `);
 
-        const entryPointBDts = resolve(distDirectory, "entryPointB.d.ts");
-        expect(readText(entryPointBDts)).toMatchInlineSnapshot(`
+            const entryPointBDts = resolve(distDirectory, "entryPointB.d.ts");
+            expect(readText(entryPointBDts)).toMatchInlineSnapshot(`
           "export function helloB(): void;
           "
         `);
 
-        // Not included
-        const hiddenFile = resolve(distDirectory, "hiddenFile.js");
-        expect(existsSync(hiddenFile)).toBe(false);
+            // Not included
+            const hiddenFile = resolve(distDirectory, "hiddenFile.js");
+            expect(existsSync(hiddenFile)).toBe(false);
 
-        // Styles are present
-        const styles = resolve(distDirectory, "my-styles.css");
-        expect(readText(styles)).toMatchInlineSnapshot(`
+            // Styles are present
+            const styles = resolve(distDirectory, "my-styles.css");
+            expect(readText(styles)).toMatchInlineSnapshot(`
           ".main {
               color: green;
           }
@@ -77,9 +87,9 @@ describe("build", function () {
           /*# sourceMappingURL=my-styles.css.map */"
         `);
 
-        // Package.json was generated
-        const packageJson = resolve(distDirectory, "package.json");
-        expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
+            // Package.json was generated
+            const packageJson = resolve(distDirectory, "package.json");
+            expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
           {
             "dependencies": {
               "@open-pioneer/runtime": "*",
@@ -118,23 +128,27 @@ describe("build", function () {
           }
         `);
 
-        // License, changelog and readme were copied
-        const readme = resolve(distDirectory, "README.md");
-        expect(readText(readme)).toMatchInlineSnapshot(`
+            // License, changelog and readme were copied
+            const readme = resolve(distDirectory, "README.md");
+            expect(readText(readme)).toMatchInlineSnapshot(`
           "# README for simple package
           "
         `);
 
-        const changelog = resolve(distDirectory, "CHANGELOG.md");
-        expect(readText(changelog)).toMatchInlineSnapshot(`
+            const changelog = resolve(distDirectory, "CHANGELOG.md");
+            expect(readText(changelog)).toMatchInlineSnapshot(`
           "# Changelog for simple package
           "
         `);
 
-        const license = resolve(distDirectory, "LICENSE");
-        expect(readText(license)).toMatchInlineSnapshot(`
+            const license = resolve(distDirectory, "LICENSE");
+            expect(readText(license)).toMatchInlineSnapshot(`
           "LICENSE
           "
         `);
-    });
-});
+        });
+    },
+    {
+        timeout: 10000
+    }
+);

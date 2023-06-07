@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import type * as Ts from "typescript";
 import { Logger } from "./utils/Logger";
@@ -8,6 +7,7 @@ import { NormalizedEntryPoint } from "./utils/entryPoints";
 import glob from "fast-glob";
 import { SUPPORTED_TS_EXTENSIONS } from "./model/PackageModel";
 import { createDebugger } from "./utils/debug";
+import { existsSync } from "node:fs";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:buildDts");
@@ -40,7 +40,7 @@ export async function buildDts({
     logger
 }: BuildDtsOptions) {
     const ts = await getTypeScriptAPI();
-    const { fileNames, options, errors } = getTypeScriptConfig(
+    const { fileNames, options, errors } = createTypeScriptConfig(
         ts,
         packageDirectory,
         outputDirectory,
@@ -94,7 +94,7 @@ export async function shouldGenerateTypes(packageDirectory: string, force?: bool
     return files.length > 0;
 }
 
-function getTypeScriptConfig(
+function createTypeScriptConfig(
     ts: TsModule,
     packageDirectory: string,
     outputDirectory: string,
@@ -102,8 +102,20 @@ function getTypeScriptConfig(
     logger: Logger
 ) {
     const tsConfigPath = ts.findConfigFile(packageDirectory, ts.sys.fileExists, "tsconfig.json");
-
     isDebug && debug(`Using tsconfig %s`, tsConfigPath);
+
+    const defaultCompilerOptions = {
+        allowJs: true,
+        target: "ES2022",
+        module: "ES2022",
+        moduleResolution: "bundler",
+        jsx: "react-jsx",
+
+        strict: true,
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+        isolatedModules: true
+    };
 
     const fileNames = entryPoints.map((e) => resolve(packageDirectory, e.inputModulePath));
     let options: Ts.CompilerOptions = {};
@@ -115,9 +127,12 @@ function getTypeScriptConfig(
             throw new Error("Failed to read TypeScript configuration file.");
         }
 
-        if (configFile.config) {
-            configFile.config.compilerOptions = Object.assign({});
-        }
+        // Apply default compiler options for convenience
+        const rootConfig = (configFile.config ??= {});
+        rootConfig.compilerOptions = {
+            ...defaultCompilerOptions,
+            ...rootConfig.compilerOptions
+        };
 
         const {
             fileNames: configFileNames,
@@ -127,18 +142,7 @@ function getTypeScriptConfig(
             configFile.config,
             ts.sys,
             packageDirectory,
-            // TODO: These override present options instead of serving as defaults ;-(
-            {
-                allowJs: true,
-                strict: true,
-                target: ts.ScriptTarget.ES2022,
-                module: ts.ModuleKind.ES2022,
-                moduleResolution: ts.ModuleResolutionKind.Bundler,
-                jsx: ts.JsxEmit.ReactJSX,
-                esModuleInterop: true,
-                allowSyntheticDefaultImports: true,
-                isolatedModules: true
-            },
+            {},
             tsConfigPath
         );
 
@@ -151,16 +155,33 @@ function getTypeScriptConfig(
 
         options = configOptions;
         errors = configErrors;
+    } else {
+        // Only use default compiler options
+        const { options: configOptions, errors: configErrors } = ts.convertCompilerOptionsFromJson(
+            defaultCompilerOptions,
+            packageDirectory,
+            undefined
+        );
+
+        options = configOptions;
+        errors = configErrors;
     }
 
-    // Enforce some required options
-    options.rootDir = packageDirectory;
-    options.noEmit = false;
-    options.declaration = true;
-    options.emitDeclarationOnly = true;
-    options.skipLibCheck = true;
-    options.noEmitOnError = false;
-    options.declarationDir = outputDirectory;
+    const requiredValues = {
+        rootDir: packageDirectory,
+        noEmit: false,
+        declaration: true,
+        emitDeclarationOnly: true,
+        skipLibCheck: true,
+        noEmitOnError: false,
+        declarationDir: outputDirectory
+    };
+
+    options = {
+        ...options,
+        ...requiredValues
+    };
+
     return { fileNames, options, errors };
 }
 
