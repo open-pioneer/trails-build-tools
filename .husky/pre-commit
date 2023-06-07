@@ -18,5 +18,5 @@ pnpm run check-types
 echo '--- run tests ---'
 pnpm run clean
 pnpm run build
-pnpm run test run
+CI=1 pnpm run test run # CI=1 disallows `.only` in tests
 
