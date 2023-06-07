@@ -7,6 +7,7 @@ import { build } from "@open-pioneer/build-package";
 
 const program = new Command();
 program
+    .name("build-pioneer-package")
     .description("Builds an open pioneer package for publishing.")
     .option("-p, --package <path>", "package directory (defaults to current directory)")
     .option("-q, --silent", "disable logging")
@@ -25,6 +26,7 @@ async function main() {
             packageDirectory: packagePath,
             logger: silent ? null : console
         });
+        exit(0);
     } catch (e) {
         if (debug) {
             console.error(e);

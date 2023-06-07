@@ -4,7 +4,7 @@
     "type": "commonjs",
     "license": "Apache-2.0",
     "bin": {
-        "build-package": "./dist/index.js"
+        "build-pioneer-package": "./dist/index.js"
     },
     "scripts": {
         "clean": "rimraf dist",
