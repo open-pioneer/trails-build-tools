@@ -19,6 +19,7 @@ import { createDebugger } from "../utils/debug";
 import { InternalPackageMetadata, MetadataContext, PackageDependency } from "./Metadata";
 import { PACKAGE_NAME } from "../utils/package";
 import { existsSync } from "node:fs";
+import posix from "node:path/posix";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -33,9 +34,15 @@ const debug = createDebugger("open-pioneer:metadata");
 export async function loadPackageMetadata(
     ctx: MetadataContext,
     packageDir: string,
-    sourceRoot: string
+    sourceRoot: string,
+    importedFrom: string | undefined
 ): Promise<InternalPackageMetadata> {
-    return await new PackageMetadataReader(ctx, packageDir, sourceRoot).readPackageMetadata();
+    return await new PackageMetadataReader(
+        ctx,
+        packageDir,
+        sourceRoot,
+        importedFrom
+    ).readPackageMetadata();
 }
 
 interface PackageConfigResult {
@@ -48,12 +55,19 @@ class PackageMetadataReader {
     private packageDir: string;
     private sourceRoot: string;
     private packageJsonPath: string;
+    private importedFrom: string | undefined;
 
-    constructor(ctx: MetadataContext, packageDir: string, sourceRoot: string) {
+    constructor(
+        ctx: MetadataContext,
+        packageDir: string,
+        sourceRoot: string,
+        importedFrom: string | undefined
+    ) {
         this.ctx = ctx;
         this.packageDir = packageDir;
         this.sourceRoot = sourceRoot;
         this.packageJsonPath = join(packageDir, "package.json");
+        this.importedFrom = importedFrom;
     }
 
     /**
@@ -90,16 +104,12 @@ class PackageMetadataReader {
         let servicesModule: string | undefined;
         if (config.services.size) {
             try {
-                servicesModule = await resolveLocalFile(
-                    ctx,
-                    packageDir,
-                    config.servicesModule ?? "./services"
-                );
+                servicesModule = await this.getServicesModule(mode, packageName, config);
             } catch (e) {
-                ctx.warn({
-                    message: `Failed to resolve services entry point for package ${packageDir}`,
-                    cause: e
-                });
+                throw new ReportableError(
+                    `Failed to resolve services entry point for package ${packageDir}`,
+                    { cause: e }
+                );
             }
         }
 
@@ -150,7 +160,7 @@ class PackageMetadataReader {
     /**
      * Attempts to read the package's metadata/configuration, depending on mode.
      */
-    async readConfig(
+    private async readConfig(
         mode: "local" | "external",
         packageName: string,
         frameworkMetadata: unknown
@@ -188,10 +198,37 @@ class PackageMetadataReader {
     }
 
     /**
+     * Attempts to resolve the package's services entry point (e.g. ./services.ts), depending on mode.
+     */
+    private async getServicesModule(
+        mode: "local" | "external",
+        packageName: string,
+        config: PackageConfig
+    ): Promise<string | undefined> {
+        const localServicesModule = config.servicesModule ?? "./services";
+        const importedFrom = this.importedFrom;
+        if (mode === "external" && importedFrom) {
+            /*
+             * Perform an unqualified lookup (e.g. `ol-map/services`) from a "known-good" importer.
+             * This should play nicer with vite's depOptimizer, which would otherwise resolve to an unbundled file
+             * that might already be optimized elsewhere (--> resulting in bad, duplicated code).
+             */
+            const unqualifiedLookupResult = await this.ctx.resolve(
+                posix.join(packageName, localServicesModule),
+                importedFrom,
+                { skipSelf: true }
+            );
+            return unqualifiedLookupResult?.id;
+        } else {
+            return await resolveLocalFile(this.ctx, this.packageDir, localServicesModule);
+        }
+    }
+
+    /**
      * Attempts to read the package configuration from the package.json's metadata value.
      * Note that the value may not be present at this point if the package does not use open pioneer metadata.
      */
-    async parsePackageConfigFromMetadata(
+    private async parsePackageConfigFromMetadata(
         packageName: string,
         frameworkMetadata: unknown
     ): Promise<PackageConfigResult | undefined> {
@@ -219,7 +256,7 @@ class PackageMetadataReader {
         };
     }
 
-    async parsePackageConfigFromBuildConfig(
+    private async parsePackageConfigFromBuildConfig(
         buildConfigPath: string
     ): Promise<PackageConfigResult | undefined> {
         const { ctx, packageDir } = this;
@@ -298,7 +335,11 @@ async function parsePackageJson(packageJsonPath: string) {
 }
 
 async function resolveLocalFile(ctx: MetadataContext, packageDir: string, localModuleId: string) {
-    const result = await ctx.resolve(`./${localModuleId}`, `${packageDir}/package.json`, {
+    if (!localModuleId.startsWith("./")) {
+        localModuleId = `./${localModuleId}`;
+    }
+
+    const result = await ctx.resolve(localModuleId, `${packageDir}/package.json`, {
         skipSelf: true
     });
     return result?.id;

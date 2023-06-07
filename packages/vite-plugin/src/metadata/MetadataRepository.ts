@@ -45,7 +45,11 @@ export class MetadataRepository {
     private sourceRoot: string;
 
     // Key: package directory on disk, value: existing metadata
-    private packageMetadataCache: Cache<string, MetadataEntry, [ctx: MetadataContext]>;
+    private packageMetadataCache: Cache<
+        string,
+        MetadataEntry,
+        [ctx: MetadataContext, importedFrom: string | undefined]
+    >;
 
     // Cache for the contents of i18n files.
     // Key: path on disk.
@@ -161,7 +165,8 @@ export class MetadataRepository {
             return undefined;
         }
 
-        const entry = await this.packageMetadataCache.get(packageDir, ctx);
+        const importedFrom = loc.type === "absolute" ? undefined : loc.importedFrom;
+        const entry = await this.packageMetadataCache.get(packageDir, ctx, importedFrom);
         propagateWatchFiles(entry.watchFiles, ctx);
 
         if (entry.metadata.type === "plain") {
@@ -238,7 +243,7 @@ export class MetadataRepository {
         });
     }
 
-    private createPackageMetadataCache(): Cache<string, MetadataEntry, [ctx: MetadataContext]> {
+    private createPackageMetadataCache(): typeof this.packageMetadataCache {
         const sourceRoot = this.sourceRoot;
         const provider = {
             _byName: new Map<string, PackageMetadata>(),
@@ -246,8 +251,17 @@ export class MetadataRepository {
             getId(directory: string) {
                 return normalizePath(directory);
             },
-            async getValue(directory: string, ctx: MetadataContext): Promise<MetadataEntry> {
-                isDebug && debug(`Loading metadata for package at ${directory}`);
+            async getValue(
+                directory: string,
+                ctx: MetadataContext,
+                importedFrom: string | undefined
+            ): Promise<MetadataEntry> {
+                isDebug &&
+                    debug(
+                        `Loading metadata for package at ${directory} (imported from ${
+                            importedFrom ?? "N/A"
+                        })`
+                    );
 
                 // Track watch files to ensure that other files also depend on these files
                 // when a cached entry is returned.
@@ -261,7 +275,12 @@ export class MetadataRepository {
                     warn: ctx.warn
                 };
 
-                const metadata = await loadPackageMetadata(trackingCtx, directory, sourceRoot);
+                const metadata = await loadPackageMetadata(
+                    trackingCtx,
+                    directory,
+                    sourceRoot,
+                    importedFrom
+                );
                 isDebug && debug(`Metadata for '${metadata.name}': %O`, metadata);
 
                 // Ensure only one version of a package exists in the app

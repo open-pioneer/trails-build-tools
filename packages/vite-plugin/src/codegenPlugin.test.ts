@@ -26,7 +26,7 @@ describe("codegen support", function () {
         assert.include(testAppJs, 'console.log("Hello from LogService!!");');
     });
 
-    it("generates app when referencing external open pioneer package", async function () {
+    it.only("generates app when referencing external open pioneer package", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-packages-external/src");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-external");
 

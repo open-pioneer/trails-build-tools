@@ -9,8 +9,8 @@
         ".": {
             "import": "./entryPoint.js"
         },
-        "./services": {
-            "import": "./services.js"
+        "./my-services": {
+            "import": "./my-services.js"
         },
         "./styles.css": "./styles.css"
     },
