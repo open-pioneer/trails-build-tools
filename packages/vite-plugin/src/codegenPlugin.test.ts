@@ -41,7 +41,7 @@ describe("codegen support", function () {
         // metadata was read from package.json and contents were found
         const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
         assert.include(testAppJs, 'console.log("in MapContainer");');
-        assert.include(testAppJs, 'console.log("in OlMapRegistry");');
+        assert.include(testAppJs, 'import { OlMapRegistry } from "ol-map/my-services";');
         assert.include(testAppJs, 'console.log("in useMap");');
         assert.include(testAppJs, '".map {\\n    color: black;\\n}"');
     });
