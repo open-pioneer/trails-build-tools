@@ -34,7 +34,9 @@ jobs:
           pnpm run ci:test
 
   call_version:
+    if: github.ref == 'refs/heads/main'
     name: "Publish or create version PR"
     uses: "./.github/workflows/version.yml"
     needs: test
-    if: github.ref == 'refs/heads/main'
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
