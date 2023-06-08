@@ -32,3 +32,8 @@ jobs:
       - name: Runs checks
         run: |
           pnpm run ci:test
+
+  call_version:
+    uses: "./.github/workflows/version.yml"
+    needs: test
+    if: github.ref == 'refs/heads/main'
