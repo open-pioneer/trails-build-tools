@@ -5,6 +5,17 @@
     "version": "0.6.0",
     "license": "Apache-2.0",
     "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-pioneer/build-tools.git",
+        "directory": "packages/build-support"
+    },
+    "keywords": [
+        "open-pioneer-framework"
+    ],
+    "bugs": {
+        "url": "https://github.com/open-pioneer/build-tools/issues"
+    },
     "exports": {
         "import": "./index.js",
         "require": "./index.cjs",

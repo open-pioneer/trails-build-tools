@@ -3,6 +3,17 @@
     "version": "0.2.0",
     "type": "commonjs",
     "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-pioneer/build-tools.git",
+        "directory": "packages/build-package-cli"
+    },
+    "keywords": [
+        "open-pioneer-framework"
+    ],
+    "bugs": {
+        "url": "https://github.com/open-pioneer/build-tools/issues"
+    },
     "bin": {
         "build-pioneer-package": "./dist/index.js"
     },
