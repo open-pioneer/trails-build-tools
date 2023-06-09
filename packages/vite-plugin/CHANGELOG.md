@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 0.8.7
+
+### Patch Changes
+
+-   f0cd283: Add package.json metadata
+-   Updated dependencies [f0cd283]
+    -   @open-pioneer/build-common@0.6.1
+
 ## 0.8.6
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 0.6.1
+
+### Patch Changes
+
+-   f0cd283: Add package.json metadata
+
 ## 0.6.0
 
 ### Minor Changes
