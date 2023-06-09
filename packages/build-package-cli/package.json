@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-package-cli",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "type": "commonjs",
     "license": "Apache-2.0",
     "repository": {

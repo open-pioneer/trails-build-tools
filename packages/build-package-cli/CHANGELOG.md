@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 0.2.1
+
+### Patch Changes
+
+-   f0cd283: Add package.json metadata
+-   Updated dependencies [f0cd283]
+    -   @open-pioneer/build-package@0.7.1
+
 ## 0.2.0
 
 ### Minor Changes
