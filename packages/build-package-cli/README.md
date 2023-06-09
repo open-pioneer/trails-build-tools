@@ -16,6 +16,8 @@ Copying auxiliary files...
 Success
 ```
 
+To configure the build process, use the `publishConfig` section in your `build.config.mjs`.
+
 ## License
 
 [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
