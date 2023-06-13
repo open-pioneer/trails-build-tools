@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 0.7.2
+
+### Patch Changes
+
+-   766bcb8: Make more errors non-fatal when 'strict' is disabled
+
 ## 0.7.1
 
 ### Patch Changes
