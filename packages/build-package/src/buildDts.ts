@@ -171,6 +171,7 @@ function createTypeScriptConfig(
         rootDir: packageDirectory,
         noEmit: false,
         declaration: true,
+        declarationMap: false,
         emitDeclarationOnly: true,
         skipLibCheck: true,
         noEmitOnError: false,
