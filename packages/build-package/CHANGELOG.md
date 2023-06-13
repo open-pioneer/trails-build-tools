@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 0.7.3
+
+### Patch Changes
+
+-   763acf3: Disable 'declarationMap' for published packages
+
 ## 0.7.2
 
 ### Patch Changes
