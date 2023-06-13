@@ -81,7 +81,7 @@ describe("generatePackageJson", function () {
         });
         await expect(async () => {
             await generatePackageJson(options);
-            options.reporter.finish();
+            options.reporter.check();
         }).rejects.toThrowErrorMatchingInlineSnapshot(
             '"Aborting due to validation errors (strict validation is enabled)."'
         );

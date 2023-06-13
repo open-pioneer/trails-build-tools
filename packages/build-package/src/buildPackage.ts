@@ -29,8 +29,8 @@ export async function buildPackage({ input, options, logger }: BuildPackageOptio
     const chalk = await getChalk();
     logger.info(`Building package at ${chalk.underline(input.packageDirectory)}`);
 
-    const model = createPackageModel(input, options.outputDirectory);
     const reporter = new ValidationReporter(logger, options.strict);
+    const model = createPackageModel(input, options.outputDirectory, reporter);
 
     // Prepare output directory
     if (options.clean) {
@@ -123,7 +123,7 @@ export async function buildPackage({ input, options, logger }: BuildPackageOptio
         reporter
     });
 
-    reporter.finish();
+    reporter.check();
 
     logger.info(chalk.green("Success"));
 }

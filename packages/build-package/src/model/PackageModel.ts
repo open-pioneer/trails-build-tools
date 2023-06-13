@@ -7,6 +7,7 @@ import {
     normalizeEntryPoints
 } from "../utils/entryPoints";
 import { join } from "node:path";
+import { ValidationReporter } from "../utils/ValidationReporter";
 
 export const SUPPORTED_TS_EXTENSIONS = [".ts", ".mts", ".tsx"];
 export const SUPPORTED_JS_EXTENSIONS = [...SUPPORTED_TS_EXTENSIONS, ".js", ".mjs", ".jsx"];
@@ -53,17 +54,22 @@ export interface PackageModel {
     assetPatterns: string[];
 }
 
-export function createPackageModel(input: InputModel, outputDirectory: string): PackageModel {
+export function createPackageModel(
+    input: InputModel,
+    outputDirectory: string,
+    reporter: ValidationReporter
+): PackageModel {
     const packageName = input.packageJson.name;
     if (typeof packageName !== "string" || !packageName) {
         throw new Error(`Package at ${input.packageDirectory} does not have a 'name'.`);
     }
 
-    const jsEntryPoints = input.buildConfig.entryPoints;
+    let jsEntryPoints = input.buildConfig.entryPoints;
     if (!jsEntryPoints) {
-        throw new Error(
+        reporter.report(
             `${input.buildConfigPath} must define the 'entryPoints' property in order to be built.`
         );
+        jsEntryPoints = [];
     }
 
     const jsEntryPointsByModuleId = new Map<string, NormalizedEntryPoint>();
@@ -73,7 +79,8 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
     )) {
         const key = configuredEp.outputModuleId;
         if (jsEntryPointsByModuleId.has(key)) {
-            throw new Error(`Entry point '${key}' is defined multiple times.`);
+            reporter.report(`Entry point '${key}' is defined multiple times.`);
+            continue;
         }
         jsEntryPointsByModuleId.set(key, configuredEp);
     }
@@ -82,14 +89,17 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
 
     let servicesEntryPoint;
     if (pkgConfig.services.size) {
-        if (!pkgConfig.servicesModule) {
-            throw new Error(
+        if (pkgConfig.servicesModule) {
+            servicesEntryPoint = normalizeEntryPoint(
+                pkgConfig.servicesModule,
+                SUPPORTED_JS_EXTENSIONS
+            );
+            jsEntryPointsByModuleId.set(servicesEntryPoint.outputModuleId, servicesEntryPoint);
+        } else {
+            reporter.report(
                 `Package at ${input.packageDirectory} defines services but has no services module.`
             );
         }
-
-        servicesEntryPoint = normalizeEntryPoint(pkgConfig.servicesModule, SUPPORTED_JS_EXTENSIONS);
-        jsEntryPointsByModuleId.set(servicesEntryPoint.outputModuleId, servicesEntryPoint);
     }
 
     const normalizedCssEntryPoint = pkgConfig.styles
@@ -106,7 +116,7 @@ export function createPackageModel(input: InputModel, outputDirectory: string): 
     }
 
     const assetPatterns = toArray(input.buildConfig.publishConfig?.assets ?? "assets/**");
-
+    reporter.check();
     return {
         outputDirectory,
         input,

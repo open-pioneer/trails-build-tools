@@ -30,7 +30,7 @@ export class ValidationReporter {
      *
      * Throws an error if there were problems and strict mode is enabled.
      */
-    finish() {
+    check() {
         if (this.strict && this.hasReports) {
             throw new Error(`Aborting due to validation errors (strict validation is enabled).`);
         }

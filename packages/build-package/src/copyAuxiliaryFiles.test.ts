@@ -51,7 +51,7 @@ describe("copyAuxiliaryFiles", function () {
             ...options
         });
 
-        expect(() => options.reporter.finish()).toThrowErrorMatchingInlineSnapshot(
+        expect(() => options.reporter.check()).toThrowErrorMatchingInlineSnapshot(
             '"Aborting due to validation errors (strict validation is enabled)."'
         );
 
