@@ -1,0 +1,48 @@
+{
+    "type": "module",
+    "name": "@open-pioneer/integration",
+    "version": "0.1.4",
+    "license": "Apache-2.0",
+    "peerDependencies": {
+        "@open-pioneer/runtime": "workspace:^"
+    },
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": "./index.js",
+            "types": "./index.d.ts"
+        },
+        "./services": {
+            "import": "./services.js",
+            "types": "./services.d.ts"
+        }
+    },
+    "openPioneerFramework": {
+        "services": [
+            {
+                "serviceName": "ExternalEventServiceImpl",
+                "provides": [
+                    {
+                        "interfaceName": "integration.ExternalEventService"
+                    }
+                ],
+                "references": [
+                    {
+                        "referenceName": "ctx",
+                        "type": "unique",
+                        "interfaceName": "runtime.ApplicationContext"
+                    }
+                ]
+            }
+        ],
+        "servicesModule": "./services",
+        "i18n": {
+            "languages": []
+        },
+        "ui": {
+            "references": []
+        },
+        "properties": [],
+        "packageFormatVersion": "1.0.0"
+    }
+}

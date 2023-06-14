@@ -1,0 +1,20 @@
+{
+    "name": "@open-pioneer/integration",
+    "version": "0.1.4",
+    "license": "Apache-2.0",
+    "main": "index.ts",
+    "scripts": {
+        "build": "build-pioneer-package"
+    },
+    "peerDependencies": {
+        "@open-pioneer/runtime": "workspace:^"
+    },
+    "devDependencies": {
+        "@open-pioneer/test-utils": "workspace:^",
+        "core-packages": "workspace:^"
+    },
+    "publishConfig": {
+        "directory": "dist",
+        "linkDirectory": false
+    }
+}

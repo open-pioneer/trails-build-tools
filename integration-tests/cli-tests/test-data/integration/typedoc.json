@@ -1,0 +1,4 @@
+{
+    "extends": ["core-packages/typedoc.base.json"],
+    "entryPoints": ["./index.ts"]
+}

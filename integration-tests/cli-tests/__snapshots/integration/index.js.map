@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","sources":["index.ts"],"sourcesContent":["// SPDX-FileCopyrightText: con terra GmbH and contributors\n// SPDX-License-Identifier: Apache-2.0\nexport * from \"./api\";\n\n// Get rid of empty chunk warning\nexport default undefined;\n"],"names":[],"mappings":";;AAKA,YAAe,KAAA,CAAA;;;;"}
