@@ -18,5 +18,6 @@ pnpm run check-types
 echo '--- run tests ---'
 pnpm run clean
 pnpm run build
+pnpm install # link built CLI for integration tests
 CI=1 pnpm run test run # CI=1 disallows `.only` in tests
 
