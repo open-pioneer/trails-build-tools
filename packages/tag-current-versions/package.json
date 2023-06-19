@@ -1,0 +1,44 @@
+{
+    "name": "@open-pioneer/tag-current-versions",
+    "main": "index.js",
+    "version": "0.0.1",
+    "license": "Apache-2.0",
+    "type": "commonjs",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-pioneer/build-tools.git",
+        "directory": "packages/tag-current-versions"
+    },
+    "keywords": [],
+    "bugs": {
+        "url": "https://github.com/open-pioneer/build-tools/issues"
+    },
+    "bin": {
+        "tag-current-versions": "./dist/index.js"
+    },
+    "scripts": {
+        "clean": "rimraf dist temp",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch",
+        "test": "vitest"
+    },
+    "files": [
+        "index.js",
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
+    "engines": {
+        "node": ">= 16"
+    },
+    "dependencies": {
+        "@changesets/git": "^2.0.0",
+        "@changesets/logger": "^0.0.5",
+        "@manypkg/get-packages": "^2.2.0"
+    },
+    "devDependencies": {
+        "@changesets/test-utils": "^0.0.5",
+        "build-tools": "workspace:*"
+    }
+}
