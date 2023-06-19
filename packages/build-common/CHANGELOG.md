@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 1.0.1
+
+### Patch Changes
+
+-   1a8c745: Redo release, 1.0.0 was released accidentally weeks ago.
+
 ## 1.0.0
 
 ### Major Changes

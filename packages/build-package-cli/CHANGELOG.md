@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 1.0.1
+
+### Patch Changes
+
+-   @open-pioneer/build-package@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
