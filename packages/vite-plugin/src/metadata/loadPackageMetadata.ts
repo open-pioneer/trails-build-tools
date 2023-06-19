@@ -208,22 +208,12 @@ class PackageMetadataReader {
         const localServicesModule = config.servicesModule ?? "./services";
         const importedFrom = this.importedFrom;
         if (mode === "external" && importedFrom) {
-            /**
-             * FIXME: This is a workaround for a weird interaction with vite's dependency optimizer and virtual modules.
-             * We are trying to import a real file here (e.g. ./node_modules/.../@open-pioneer/some-package/services.js)
-             * and we would like to do so via a fully resolved path.
-             *
-             * However, when using a fully resolved path AND using vite's dev mode AND if that code used by that file
-             * is already used elsewhere in the app (and thus optimized) we end up with a "working" import that produces duplicate code
-             * (one copy from vite's optimizer in node_modules/.vite and one copy via the direct fully resolved path).
-             *
-             * By using an unresolved path we bypass this issue as it appears that vite's resolve pipeline handles this correctly -
-             * there is no duplicate code in manual experiments.
-             *
-             * Because this is an unresolved import (e.g. @open-pioneer/some-package/services) from the app's virtual packages module
-             * this package must be reachable from the app. For this reason we currently must use pnpm's "shamefully-hoist" option :(
-             */
-            return posix.join(packageName, localServicesModule);
+            const unqualifiedId = posix.join(packageName, localServicesModule);
+            console.log("importing", unqualifiedId, "from", importedFrom);
+            const unqualifiedLookupResult = await this.ctx.resolve(unqualifiedId, importedFrom, {
+                skipSelf: true
+            });
+            return unqualifiedLookupResult?.id;
         } else {
             return await resolveLocalFile(this.ctx, this.packageDir, localServicesModule);
         }

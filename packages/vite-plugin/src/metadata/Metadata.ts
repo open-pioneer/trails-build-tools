@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-
 import { PackageConfig } from "@open-pioneer/build-common";
 import { PluginContext } from "rollup";
 

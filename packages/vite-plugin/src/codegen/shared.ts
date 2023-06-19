@@ -1,9 +1,8 @@
 // SPDX-FileCopyrightText: con terra GmbH and contributors
 // SPDX-License-Identifier: Apache-2.0
-import { dirname, basename } from "node:path/posix";
-import { normalizePath } from "vite";
 
-const APP_MODULE = "@@open-pioneer-app";
+const APP_MODULE = "\0open-pioneer-app";
+const APP_MODULE_RE = /\0open-pioneer-app(?:$|\?)/;
 
 const APP_META_QUERY = "open-pioneer-app";
 const APP_META_RE = /[?&]open-pioneer-app(?:$|&)/;
@@ -21,9 +20,11 @@ const APP_I18N_QUERY = "open-pioneer-i18n";
 const APP_I18N_RE = /[?&]open-pioneer-i18n(?:$|&)/;
 const APP_I18N_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
 
-const PACKAGE_HOOKS_MODULE = "@@open-pioneer-react-hooks";
+const PKG_RE = /[?&]pkg=(?<pkg>.*?)(?:$|&)/;
+const PKG_QUERY = "pkg";
 
-const SOURCE_FILE_RE = /^(.*?)(?:\?|$)/;
+const PACKAGE_HOOKS_MODULE = "\0open-pioneer-react-hooks";
+const PACKAGE_HOOKS_RE = /\0open-pioneer-react-hooks(?:$|\?)/;
 
 export type VirtualModule = VirtualAppModule | VirtualI18nMessages | VirtualPackageModule;
 
@@ -50,31 +51,22 @@ export interface VirtualPackageModule {
  * Otherwise, the module is parsed into an object and returned.
  */
 export function parseVirtualModuleId(inputModuleId: string): VirtualModule | undefined {
-    const moduleId = normalizePath(inputModuleId);
-    if (!moduleId || moduleId.includes("\\0")) {
-        return undefined;
+    if (APP_MODULE_RE.test(inputModuleId)) {
+        return parseAppModuleId(inputModuleId);
     }
 
-    const sourceFile = getSourceFile(moduleId); // module id with out query
-    if (!sourceFile) {
-        return undefined;
-    }
-
-    const base = basename(sourceFile);
-    if (base === PACKAGE_HOOKS_MODULE) {
+    if (PACKAGE_HOOKS_RE.test(inputModuleId)) {
+        const packageDirectory = getPackageDirectory(inputModuleId);
         return {
             type: "package-hooks",
-            packageDirectory: dirname(sourceFile)
+            packageDirectory
         };
-    }
-    if (base === APP_MODULE) {
-        return parseAppModuleId(sourceFile, moduleId);
     }
     return undefined;
 }
 
-function parseAppModuleId(sourceFile: string, moduleId: string): VirtualModule | undefined {
-    const packageDirectory = dirname(sourceFile);
+function parseAppModuleId(moduleId: string): VirtualModule | undefined {
+    const packageDirectory = getPackageDirectory(moduleId);
     if (moduleId.match(APP_META_RE)) {
         const type = "app-meta";
         return { type, packageDirectory };
@@ -110,24 +102,24 @@ function parseAppModuleId(sourceFile: string, moduleId: string): VirtualModule |
 export function serializeModuleId(mod: VirtualModule): string {
     switch (mod.type) {
         case "package-hooks":
-            return `${mod.packageDirectory}/${PACKAGE_HOOKS_MODULE}`;
+            return `${PACKAGE_HOOKS_MODULE}?${PKG_QUERY}=${mod.packageDirectory}`;
         case "app-meta":
-            return `${mod.packageDirectory}/${APP_MODULE}?${APP_META_QUERY}`;
+            return `${APP_MODULE}?${APP_META_QUERY}&${PKG_QUERY}=${mod.packageDirectory}`;
         case "app-packages":
-            return `${mod.packageDirectory}/${APP_MODULE}?${APP_PACKAGES_QUERY}`;
+            return `${APP_MODULE}?${APP_PACKAGES_QUERY}&${PKG_QUERY}=${mod.packageDirectory}`;
         case "app-css":
-            return `${mod.packageDirectory}/${APP_MODULE}?${APP_CSS_QUERY}`;
+            return `${APP_MODULE}?${APP_CSS_QUERY}&${PKG_QUERY}=${mod.packageDirectory}`;
         case "app-i18n-index":
-            return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_INDEX_QUERY}`;
+            return `${APP_MODULE}?${APP_I18N_INDEX_QUERY}&${PKG_QUERY}=${mod.packageDirectory}`;
         case "app-i18n":
-            return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_QUERY}&locale=${mod.locale}`;
+            return `${APP_MODULE}?${APP_I18N_QUERY}&locale=${mod.locale}&${PKG_QUERY}=${mod.packageDirectory}`;
     }
 }
 
-function getSourceFile(moduleId: string) {
-    const sourceFile = moduleId.match(SOURCE_FILE_RE)?.[1];
-    if (!sourceFile || moduleId[0] == "\0") {
-        return undefined;
+function getPackageDirectory(moduleId: string) {
+    const { pkg } = moduleId.match(PKG_RE)?.groups ?? {};
+    if (!pkg) {
+        throw new Error(`Internal error: failed to parse package directory from '${moduleId}'`);
     }
-    return sourceFile;
+    return pkg;
 }
