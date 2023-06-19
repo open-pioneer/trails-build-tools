@@ -1,5 +1,16 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 1.0.0
+
+### Major Changes
+
+-   991be0f: Initial release
+
+### Patch Changes
+
+-   Updated dependencies [991be0f]
+    -   @open-pioneer/build-common@1.0.0
+
 ## 0.8.7
 
 ### Patch Changes
