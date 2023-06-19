@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 1.0.1
+
+### Patch Changes
+
+-   8985433: Redo release (1.0.0 was published by mistake very early)
+
 ## 1.0.0
 
 ### Major Changes
