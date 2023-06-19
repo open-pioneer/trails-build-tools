@@ -1,5 +1,17 @@
 # Changelog @open-pioneer/build-package
 
+## 1.0.0
+
+### Major Changes
+
+-   991be0f: Initial release
+
+### Patch Changes
+
+-   Updated dependencies [991be0f]
+    -   @open-pioneer/build-common@1.0.0
+    -   @open-pioneer/build-support@1.0.0
+
 ## 0.7.3
 
 ### Patch Changes

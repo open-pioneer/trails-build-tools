@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 1.0.0
+
+### Major Changes
+
+-   991be0f: Initial release
+
 ## 0.6.1
 
 ### Patch Changes
