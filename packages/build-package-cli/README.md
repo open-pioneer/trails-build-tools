@@ -1,6 +1,6 @@
 # @open-pioneer/build-package-cli
 
-Provides the `build-pioneer-package` command line tool.
+Provides the `build-pioneer-package` command line tool which compiles pioneer packages into a 'publishable' form.
 
 Installation:
 
