@@ -43,8 +43,20 @@
         "pnpm": "^7 || ^8"
     },
     "pnpm": {
+        "//": [
+            "overrides:",
+            "semver: https://github.com/advisories/GHSA-c2qf-rxjj-qqgw",
+            "",
+            "ignored cves:",
+            "CVE-2023-26115 (word-wrap): ReDoS does not affect us (running client side or at build time)"
+        ],
         "overrides": {
             "semver@<7.5.2": ">=7.5.2"
+        },
+        "auditConfig": {
+            "ignoreCves": [
+                "CVE-2023-26115"
+            ]
         }
     }
 }
