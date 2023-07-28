@@ -7,14 +7,14 @@
     "type": "module",
     "repository": {
         "type": "git",
-        "url": "https://github.com/open-pioneer/build-tools.git",
+        "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/build-support"
     },
     "keywords": [
         "open-pioneer-framework"
     ],
     "bugs": {
-        "url": "https://github.com/open-pioneer/build-tools/issues"
+        "url": "https://github.com/open-pioneer/trails-build-tools/issues"
     },
     "exports": {
         "import": "./index.js",

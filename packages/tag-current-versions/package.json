@@ -6,12 +6,12 @@
     "type": "commonjs",
     "repository": {
         "type": "git",
-        "url": "https://github.com/open-pioneer/build-tools.git",
+        "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/tag-current-versions"
     },
     "keywords": [],
     "bugs": {
-        "url": "https://github.com/open-pioneer/build-tools/issues"
+        "url": "https://github.com/open-pioneer/trails-build-tools/issues"
     },
     "bin": {
         "tag-current-versions": "./dist/index.js"

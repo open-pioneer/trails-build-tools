@@ -7,14 +7,14 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/open-pioneer/build-tools.git",
+        "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/build-package"
     },
     "keywords": [
         "open-pioneer-framework"
     ],
     "bugs": {
-        "url": "https://github.com/open-pioneer/build-tools/issues"
+        "url": "https://github.com/open-pioneer/trails-build-tools/issues"
     },
     "scripts": {
         "clean": "rimraf dist temp",
