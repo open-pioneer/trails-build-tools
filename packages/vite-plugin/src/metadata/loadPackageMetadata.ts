@@ -86,7 +86,7 @@ class PackageMetadataReader {
             version: packageVersion,
             dependencies,
             frameworkMetadata
-        } = await parsePackageJson(packageJsonPath);
+        } = await parsePackageJson(packageJsonPath, mode);
 
         // The package config is read either from the package's build.config.mjs (for source packages)
         // or from a package's serialized metadata in its package.json (for published packages).
@@ -288,7 +288,7 @@ class PackageMetadataReader {
     }
 }
 
-async function parsePackageJson(packageJsonPath: string) {
+async function parsePackageJson(packageJsonPath: string, mode: "local" | "external") {
     if (!(await fileExists(packageJsonPath))) {
         throw new ReportableError(`Expected a 'package.json' file at ${packageJsonPath}`);
     }
@@ -347,7 +347,7 @@ async function parsePackageJson(packageJsonPath: string) {
             };
             deps.set(packageName, dep);
         } else {
-            dep.optional ||= optional;
+            dep.optional &&= optional;
         }
     };
 
@@ -363,8 +363,10 @@ async function parsePackageJson(packageJsonPath: string) {
         addDep(depName, true);
     }
 
-    for (const depName of Object.keys(devDependencies)) {
-        addDep(depName, false);
+    if (mode === "local") {
+        for (const depName of Object.keys(devDependencies)) {
+            addDep(depName, false);
+        }
     }
 
     const frameworkMetadata = packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;

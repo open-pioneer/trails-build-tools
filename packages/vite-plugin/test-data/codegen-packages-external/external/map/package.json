@@ -4,6 +4,9 @@
     "version": "0.0.1",
     "license": "Apache-2.0",
     "dependencies": {},
+    "devDependencies": {
+        "missing": "*"
+    },
     "exports": {
         "./package.json": "./package.json",
         ".": {
