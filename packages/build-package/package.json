@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-package",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "commonjs",

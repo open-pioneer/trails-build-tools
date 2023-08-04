@@ -1,5 +1,11 @@
 # @open-pioneer/tag-current-versions
 
+## 1.0.1
+
+### Patch Changes
+
+-   146743d: Bump dependencies
+
 ## 1.0.0
 
 ### Major Changes
