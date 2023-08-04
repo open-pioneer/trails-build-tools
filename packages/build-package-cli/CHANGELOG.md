@@ -1,5 +1,12 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 1.0.4
+
+### Patch Changes
+
+-   Updated dependencies [c62a32b]
+    -   @open-pioneer/build-package@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes

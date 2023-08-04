@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 1.0.4
+
+### Patch Changes
+
+-   c62a32b: Restore compatibility with older sass versions
+
 ## 1.0.3
 
 ### Patch Changes
