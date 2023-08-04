@@ -1,5 +1,12 @@
 # Changelog @open-pioneer/build-common
 
+## 1.0.2
+
+### Patch Changes
+
+-   3a0fb62: Bump dependency 'semver' to 7.5.3
+-   146743d: Bump dependencies
+
 ## 1.0.1
 
 ### Patch Changes
