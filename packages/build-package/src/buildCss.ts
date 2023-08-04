@@ -133,7 +133,7 @@ async function loadPreprocessor(lang: "scss", logger: Logger) {
     try {
         compileStringAsync = (await import("sass"))?.compileStringAsync;
         if (!compileStringAsync) {
-            throw new Error("Default export not found.");
+            throw new Error("Export 'compileStringAsync' was not found.");
         }
     } catch (e) {
         throw new Error(`The package 'sass' must be installed to enable scss support.`, {
