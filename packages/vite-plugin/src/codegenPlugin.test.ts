@@ -46,7 +46,7 @@ describe("codegen support", function () {
         assert.include(testAppJs, '".map {\\n    color: black;\\n}"');
     });
 
-    it("generates app packages content when using peer- and optional dependencies", async function () {
+    it("generates app packages content when using dev-, peer- and optional dependencies", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-complex-dependencies");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-complex-dependencies");
 
@@ -59,12 +59,13 @@ describe("codegen support", function () {
         });
 
         /*
-         * Normal deps, required peer dependencies and installed optional dependencies
+         * Normal deps, Dev deps, required peer dependencies and installed optional dependencies
          * are discovered. Non-existing optional peer dependencies and non existing
          * optional dependencies are not an error.
          */
         const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
         assert.include(testAppJs, `console.log("from normal dep");`);
+        assert.include(testAppJs, `console.log("from dev dep");`);
         assert.include(testAppJs, `console.log("from peer dep");`);
         assert.include(testAppJs, `console.log("from optional dep");`);
     });

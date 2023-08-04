@@ -322,19 +322,47 @@ async function parsePackageJson(packageJsonPath: string) {
         );
     }
 
-    const allDependencies: PackageDependency[] = [
-        ...Object.keys(dependencies).map((packageName) => ({ packageName, optional: false })),
-        ...Object.keys(peerDependencies).map((packageName) => ({
-            packageName,
-            optional: packageJsonContent?.peerDependenciesMeta?.[packageName]?.optional ?? false
-        })),
-        ...Object.keys(optionalDependencies).map((packageName) => ({ packageName, optional: true }))
-    ];
+    const devDependencies = packageJsonContent.devDependencies ?? {};
+    if (typeof devDependencies !== "object") {
+        throw new ReportableError(
+            `Expected a valid 'devDependencies' object in ${packageJsonPath}`
+        );
+    }
+
+    const deps = new Map<string, PackageDependency>();
+    const addDep = (packageName: string, optional: boolean) => {
+        let dep = deps.get(packageName);
+        if (!dep) {
+            dep = {
+                packageName,
+                optional
+            };
+            deps.set(packageName, dep);
+        } else {
+            dep.optional ||= optional;
+        }
+    };
+
+    for (const depName of Object.keys(dependencies)) {
+        addDep(depName, false);
+    }
+
+    for (const depName of Object.keys(peerDependencies)) {
+        addDep(depName, packageJsonContent?.peerDependenciesMeta?.[depName]?.optional ?? false);
+    }
+
+    for (const depName of Object.keys(optionalDependencies)) {
+        addDep(depName, true);
+    }
+
+    for (const depName of Object.keys(devDependencies)) {
+        addDep(depName, false);
+    }
 
     const frameworkMetadata = packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
     return {
         name: packageName,
-        dependencies: allDependencies,
+        dependencies: Array.from(deps.values()),
         frameworkMetadata: frameworkMetadata
     };
 }

@@ -16,5 +16,8 @@
         "peer-does-not-exist": {
             "optional": true
         }
+    },
+    "devDependencies": {
+        "dev-dep": "*"
     }
 }
