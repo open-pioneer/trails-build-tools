@@ -83,6 +83,7 @@ class PackageMetadataReader {
         ctx.addWatchFile(packageJsonPath);
         const {
             name: packageName,
+            version: packageVersion,
             dependencies,
             frameworkMetadata
         } = await parsePackageJson(packageJsonPath);
@@ -96,6 +97,7 @@ class PackageMetadataReader {
             return {
                 type: "plain",
                 name: packageName,
+                version: packageVersion,
                 directory: packageDir
             };
         }
@@ -147,6 +149,7 @@ class PackageMetadataReader {
         return {
             type: "pioneer-package",
             name: packageName,
+            version: packageVersion,
             directory: packageDir,
             packageJsonPath: packageJsonPath,
             servicesModulePath: servicesModule,
@@ -303,6 +306,11 @@ async function parsePackageJson(packageJsonPath: string) {
         throw new ReportableError(`Expected 'name' to be a string in ${packageJsonPath}`);
     }
 
+    const version = packageJsonContent.version;
+    if (version != null && typeof version !== "string") {
+        throw new ReportableError(`Expected 'version' to be a string in ${packageJsonPath}`);
+    }
+
     const dependencies = packageJsonContent.dependencies ?? {};
     if (typeof dependencies !== "object") {
         throw new ReportableError(`Expected a valid 'dependencies' object in ${packageJsonPath}`);
@@ -362,6 +370,7 @@ async function parsePackageJson(packageJsonPath: string) {
     const frameworkMetadata = packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
     return {
         name: packageName,
+        version: version ?? undefined,
         dependencies: Array.from(deps.values()),
         frameworkMetadata: frameworkMetadata
     };

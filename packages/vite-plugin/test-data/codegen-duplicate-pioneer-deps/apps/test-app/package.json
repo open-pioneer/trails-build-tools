@@ -1,0 +1,8 @@
+{
+    "name": "test-app",
+    "private": true,
+    "dependencies": {
+        "x": "*",
+        "dup": "*"
+    }
+}

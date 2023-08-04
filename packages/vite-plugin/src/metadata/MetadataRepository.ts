@@ -291,10 +291,17 @@ export class MetadataRepository {
                         normalizePath(existingMetadata.directory) !==
                             normalizePath(metadata.directory)
                     ) {
-                        throw new ReportableError(
-                            `Found package '${metadata.name}' at two different locations ${existingMetadata.directory} and ${metadata.directory}`
-                        );
+                        const message =
+                            `Encountered the package '${metadata.name}' at two different locations.\n` +
+                            `Pioneer packages cannot be used more than once in the same application.\n` +
+                            `All packages must use a common version of '${metadata.name}'.\n` +
+                            `\n` +
+                            `1. ${formatPackage(existingMetadata)}\n` +
+                            `\n` +
+                            `2. ${formatPackage(metadata)}`;
+                        throw new ReportableError(message);
                     }
+
                     this._byName.set(metadata.name, metadata);
                 }
 
@@ -343,4 +350,13 @@ function isPackageJson(file: string) {
 
 function isBuildConfig(file: string) {
     return basename(file) === BUILD_CONFIG_NAME;
+}
+
+function formatPackage(packageMetadata: PackageMetadata) {
+    let str = `${packageMetadata.name}`;
+    if (packageMetadata.version != null) {
+        str += `@${packageMetadata.version}`;
+    }
+    str += ` at ${packageMetadata.directory}`;
+    return str;
 }

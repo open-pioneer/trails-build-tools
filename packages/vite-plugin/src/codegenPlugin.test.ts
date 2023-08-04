@@ -3,7 +3,7 @@
 import glob from "fast-glob";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { assert, describe, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import { TEMP_DATA_DIR, TEST_DATA_DIR, runViteBuild } from "./utils/testUtils";
 
 describe("codegen support", function () {
@@ -259,6 +259,33 @@ describe("codegen support", function () {
         );
         assert.match(error.message, /Overrides are only supported in the app/);
     });
+
+    it("generates an error if a package uses two versions of the same pioneer package", async function () {
+        // Dependencies:
+        // test-app -> dup (v2)
+        // test-app -> x -> dup (v1)
+        //
+        // "dup" cannot be part of the application twice! (this would be allowed for "plain" packages without pioneer extensions)
+
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-duplicate-pioneer-deps");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-duplicate-pioneer-deps");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+
+        expect(error.message).toMatch(
+            /Encountered the package 'dup' at two different locations\.\nPioneer packages cannot be used more than once in the same application\.\nAll packages must use a common version of 'dup'\./
+        );
+        expect(error.message).toMatch(/dup@2.3.4 at/);
+        expect(error.message).toMatch(/dup@1.0.0 at/);
+    });
 });
 
 function findModuleContaining(dir: string, needle: string) {
@@ -279,7 +306,7 @@ function findModuleContaining(dir: string, needle: string) {
 function expectAsyncError(fn: () => Promise<void>): Promise<any> {
     return new Promise((resolve, reject) => {
         fn().then(() => {
-            reject(new Error("unexpected success"));
+            reject(new Error("unexpected success: expected the operation to fail"));
         }, resolve);
     });
 }

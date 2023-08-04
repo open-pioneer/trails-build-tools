@@ -37,6 +37,9 @@ export interface PackageMetadata {
     /** Package name. */
     name: string;
 
+    /** Package version. */
+    version: string | undefined;
+
     /** Directory on disk. */
     directory: string;
 
@@ -79,6 +82,9 @@ export interface PlainPackageMetadata {
 
     /** Package name. */
     name: string;
+
+    /** Package version. */
+    version: string | undefined;
 
     /** Directory on disk. */
     directory: string;
