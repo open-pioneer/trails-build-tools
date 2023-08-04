@@ -129,10 +129,10 @@ async function loadPreprocessor(lang: "scss", logger: Logger) {
         throw new Error(`Unsupported preprocessor language '${lang}'`);
     }
 
-    let sass: typeof Sass;
+    let compileStringAsync: (typeof Sass)["compileStringAsync"];
     try {
-        sass = (await import("sass")).default;
-        if (!sass) {
+        compileStringAsync = (await import("sass"))?.compileStringAsync;
+        if (!compileStringAsync) {
             throw new Error("Default export not found.");
         }
     } catch (e) {
@@ -147,7 +147,7 @@ async function loadPreprocessor(lang: "scss", logger: Logger) {
             options: { path: string; sourceMap: boolean; packageDirectory: string }
         ) {
             const { path, sourceMap, packageDirectory } = options;
-            const result = await sass.compileStringAsync(code, {
+            const result = await compileStringAsync(code, {
                 loadPaths: [resolve(packageDirectory, "node_modules")],
                 syntax: "scss",
                 url: pathToFileURL(path),

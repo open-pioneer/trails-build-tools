@@ -108,6 +108,57 @@ describe(
                 );
             }
         });
+
+        // Package mostly chosen because it also contains SCSS
+        it("should compile the layout-sidebar package successfully", async () => {
+            const sourceDir = resolve(TEST_DATA_DIR, "layout-sidebar");
+            const snapshotDir = resolve(SNAPSHOT_DIR, "layout-sidebar");
+            const { targetDir, stdout, stderr } = await runCli(sourceDir);
+
+            expect(stderr).toBe("");
+            expect(stdout).toMatchInlineSnapshot(`
+              "Building package at <PATH>
+              Building JavaScript...
+              Generating TypeScript declaration files...
+              Building styles...
+              Copying i18n files...
+              Copying assets...
+              Writing package metadata...
+              Copying auxiliary files...
+              Success
+              "
+            `);
+
+            const files = await listFiles(targetDir);
+            expect(files).toMatchInlineSnapshot(`
+              [
+                "CHANGELOG.md",
+                "LICENSE",
+                "README.md",
+                "Sidebar.d.ts",
+                "Sidebar.js",
+                "Sidebar.js.map",
+                "_virtual/_virtual-pioneer-module_react-hooks.js",
+                "_virtual/_virtual-pioneer-module_react-hooks.js.map",
+                "i18n/de.yaml",
+                "i18n/en.yaml",
+                "index.d.ts",
+                "index.js",
+                "index.js.map",
+                "package.json",
+                "styles.css",
+                "styles.css.map",
+              ]
+            `);
+
+            for (const file of files) {
+                const content = await readFile(resolve(targetDir, file), "utf-8");
+                await expect(content).toMatchFileSnapshot(
+                    snapshotPath(snapshotDir, file),
+                    `Expected contents of ${file} to match the snapshot`
+                );
+            }
+        });
     },
     {
         timeout: 15 * 1000

@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
     test: {
-        exclude: ["**/dist/**", "**/test-data/**", "**/temp/**", "**/node_modules/**"]
+        exclude: ["**/dist/**", "**/test-data/**", "**/temp/**", "**/node_modules/**"],
+        watchExclude: [
+            "**/node_modules/**", "**/dist/**", "**/temp/**",
+        ]
     }
 });

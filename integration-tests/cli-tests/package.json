@@ -2,6 +2,7 @@
     "name": "cli-tests",
     "private": true,
     "devDependencies": {
+        "@chakra-ui/icons": "^2.1.0",
         "@open-pioneer/build-package-cli": "workspace:^",
         "@open-pioneer/build-support": "workspace:^",
         "@open-pioneer/experimental-ol-map": "^0.1.4",
