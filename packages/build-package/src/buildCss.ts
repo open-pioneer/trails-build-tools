@@ -131,7 +131,13 @@ async function loadPreprocessor(lang: "scss", logger: Logger) {
 
     let compileStringAsync: (typeof Sass)["compileStringAsync"];
     try {
-        compileStringAsync = (await import("sass"))?.compileStringAsync;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sassModule: any = await import("sass");
+
+        // "Real" named exports are not present in all versions
+        compileStringAsync =
+            (sassModule as typeof Sass)?.compileStringAsync ??
+            (sassModule?.default as typeof Sass)?.compileStringAsync;
         if (!compileStringAsync) {
             throw new Error("Export 'compileStringAsync' was not found.");
         }
