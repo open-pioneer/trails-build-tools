@@ -1,16 +1,16 @@
 {
     "compilerOptions": {
+        "noEmit": true,
+        "outDir": "temp",
+
         "target": "ESNext",
-        "lib": ["ES2022"],
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
         "module": "ES2022",
         "moduleResolution": "node",
-        "noEmit": true,
+        "resolveJsonModule": true,
         "allowJs": false,
 
-        "jsx": "react-jsx",
-
         "strict": true,
-        "resolveJsonModule": true,
         "noUncheckedIndexedAccess": true,
         "useDefineForClassFields": true,
         "allowSyntheticDefaultImports": true,
@@ -18,7 +18,6 @@
 
         "isolatedModules": true,
         "esModuleInterop": false,
-        "skipLibCheck": true, // TODO: Disable when open pioneer metadata typings available
         "skipDefaultLibCheck": true
     },
     "include": ["packages"],

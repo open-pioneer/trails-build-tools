@@ -32,8 +32,8 @@
     ],
     "dependencies": {
         "@open-pioneer/build-package": "workspace:^",
-        "chalk": "^5.2.0",
-        "commander": "^10.0.1"
+        "chalk": "^5.3.0",
+        "commander": "^11.0.0"
     },
     "devDependencies": {
         "build-tools": "workspace:*"
