@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 1.1.1
+
+### Patch Changes
+
+-   7d90953: Only consider devDependencies for local (in-source) packages.
+
 ## 1.1.0
 
 ### Minor Changes
