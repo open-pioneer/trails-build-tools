@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 1.0.3
+
+### Patch Changes
+
+-   adcd8b9: Don't use deprecated default export of sass package
+
 ## 1.0.2
 
 ### Patch Changes
