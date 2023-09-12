@@ -109,7 +109,9 @@ export class MetadataRepository {
 
         // Map to ensure that we don't return duplicates. Key: package name
         const packageMetadataByName = new Map<string, PackageMetadata>();
+        const packageSeenByDirectory = new Set<string>();
         packageMetadataByName.set(appPackageMetadata.name, appPackageMetadata);
+        packageSeenByDirectory.add(appPackageMetadata.directory);
 
         // Recursively visit all dependencies.
         // Detected metadata is placed into `packageMetadata`.
@@ -123,14 +125,24 @@ export class MetadataRepository {
                     dependency,
                     importedFrom
                 });
-                if (packageMetadata) {
-                    if (!packageMetadataByName.has(packageMetadata.name)) {
-                        packageMetadataByName.set(packageMetadata.name, packageMetadata);
-                    }
+                if (!packageMetadata) {
+                    return;
+                }
+
+                if (!packageMetadataByName.has(packageMetadata.name)) {
+                    packageMetadataByName.set(packageMetadata.name, packageMetadata);
+                }
+
+                if (!packageSeenByDirectory.has(packageMetadata.directory)) {
+                    packageSeenByDirectory.add(packageMetadata.directory);
+
                     await visitDependencies(
                         packageMetadata.dependencies,
                         packageMetadata.packageJsonPath
                     );
+                } else {
+                    isDebug &&
+                        debug(`Skipping already visited package at %s`, packageMetadata.directory);
                 }
             });
             return await Promise.all(jobs);

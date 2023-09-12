@@ -286,6 +286,26 @@ describe("codegen support", function () {
         expect(error.message).toMatch(/dup@2.3.4 at/);
         expect(error.message).toMatch(/dup@1.0.0 at/);
     });
+
+    it("supports dependency cycles", async function () {
+        // The important thing about this test is that it terminates!
+        // Dependency cycle:
+        //      test-app --> a --> b --> a
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-packages-cycle");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-cycle");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+        assert.include(appJs, `console.info("Service A");`);
+        assert.include(appJs, `console.info("Service B");`);
+    });
 });
 
 function findModuleContaining(dir: string, needle: string) {
