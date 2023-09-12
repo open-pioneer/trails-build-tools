@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 1.1.2
+
+### Patch Changes
+
+-   de95243: Fix infinite recursion when packages depend on each other (dependency cycle).
+
 ## 1.1.1
 
 ### Patch Changes
