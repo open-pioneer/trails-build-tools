@@ -62,7 +62,7 @@ Thereupon it is possible to call the provided methods on the returned API instan
 For example:
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     ...
     <body>
@@ -137,4 +137,4 @@ app.addEventListener("extent-selected", (event) => {
 
 ## License
 
-[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+Apache-2.0 (see `LICENSE` file)
