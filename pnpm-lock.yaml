@@ -76,7 +76,7 @@ importers:
         version: link:../../packages/build-support
       '@open-pioneer/react-utils':
         specifier: ^0.1.0
-        version: 0.1.0(@open-pioneer/chakra-integration@1.1.0)(@open-pioneer/core@1.1.0)(classnames@2.3.2)(react@18.2.0)
+        version: 0.1.0(@open-pioneer/chakra-integration@1.1.1)(@open-pioneer/core@1.1.0)(classnames@2.3.2)(react@18.2.0)
       '@open-pioneer/vite-plugin-pioneer':
         specifier: workspace:^
         version: link:../../packages/vite-plugin
@@ -274,8 +274,8 @@ importers:
         specifier: workspace:^
         version: link:../build-support
       '@open-pioneer/runtime':
-        specifier: ^1.1.0
-        version: 1.1.0(@formatjs/intl@2.9.9)(@open-pioneer/base-theme@0.1.0)(@open-pioneer/chakra-integration@1.1.0)(@open-pioneer/core@1.1.0)(@open-pioneer/runtime-react-support@1.0.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^2.0.0
+        version: 2.0.0(@formatjs/intl@2.9.9)(@open-pioneer/base-theme@0.2.0)(@open-pioneer/chakra-integration@1.1.1)(@open-pioneer/core@1.1.0)(@open-pioneer/runtime-react-support@1.0.0)(react-dom@18.2.0)(react@18.2.0)
       '@open-pioneer/vite-plugin-pioneer':
         specifier: workspace:^
         version: 'link:'
@@ -2441,22 +2441,22 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
-  /@open-pioneer/base-theme@0.1.0(@open-pioneer/chakra-integration@1.1.0):
-    resolution: {integrity: sha512-pNHKjUNHIBzQB3OcHi6RlvnKt6RlQCKtl61p/mX9xA/wLYgtteXcQe0YEJo5SELf/3BEY7nMOgcGwPdP+20aKg==}
+  /@open-pioneer/base-theme@0.2.0(@open-pioneer/chakra-integration@1.1.1):
+    resolution: {integrity: sha512-aUn7pPBjErXGLJ665oef27P7tkc81e7BhwSWNh6dw3mS30hLRb9Vzqi10U6VkOd65HzgI4uw6ZT/1YvK5mqsRg==}
     peerDependencies:
-      '@open-pioneer/chakra-integration': ^1.1.0
+      '@open-pioneer/chakra-integration': ^1.1.1
     dependencies:
-      '@open-pioneer/chakra-integration': 1.1.0(@chakra-ui/react@2.8.2)(@emotion/cache@11.11.0)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(framer-motion@10.16.10)(react-dom@18.2.0)(react@18.2.0)
+      '@open-pioneer/chakra-integration': 1.1.1(@chakra-ui/react@2.8.2)(@emotion/cache@11.11.0)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(framer-motion@10.16.10)(react-dom@18.2.0)(react@18.2.0)
     dev: true
 
-  /@open-pioneer/chakra-integration@1.1.0(@chakra-ui/react@2.8.2)(@emotion/cache@11.11.0)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(framer-motion@10.16.10)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-d9MsBlldASoiuBZXQ5a6pir8QqIL84/LW0kAFdwwI15x4aGdjBwOvzgCEpbG76h8lu/anozhA5Dj3dRYcuXgww==}
+  /@open-pioneer/chakra-integration@1.1.1(@chakra-ui/react@2.8.2)(@emotion/cache@11.11.0)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(framer-motion@10.16.10)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-ZXdyr/5dgY13y/wzS9T6gDgZNxc1Tk6cPSDgqIHA/isjSK9rpyHBJsQXoP+i7+PhoMCZiKMbljG/sBSDTpOQjg==}
     peerDependencies:
-      '@chakra-ui/react': ^2.6.1
+      '@chakra-ui/react': ^2.8.2
       '@emotion/cache': ^11.11.0
-      '@emotion/react': ^11.11.0
+      '@emotion/react': ^11.11.1
       '@emotion/styled': ^11.11.0
-      framer-motion: ^10.12.16
+      framer-motion: ^10.16.9
       react: ^18.2.0
       react-dom: ^18.2.0
     dependencies:
@@ -2473,7 +2473,7 @@ packages:
     resolution: {integrity: sha512-z856f9oojH0nb3vSBp4jsay6YjL9K5g9yKgKfWywkWlfs4Lsw1dw7mEhdooRwbWVXFqQKyFneANqSflEvnVMyw==}
     dev: true
 
-  /@open-pioneer/react-utils@0.1.0(@open-pioneer/chakra-integration@1.1.0)(@open-pioneer/core@1.1.0)(classnames@2.3.2)(react@18.2.0):
+  /@open-pioneer/react-utils@0.1.0(@open-pioneer/chakra-integration@1.1.1)(@open-pioneer/core@1.1.0)(classnames@2.3.2)(react@18.2.0):
     resolution: {integrity: sha512-AQ/SzujWYkwgLbhIIxsF88LDXXqgk1R5GYA7u6L+us3/Og03N+iBUJ6FB9d33LBs7GVptXyPkXpZZr7HTzhfag==}
     peerDependencies:
       '@open-pioneer/chakra-integration': ^1.1.0
@@ -2481,7 +2481,7 @@ packages:
       classnames: ^2.3.2
       react: ^18.2.0
     dependencies:
-      '@open-pioneer/chakra-integration': 1.1.0(@chakra-ui/react@2.8.2)(@emotion/cache@11.11.0)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(framer-motion@10.16.10)(react-dom@18.2.0)(react@18.2.0)
+      '@open-pioneer/chakra-integration': 1.1.1(@chakra-ui/react@2.8.2)(@emotion/cache@11.11.0)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(framer-motion@10.16.10)(react-dom@18.2.0)(react@18.2.0)
       '@open-pioneer/core': 1.1.0
       classnames: 2.3.2
       react: 18.2.0
@@ -2495,20 +2495,20 @@ packages:
       react: 18.2.0
     dev: true
 
-  /@open-pioneer/runtime@1.1.0(@formatjs/intl@2.9.9)(@open-pioneer/base-theme@0.1.0)(@open-pioneer/chakra-integration@1.1.0)(@open-pioneer/core@1.1.0)(@open-pioneer/runtime-react-support@1.0.0)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-yzKZNYBLt8yG5eo1wKWf4/z6etiBJ+29HawT8GMwS2dpO26wnio5X4rymCCoeG2g2s/f3pxIBqD285Bu7kyRXQ==}
+  /@open-pioneer/runtime@2.0.0(@formatjs/intl@2.9.9)(@open-pioneer/base-theme@0.2.0)(@open-pioneer/chakra-integration@1.1.1)(@open-pioneer/core@1.1.0)(@open-pioneer/runtime-react-support@1.0.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-Ka5nU6eax20Mo0HXBJdjl1KyTHdgwuE5FB030wVKR3mFP/SFdX0iTKgzCt6+ayXgKxzbvet24YiAQBAW+VhD5Q==}
     peerDependencies:
-      '@formatjs/intl': ^2.7.2
-      '@open-pioneer/base-theme': ^0.1.0
-      '@open-pioneer/chakra-integration': ^1.1.0
+      '@formatjs/intl': ^2.9.9
+      '@open-pioneer/base-theme': ^0.2.0
+      '@open-pioneer/chakra-integration': ^1.1.1
       '@open-pioneer/core': ^1.1.0
       '@open-pioneer/runtime-react-support': ^1.0.0
       react: ^18.2.0
       react-dom: ^18.2.0
     dependencies:
       '@formatjs/intl': 2.9.9(typescript@5.3.2)
-      '@open-pioneer/base-theme': 0.1.0(@open-pioneer/chakra-integration@1.1.0)
-      '@open-pioneer/chakra-integration': 1.1.0(@chakra-ui/react@2.8.2)(@emotion/cache@11.11.0)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(framer-motion@10.16.10)(react-dom@18.2.0)(react@18.2.0)
+      '@open-pioneer/base-theme': 0.2.0(@open-pioneer/chakra-integration@1.1.1)
+      '@open-pioneer/chakra-integration': 1.1.1(@chakra-ui/react@2.8.2)(@emotion/cache@11.11.0)(@emotion/react@11.11.1)(@emotion/styled@11.11.0)(framer-motion@10.16.10)(react-dom@18.2.0)(react@18.2.0)
       '@open-pioneer/core': 1.1.0
       '@open-pioneer/runtime-react-support': 1.0.0(react@18.2.0)
       react: 18.2.0

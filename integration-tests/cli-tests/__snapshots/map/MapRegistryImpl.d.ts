@@ -1,8 +1,8 @@
-import { Service, ServiceOptions, ServiceType } from "@open-pioneer/runtime";
+import { Service, ServiceOptions } from "@open-pioneer/runtime";
 import OlMap from "ol/Map";
-import { MapModel, MapRegistry } from "./api";
+import { MapConfigProvider, MapModel, MapRegistry } from "./api";
 interface References {
-    providers: ServiceType<"map.MapConfigProvider">[];
+    providers: MapConfigProvider[];
 }
 export declare class MapRegistryImpl implements Service, MapRegistry {
     #private;

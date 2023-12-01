@@ -1,10 +1,10 @@
-import { type ApiExtension, type ApiMethods, type ApiMethod } from "@open-pioneer/runtime";
+import { type ApiExtension, type ApiMethods, type ApiMethod, type DeclaredService } from "@open-pioneer/runtime";
 /**
  * Emits events to users of the current web component.
  *
  * Use the interface `"integration.ExternalEventService"` to obtain an instance of this service.
  */
-export interface ExternalEventService {
+export interface ExternalEventService extends DeclaredService<"integration.ExternalEventService"> {
     /**
      * Emits an event to the host site as a [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent).
      *
@@ -42,10 +42,3 @@ export interface ExternalEventService {
     emitEvent(event: Event): void;
 }
 export { ApiExtension, ApiMethod, ApiMethods };
-import "@open-pioneer/runtime";
-declare module "@open-pioneer/runtime" {
-    interface ServiceRegistry {
-        "integration.ApiExtension": ApiExtension;
-        "integration.ExternalEventService": ExternalEventService;
-    }
-}

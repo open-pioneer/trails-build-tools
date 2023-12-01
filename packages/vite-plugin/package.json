@@ -49,7 +49,7 @@
     },
     "devDependencies": {
         "@open-pioneer/build-support": "workspace:^",
-        "@open-pioneer/runtime": "^1.1.0",
+        "@open-pioneer/runtime": "^2.0.0",
         "@open-pioneer/vite-plugin-pioneer": "workspace:^",
         "@types/babel__generator": "^7.6.7",
         "@types/babel__template": "^7.4.4",

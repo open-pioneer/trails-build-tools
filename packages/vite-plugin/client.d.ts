@@ -16,8 +16,8 @@ declare module "open-pioneer:app" {
  */
 declare module "open-pioneer:react-hooks" {
     // eslint-disable-next-line unused-imports/no-unused-imports
-    import { type ServiceType, type InterfaceName, type PackageIntl } from "@open-pioneer/runtime";
-    import { type UseServiceOptions } from "@open-pioneer/runtime/react-integration";
+    import { type PackageIntl, type InterfaceNameForServiceType } from "@open-pioneer/runtime";
+    import type { UseServiceOptions } from "@open-pioneer/runtime/react-integration";
     export { type UseServiceOptions };
 
     /**
@@ -26,12 +26,17 @@ declare module "open-pioneer:react-hooks" {
      * A complete interface name is required (e.g. "logging.LogService").
      *
      * In order to use a service, it must be declared as an UI-dependency in the package's configuration file.
+     *
+     * Example:
+     *
+     * ```ts
+     * const service = useService<MyInterface>("my-package.MyInterface");
+     * ```
      */
-    export function useService<IFace extends InterfaceName>(
-        interfaceName: IFace,
+    export function useService<ServiceType = unknown>(
+        interfaceName: InterfaceNameForServiceType<ServiceType>,
         options?: UseServiceOptions
-    ): ServiceType<IFace>;
-    export function useService(serviceName: string, options?: UseServiceOptions): unknown;
+    ): ServiceType;
 
     /**
      * Returns all implementations of the given interface.
@@ -39,11 +44,17 @@ declare module "open-pioneer:react-hooks" {
      * A complete interface name is required (e.g. "logging.LogService").
      *
      * In order to use all services, it must be declared as an UI-dependency (`all: true`) in the package's configuration file.
+     *
+     * Example:
+     *
+     * ```ts
+     * const services = useServices<MyInterface>("my-package.MyInterface");
+     * ```
      */
-    export function useServices<IFace extends InterfaceName>(
-        interfaceName: IFace
-    ): ServiceType<IFace>[];
-    export function useServices(serviceName: string): unknown[];
+    export function useServices<ServiceType = unknown>(
+        interfaceName: InterfaceNameForServiceType<ServiceType>,
+        options?: UseServiceOptions
+    ): ServiceType[];
 
     /**
      * Returns the properties of the calling component's package.

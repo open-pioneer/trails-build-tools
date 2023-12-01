@@ -1,4 +1,3 @@
-import '@open-pioneer/runtime';
 export { SimpleLayer } from './api/layers/SimpleLayer.js';
 export { WMSLayer } from './api/layers/WMSLayer.js';
 export { getProjection, registerProjections } from './projections.js';
