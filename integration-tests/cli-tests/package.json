@@ -2,14 +2,14 @@
     "name": "cli-tests",
     "private": true,
     "devDependencies": {
-        "@chakra-ui/icons": "^2.1.0",
+        "@chakra-ui/icons": "^2.1.1",
         "@open-pioneer/build-package-cli": "workspace:^",
         "@open-pioneer/build-support": "workspace:^",
-        "@open-pioneer/experimental-ol-map": "^0.1.4",
+        "@open-pioneer/experimental-ol-map": "^0.1.6",
         "@open-pioneer/vite-plugin-pioneer": "workspace:^",
-        "fast-glob": "^3.2.12",
-        "fs-extra": "^11.1.1",
-        "ol": "^7.4.0"
+        "fast-glob": "^3.3.2",
+        "fs-extra": "^11.2.0",
+        "ol": "^7.5.2"
     },
     "scripts": {
         "clean": "rimraf temp",
