@@ -1,0 +1,41 @@
+{
+    "type": "module",
+    "name": "@open-pioneer/search",
+    "version": "0.0.1",
+    "license": "Apache-2.0",
+    "peerDependencies": {
+        "@open-pioneer/chakra-integration": "^1.1.0",
+        "@open-pioneer/map": "workspace:^",
+        "@open-pioneer/runtime": "^1.1.0",
+        "@open-pioneer/react-utils": "workspace:^",
+        "@open-pioneer/core": "^1.1.0",
+        "ol": "^8.2.0",
+        "react": "^18.2.0",
+        "classnames": "^2.3.2",
+        "chakra-react-select": "^4.7.6",
+        "@chakra-ui/icons": "^2.1.0"
+    },
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": "./index.js",
+            "types": "./index.d.ts"
+        },
+        "./search.css": "./search.css"
+    },
+    "openPioneerFramework": {
+        "styles": "./search.css",
+        "services": [],
+        "i18n": {
+            "languages": [
+                "en",
+                "de"
+            ]
+        },
+        "ui": {
+            "references": []
+        },
+        "properties": [],
+        "packageFormatVersion": "1.0.0"
+    }
+}
