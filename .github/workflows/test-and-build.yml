@@ -7,7 +7,11 @@ on:
 
 jobs:
   test:
+    # Don't run for pull requests from this repository to avoid duplicate builds (push also triggers build).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    name: "Test and Build"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:

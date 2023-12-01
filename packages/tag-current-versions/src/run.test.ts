@@ -1,17 +1,15 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import * as git from "@changesets/git";
-import { Mock, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as logger from "@changesets/logger";
+import { Mock, afterEach, describe, expect, it, vi } from "vitest";
 import { dirname, join, resolve } from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
 import { run } from "./run";
 
 vi.mock("@changesets/git");
+vi.mock("@changesets/logger");
 
 describe("tag command", () => {
-    temporarilySilenceLogs();
-
     afterEach(() => {
         vi.resetAllMocks();
     });
@@ -140,29 +138,6 @@ describe("tag command", () => {
         });
     });
 });
-
-function temporarilySilenceLogs() {
-    const originalError = logger.error;
-    const originalInfo = logger.info;
-    const originalLog = logger.log;
-    const originalWarn = logger.warn;
-    const originalSuccess = logger.success;
-    const rawLogger = logger as any;
-    beforeEach(() => {
-        rawLogger.error = vi.fn();
-        rawLogger.info = vi.fn();
-        rawLogger.log = vi.fn();
-        rawLogger.warn = vi.fn();
-        rawLogger.success = vi.fn();
-    });
-    afterEach(() => {
-        rawLogger.error = originalError;
-        rawLogger.info = originalInfo;
-        rawLogger.log = originalLog;
-        rawLogger.warn = originalWarn;
-        rawLogger.success = originalSuccess;
-    });
-}
 
 async function testdir(name: string, contents: Record<string, string>) {
     const temp = resolve(__dirname, "../temp", name);

@@ -1,0 +1,67 @@
+{
+    "type": "module",
+    "name": "@open-pioneer/map",
+    "version": "0.1.0",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "uuid": "^9.0.0"
+    },
+    "peerDependencies": {
+        "@open-pioneer/chakra-integration": "^1.1.0",
+        "@open-pioneer/core": "^1.1.0",
+        "@open-pioneer/react-utils": "workspace:^",
+        "@open-pioneer/runtime": "^1.1.0",
+        "@types/proj4": "^2.5.2",
+        "ol": "^8.2.0",
+        "proj4": "^2.9.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-use": "^17.4.0"
+    },
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": "./index.js",
+            "types": "./index.d.ts"
+        },
+        "./services": {
+            "import": "./services.js",
+            "types": "./services.d.ts"
+        },
+        "./ui/styles.css": "./ui/styles.css"
+    },
+    "openPioneerFramework": {
+        "styles": "./ui/styles.css",
+        "services": [
+            {
+                "serviceName": "MapRegistryImpl",
+                "provides": [
+                    {
+                        "interfaceName": "map.MapRegistry"
+                    }
+                ],
+                "references": [
+                    {
+                        "referenceName": "providers",
+                        "type": "all",
+                        "interfaceName": "map.MapConfigProvider"
+                    }
+                ]
+            }
+        ],
+        "servicesModule": "./services",
+        "i18n": {
+            "languages": []
+        },
+        "ui": {
+            "references": [
+                {
+                    "type": "unique",
+                    "interfaceName": "map.MapRegistry"
+                }
+            ]
+        },
+        "properties": [],
+        "packageFormatVersion": "1.0.0"
+    }
+}

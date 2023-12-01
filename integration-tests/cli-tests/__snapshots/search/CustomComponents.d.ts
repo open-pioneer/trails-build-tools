@@ -1,0 +1,11 @@
+import { ClearIndicatorProps, IndicatorsContainerProps, InputProps, MenuProps, NoticeProps, OptionProps, SingleValueProps, ValueContainerProps } from "chakra-react-select";
+import { SearchGroupOption, SearchOption } from "./Search";
+export declare function MenuComp(props: MenuProps<SearchOption, false, SearchGroupOption>): import("react/jsx-runtime").JSX.Element;
+export declare function NoOptionsMessage(props: NoticeProps<SearchOption, false, SearchGroupOption>): import("react/jsx-runtime").JSX.Element;
+export declare function LoadingMessage(props: NoticeProps<SearchOption, false, SearchGroupOption>): import("react/jsx-runtime").JSX.Element;
+export declare function ValueContainer({ children, ...props }: ValueContainerProps<SearchOption, false, SearchGroupOption>): import("react/jsx-runtime").JSX.Element;
+export declare function Input(props: InputProps<SearchOption, false, SearchGroupOption>): import("react/jsx-runtime").JSX.Element;
+export declare function SingleValue(_props: SingleValueProps<SearchOption, false, SearchGroupOption>): null;
+export declare function IndicatorsContainer(props: IndicatorsContainerProps<SearchOption, false, SearchGroupOption>): import("react/jsx-runtime").JSX.Element;
+export declare function ClearIndicator(_props: ClearIndicatorProps<SearchOption, false, SearchGroupOption>): null;
+export declare function HighlightOption(props: OptionProps<SearchOption, false, SearchGroupOption>): import("react/jsx-runtime").JSX.Element;
