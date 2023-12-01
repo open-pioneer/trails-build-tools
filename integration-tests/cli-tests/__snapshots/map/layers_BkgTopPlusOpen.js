@@ -52,7 +52,7 @@ class BkgTopPlusOpen extends WMTS {
         matrixIds
       }),
       style: "default",
-      attributions: `Kartendarstellung und Pr\xE4sentationsgraphiken: \xA9 Bundesamt f\xFCr Kartographie und Geod\xE4sie ${( new Date()).getFullYear()}, <a href="https://sg.geodatenzentrum.de/web_public/gdz/datenquellen/Datenquellen_TopPlusOpen.html" target="_blank">Datenquellen</a>`
+      attributions: `Kartendarstellung und Pr\xE4sentationsgraphiken: \xA9 Bundesamt f\xFCr Kartographie und Geod\xE4sie ${(/* @__PURE__ */ new Date()).getFullYear()}, <a href="https://sg.geodatenzentrum.de/web_public/gdz/datenquellen/Datenquellen_TopPlusOpen.html" target="_blank">Datenquellen</a>`
     });
   }
 }

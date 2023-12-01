@@ -48,13 +48,13 @@
         "@open-pioneer/build-support": "workspace:^",
         "chalk": "^5.3.0",
         "debug": "^4.3.4",
-        "esbuild": "^0.18.17",
-        "fast-glob": "^3.3.1",
-        "fs-extra": "^11.1.1",
+        "esbuild": "^0.19.8",
+        "fast-glob": "^3.3.2",
+        "fs-extra": "^11.2.0",
         "postcss": "^8.4.31",
         "postcss-import": "^15.1.0",
-        "rollup": "^3.27.1",
-        "rollup-plugin-esbuild": "^5.0.0"
+        "rollup": "^4.6.1",
+        "rollup-plugin-esbuild": "^6.1.0"
     },
     "devDependencies": {
         "@rollup/pluginutils": "^5.1.0",
@@ -64,9 +64,10 @@
         "@types/react": "^18.2.39",
         "build-tools": "workspace:*",
         "sass": "^1.69.5",
-        "typescript": "^5.3.2"
+        "typescript": "^5.3.2",
+        "ts-essentials": "^9.4.1"
     },
     "engines": {
-        "node": ">= 16"
+        "node": ">= 18"
     }
 }
