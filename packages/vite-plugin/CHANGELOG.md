@@ -1,5 +1,25 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 2.0.0
+
+### Major Changes
+
+-   5601a5e: **Breaking Change:** Require Node >= 18
+-   c15512c: **Breaking Change:** A trails package's `devDependencies` are no longer included in the build (fixes #43).
+    For normal dependencies, service classes are automatically picked up and compiled into the application.
+
+    This behavior is surprising for `devDependencies`: license scanners and cve scanner sometimes chose to exclude
+    `devDependencies`; which would have been invalid prior to this change (as the code was compiled in anyway).
+
+    If your package depends on another trails package at runtime, configure an entry in `peerDependencies` instead.
+
+### Patch Changes
+
+-   5601a5e: Bump dependencies
+-   Updated dependencies [5601a5e]
+-   Updated dependencies [5601a5e]
+    -   @open-pioneer/build-common@2.0.0
+
 ## 1.1.2
 
 ### Patch Changes

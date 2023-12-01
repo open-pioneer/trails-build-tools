@@ -1,5 +1,19 @@
 # Changelog @open-pioneer/build-package
 
+## 2.0.0
+
+### Major Changes
+
+-   5601a5e: **Breaking Change:** Require Node >= 18
+
+### Patch Changes
+
+-   5601a5e: Bump dependencies
+-   Updated dependencies [5601a5e]
+-   Updated dependencies [5601a5e]
+    -   @open-pioneer/build-common@2.0.0
+    -   @open-pioneer/build-support@2.0.0
+
 ## 1.0.4
 
 ### Patch Changes
