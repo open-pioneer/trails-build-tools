@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Runs checks
+      - name: Run checks
         run: |
           pnpm run ci:test
 
