@@ -86,7 +86,7 @@ class PackageMetadataReader {
             version: packageVersion,
             dependencies,
             frameworkMetadata
-        } = await parsePackageJson(packageJsonPath, mode);
+        } = await parsePackageJson(packageJsonPath);
 
         // The package config is read either from the package's build.config.mjs (for source packages)
         // or from a package's serialized metadata in its package.json (for published packages).
@@ -288,7 +288,7 @@ class PackageMetadataReader {
     }
 }
 
-async function parsePackageJson(packageJsonPath: string, mode: "local" | "external") {
+async function parsePackageJson(packageJsonPath: string) {
     if (!(await fileExists(packageJsonPath))) {
         throw new ReportableError(`Expected a 'package.json' file at ${packageJsonPath}`);
     }
@@ -330,13 +330,6 @@ async function parsePackageJson(packageJsonPath: string, mode: "local" | "extern
         );
     }
 
-    const devDependencies = packageJsonContent.devDependencies ?? {};
-    if (typeof devDependencies !== "object") {
-        throw new ReportableError(
-            `Expected a valid 'devDependencies' object in ${packageJsonPath}`
-        );
-    }
-
     const deps = new Map<string, PackageDependency>();
     const addDep = (packageName: string, optional: boolean) => {
         let dep = deps.get(packageName);
@@ -361,12 +354,6 @@ async function parsePackageJson(packageJsonPath: string, mode: "local" | "extern
 
     for (const depName of Object.keys(optionalDependencies)) {
         addDep(depName, true);
-    }
-
-    if (mode === "local") {
-        for (const depName of Object.keys(devDependencies)) {
-            addDep(depName, false);
-        }
     }
 
     const frameworkMetadata = packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;

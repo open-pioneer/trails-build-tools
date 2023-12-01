@@ -59,13 +59,15 @@ describe("codegen support", function () {
         });
 
         /*
-         * Normal deps, Dev deps, required peer dependencies and installed optional dependencies
+         * Normal deps,required peer dependencies and installed optional dependencies
          * are discovered. Non-existing optional peer dependencies and non existing
          * optional dependencies are not an error.
+         *
+         * Code from dev dependencies not is not automatically included.
          */
         const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
         assert.include(testAppJs, `console.log("from normal dep");`);
-        assert.include(testAppJs, `console.log("from dev dep");`);
+        assert.notInclude(testAppJs, `console.log("from dev dep");`);
         assert.include(testAppJs, `console.log("from peer dep");`);
         assert.include(testAppJs, `console.log("from optional dep");`);
     });
