@@ -16,7 +16,11 @@ declare module "open-pioneer:app" {
  */
 declare module "open-pioneer:react-hooks" {
     // eslint-disable-next-line unused-imports/no-unused-imports
-    import { type PackageIntl, type InterfaceNameForServiceType } from "@open-pioneer/runtime";
+    import {
+        type PackageIntl,
+        type DeclaredService,
+        type InterfaceNameForServiceType
+    } from "@open-pioneer/runtime";
     import type { UseServiceOptions } from "@open-pioneer/runtime/react-integration";
     export { type UseServiceOptions };
 
@@ -30,8 +34,26 @@ declare module "open-pioneer:react-hooks" {
      * Example:
      *
      * ```ts
+     * // Usage with explicit type. Requires `MyInterface` to provide TypeScript integration via `DeclaredService<...>`.
      * const service = useService<MyInterface>("my-package.MyInterface");
      * ```
+     *
+     * Example:
+     *
+     * ```ts
+     * // Usage from JavaScript or from TypeScript without an explicit type.
+     * // The hook will simply return `unknown`.
+     * const service = useService("my-package.MyInterface");
+     * ```
+     *
+     * Example:
+     *
+     * ```ts
+     * // Explicit `unknown` combined with an unsafe cast. Can be used if the service
+     * // does not provide proper TypeScript integration.
+     * const service = useService<unknown>("my-package.MyInterface") as MyCustomType;
+     * ```
+     * @see {@link DeclaredService}
      */
     export function useService<ServiceType = unknown>(
         interfaceName: InterfaceNameForServiceType<ServiceType>,
@@ -45,11 +67,7 @@ declare module "open-pioneer:react-hooks" {
      *
      * In order to use all services, it must be declared as an UI-dependency (`all: true`) in the package's configuration file.
      *
-     * Example:
-     *
-     * ```ts
-     * const services = useServices<MyInterface>("my-package.MyInterface");
-     * ```
+     * @see {@link useService}
      */
     export function useServices<ServiceType = unknown>(
         interfaceName: InterfaceNameForServiceType<ServiceType>,
