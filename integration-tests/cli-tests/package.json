@@ -5,7 +5,7 @@
         "@chakra-ui/icons": "^2.1.1",
         "@open-pioneer/build-package-cli": "workspace:^",
         "@open-pioneer/build-support": "workspace:^",
-        "@open-pioneer/react-utils": "^0.1.0",
+        "@open-pioneer/react-utils": "^0.2.0",
         "@open-pioneer/vite-plugin-pioneer": "workspace:^",
         "@types/proj4": "^2.5.5",
         "@types/react-dom": "^18.2.18",

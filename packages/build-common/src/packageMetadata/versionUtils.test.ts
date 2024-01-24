@@ -28,10 +28,10 @@ describe("canParse", function () {
     it("throws for invalid versions", function () {
         // currentVersion comes from a constant and is assumed to be always valid, whereas serializedVersion comes from user input
         expect(() => canParse("1.0.0", "asd")).toThrowErrorMatchingInlineSnapshot(
-            "\"Serialized metadata version is invalid: 'asd'. Expected a valid semver.\""
+            `[Error: Serialized metadata version is invalid: 'asd'. Expected a valid semver.]`
         );
         expect(() => canParse("asd", "1.2.3")).toThrowErrorMatchingInlineSnapshot(
-            '"Internal error: invalid current version"'
+            `[Error: Internal error: invalid current version]`
         );
     });
 });

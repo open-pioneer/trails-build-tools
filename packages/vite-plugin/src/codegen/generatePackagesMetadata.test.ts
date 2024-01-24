@@ -66,29 +66,29 @@ describe("generatePackagesMetadata", function () {
         });
 
         expect(code).toMatchInlineSnapshot(`
-          "import { ServiceA as test_ServiceA } from \\"entryPoint\\";
-          import { ServiceB as test_ServiceB } from \\"entryPoint\\";
+          "import { ServiceA as test_ServiceA } from "entryPoint";
+          import { ServiceB as test_ServiceB } from "entryPoint";
           export default {
-            \\"test\\": {
-              name: \\"test\\",
+            "test": {
+              name: "test",
               services: {
-                \\"ServiceA\\": {
-                  name: \\"ServiceA\\",
+                "ServiceA": {
+                  name: "ServiceA",
                   clazz: test_ServiceA,
                   provides: [],
                   references: {}
                 },
-                \\"ServiceB\\": {
-                  name: \\"ServiceB\\",
+                "ServiceB": {
+                  name: "ServiceB",
                   clazz: test_ServiceB,
                   provides: [{
-                    name: \\"ServiceC\\",
-                    qualifier: \\"C\\"
+                    name: "ServiceC",
+                    qualifier: "C"
                   }],
                   references: {
-                    \\"asd\\": {
-                      name: \\"ServiceD\\",
-                      qualifier: \\"D\\",
+                    "asd": {
+                      name: "ServiceD",
+                      qualifier: "D",
                       all: false
                     }
                   }
@@ -96,28 +96,28 @@ describe("generatePackagesMetadata", function () {
               },
               ui: {
                 references: [{
-                  name: \\"foo.ServiceE\\",
+                  name: "foo.ServiceE",
                   qualifier: void 0,
                   all: false
                 }, {
-                  name: \\"foo.ServiceF\\",
-                  qualifier: \\"F\\",
+                  name: "foo.ServiceF",
+                  qualifier: "F",
                   all: false
                 }]
               },
               properties: {
-                \\"some_property\\": {
-                  value: \\"default_value\\",
+                "some_property": {
+                  value: "default_value",
                   required: true
                 },
-                \\"complex_property\\": {
+                "complex_property": {
                   value: {
-                    \\"array\\": [1, 2, {
-                      \\"a\\": 3
+                    "array": [1, 2, {
+                      "a": 3
                     }, [[[[[1]]]]]],
-                    \\"bool\\": false,
-                    \\"n\\": 123132,
-                    \\"str\\": \\"foo\\"
+                    "bool": false,
+                    "n": 123132,
+                    "str": "foo"
                   },
                   required: false
                 }

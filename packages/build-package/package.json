@@ -52,7 +52,7 @@
         "fast-glob": "^3.3.2",
         "fs-extra": "^11.2.0",
         "postcss": "^8.4.33",
-        "postcss-import": "^15.1.0",
+        "postcss-import": "^16.0.0",
         "rollup": "^4.9.6",
         "rollup-plugin-esbuild": "^6.1.1"
     },

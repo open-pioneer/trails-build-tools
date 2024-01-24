@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { BUILD_CONFIG_NAME } from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
-import { PackageData, normalizePath } from "vite";
+import { normalizePath } from "vite";
+import { findDepPkgJsonPath } from "vitefu";
 import { ReportableError } from "../ReportableError";
 import { Cache } from "../utils/Cache";
 import { createDebugger } from "../utils/debug";
-import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 import {
     AppMetadata,
     InternalPackageMetadata,
@@ -16,7 +17,7 @@ import {
     PackageMetadata
 } from "./Metadata";
 import { loadPackageMetadata } from "./loadPackageMetadata";
-import { BUILD_CONFIG_NAME } from "@open-pioneer/build-common";
+import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -55,9 +56,6 @@ export class MetadataRepository {
     // Key: path on disk.
     private i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
 
-    // Cache for package locations & package.json contents
-    private packageDataCache = new Map<string, PackageData>();
-
     /**
      * @param sourceRoot Source folder on disk, needed to detect 'local' packages
      */
@@ -70,7 +68,6 @@ export class MetadataRepository {
     reset() {
         this.packageMetadataCache = this.createPackageMetadataCache();
         this.i18nCache = this.createI18nCache();
-        this.packageDataCache.clear();
     }
 
     /**
@@ -204,14 +201,9 @@ export class MetadataRepository {
         }
 
         const { packageName, optional } = loc.dependency;
-        const { resolvePackageData } = await import("vite");
-        const packageData = await resolvePackageData(
-            packageName,
-            loc.importedFrom,
-            false,
-            this.packageDataCache
-        );
-        if (!packageData) {
+
+        const packagePath = await findDepPkgJsonPath(packageName, loc.importedFrom);
+        if (!packagePath) {
             if (optional) {
                 isDebug && debug(`Optional package '${packageName}' was not found.`);
                 return undefined;
@@ -222,7 +214,7 @@ export class MetadataRepository {
             );
         }
 
-        const packageDir = await realpath(packageData.dir);
+        const packageDir = dirname(await realpath(packagePath));
         isDebug && debug(`Found package '${packageName}' at ${packageDir}`);
         return packageDir;
     }

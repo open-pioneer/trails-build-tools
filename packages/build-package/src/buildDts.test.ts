@@ -26,13 +26,13 @@ describe(
             });
 
             expect(readText(resolve(outputDirectory, "index.d.ts"))).toMatchInlineSnapshot(`
-          "import { PI } from \\"./utils/helper\\";
-          export interface SomeInterface {
-              foo: number;
-          }
-          export { PI };
-          "
-        `);
+              "import { PI } from "./utils/helper";
+              export interface SomeInterface {
+                  foo: number;
+              }
+              export { PI };
+              "
+            `);
             expect(readText(resolve(outputDirectory, "utils/helper.d.ts"))).toMatchInlineSnapshot(`
           "export declare const PI = 3.14;
           "
@@ -54,12 +54,12 @@ describe(
             });
 
             expect(readText(resolve(outputDirectory, "index.d.ts"))).toMatchInlineSnapshot(`
-          "export interface GreetingProps {
-              message: string;
-          }
-          export declare function Greeting({ message }: GreetingProps): import(\\"react/jsx-runtime\\").JSX.Element;
-          "
-        `);
+              "export interface GreetingProps {
+                  message: string;
+              }
+              export declare function Greeting({ message }: GreetingProps): import("react/jsx-runtime").JSX.Element;
+              "
+            `);
             expect(defaults.logger.messages).toHaveLength(0);
         });
 
@@ -126,11 +126,11 @@ describe(
             ).toBeUndefined();
 
             expect(readText(resolve(outputDirectory, "index.d.ts"))).toMatchInlineSnapshot(`
-          "import foo from \\"does-not-exist\\";
-          export declare const A = 3;
-          export { foo as Foo123 };
-          "
-        `);
+              "import foo from "does-not-exist";
+              export declare const A = 3;
+              export { foo as Foo123 };
+              "
+            `);
 
             const messages = defaults.logger.messages.map((m) => m.args[0]!);
             expect(messages[0]).match(/Cannot find module 'does-not-exist'/);
@@ -153,12 +153,12 @@ describe(
                     strict: true
                 })
             ).rejects.toThrowErrorMatchingInlineSnapshot(
-                '"Aborting due to compilation errors (strict validation is enabled)."'
+                `[Error: Aborting due to compilation errors (strict validation is enabled).]`
             );
         });
     },
     {
-        timeout: 10000
+        timeout: 20000
     }
 );
 
