@@ -18,6 +18,7 @@
 
         "isolatedModules": true,
         "esModuleInterop": false,
+        "skipLibCheck": true, // small issue within vite typings (FSWatcher)
         "skipDefaultLibCheck": true
     },
     "include": ["packages"],

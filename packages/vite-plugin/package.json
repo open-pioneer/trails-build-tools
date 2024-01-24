@@ -38,9 +38,9 @@
         "vite": "^4.0.0"
     },
     "dependencies": {
-        "@babel/generator": "^7.23.5",
+        "@babel/generator": "^7.23.6",
         "@babel/template": "^7.22.15",
-        "@babel/types": "^7.23.5",
+        "@babel/types": "^7.23.6",
         "@open-pioneer/build-common": "workspace:^",
         "debug": "^4.3.4",
         "js-yaml": "^4.1.0",
@@ -49,19 +49,19 @@
     },
     "devDependencies": {
         "@open-pioneer/build-support": "workspace:^",
-        "@open-pioneer/runtime": "^2.0.0",
+        "@open-pioneer/runtime": "^2.0.2",
         "@open-pioneer/vite-plugin-pioneer": "workspace:^",
-        "@types/babel__generator": "^7.6.7",
+        "@types/babel__generator": "^7.6.8",
         "@types/babel__template": "^7.4.4",
         "@types/debug": "^4.1.12",
         "@types/js-yaml": "^4.0.9",
         "build-tools": "workspace:*",
-        "esbuild": "^0.19.8",
+        "esbuild": "^0.19.12",
         "fast-glob": "^3.3.2",
         "npm-run-all": "^4.1.5",
         "rimraf": "^5.0.5",
         "rollup": "^3.29.4",
-        "sass": "^1.69.5",
+        "sass": "^1.70.0",
         "vite": "^4.5.2"
     },
     "engines": {
