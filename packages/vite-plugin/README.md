@@ -2,6 +2,8 @@
 
 Implements certain build-time features required by pioneer apps.
 
+This plugin supports vite `4.x` and `5.x`.
+
 Usage:
 
 ```js
