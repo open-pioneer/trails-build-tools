@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/vite-plugin-pioneer",
     "description": "The vite plugin provided by this package is required by open pioneer trails applications.",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "commonjs",

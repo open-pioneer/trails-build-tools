@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-support
 
+## 2.0.1
+
+### Patch Changes
+
+-   715b45e: Update package.json metadata
+
 ## 2.0.0
 
 ### Major Changes
