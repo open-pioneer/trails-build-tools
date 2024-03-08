@@ -1,5 +1,6 @@
 {
     "name": "@open-pioneer/vite-plugin-pioneer",
+    "description": "The vite plugin provided by this package is required by open pioneer trails applications.",
     "version": "2.0.0",
     "main": "dist/index.js",
     "types": "types.d.ts",
@@ -10,12 +11,10 @@
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/vite-plugin"
     },
+    "homepage": "https://github.com/open-pioneer",
     "keywords": [
-        "open-pioneer-framework"
+        "open-pioneer-trails"
     ],
-    "bugs": {
-        "url": "https://github.com/open-pioneer/trails-build-tools/issues"
-    },
     "scripts": {
         "clean": "rimraf dist temp",
         "build": "node build.mjs build",

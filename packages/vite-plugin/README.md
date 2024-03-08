@@ -1,6 +1,6 @@
 # @open-pioneer/vite-plugin-pioneer
 
-Implements certain build-time features required by pioneer apps.
+The vite plugin provided by this package is required by open pioneer trails applications.
 
 Usage:
 

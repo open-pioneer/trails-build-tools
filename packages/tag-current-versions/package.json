@@ -1,5 +1,6 @@
 {
     "name": "@open-pioneer/tag-current-versions",
+    "description": "Creates `git` tags for all packages in the current workspace.",
     "main": "index.js",
     "version": "2.0.0",
     "license": "MIT",
@@ -9,10 +10,10 @@
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/tag-current-versions"
     },
-    "keywords": [],
-    "bugs": {
-        "url": "https://github.com/open-pioneer/trails-build-tools/issues"
-    },
+    "homepage": "https://github.com/open-pioneer",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
     "bin": {
         "tag-current-versions": "./dist/index.js"
     },
