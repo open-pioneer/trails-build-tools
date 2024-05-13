@@ -14,15 +14,15 @@ describe("generateI18n", function () {
             "de-simple"
         ]);
         expect(generatedIndex).toMatchInlineSnapshot(`
-          "export const locales = [\\"de\\", \\"en\\", \\"de-simple\\"];
+          "export const locales = ["de", "en", "de-simple"];
           export function loadMessages(locale) {
             switch (locale) {
-              case \\"de\\":
-                return import(\\"test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=de\\").then(mod => mod.default);
-              case \\"en\\":
-                return import(\\"test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=en\\").then(mod => mod.default);
-              case \\"de-simple\\":
-                return import(\\"test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=de-simple\\").then(mod => mod.default);
+              case "de":
+                return import("test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=de").then(mod => mod.default);
+              case "en":
+                return import("test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=en").then(mod => mod.default);
+              case "de-simple":
+                return import("test-package-directory/@@open-pioneer-app?open-pioneer-i18n&locale=de-simple").then(mod => mod.default);
             }
             throw new Error(\`Unsupported locale: '\${locale}'\`);
           }"
@@ -54,7 +54,7 @@ describe("generateI18n", function () {
         });
 
         expect(generatedMessages).toMatchInlineSnapshot(`
-          "const messages = JSON.parse(\\"{\\\\\\"package-foo\\\\\\":{\\\\\\"from-foo.greeting\\\\\\":\\\\\\"Hello World!\\\\\\\\n\\\\\\"},\\\\\\"package-bar\\\\\\":{\\\\\\"from-bar\\\\\\":\\\\\\"Hello from bar\\\\\\"}}\\");
+          "const messages = JSON.parse("{\\"package-foo\\":{\\"from-foo.greeting\\":\\"Hello World!\\\\n\\"},\\"package-bar\\":{\\"from-bar\\":\\"Hello from bar\\"}}");
           export default messages;"
         `);
     });
@@ -82,7 +82,7 @@ describe("generateI18n", function () {
             }
         });
         expect(generatedMessages).toMatchInlineSnapshot(`
-          "const messages = JSON.parse(\\"{\\\\\\"package-foo\\\\\\":{\\\\\\"from-foo.greeting\\\\\\":\\\\\\"Changed from app\\\\\\"},\\\\\\"app\\\\\\":{}}\\");
+          "const messages = JSON.parse("{\\"package-foo\\":{\\"from-foo.greeting\\":\\"Changed from app\\"},\\"app\\":{}}");
           export default messages;"
         `);
     });

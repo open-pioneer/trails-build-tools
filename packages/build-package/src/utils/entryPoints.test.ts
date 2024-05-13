@@ -49,21 +49,21 @@ describe("entryPoints", function () {
     it("throws if an extension is not supported", function () {
         const entryPoints = ["foo.bar"];
         expect(() => normalizeEntryPoints(entryPoints, EXTS)).toThrowErrorMatchingInlineSnapshot(
-            "\"The extension '.bar' is not supported (entry point 'foo.bar').\""
+            `[Error: The extension '.bar' is not supported (entry point 'foo.bar').]`
         );
     });
 
     it("throws for bad entry point paths", function () {
         const entryPoints = ["../index"];
         expect(() => normalizeEntryPoints(entryPoints, EXTS)).toThrowErrorMatchingInlineSnapshot(
-            "\"Entry point '../index' does not appear like a valid module id.\""
+            `[Error: Entry point '../index' does not appear like a valid module id.]`
         );
     });
 
     it("throws if entry module is specified twice", function () {
         const entryPoints = ["index", "./index.ts"];
         expect(() => normalizeEntryPoints(entryPoints, EXTS)).toThrowErrorMatchingInlineSnapshot(
-            "\"Entry point 'index' is specified twice.\""
+            `[Error: Entry point 'index' is specified twice.]`
         );
     });
 });

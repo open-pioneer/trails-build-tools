@@ -39,7 +39,7 @@ describe("buildJS", function () {
 
           console.log(something, somethingElse, useService);
           function helloA() {
-            log(\\"hello from entry point A\\");
+            log("hello from entry point A");
           }
 
           export { helloA };
@@ -49,7 +49,7 @@ describe("buildJS", function () {
           "import { log } from './dir/log.js';
 
           function helloB() {
-            log(\\"hello from entry point B\\");
+            log("hello from entry point B");
           }
 
           export { helloB };
@@ -70,7 +70,7 @@ describe("buildJS", function () {
         ).toMatchInlineSnapshot(`
           "import { useServiceInternal } from '@open-pioneer/runtime/react-integration';
 
-          const PACKAGE_NAME = \\"test\\";
+          const PACKAGE_NAME = "test";
           const useService = /*@__PURE__*/ useServiceInternal.bind(undefined, PACKAGE_NAME);
 
           export { useService };
@@ -105,7 +105,7 @@ describe("buildJS", function () {
 
           console.log(something, somethingElse, useService);
           function helloA() {
-            log(\\"hello from entry point A\\");
+            log("hello from entry point A");
           }
 
           export { helloA };
@@ -127,16 +127,16 @@ describe("buildJS", function () {
         `);
         expect(sourceMapData.sourcesContent).toMatchInlineSnapshot(`
           [
-            "import { log } from \\"./dir/log\\";
-          import something from \\"somewhere-external\\";
-          import somethingElse from \\"@scope/somewhere-external\\";
-          import { useService } from \\"open-pioneer:react-hooks\\";
+            "import { log } from "./dir/log";
+          import something from "somewhere-external";
+          import somethingElse from "@scope/somewhere-external";
+          import { useService } from "open-pioneer:react-hooks";
 
           // Use to prevent warnings
           console.log(something, somethingElse, useService);
 
           export function helloA() {
-              log(\\"hello from entry point A\\");
+              log("hello from entry point A");
           }
           ",
           ]
@@ -160,7 +160,7 @@ describe("buildJS", function () {
           "import { jsx } from 'react/jsx-runtime';
 
           function Greeting() {
-            return /* @__PURE__ */ jsx(\\"div\\", { children: \\"Hello World!\\" });
+            return /* @__PURE__ */ jsx("div", { children: "Hello World!" });
           }
 
           export { Greeting };
@@ -230,7 +230,7 @@ describe("buildJS", function () {
         `);
         expect(indexSourcesContent).toMatchInlineSnapshot(`
           [
-            "import { PI } from \\"./utils/helper\\";
+            "import { PI } from "./utils/helper";
 
           export interface SomeInterface {
               foo: number;
@@ -282,7 +282,7 @@ describe("buildJS", function () {
           "import { jsx } from 'react/jsx-runtime';
 
           function Greeting({ message }) {
-            return /* @__PURE__ */ jsx(\\"div\\", { children: message });
+            return /* @__PURE__ */ jsx("div", { children: message });
           }
 
           export { Greeting };
@@ -353,7 +353,7 @@ describe("buildJS", function () {
                 entryPoints
             })
         ).rejects.toMatchInlineSnapshot(
-            "[RollupError: Imported module ./does_not-exist.txt does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]"
+            `[RollupError: [plugin resolve] packages/build-package/test-data/project-using-bad-imports/index.js: Imported module ./does_not-exist.txt does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]`
         );
     });
 
@@ -371,7 +371,7 @@ describe("buildJS", function () {
                 entryPoints
             })
         ).rejects.toMatchInlineSnapshot(
-            "[RollupError: Imported module ./Foo does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]"
+            `[RollupError: [plugin resolve] packages/build-package/test-data/project-importing-unknown-extension/index.js: Imported module ./Foo does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]`
         );
     });
 
@@ -389,7 +389,7 @@ describe("buildJS", function () {
                 entryPoints
             })
         ).rejects.toMatchInlineSnapshot(
-            "[RollupError: Imported module ./file matches multiple extensions: .mts, .tsx, .js. Use an explicit extension instead.]"
+            `[RollupError: [plugin resolve] packages/build-package/test-data/project-with-ambiguous-js-imports/entryPoint.ts: Imported module ./file matches multiple extensions: .mts, .tsx, .js. Use an explicit extension instead.]`
         );
     });
 
@@ -414,7 +414,7 @@ describe("buildJS", function () {
                 }
             })
         ).rejects.toThrowErrorMatchingInlineSnapshot(
-            '"Aborting due to dependency problems (strict validation is enabled)."'
+            `[RollupError: [plugin check-imports] Aborting due to dependency problems (strict validation is enabled).]`
         );
 
         const messages = logger.messages.map((msg) => msg.args[0]! as any).sort();

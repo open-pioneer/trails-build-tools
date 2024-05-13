@@ -33,17 +33,17 @@ it("copies i18n files if configured in build.config.js", async function () {
 
     expect(readText(resolve(outputDirectory, "i18n/de.yaml"))).toMatchInlineSnapshot(`
       "messages:
-          hello: \\"Hallo\\"
+          hello: "Hallo"
       "
     `);
     expect(readText(resolve(outputDirectory, "i18n/de-simple.yaml"))).toMatchInlineSnapshot(`
       "messages:
-          hello: \\"Hallo\\"
+          hello: "Hallo"
       "
-  `);
+    `);
     expect(readText(resolve(outputDirectory, "i18n/en.yaml"))).toMatchInlineSnapshot(`
       "messages:
-          hello: \\"Hello\\"
+          hello: "Hello"
       "
     `);
 });
@@ -70,5 +70,5 @@ it("throws if i18n files are missing", async function () {
             options: { ...resolvedOptions, outputDirectory },
             logger
         })
-    ).rejects.toMatch(/I18n file does not exist/);
+    ).rejects.toThrowError(/I18n file does not exist/);
 });

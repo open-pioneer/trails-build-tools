@@ -33,20 +33,20 @@ describe(
 
             const entryPointA = resolve(distDirectory, "entryPointA.js");
             expect(readText(entryPointA)).toMatchInlineSnapshot(`
-          "import { log } from './dir/log.js';
-          import something from 'somewhere-external';
-          import somethingElse from '@scope/somewhere-external';
-          import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
+              "import { log } from './dir/log.js';
+              import something from 'somewhere-external';
+              import somethingElse from '@scope/somewhere-external';
+              import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
 
-          console.log(something, somethingElse, useService);
-          function helloA() {
-            log(\\"hello from entry point A\\");
-          }
+              console.log(something, somethingElse, useService);
+              function helloA() {
+                log("hello from entry point A");
+              }
 
-          export { helloA };
-          //# sourceMappingURL=entryPointA.js.map
-          "
-        `);
+              export { helloA };
+              //# sourceMappingURL=entryPointA.js.map
+              "
+            `);
 
             const entryPointADts = resolve(distDirectory, "entryPointA.d.ts");
             expect(readText(entryPointADts)).toMatchInlineSnapshot(`
@@ -56,16 +56,16 @@ describe(
 
             const entryPointB = resolve(distDirectory, "entryPointB.js");
             expect(readText(entryPointB)).toMatchInlineSnapshot(`
-          "import { log } from './dir/log.js';
+              "import { log } from './dir/log.js';
 
-          function helloB() {
-            log(\\"hello from entry point B\\");
-          }
+              function helloB() {
+                log("hello from entry point B");
+              }
 
-          export { helloB };
-          //# sourceMappingURL=entryPointB.js.map
-          "
-        `);
+              export { helloB };
+              //# sourceMappingURL=entryPointB.js.map
+              "
+            `);
 
             const entryPointBDts = resolve(distDirectory, "entryPointB.d.ts");
             expect(readText(entryPointBDts)).toMatchInlineSnapshot(`
@@ -149,6 +149,6 @@ describe(
         });
     },
     {
-        timeout: 10000
+        timeout: 20000
     }
 );

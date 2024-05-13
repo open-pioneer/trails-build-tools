@@ -52,7 +52,7 @@ describe("copyAuxiliaryFiles", function () {
         });
 
         expect(() => options.reporter.check()).toThrowErrorMatchingInlineSnapshot(
-            '"Aborting due to validation errors (strict validation is enabled)."'
+            `[Error: Aborting due to validation errors (strict validation is enabled).]`
         );
 
         const validateMessage = (index: number, mustMatch: RegExp, name: string) => {

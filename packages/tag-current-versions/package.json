@@ -36,7 +36,7 @@
     "dependencies": {
         "@changesets/git": "^3.0.0",
         "@changesets/logger": "^0.1.0",
-        "@manypkg/get-packages": "^2.2.0"
+        "@manypkg/get-packages": "^2.2.1"
     },
     "devDependencies": {
         "@changesets/test-utils": "^0.0.5",

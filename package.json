@@ -22,22 +22,22 @@
     },
     "devDependencies": {
         "@changesets/cli": "^2.27.1",
-        "@types/node": "^18.19.9",
-        "@typescript-eslint/eslint-plugin": "^6.19.1",
-        "@typescript-eslint/parser": "^6.19.1",
-        "esbuild": "^0.19.12",
-        "eslint": "^8.56.0",
+        "@types/node": "^18.19.33",
+        "@typescript-eslint/eslint-plugin": "^7.8.0",
+        "@typescript-eslint/parser": "^7.8.0",
+        "esbuild": "^0.21.2",
+        "eslint": "^8.57.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-import-resolver-typescript": "^3.6.1",
         "eslint-plugin-header": "^3.1.1",
         "eslint-plugin-import": "^2.29.1",
-        "eslint-plugin-unused-imports": "^3.0.0",
-        "husky": "^8.0.3",
-        "prettier": "^3.2.4",
-        "rimraf": "^5.0.5",
-        "typescript": "^5.3.3",
-        "vite": "^4.5.3",
-        "vitest": "^0.34.6"
+        "eslint-plugin-unused-imports": "^3.2.0",
+        "husky": "^9.0.11",
+        "prettier": "^3.2.5",
+        "rimraf": "^5.0.7",
+        "typescript": "^5.4.5",
+        "vite": "^5.2.11",
+        "vitest": "^1.6.0"
     },
     "engines": {
         "node": ">= 18",
@@ -53,6 +53,11 @@
         },
         "auditConfig": {
             "ignoreCves": []
+        },
+        "peerDependencyRules": {
+            "allowedVersions": {
+                "@open-pioneer/chakra-integration>framer-motion": ">=4.0.0"
+            }
         }
     }
 }

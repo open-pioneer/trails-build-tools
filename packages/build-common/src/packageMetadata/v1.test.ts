@@ -152,7 +152,7 @@ describe("packageMetadata v1", function () {
             packageFormatVersion: "1.0.9999999"
         };
         expect(() => serializePackageMetadata(metadata)).toThrowErrorMatchingInlineSnapshot(
-            "\"Invalid package metadata version '1.0.9999999': version should either be omitted or be equal to the current version.\""
+            `[Error: Invalid package metadata version '1.0.9999999': version should either be omitted or be equal to the current version.]`
         );
     });
 });

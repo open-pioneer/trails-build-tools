@@ -14,12 +14,12 @@ describe("loadBuildConfig", function () {
 
     it("throws an error if a config file does not exist", async function () {
         const path = resolve(TEST_DATA_DIR, "does-not-exist.mjs");
-        await expect(loadBuildConfig(path)).rejects.toMatch(/does not exist/);
+        await expect(loadBuildConfig(path)).rejects.toThrowError(/does not exist/);
     });
 
     it("throws an error if the config file does not have a default export", async function () {
         const path = resolve(TEST_DATA_DIR, "build-config-without-export.mjs");
-        await expect(loadBuildConfig(path)).rejects.toMatch(/must provide a default export/);
+        await expect(loadBuildConfig(path)).rejects.toThrowError(/must provide a default export/);
     });
 
     it("throws an error if the config file does not match the schema", async function () {

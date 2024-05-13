@@ -54,16 +54,16 @@ describe("buildCss", function () {
         */
         expect(readText(resolve(outputDirectory, "myStyles.css"))).toMatchInlineSnapshot(`
           "
-          @import \\"ol/ol.css\\";
-          @import \\"ol/ol.css\\";
-          @import \\"https://example.com/styles.css\\";
-          @import \\"cssrecipes-defaults\\";
-          @import \\"normalize.css\\";
-          @import \\"foo.css\\";
+          @import "ol/ol.css";
+          @import "ol/ol.css";
+          @import "https://example.com/styles.css";
+          @import "cssrecipes-defaults";
+          @import "normalize.css";
+          @import "foo.css";
           @import url(foo-1.css);
-          @import url(\\"foo-2.css\\");
-          @import \\"bar.css\\" (min-width: 25em);
-          @import \\"baz.css\\" layer(baz-layer);
+          @import url("foo-2.css");
+          @import "bar.css" (min-width: 25em);
+          @import "baz.css" layer(baz-layer);
           /* This import must not be bundled because it points to an external dependency */
           .foo {
               color: white;
@@ -141,7 +141,7 @@ describe("buildCss", function () {
               color: green;
           }
           ",
-            "@import \\"./dir/importedStyles.css\\";
+            "@import "./dir/importedStyles.css";
 
           .main {
               padding: 1;
@@ -201,14 +201,14 @@ describe("buildCss", function () {
             https://sass-lang.com/documentation/at-rules/import#plain-css-imports
         */
         expect(readText(resolve(outputDirectory, "main.css"))).toMatchInlineSnapshot(`
-          "@import \\"ol/ol.css\\";
-          @import \\"ol/ol.css\\";
-          @import \\"https://example.com/styles.css\\";
-          @import \\"normalize.css\\";
-          @import \\"foo.css\\";
+          "@import "ol/ol.css";
+          @import "ol/ol.css";
+          @import "https://example.com/styles.css";
+          @import "normalize.css";
+          @import "foo.css";
           @import url(foo-1.css);
-          @import url(\\"foo-2.css\\");
-          @import \\"bar.css\\" (min-width: 25em);
+          @import url("foo-2.css");
+          @import "bar.css" (min-width: 25em);
           .from-local-css-module {
               color: white;
           }
@@ -277,8 +277,8 @@ describe("buildCss", function () {
               height: 100%;
           }
           ",
-            "@import \\"./dir/test_module\\";
-          @import \\"./cssFile.css\\";
+            "@import "./dir/test_module";
+          @import "./cssFile.css";
 
           .a {
               .b {

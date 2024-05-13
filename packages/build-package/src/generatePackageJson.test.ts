@@ -83,7 +83,7 @@ describe("generatePackageJson", function () {
             await generatePackageJson(options);
             options.reporter.check();
         }).rejects.toThrowErrorMatchingInlineSnapshot(
-            '"Aborting due to validation errors (strict validation is enabled)."'
+            `[Error: Aborting due to validation errors (strict validation is enabled).]`
         );
         expect(options.logger.messages).toMatchInlineSnapshot(`
           [

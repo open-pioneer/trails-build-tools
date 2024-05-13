@@ -14,7 +14,7 @@ describe("parseVirtualModule", function () {
     it("throws for unknown modules under the open pioneer prefix", function () {
         expect(() =>
             RuntimeSupport.parseVirtualModule("open-pioneer:foo")
-        ).toThrowErrorMatchingInlineSnapshot("\"Unsupported module id 'open-pioneer:foo'.\"");
+        ).toThrowErrorMatchingInlineSnapshot(`[Error: Unsupported module id 'open-pioneer:foo'.]`);
     });
 });
 
@@ -22,9 +22,9 @@ describe("generateReactHooks", function () {
     it("generates react hooks with unresolved id by default", function () {
         const code = RuntimeSupport.generateReactHooks("mypackage-name");
         expect(code).toMatchInlineSnapshot(`
-          "import { useServiceInternal, useServicesInternal, usePropertiesInternal, useIntlInternal } from \\"@open-pioneer/runtime/react-integration\\";
+          "import { useServiceInternal, useServicesInternal, usePropertiesInternal, useIntlInternal } from "@open-pioneer/runtime/react-integration";
 
-          const PACKAGE_NAME = \\"mypackage-name\\";
+          const PACKAGE_NAME = "mypackage-name";
           export const useService = /*@__PURE__*/ useServiceInternal.bind(undefined, PACKAGE_NAME);
           export const useServices = /*@__PURE__*/ useServicesInternal.bind(undefined, PACKAGE_NAME);
           export const useProperties = /*@__PURE__*/ usePropertiesInternal.bind(undefined, PACKAGE_NAME);
@@ -38,9 +38,9 @@ describe("generateReactHooks", function () {
             "custom-react-hooks-id/a/b/c"
         );
         expect(code).toMatchInlineSnapshot(`
-          "import { useServiceInternal, useServicesInternal, usePropertiesInternal, useIntlInternal } from \\"custom-react-hooks-id/a/b/c\\";
+          "import { useServiceInternal, useServicesInternal, usePropertiesInternal, useIntlInternal } from "custom-react-hooks-id/a/b/c";
 
-          const PACKAGE_NAME = \\"mypackage-name\\";
+          const PACKAGE_NAME = "mypackage-name";
           export const useService = /*@__PURE__*/ useServiceInternal.bind(undefined, PACKAGE_NAME);
           export const useServices = /*@__PURE__*/ useServicesInternal.bind(undefined, PACKAGE_NAME);
           export const useProperties = /*@__PURE__*/ usePropertiesInternal.bind(undefined, PACKAGE_NAME);
