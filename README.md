@@ -6,6 +6,22 @@ This package contains build tools required by the open pioneer framework.
 
 ## Development Notes
 
+### Running tests locally
+
+- Build all packages (or start their dev mode):
+
+  ```sh
+  # Builds all packages
+  $ pnpm run build  
+
+  # Or, in the package directory:
+  $ cd packages/...
+  $ pnpm dev
+  ```
+
+- Run `pnpm install` to link packages (and the CLI tool used by integration tests)
+- Run `pnpm test`
+
 ### Windows users
 
 If you're developing the build tools on windows, you will likely have to Window's support für symbolic links.

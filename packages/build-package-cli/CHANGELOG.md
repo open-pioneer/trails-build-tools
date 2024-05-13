@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 2.0.1
+
+### Patch Changes
+
+-   715b45e: Update package.json metadata
+-   Updated dependencies [9d4a9d5]
+-   Updated dependencies [715b45e]
+    -   @open-pioneer/build-package@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

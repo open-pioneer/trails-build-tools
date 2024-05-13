@@ -1,6 +1,6 @@
 # @open-pioneer/build-package
 
-Implements a common compilation step for open pioneer packages.
+Implements partial compilation for open pioneer trails packages.
 Compiled packages can be uploaded to the npm package registry.
 
 ## License

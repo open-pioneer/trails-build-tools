@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 2.0.1
+
+### Patch Changes
+
+-   9d4a9d5: Bump dependencies
+-   715b45e: Update package.json metadata
+-   Updated dependencies [715b45e]
+    -   @open-pioneer/build-common@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

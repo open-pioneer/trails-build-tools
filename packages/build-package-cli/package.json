@@ -1,6 +1,7 @@
 {
     "name": "@open-pioneer/build-package-cli",
-    "version": "2.0.0",
+    "description": "Provides a CLI tool to compile open pioneer trails packages.",
+    "version": "2.0.1",
     "type": "commonjs",
     "license": "Apache-2.0",
     "repository": {
@@ -8,12 +9,10 @@
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/build-package-cli"
     },
+    "homepage": "https://github.com/open-pioneer",
     "keywords": [
-        "open-pioneer-framework"
+        "open-pioneer-trails"
     ],
-    "bugs": {
-        "url": "https://github.com/open-pioneer/trails-build-tools/issues"
-    },
     "bin": {
         "build-pioneer-package": "./dist/index.js"
     },
@@ -33,7 +32,7 @@
     "dependencies": {
         "@open-pioneer/build-package": "workspace:^",
         "chalk": "^5.3.0",
-        "commander": "^11.1.0"
+        "commander": "^12.0.0"
     },
     "devDependencies": {
         "build-tools": "workspace:*"
