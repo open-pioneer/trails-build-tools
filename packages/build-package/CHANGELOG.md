@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/build-package
 
+## 2.0.2
+
+### Patch Changes
+
+-   c08520d: Update dependencies
+-   c08520d: Update postcss to 16.x
+-   Updated dependencies [c08520d]
+-   Updated dependencies [c08520d]
+    -   @open-pioneer/build-common@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes

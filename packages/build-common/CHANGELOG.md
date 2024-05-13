@@ -1,5 +1,12 @@
 # Changelog @open-pioneer/build-common
 
+## 2.0.2
+
+### Patch Changes
+
+-   c08520d: Update zod-validation-error to 3.x
+-   c08520d: Update dependencies
+
 ## 2.0.1
 
 ### Patch Changes

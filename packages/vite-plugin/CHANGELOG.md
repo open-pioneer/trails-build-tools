@@ -1,5 +1,20 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 3.0.0
+
+### Major Changes
+
+-   c08520d: Switch to `type`: `module`
+-   c08520d: Add support for vite 5.
+
+### Patch Changes
+
+-   c08520d: Update zod-validation-error to 3.x
+-   c08520d: Update dependencies
+-   Updated dependencies [c08520d]
+-   Updated dependencies [c08520d]
+    -   @open-pioneer/build-common@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes
