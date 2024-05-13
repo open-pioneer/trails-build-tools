@@ -51,8 +51,6 @@ const modes = {
  *                      Not used yet.
  */
 export async function build(mode, customOptions) {
-    void customOptions;
-
     const options = modes[mode];
     if (!options) {
         throw new Error(`Unknown mode: '${mode}'`);
@@ -71,7 +69,7 @@ export async function build(mode, customOptions) {
         platform: "node",
         packages: "external",
         logLevel: "info",
-        format: "cjs"
+        format: customOptions?.format ?? "cjs"
     };
 
     if (watch) {

@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import generate from "@babel/generator";
-import template from "@babel/template";
-import * as nodes from "@babel/types";
+import { generate, nodes, Nodes, template } from "../utils/babelDeps";
 import { PackageMetadata } from "../metadata/Metadata";
 import { ReportableError } from "../ReportableError";
 import { IdGenerator } from "./IdGenerator";
@@ -80,7 +78,7 @@ export interface PackageMetadataOptions {
 export function generatePackagesMetadata({ appName, packages }: PackageMetadataOptions): string {
     const idGenerator = new IdGenerator();
     const packagesMetadata = nodes.objectExpression([]);
-    const imports: nodes.Statement[] = [];
+    const imports: Nodes.Statement[] = [];
 
     let overrides: Map<string, PackageOverrides> | undefined;
     for (const pkg of packages) {
@@ -137,7 +135,7 @@ function generatePackageMetadata(
          */
         enableService(serviceName: string): boolean;
     }
-): nodes.Expression {
+): Nodes.Expression {
     const servicesObject = nodes.objectExpression([]);
     for (const service of pkg.config.services.values()) {
         if (!options.enableService(service.serviceName)) {
@@ -208,7 +206,7 @@ function generatePackageMetadata(
     return pkgObject;
 }
 
-function jsonToExpression(json: unknown): nodes.Expression {
+function jsonToExpression(json: unknown): Nodes.Expression {
     if (json == null) {
         return nodes.nullLiteral();
     }
@@ -234,7 +232,7 @@ function jsonToExpression(json: unknown): nodes.Expression {
     throw new Error(`Unexpected value while serializing JSON: ${json}.`);
 }
 
-function referenceObject(ref: Reference | UiReference): nodes.Expression {
+function referenceObject(ref: Reference | UiReference): Nodes.Expression {
     return REFERENCE_OBJECT({
         INTERFACE_NAME: nodes.stringLiteral(ref.interfaceName),
         QUALIFIER: ref.qualifier ? nodes.stringLiteral(ref.qualifier) : undefinedNode(),

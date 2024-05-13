@@ -2,4 +2,4 @@
 "@open-pioneer/vite-plugin-pioneer": major
 ---
 
-Add support for vite 5.
+Switch to `type`: `module`

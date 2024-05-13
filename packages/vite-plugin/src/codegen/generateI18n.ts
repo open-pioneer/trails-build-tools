@@ -1,9 +1,7 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import * as nodes from "@babel/types";
-import template from "@babel/template";
+import { generate, nodes, template } from "../utils/babelDeps";
 import { serializeModuleId } from "./shared";
-import generate from "@babel/generator";
 import { PackageMetadata } from "../metadata/Metadata";
 import { ReportableError } from "../ReportableError";
 import { I18nFile } from "../metadata/parseI18nYaml";
