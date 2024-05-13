@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 2.0.2
+
+### Patch Changes
+
+-   c08520d: Update dependencies
+-   Updated dependencies [c08520d]
+-   Updated dependencies [c08520d]
+    -   @open-pioneer/build-package@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes

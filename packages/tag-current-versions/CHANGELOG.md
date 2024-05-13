@@ -1,5 +1,11 @@
 # @open-pioneer/tag-current-versions
 
+## 2.0.2
+
+### Patch Changes
+
+-   c08520d: Update dependencies
+
 ## 2.0.1
 
 ### Patch Changes
