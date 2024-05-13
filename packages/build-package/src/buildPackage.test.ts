@@ -70,5 +70,5 @@ it("throws if i18n files are missing", async function () {
             options: { ...resolvedOptions, outputDirectory },
             logger
         })
-    ).rejects.toMatch(/I18n file does not exist/);
+    ).rejects.toThrowError(/I18n file does not exist/);
 });

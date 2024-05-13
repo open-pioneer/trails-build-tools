@@ -353,7 +353,7 @@ describe("buildJS", function () {
                 entryPoints
             })
         ).rejects.toMatchInlineSnapshot(
-            "[RollupError: Imported module ./does_not-exist.txt does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]"
+            `[RollupError: [plugin resolve] packages/build-package/test-data/project-using-bad-imports/index.js: Imported module ./does_not-exist.txt does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]`
         );
     });
 
@@ -371,7 +371,7 @@ describe("buildJS", function () {
                 entryPoints
             })
         ).rejects.toMatchInlineSnapshot(
-            "[RollupError: Imported module ./Foo does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]"
+            `[RollupError: [plugin resolve] packages/build-package/test-data/project-importing-unknown-extension/index.js: Imported module ./Foo does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]`
         );
     });
 
@@ -389,7 +389,7 @@ describe("buildJS", function () {
                 entryPoints
             })
         ).rejects.toMatchInlineSnapshot(
-            "[RollupError: Imported module ./file matches multiple extensions: .mts, .tsx, .js. Use an explicit extension instead.]"
+            `[RollupError: [plugin resolve] packages/build-package/test-data/project-with-ambiguous-js-imports/entryPoint.ts: Imported module ./file matches multiple extensions: .mts, .tsx, .js. Use an explicit extension instead.]`
         );
     });
 
@@ -414,7 +414,7 @@ describe("buildJS", function () {
                 }
             })
         ).rejects.toThrowErrorMatchingInlineSnapshot(
-            `[RollupError: Aborting due to dependency problems (strict validation is enabled).]`
+            `[RollupError: [plugin check-imports] Aborting due to dependency problems (strict validation is enabled).]`
         );
 
         const messages = logger.messages.map((msg) => msg.args[0]! as any).sort();
