@@ -1,6 +1,6 @@
 # @open-pioneer/build-package-cli
 
-Provides the `build-pioneer-package` command line tool which compiles pioneer packages into a 'publishable' form.
+Provides the `build-pioneer-package` command line tool which compiles Open Pioneer Trails packages into a 'publishable' form.
 
 Installation:
 
@@ -12,7 +12,7 @@ $ pnpm add -D @open-pioneer/build-package-cli
 $ pnpm build-pioneer-package --help
 Usage: build-pioneer-package [options]
 
-Builds an open pioneer package for publishing.
+Builds an Open Pioneer Trails package for publishing.
 
 Options:
   -p, --package <path>  package directory (defaults to current directory)

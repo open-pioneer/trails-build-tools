@@ -8,7 +8,7 @@ that can be called from the outer site to trigger actions in the web component.
 The ApiExtension support is implemented in the `@open-pioneer/runtime` package.
 
 Additionally, the package contains the `ExternalEventService`,
-which can be used to emit events to the host site from inside the open pioneer application.
+which can be used to emit events to the host site from inside the Open Pioneer Trails application.
 
 ## Quick start
 

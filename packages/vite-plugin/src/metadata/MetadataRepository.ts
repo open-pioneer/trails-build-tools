@@ -297,7 +297,7 @@ export class MetadataRepository {
                     ) {
                         const message =
                             `Encountered the package '${metadata.name}' at two different locations.\n` +
-                            `Pioneer packages cannot be used more than once in the same application.\n` +
+                            `Trails packages cannot be used more than once in the same application.\n` +
                             `All packages must use a common version of '${metadata.name}'.\n` +
                             `\n` +
                             `1. ${formatPackage(existingMetadata)}\n` +

@@ -64,14 +64,14 @@
 
 ### Patch Changes
 
--   99354bf: Improve error message when two versions of the same pioneer package are encountered.
-    Only a single version per pioneer package per app is supported: all packages must share the same version and location on disk.
+-   99354bf: Improve error message when two versions of the same Trails package are encountered.
+    Only a single version per Trails package per app is supported: all packages must share the same version and location on disk.
 
     The vite overlay in the browser now shows a comprehensible error message such as this:
 
     ```text
     [plugin:pioneer:codegen] Encountered the package '@open-pioneer/runtime' at two different locations.
-    Pioneer packages cannot be used more than once in the same application.
+    Trails packages cannot be used more than once in the same application.
     All packages must use a common version of '@open-pioneer/runtime'.
 
     1. @open-pioneer/runtime@1.0.0 at $HOME/projects/pioneer/starter/node_modules/.pnpm/@open-pioneer+runtime@1.0.0_@formatjs+intl@2.9.0_@open-pioneer+chakra-integration@1.0.0_@open_4cza3noe47gq2v2rsqn2cypo4q/node_modules/@open-pioneer/runtime
@@ -123,7 +123,7 @@
 -   cf32df5: Add another workaround that unfortunately currently requires pnpm's `shamefully-hoist` option.
 
     [`shamefully-hoist`](https://pnpm.io/npmrc#shamefully-hoist) allows the application to 'see' all other installed node packages.
-    This is usually a bad practice but we currently require it for the virtual module that imports all open pioneer services.
+    This is usually a bad practice but we currently require it for the virtual module that imports all Open Pioneer Trails services.
     For more details see the linked commit.
 
 ## 0.8.5

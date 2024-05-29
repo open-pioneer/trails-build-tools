@@ -90,7 +90,7 @@ class PackageMetadataReader {
 
         // The package config is read either from the package's build.config.mjs (for source packages)
         // or from a package's serialized metadata in its package.json (for published packages).
-        // For external packages: if we don't see any pioneer metadata we simply treat it as a plain package,
+        // For external packages: if we don't see any Open Pioneer Trails metadata we simply treat it as a plain package,
         // which will then be ignored by further analysis.
         const configResult = await this.readConfig(mode, packageName, frameworkMetadata);
         if (!configResult) {
@@ -170,7 +170,7 @@ class PackageMetadataReader {
     ): Promise<PackageConfigResult | undefined> {
         const { ctx, packageDir } = this;
         switch (mode) {
-            /** External packages must have framework metadata in their package.json (or they are not considered pioneer packages at all). */
+            /** External packages must have framework metadata in their package.json (or they are not considered Open Pioneer Trails packages at all). */
             case "external": {
                 if (!frameworkMetadata) {
                     return undefined;
@@ -234,7 +234,7 @@ class PackageMetadataReader {
 
     /**
      * Attempts to read the package configuration from the package.json's metadata value.
-     * Note that the value may not be present at this point if the package does not use open pioneer metadata.
+     * Note that the value may not be present at this point if the package does not use Open Pioneer Trails metadata.
      */
     private async parsePackageConfigFromMetadata(
         packageName: string,
