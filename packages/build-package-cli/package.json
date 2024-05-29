@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-package-cli",
-    "description": "Provides a CLI tool to compile open pioneer trails packages.",
+    "description": "Provides a CLI tool to compile Open Pioneer Trails packages.",
     "version": "2.0.2",
     "type": "commonjs",
     "license": "Apache-2.0",

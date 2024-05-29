@@ -8,7 +8,7 @@ import { build } from "@open-pioneer/build-package";
 const program = new Command();
 program
     .name("build-pioneer-package")
-    .description("Builds an open pioneer package for publishing.")
+    .description("Builds an Open Pioneer Trails package for publishing.")
     .option("-p, --package <path>", "package directory (defaults to current directory)")
     .option("-q, --silent", "disable logging")
     .option("-d, --debug", "show exception stack traces")

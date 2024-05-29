@@ -9,7 +9,7 @@ declare module "open-pioneer:app" {
 
 /**
  * Provides react hooks to a module.
- * The module must be inside a valid pioneer package (or app).
+ * The module must be inside a valid Open Pioneer Trails package (or app).
  *
  * The generated hooks will ensure that hooks return data structures and services
  * for the correct package, and that dependency declarations are valid.

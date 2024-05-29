@@ -91,7 +91,7 @@ export interface PlainPackageMetadata {
 }
 
 /**
- * Either a pioneer package or a plain package.
+ * Either an Open Pioneer Trails package or a plain package.
  */
 export type InternalPackageMetadata = PackageMetadata | PlainPackageMetadata;
 

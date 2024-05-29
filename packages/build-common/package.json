@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-common",
-    "description": "Common functionality used when building open pioneer trails applications or packages.",
+    "description": "Common functionality used when building Open Pioneer Trails applications or packages.",
     "version": "2.0.2",
     "main": "dist/index.js",
     "types": "types.d.ts",

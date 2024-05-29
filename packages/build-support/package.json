@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-support",
-    "description": "Contains support functionality used in open pioneer trails applications.",
+    "description": "Contains support functionality used in Open Pioneer Trails applications.",
     "main": "index.js",
     "types": "index.d.ts",
     "version": "2.0.1",

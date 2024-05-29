@@ -1,6 +1,6 @@
 # @open-pioneer/vite-plugin-pioneer
 
-The vite plugin provided by this package is required by open pioneer trails applications.
+The vite plugin provided by this package is required by Open Pioneer Trails applications.
 
 This plugin supports vite `4.x` and `5.x`.
 
@@ -100,7 +100,7 @@ export interface AdvancedAppOptions {
 ### Multi page support
 
 Vite is by default configured to create a single page application (i.e. a single html file with assets).
-The pioneer repository supports multiple deployment modes that can each be achieved by configuring this plugin:
+The Open Pioneer Trails repository supports multiple deployment modes that can each be achieved by configuring this plugin:
 
 1. Building a single page application.
    Configure `rootSite: true` and leave `sites` and `apps` empty.

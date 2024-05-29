@@ -26,7 +26,7 @@ describe("codegen support", function () {
         assert.include(testAppJs, 'console.log("Hello from LogService!!");');
     });
 
-    it("generates app when referencing external open pioneer package", async function () {
+    it("generates app when referencing external Open Pioneer Trails package", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-packages-external/src");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-external");
 
@@ -262,12 +262,12 @@ describe("codegen support", function () {
         assert.match(error.message, /Overrides are only supported in the app/);
     });
 
-    it("generates an error if a package uses two versions of the same pioneer package", async function () {
+    it("generates an error if a package uses two versions of the same Trails package", async function () {
         // Dependencies:
         // test-app -> dup (v2)
         // test-app -> x -> dup (v1)
         //
-        // "dup" cannot be part of the application twice! (this would be allowed for "plain" packages without pioneer extensions)
+        // "dup" cannot be part of the application twice! (this would be allowed for "plain" packages without Open Pioneer Trails extensions)
 
         const rootDir = resolve(TEST_DATA_DIR, "codegen-duplicate-pioneer-deps");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-duplicate-pioneer-deps");

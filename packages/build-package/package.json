@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-package",
-    "description": "Implements partial compilation for open pioneer trails packages.",
+    "description": "Implements partial compilation for Open Pioneer Trails packages.",
     "version": "2.0.2",
     "main": "dist/index.js",
     "types": "types.d.ts",

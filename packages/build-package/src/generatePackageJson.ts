@@ -50,7 +50,7 @@ const COPY_FIELDS = [
  * The contents are derived from the source package's package.json, the build config
  * and - possibly - global options.
  *
- * The package.json carries custom open pioneer framework metadata (these are in turn
+ * The package.json carries custom Open Pioneer Trails framework metadata (these are in turn
  * read by the vite plugin in the app).
  */
 export async function generatePackageJson({

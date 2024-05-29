@@ -4,7 +4,7 @@ export { BuildConfig } from "@open-pioneer/build-support";
 import { BuildConfig } from "@open-pioneer/build-support";
 
 export namespace RuntimeSupport {
-    /** Package name of the open pioneer runtime library. */
+    /** Package name of the Open Pioneer Trails runtime library. */
     export const RUNTIME_PACKAGE_NAME: string;
 
     /** The (unresolved) react-integration module id.  */
@@ -28,7 +28,7 @@ export namespace RuntimeSupport {
 }
 
 /**
- * Types and helper functions to work with version 1 of the open pioneer package metadata.
+ * Types and helper functions to work with version 1 of the Open Pioneer Trails package metadata.
  */
 export namespace PackageMetadataV1 {
     export type Nullish<T> = T | null | undefined;
@@ -295,7 +295,7 @@ export function createPackageConfigFromPackageMetadata(
 ): PackageConfig;
 
 /**
- * The name of the build config file expected in a pioneer page.
+ * The name of the build config file expected in an Open Pioneer Trails page.
  *
  * This is currently always `build.config.mjs`.
  */
