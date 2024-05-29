@@ -283,7 +283,7 @@ describe("codegen support", function () {
         );
 
         expect(error.message).toMatch(
-            /Encountered the package 'dup' at two different locations\.\nPioneer packages cannot be used more than once in the same application\.\nAll packages must use a common version of 'dup'\./
+            /Encountered the package 'dup' at two different locations\.\nTrails packages cannot be used more than once in the same application\.\nAll packages must use a common version of 'dup'\./
         );
         expect(error.message).toMatch(/dup@2.3.4 at/);
         expect(error.message).toMatch(/dup@1.0.0 at/);
