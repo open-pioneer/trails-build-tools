@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package
 
+## 2.0.3
+
+### Patch Changes
+
+-   017b8f3: Harmonize naming of Open Pioneer Trails in READMEs, package.json files and error messages.
+-   Updated dependencies [017b8f3]
+    -   @open-pioneer/build-support@2.0.2
+    -   @open-pioneer/build-common@2.0.3
+
 ## 2.0.2
 
 ### Patch Changes

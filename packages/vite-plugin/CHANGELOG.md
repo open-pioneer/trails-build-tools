@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 3.0.1
+
+### Patch Changes
+
+-   017b8f3: Harmonize naming of Open Pioneer Trails in READMEs, package.json files and error messages.
+-   Updated dependencies [017b8f3]
+    -   @open-pioneer/build-common@2.0.3
+
 ## 3.0.0
 
 ### Major Changes
