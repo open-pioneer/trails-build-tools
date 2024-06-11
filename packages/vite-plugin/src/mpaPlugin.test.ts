@@ -3,7 +3,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { runViteBuild, TEMP_DATA_DIR, TEST_DATA_DIR } from "./utils/testUtils";
-import { describe, it, assert } from "vitest";
+import { describe, it, assert, expect } from "vitest";
+import { globSync } from "fast-glob";
 
 describe("multi page support", function () {
     it("should include the root site if configured", async function () {
@@ -121,5 +122,56 @@ describe("multi page support", function () {
             message,
             "You must configure at least one site or one app in the pioneer plugin options."
         );
+    });
+
+    it("should preserve exports from an app", async function () {
+        const outDir = resolve(TEMP_DATA_DIR, "app-with-exports");
+        const rootDir = resolve(TEST_DATA_DIR, "app-with-exports");
+
+        await runViteBuild({
+            outDir,
+            rootDir: rootDir,
+            pluginOptions: {
+                apps: ["my-app"]
+            }
+        });
+
+        const appExists = existsSync(join(outDir, "my-app.js"));
+        expect(appExists).toBe(true);
+
+        const appContent = readFileSync(join(outDir, "my-app.js"), "utf-8");
+        expect(appContent).toMatchInlineSnapshot(`
+          "const SOME_EXPORT = 42;
+          export {
+            SOME_EXPORT
+          };
+          "
+        `);
+    });
+
+    it("should bundle referenced code when only used from html", async function () {
+        const outDir = resolve(TEMP_DATA_DIR, "normal-site-with-js");
+        const rootDir = resolve(TEST_DATA_DIR, "normal-site-with-js");
+
+        await runViteBuild({
+            outDir,
+            rootDir: rootDir,
+            pluginOptions: {
+                rootSite: true
+            }
+        });
+
+        const siteExists = existsSync(join(outDir, "index.html"));
+        expect(siteExists).toBe(true);
+
+        const assets = globSync("assets/**/*.js", {
+            cwd: outDir,
+            absolute: true
+        });
+        expect(assets).toHaveLength(1); // expect a single js chunk
+
+        const chunkFileName = assets[0]!;
+        const chunkContent = readFileSync(chunkFileName, "utf-8");
+        expect(chunkContent).includes(`console.log("hello from hello.js")`);
     });
 });
