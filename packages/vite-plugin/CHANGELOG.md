@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 3.0.2
+
+### Patch Changes
+
+-   0565d4d: Preserve exports from public app entry points (open-pioneer/trails-build-tools#53).
+
 ## 3.0.1
 
 ### Patch Changes
