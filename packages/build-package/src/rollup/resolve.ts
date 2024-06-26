@@ -29,9 +29,9 @@ export function resolvePlugin({
                 return id;
             }
 
-            const EXTERNAL = false;
+            const CONTINUE = undefined;
             if (!/^\.?\.\//.test(id)) {
-                return EXTERNAL;
+                return CONTINUE;
             }
 
             // Search for the file in the correct directory.
@@ -93,7 +93,7 @@ export function resolvePlugin({
     };
 }
 
-function getFileNameWithQuery(id: string) {
+export function getFileNameWithQuery(id: string) {
     const match = id.match(/^(?<fileName>.*?)(?:\?(?<query>.*))?$/)?.groups ?? {};
     const { fileName = id, query = "" } = match;
     return { fileName, query };

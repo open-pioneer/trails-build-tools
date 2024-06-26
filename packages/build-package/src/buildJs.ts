@@ -12,6 +12,7 @@ import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { virtualModulesPlugin } from "./rollup/virtualModules";
 import { checkImportsPlugin } from "./rollup/checkImports";
 import { rebaseSourcemapPath } from "./utils/sourceMaps";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
 
 export interface BuildJsOptions {
     /** Package name from package.json */
@@ -65,6 +66,13 @@ export async function buildJs({
             resolvePlugin({
                 packageDirectory,
                 allowedExtensions: SUPPORTED_JS_EXTENSIONS
+            }),
+            // Used to look into node modules and verify if packages / modules actually exist.
+            // The code in other packages in not bundled, their imports are re-mapped to be external by the checkImportsPlugin.
+            nodeResolve({
+                jail: packageDirectory,
+                rootDir: packageDirectory,
+                preferBuiltins: false
             }),
             esbuild({
                 jsx: "automatic",

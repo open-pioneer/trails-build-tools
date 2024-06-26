@@ -45,6 +45,7 @@
     "dependencies": {
         "@open-pioneer/build-common": "workspace:^",
         "@open-pioneer/build-support": "workspace:^",
+        "@rollup/plugin-node-resolve": "^15.2.3",
         "chalk": "^5.3.0",
         "debug": "^4.3.5",
         "esbuild": "^0.21.5",
