@@ -21,11 +21,11 @@
         "ci:publish": "pnpm run clean && pnpm run build && pnpm publish -r --access public && pnpm changeset tag"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.27.1",
-        "@types/node": "^18.19.33",
-        "@typescript-eslint/eslint-plugin": "^7.8.0",
-        "@typescript-eslint/parser": "^7.8.0",
-        "esbuild": "^0.21.2",
+        "@changesets/cli": "^2.27.6",
+        "@types/node": "^18.19.39",
+        "@typescript-eslint/eslint-plugin": "^7.14.1",
+        "@typescript-eslint/parser": "^7.14.1",
+        "esbuild": "^0.21.5",
         "eslint": "^8.57.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-import-resolver-typescript": "^3.6.1",
@@ -33,10 +33,10 @@
         "eslint-plugin-import": "^2.29.1",
         "eslint-plugin-unused-imports": "^3.2.0",
         "husky": "^9.0.11",
-        "prettier": "^3.2.5",
+        "prettier": "^3.3.2",
         "rimraf": "^5.0.7",
-        "typescript": "^5.4.5",
-        "vite": "^5.2.11",
+        "typescript": "^5.5.2",
+        "vite": "^5.3.1",
         "vitest": "^1.6.0"
     },
     "engines": {
