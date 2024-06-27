@@ -1,6 +1,6 @@
 import { createLogger, EventEmitter, isAbortError, createManualPromise, createAbortError } from '@open-pioneer/core';
-import { unByKey } from 'ol/Observable';
-import { getCenter } from 'ol/extent';
+import { unByKey } from 'ol/Observable.js';
+import { getCenter } from 'ol/extent.js';
 import { LayerCollectionImpl } from './LayerCollectionImpl.js';
 import { Highlights } from './Highlights.js';
 

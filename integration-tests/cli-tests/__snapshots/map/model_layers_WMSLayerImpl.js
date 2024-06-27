@@ -1,7 +1,7 @@
 import { createLogger, isAbortError } from '@open-pioneer/core';
-import WMSCapabilities from 'ol/format/WMSCapabilities';
-import ImageLayer from 'ol/layer/Image';
-import ImageWMS from 'ol/source/ImageWMS';
+import WMSCapabilities from 'ol/format/WMSCapabilities.js';
+import ImageLayer from 'ol/layer/Image.js';
+import ImageWMS from 'ol/source/ImageWMS.js';
 import { fetchCapabilities } from '../../util/capabilities-utils.js';
 import { defer } from '../../util/defer.js';
 import { AbstractLayer } from '../AbstractLayer.js';

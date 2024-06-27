@@ -1,6 +1,6 @@
 import { createLogger } from '@open-pioneer/core';
-import { unByKey } from 'ol/Observable';
-import OlLayer from 'ol/layer/Layer';
+import { unByKey } from 'ol/Observable.js';
+import OlLayer from 'ol/layer/Layer.js';
 import { AbstractLayerBase } from './AbstractLayerBase.js';
 
 const LOG = createLogger("map:AbstractLayer");

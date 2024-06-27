@@ -1,8 +1,8 @@
 import { createLogger, isAbortError } from '@open-pioneer/core';
-import TileState from 'ol/TileState';
-import WMTSCapabilities from 'ol/format/WMTSCapabilities';
-import TileLayer from 'ol/layer/Tile';
-import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS';
+import TileState from 'ol/TileState.js';
+import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
+import TileLayer from 'ol/layer/Tile.js';
+import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js';
 import { fetchCapabilities } from '../../util/capabilities-utils.js';
 import { AbstractLayer } from '../AbstractLayer.js';
 import { ImageTile } from 'ol';
