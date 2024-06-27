@@ -543,7 +543,8 @@ it("checks that imports to other packages can be resolved at compile time", asyn
 });
 
 it("supports trails packages that import other linked trails packages (during development)", async function () {
-    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-valid-trails-neighbors/package");
+    const rootDirectory = resolve(TEST_DATA_DIR, "project-with-valid-trails-neighbors");
+    const packageDirectory = resolve(rootDirectory, "package");
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-valid-trails-neighbors");
     const entryPoints = normalize(["index"]);
 
@@ -553,6 +554,7 @@ it("supports trails packages that import other linked trails packages (during de
     await cleanDir(outputDirectory);
     await buildJs({
         ...defaults,
+        rootDirectory,
         packageDirectory,
         outputDirectory,
         entryPoints,
@@ -571,10 +573,8 @@ it("supports trails packages that import other linked trails packages (during de
 });
 
 it("emits errors when trails packages import internal modules from other trails packages (during development)", async function () {
-    const packageDirectory = resolve(
-        TEST_DATA_DIR,
-        "project-with-invalid-trails-neighbors/package"
-    );
+    const rootDirectory = resolve(TEST_DATA_DIR, "project-with-invalid-trails-neighbors");
+    const packageDirectory = resolve(rootDirectory, "package");
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-invalid-trails-neighbors");
     const entryPoints = normalize(["index"]);
 
@@ -585,6 +585,7 @@ it("emits errors when trails packages import internal modules from other trails 
     const error = await expectError(() =>
         buildJs({
             ...defaults,
+            rootDirectory,
             packageDirectory,
             outputDirectory,
             entryPoints,
@@ -617,6 +618,7 @@ it("emits errors when trails packages import internal modules from other trails 
 function testDefaults() {
     return {
         packageName: "test",
+        rootDirectory: "test",
         sourceMap: false,
         strict: false,
         logger: createMemoryLogger(),

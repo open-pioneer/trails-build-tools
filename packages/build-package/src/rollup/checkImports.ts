@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { BUILD_CONFIG_NAME, loadBuildConfig } from "@open-pioneer/build-common";
-import { existsSync, lstatSync, realpathSync } from "fs";
+import { existsSync, realpathSync } from "fs";
 import { ErrnoException, resolve as importMetaResolve } from "import-meta-resolve";
 import { dirname, isAbsolute, join } from "path";
 import { Plugin, PluginContext, ResolvedId } from "rollup";
@@ -10,11 +10,12 @@ import { loadPackageJson } from "../model/InputModel";
 import { getEntryPointsFromBuildConfig } from "../model/PackageModel";
 import { createDebugger } from "../utils/debug";
 import { NormalizedEntryPoint } from "../utils/entryPoints";
-import { getFileNameWithQuery } from "../utils/pathUtils";
+import { getFileNameWithQuery, isInDirectory } from "../utils/pathUtils";
 
 export interface CheckImportsOptions {
     packageJson: Record<string, unknown>;
     packageJsonPath: string;
+    rootDirectory: string;
     strict: boolean;
 }
 
@@ -52,6 +53,7 @@ interface NodeResolvePackageInfo {
 export function checkImportsPlugin({
     packageJson,
     packageJsonPath,
+    rootDirectory,
     strict
 }: CheckImportsOptions): Plugin {
     let state: CheckImportsState | undefined;
@@ -73,7 +75,7 @@ export function checkImportsPlugin({
                 );
             }
 
-            state = new CheckImportsState(packageJson, packageJsonPath, strict);
+            state = new CheckImportsState(rootDirectory, packageJson, packageJsonPath, strict);
         },
         buildEnd() {
             state!.finish(this);
@@ -156,6 +158,7 @@ interface TrailsPackageInfo {
 }
 
 class CheckImportsState {
+    private rootDirectory: string;
     private packageJson: Record<string, unknown>;
     private packageJsonPath: string;
     private strict: boolean;
@@ -179,7 +182,13 @@ class CheckImportsState {
         { path: string; packageInfo: NodeResolvePackageInfo | undefined }
     >();
 
-    constructor(packageJson: Record<string, unknown>, packageJsonPath: string, strict: boolean) {
+    constructor(
+        rootDirectory: string,
+        packageJson: Record<string, unknown>,
+        packageJsonPath: string,
+        strict: boolean
+    ) {
+        this.rootDirectory = rootDirectory;
         this.packageJson = packageJson;
         this.packageJsonPath = packageJsonPath;
         this.strict = strict;
@@ -436,22 +445,38 @@ class CheckImportsState {
         }
 
         const realImportedPackageDir = realpathSync(importedPackageDir);
-        const buildConfigPath = join(importedPackageDir, BUILD_CONFIG_NAME);
-        const isSymlink = lstatSync(importedPackageDir).isSymbolicLink();
-        const hasBuildConfig = existsSync(buildConfigPath);
-        const isLinkedTrailsPackage = isSymlink && hasBuildConfig;
-        isDebug &&
-            debug(
-                "Checking if %s is a linked trails package: %s (symlink: %s, build config: %s)",
-                thisPackageDir,
-                isLinkedTrailsPackage,
-                isSymlink,
-                hasBuildConfig
-            );
-
-        if (!isLinkedTrailsPackage) {
+        if (!isInDirectory(realImportedPackageDir, this.rootDirectory)) {
+            isDebug &&
+                debug(
+                    "Skipping %s because is not in the root directory: %s",
+                    packageName,
+                    realImportedPackageDir
+                );
             return undefined;
         }
+
+        if (/[\\/]node_modules[\\/]/.test(realImportedPackageDir)) {
+            isDebug &&
+                debug(
+                    "Skipping %s because it is a nested node_modules package: %s",
+                    packageName,
+                    realImportedPackageDir
+                );
+            return undefined;
+        }
+
+        const buildConfigPath = join(importedPackageDir, BUILD_CONFIG_NAME);
+        if (!existsSync(buildConfigPath)) {
+            isDebug && debug("Skipping %s because it does not have a build config", packageName);
+            return undefined;
+        }
+
+        isDebug &&
+            debug(
+                "Treating %s at %s as a local trails package",
+                packageName,
+                realImportedPackageDir
+            );
 
         let packageJson;
         try {

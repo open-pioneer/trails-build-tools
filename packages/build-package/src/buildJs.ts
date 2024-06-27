@@ -27,6 +27,9 @@ export interface BuildJsOptions {
     /** Package json of the package. */
     packageJson: Record<string, unknown>;
 
+    /** Workspace root. Needed to detect which packages are local. */
+    rootDirectory: string;
+
     /** Destination directory. */
     outputDirectory: string;
 
@@ -45,6 +48,7 @@ export async function buildJs({
     packageDirectory,
     packageJson,
     packageJsonPath,
+    rootDirectory,
     outputDirectory,
     entryPoints,
     sourceMap,
@@ -57,6 +61,7 @@ export async function buildJs({
             checkImportsPlugin({
                 packageJson,
                 packageJsonPath,
+                rootDirectory,
                 strict
             }),
             virtualModulesPlugin({

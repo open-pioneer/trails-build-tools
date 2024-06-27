@@ -14,7 +14,7 @@ it("copies i18n files if configured in build.config.js", async function () {
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-i18n");
     await cleanDir(outputDirectory);
 
-    const resolvedOptions = await resolveOptions(packageDirectory, {
+    const resolvedOptions = await resolveOptions(packageDirectory, packageDirectory, {
         strict: false,
         validation: {
             requireChangelog: false,
@@ -53,7 +53,7 @@ it("throws if i18n files are missing", async function () {
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-missing-i18n-files");
     await cleanDir(outputDirectory);
 
-    const resolvedOptions = await resolveOptions(packageDirectory, {
+    const resolvedOptions = await resolveOptions(packageDirectory, packageDirectory, {
         strict: false,
         validation: {
             requireChangelog: false,
