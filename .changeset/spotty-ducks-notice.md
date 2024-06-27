@@ -2,7 +2,7 @@
 "@open-pioneer/build-package": minor
 ---
 
-Implement automatic rewrite for certain problem import statements.
+Implement automatic rewrite for certain problematic import statements.
 
 Under certain conditions, `build-package` will add extensions to imported modules when the imported module does not (strictly) exist.
 For example, this rewrites
