@@ -1,8 +1,9 @@
 export { SimpleLayer } from './api/layers/SimpleLayer.js';
 export { WMSLayer } from './api/layers/WMSLayer.js';
+export { WMTSLayer } from './api/layers/WMTSLayer.js';
 export { getProjection, registerProjections } from './projections.js';
 export { BkgTopPlusOpen } from './layers/BkgTopPlusOpen.js';
-export { useCenter, useProjection, useResolution, useScale } from './ui/hooks.js';
+export { useCenter, useProjection, useResolution, useScale, useView } from './ui/hooks.js';
 export { MapAnchor } from './ui/MapAnchor.js';
 export { MapContainer } from './ui/MapContainer.js';
 export { useMapModel } from './ui/useMapModel.js';

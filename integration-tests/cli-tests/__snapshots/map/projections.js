@@ -1,4 +1,4 @@
-import { register } from 'ol/proj/proj4';
+import { register } from 'ol/proj/proj4.js';
 import proj4 from 'proj4';
 
 function registerProjections(projections) {

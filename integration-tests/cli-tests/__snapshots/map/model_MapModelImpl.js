@@ -1,6 +1,6 @@
 import { createLogger, EventEmitter, isAbortError, createManualPromise, createAbortError } from '@open-pioneer/core';
-import { unByKey } from 'ol/Observable';
-import { getCenter } from 'ol/extent';
+import { unByKey } from 'ol/Observable.js';
+import { getCenter } from 'ol/extent.js';
 import { LayerCollectionImpl } from './LayerCollectionImpl.js';
 import { Highlights } from './Highlights.js';
 
@@ -10,6 +10,7 @@ class MapModelImpl extends EventEmitter {
   #olMap;
   #layers = new LayerCollectionImpl(this);
   #highlights;
+  #sharedDeps;
   #destroyed = false;
   #container;
   #initialExtent;
@@ -22,6 +23,9 @@ class MapModelImpl extends EventEmitter {
     this.#id = properties.id;
     this.#olMap = properties.olMap;
     this.#initialExtent = properties.initialExtent;
+    this.#sharedDeps = {
+      httpService: properties.httpService
+    };
     this.#highlights = new Highlights(this.#olMap);
     this.#displayStatus = "waiting";
     this.#initializeView().then(
@@ -78,10 +82,19 @@ class MapModelImpl extends EventEmitter {
   get initialExtent() {
     return this.#initialExtent;
   }
-  highlightAndZoom(geometries, options) {
-    this.#highlights.addHighlightOrMarkerAndZoom(geometries, options ?? {});
+  get __sharedDependencies() {
+    return this.#sharedDeps;
   }
-  removeHighlight() {
+  highlight(geometries, options) {
+    return this.#highlights.addHighlight(geometries, options);
+  }
+  zoom(geometries, options) {
+    this.#highlights.zoomToHighlight(geometries, options);
+  }
+  highlightAndZoom(geometries, options) {
+    return this.#highlights.addHighlightAndZoom(geometries, options ?? {});
+  }
+  removeHighlights() {
     this.#highlights.clearHighlight();
   }
   whenDisplayed() {

@@ -1,4 +1,4 @@
-import { getHeight, getWidth } from 'ol/extent';
+import { getHeight, getWidth } from 'ol/extent.js';
 
 const DEFAULT_BUFFER_FACTOR = 1.2;
 function calculateBufferedExtent(extent, factor = DEFAULT_BUFFER_FACTOR) {

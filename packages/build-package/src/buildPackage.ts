@@ -43,6 +43,7 @@ export async function buildPackage({ input, options, logger }: BuildPackageOptio
     if (model.jsEntryPoints.length) {
         logger.info(chalk.gray("Building JavaScript..."));
         await buildJs({
+            rootDirectory: options.rootDirectory,
             packageDirectory: model.input.packageDirectory,
             outputDirectory: model.outputDirectory,
             entryPoints: model.jsEntryPoints,

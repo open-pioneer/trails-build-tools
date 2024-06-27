@@ -3,13 +3,15 @@ import { createMapModel } from './model/createMapModel.js';
 
 const LOG = createLogger("map:MapRegistry");
 class MapRegistryImpl {
+  #httpService;
   #configProviders = /* @__PURE__ */ new Map();
   #entries = /* @__PURE__ */ new Map();
   #modelCreationJobs = /* @__PURE__ */ new Map();
   #modelsByOlMap = /* @__PURE__ */ new WeakMap();
   #destroyed = false;
-  constructor(options) {
-    const providers = options.references.providers;
+  constructor({ references }) {
+    this.#httpService = references.httpService;
+    const providers = references.providers;
     for (const provider of providers) {
       this.#configProviders.set(provider.mapId, provider);
     }
@@ -66,7 +68,7 @@ class MapRegistryImpl {
   async #createModel(mapId, provider) {
     LOG.info(`Creating map with id '${mapId}'`);
     const mapConfig = await provider.getMapConfig();
-    const mapModel = await createMapModel(mapId, mapConfig);
+    const mapModel = await createMapModel(mapId, mapConfig, this.#httpService);
     if (this.#destroyed) {
       mapModel.destroy();
       throw new Error(`MapRegistry has been destroyed.`);

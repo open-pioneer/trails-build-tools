@@ -1,5 +1,5 @@
 import { EventEmitter, EventNames } from "@open-pioneer/core";
-import { LayerBase, LayerBaseEvents, MapModel, Sublayer } from "../api";
+import { LayerBase, LayerBaseEvents, Sublayer } from "../api";
 import { MapModelImpl } from "./MapModelImpl";
 import { SublayersCollectionImpl } from "./SublayersCollectionImpl";
 export interface AbstractLayerBaseOptions {
@@ -16,13 +16,14 @@ export declare abstract class AbstractLayerBase<AdditionalEvents = {}> extends E
     #private;
     constructor(config: AbstractLayerBaseOptions);
     protected get __destroyed(): boolean;
-    get map(): MapModel;
+    get map(): MapModelImpl;
     get id(): string;
     get title(): string;
     get description(): string;
     get attributes(): Record<string | symbol, unknown>;
     abstract get visible(): boolean;
     abstract get sublayers(): SublayersCollectionImpl<Sublayer & AbstractLayerBase> | undefined;
+    abstract get legend(): string | undefined;
     destroy(): void;
     /**
      * Attaches the layer to its owning map.

@@ -14,10 +14,21 @@ export function getExtension(path: string) {
 }
 
 /**
- * Returns true if `file` is a child of `directory` or `directory` itself.
+ * Returns true if `file` is a child of `directory`.
+ *
+ * If `allowSame` is true, then `file` and `directory` may also refer to the same file.
  */
-export function isInDirectory(file: string, directory: string): boolean {
+export function isInDirectory(file: string, directory: string, allowSame = false): boolean {
     const rel = relative(directory, file);
     const isChild = rel && !rel.startsWith("..") && !isAbsolute(rel);
-    return !!isChild;
+    return !!isChild || (allowSame && rel === "");
+}
+
+/**
+ * Splits a module id into a fileName and query (after '?') part.
+ */
+export function getFileNameWithQuery(moduleId: string) {
+    const match = moduleId.match(/^(?<fileName>.*?)(?:\?(?<query>.*))?$/)?.groups ?? {};
+    const { fileName = moduleId, query = "" } = match;
+    return { fileName, query };
 }

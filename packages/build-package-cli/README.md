@@ -16,6 +16,7 @@ Builds an Open Pioneer Trails package for publishing.
 
 Options:
   -p, --package <path>  package directory (defaults to current directory)
+  -r, --root <path>     the root directory (optional, defaults to the workspace root)
   -q, --silent          disable logging
   -d, --debug           show exception stack traces
   -V, --version         output the version number

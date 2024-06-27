@@ -1,16 +1,35 @@
+import { Feature } from "ol";
 import OlMap from "ol/Map";
-import { LineString, Point, Polygon } from "ol/geom";
-import { HighlightOptions } from "../api/MapModel";
+import { Geometry } from "ol/geom";
+import VectorLayer from "ol/layer/Vector";
+import { DisplayTarget, Highlight, HighlightOptions, HighlightZoomOptions, ZoomOptions } from "../api/MapModel";
 export declare class Highlights {
+    #private;
     private olMap;
-    private currentHighlight;
+    private olLayer;
+    private olSource;
+    private activeHighlights;
     constructor(olMap: OlMap);
+    /**
+     * Getter for Hightlightlayer
+     * @returns Highlights.olLayer
+     */
+    getLayer(): VectorLayer<Feature<Geometry>>;
+    /**
+     * This method removes all highlights before destroying the class
+     */
     destroy(): void;
     /**
-     * This method shows the position of a text search result zoomed to and marked or highlighted in the map.
+     * This method displays geometries or BaseFeatures with optional styling in the map
      */
-    addHighlightOrMarkerAndZoom(geometries: Point[] | LineString[] | Polygon[], options: HighlightOptions): void;
+    addHighlight(displayTarget: DisplayTarget[], highlightOptions: HighlightOptions | undefined): Highlight;
+    /**
+     * This method zoom to geometries or BaseFeatures
+     */
+    zoomToHighlight(displayTarget: DisplayTarget[], options: ZoomOptions | undefined): void;
+    /**
+     * This method displays geometries or BaseFeatures with optional styling in the map and executed a zoom
+     */
+    addHighlightAndZoom(displayTarget: DisplayTarget[], highlightZoomStyle: HighlightZoomOptions | undefined): Highlight;
     clearHighlight(): void;
-    private zoomAndAddMarkers;
-    private createAndAddLayer;
 }

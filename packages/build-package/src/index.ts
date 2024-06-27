@@ -8,11 +8,16 @@ import { resolveOptions } from "./model/Options";
 
 type Build = typeof API.build;
 
-export const build: Build = async ({ packageDirectory, logger }) => {
+export const build: Build = async ({ packageDirectory, rootDirectory, logger }) => {
     const input = await createInputModel(packageDirectory);
-    const options = await resolveOptions(packageDirectory, input.buildConfig.publishConfig);
+    const options = await resolveOptions(
+        packageDirectory,
+        rootDirectory,
+        input.buildConfig.publishConfig
+    );
     const internalLogger =
         logger === null ? SILENT_LOGGER : await createConsoleLogger(logger ?? console);
+
     await buildPackage({
         input,
         options,

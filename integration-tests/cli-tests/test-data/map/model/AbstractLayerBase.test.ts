@@ -54,7 +54,7 @@ it("throws when 'map' is accessed before the layer has been attached", async () 
         title: "Foo"
     });
     expect(() => layer.map).toThrowErrorMatchingInlineSnapshot(
-        "\"Layer 'a' has not been attached to a map yet.\""
+        `[Error: Layer 'a' has not been attached to a map yet.]`
     );
 });
 
@@ -239,6 +239,10 @@ class LayerImpl extends AbstractLayerBase {
 
     get visible(): boolean {
         throw new Error("Method not implemented.");
+    }
+
+    get legend(): string | undefined {
+        return undefined;
     }
 
     get sublayers() {

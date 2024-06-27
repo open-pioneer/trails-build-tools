@@ -1,5 +1,5 @@
-import { equals } from 'ol/extent';
-import OlMap from 'ol/Map';
+import { equals } from 'ol/extent.js';
+import OlMap from 'ol/Map.js';
 
 let setupDone = false;
 function patchOpenLayersClassesForTesting() {

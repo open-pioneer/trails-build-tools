@@ -10,6 +10,7 @@ program
     .name("build-pioneer-package")
     .description("Builds an Open Pioneer Trails package for publishing.")
     .option("-p, --package <path>", "package directory (defaults to current directory)")
+    .option("-r, --root <path>", "the root directory (optional, defaults to the workspace root)")
     .option("-q, --silent", "disable logging")
     .option("-d, --debug", "show exception stack traces")
     .version(version);
@@ -21,9 +22,11 @@ async function main() {
     const debug = opts.debug ?? false;
     const silent = opts.silent ?? false;
     const packagePath = opts.package ?? cwd();
+    const rootDirectory = opts.root;
     try {
         await build({
             packageDirectory: packagePath,
+            rootDirectory,
             logger: silent ? null : console
         });
         exit(0);

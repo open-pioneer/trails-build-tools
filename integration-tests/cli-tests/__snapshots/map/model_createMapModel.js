@@ -1,12 +1,12 @@
 import { createLogger } from '@open-pioneer/core';
-import OlMap from 'ol/Map';
-import View from 'ol/View';
-import Attribution from 'ol/control/Attribution';
-import { getCenter } from 'ol/extent';
-import TileLayer from 'ol/layer/Tile';
-import { get } from 'ol/proj';
-import OSM from 'ol/source/OSM';
-import { defaults, DragZoom } from 'ol/interaction';
+import OlMap from 'ol/Map.js';
+import View from 'ol/View.js';
+import Attribution from 'ol/control/Attribution.js';
+import { getCenter } from 'ol/extent.js';
+import TileLayer from 'ol/layer/Tile.js';
+import { get } from 'ol/proj.js';
+import OSM from 'ol/source/OSM.js';
+import { defaults, DragZoom } from 'ol/interaction.js';
 import { MapModelImpl } from './MapModelImpl.js';
 import { registerProjections } from '../projections.js';
 import { patchOpenLayersClassesForTesting } from '../util/ol-test-support.js';
@@ -16,15 +16,17 @@ registerProjections({
   "EPSG:25833": "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"
 });
 const LOG = createLogger("map:createMapModel");
-async function createMapModel(mapId, mapConfig) {
-  return await new MapModelFactory(mapId, mapConfig).createMapModel();
+async function createMapModel(mapId, mapConfig, httpService) {
+  return await new MapModelFactory(mapId, mapConfig, httpService).createMapModel();
 }
 class MapModelFactory {
   mapId;
   mapConfig;
-  constructor(mapId, mapConfig) {
+  httpService;
+  constructor(mapId, mapConfig, httpService) {
     this.mapId = mapId;
     this.mapConfig = mapConfig;
+    this.httpService = httpService;
   }
   async createMapModel() {
     const mapId = this.mapId;
@@ -68,7 +70,8 @@ class MapModelFactory {
     const mapModel = new MapModelImpl({
       id: mapId,
       olMap,
-      initialExtent
+      initialExtent,
+      httpService: this.httpService
     });
     try {
       if (mapConfig.layers) {

@@ -5,7 +5,6 @@ import type { MapConfig } from "./MapConfig";
 import type { MapModel } from "./MapModel";
 import type { DeclaredService } from "@open-pioneer/runtime";
 
-
 /**
  * Provides access to registered map instances.
  *
@@ -54,4 +53,3 @@ export interface MapConfigProvider {
      */
     getMapConfig(): Promise<MapConfig>;
 }
-

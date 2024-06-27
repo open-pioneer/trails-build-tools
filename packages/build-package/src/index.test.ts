@@ -7,6 +7,7 @@ import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { existsSync } from "fs";
 import { build } from ".";
+import { createMemoryLogger } from "./utils/Logger";
 
 describe(
     "build",
@@ -20,16 +21,23 @@ describe(
         });
 
         it("should build package to `dist`", async function () {
-            const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project");
-            const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project");
+            const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project-valid-dependencies");
+            const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project-valid-dependencies");
             const distDirectory = resolve(tempPackage, "dist");
+            const logger = createMemoryLogger();
 
             await cleanDir(tempPackage);
             await cp(srcPackage, tempPackage, {
                 recursive: true,
                 force: true
             });
-            await build({ packageDirectory: tempPackage, logger: null });
+
+            try {
+                await build({ packageDirectory: tempPackage, logger });
+            } catch (e) {
+                console.error(logger.messages);
+                throw e;
+            }
 
             const entryPointA = resolve(distDirectory, "entryPointA.js");
             expect(readText(entryPointA)).toMatchInlineSnapshot(`

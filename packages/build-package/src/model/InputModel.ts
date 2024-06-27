@@ -63,7 +63,7 @@ export function createInputModelFromData(data: {
     };
 }
 
-async function loadPackageJson(path: string): Promise<Record<string, unknown>> {
+export async function loadPackageJson(path: string): Promise<Record<string, unknown>> {
     if (!existsSync(path)) {
         const dir = dirname(path);
         throw new Error(

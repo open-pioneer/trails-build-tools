@@ -1,7 +1,7 @@
 import { StyleProps } from "@open-pioneer/chakra-integration";
 import { CommonComponentProps } from "@open-pioneer/react-utils";
 import { ReactNode } from "react";
-import { MapPadding } from "./MapContainer";
+import { MapPadding } from "../api";
 export type MapAnchorPosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 export interface MapAnchorProps extends CommonComponentProps {
     /**

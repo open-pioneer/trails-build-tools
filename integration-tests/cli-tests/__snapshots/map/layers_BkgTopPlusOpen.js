@@ -1,5 +1,5 @@
-import WMTS from 'ol/source/WMTS';
-import WMTSTileGrid from 'ol/tilegrid/WMTS';
+import WMTS from 'ol/source/WMTS.js';
+import WMTSTileGrid from 'ol/tilegrid/WMTS.js';
 
 class BkgTopPlusOpen extends WMTS {
   constructor(options) {

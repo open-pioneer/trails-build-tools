@@ -1,5 +1,5 @@
 import { Provider } from "react";
-import { type MapPadding } from "./MapContainer";
+import { type MapPadding } from "../api";
 import type OlMap from "ol/Map";
 /** Values provided to children of {@link MapContainer}. */
 export interface MapContextType {

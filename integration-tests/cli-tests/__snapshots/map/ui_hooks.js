@@ -1,5 +1,5 @@
-import { unByKey } from 'ol/Observable';
-import { getPointResolution } from 'ol/proj';
+import { unByKey } from 'ol/Observable.js';
+import { getPointResolution } from 'ol/proj.js';
 import { useMemo, useCallback, useSyncExternalStore } from 'react';
 
 const DEFAULT_DPI = 25.4 / 0.28;

@@ -8,6 +8,8 @@ import {
 } from "../utils/entryPoints";
 import { join } from "node:path";
 import { ValidationReporter } from "../utils/ValidationReporter";
+import { BuildConfig } from "@open-pioneer/build-support";
+import { PackageConfig, createPackageConfigFromBuildConfig } from "@open-pioneer/build-common";
 
 export const SUPPORTED_TS_EXTENSIONS = [".ts", ".mts", ".tsx"];
 export const SUPPORTED_JS_EXTENSIONS = [...SUPPORTED_TS_EXTENSIONS, ".js", ".mjs", ".jsx"];
@@ -64,43 +66,15 @@ export function createPackageModel(
         throw new Error(`Package at ${input.packageDirectory} does not have a 'name'.`);
     }
 
-    let jsEntryPoints = input.buildConfig.entryPoints;
-    if (!jsEntryPoints) {
-        reporter.report(
-            `${input.buildConfigPath} must define the 'entryPoints' property in order to be built.`
-        );
-        jsEntryPoints = [];
-    }
-
-    const jsEntryPointsByModuleId = new Map<string, NormalizedEntryPoint>();
-    for (const configuredEp of normalizeEntryPoints(
-        toArray(jsEntryPoints),
-        SUPPORTED_JS_EXTENSIONS
-    )) {
-        const key = configuredEp.outputModuleId;
-        if (jsEntryPointsByModuleId.has(key)) {
-            reporter.report(`Entry point '${key}' is defined multiple times.`);
-            continue;
-        }
-        jsEntryPointsByModuleId.set(key, configuredEp);
-    }
-
     const pkgConfig = input.packageConfig;
 
-    let servicesEntryPoint;
-    if (pkgConfig.services.size) {
-        if (pkgConfig.servicesModule) {
-            servicesEntryPoint = normalizeEntryPoint(
-                pkgConfig.servicesModule,
-                SUPPORTED_JS_EXTENSIONS
-            );
-            jsEntryPointsByModuleId.set(servicesEntryPoint.outputModuleId, servicesEntryPoint);
-        } else {
-            reporter.report(
-                `Package at ${input.packageDirectory} defines services but has no services module.`
-            );
-        }
-    }
+    const { jsEntryPointsByModuleId, servicesEntryPoint } = getEntryPointsFromBuildConfig(
+        input.packageDirectory,
+        input.buildConfig,
+        input.buildConfigPath,
+        input.packageConfig,
+        (...args) => reporter.report(...args)
+    );
 
     const normalizedCssEntryPoint = pkgConfig.styles
         ? normalizeEntryPoint(pkgConfig.styles, SUPPORTED_CSS_EXTENSIONS)
@@ -126,6 +100,60 @@ export function createPackageModel(
         cssEntryPoint: normalizedCssEntryPoint,
         i18nFiles,
         assetPatterns,
+        servicesEntryPoint
+    };
+}
+
+/**
+ * Gathers the entry points defined by the given package.
+ * The build config must have been parsed already.
+ *
+ * If the normalized package config has not been created, it will be created on demand.
+ *
+ * The report callback can be used to emit warnings.
+ */
+export function getEntryPointsFromBuildConfig(
+    packageDirectory: string,
+    buildConfig: BuildConfig,
+    buildConfigPath: string,
+    packageConfig: PackageConfig | undefined,
+    report: (...args: unknown[]) => void
+) {
+    let jsEntryPoints = buildConfig.entryPoints;
+    if (!jsEntryPoints) {
+        report(`${buildConfigPath} must define the 'entryPoints' property in order to be built.`);
+        jsEntryPoints = [];
+    }
+
+    const jsEntryPointsByModuleId = new Map<string, NormalizedEntryPoint>();
+    for (const configuredEp of normalizeEntryPoints(
+        toArray(jsEntryPoints),
+        SUPPORTED_JS_EXTENSIONS
+    )) {
+        const key = configuredEp.outputModuleId;
+        if (jsEntryPointsByModuleId.has(key)) {
+            report(`Entry point '${key}' is defined multiple times.`);
+            continue;
+        }
+        jsEntryPointsByModuleId.set(key, configuredEp);
+    }
+
+    const pkgConfig = packageConfig ?? createPackageConfigFromBuildConfig(buildConfig);
+
+    let servicesEntryPoint;
+    if (pkgConfig.services.size) {
+        if (pkgConfig.servicesModule) {
+            servicesEntryPoint = normalizeEntryPoint(
+                pkgConfig.servicesModule,
+                SUPPORTED_JS_EXTENSIONS
+            );
+            jsEntryPointsByModuleId.set(servicesEntryPoint.outputModuleId, servicesEntryPoint);
+        } else {
+            report(`Package at ${packageDirectory} defines services but has no services module.`);
+        }
+    }
+    return {
+        jsEntryPointsByModuleId,
         servicesEntryPoint
     };
 }

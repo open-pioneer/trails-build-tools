@@ -1,8 +1,18 @@
 {
     "type": "module",
     "name": "@open-pioneer/integration",
-    "version": "0.1.4",
+    "version": "2.0.8",
+    "description": "Provides techniques for the communication between an application (web component) and its embedding site.",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
     "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-pioneer/trails-core-packages",
+        "directory": "src/packages/integration"
+    },
     "peerDependencies": {
         "@open-pioneer/runtime": "workspace:^"
     },

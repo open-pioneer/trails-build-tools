@@ -1,4 +1,5 @@
-import { type ApiExtension, type ApiMethods, type ApiMethod, type DeclaredService } from "@open-pioneer/runtime";
+import { type ApiExtension, type ApiMethods, type ApiMethod, DeclaredService } from "@open-pioneer/runtime";
+export { ApiExtension, ApiMethod, ApiMethods };
 /**
  * Emits events to users of the current web component.
  *
@@ -41,4 +42,3 @@ export interface ExternalEventService extends DeclaredService<"integration.Exter
      */
     emitEvent(event: Event): void;
 }
-export { ApiExtension, ApiMethod, ApiMethods };

@@ -1,14 +1,32 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+/*
+ * no xml parser in happy dom
+ * @vitest-environment jsdom
+ */
+import { HttpService } from "@open-pioneer/http";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Layer, SimpleLayer, WMSLayer } from "../api";
+import { Layer, MapConfig, SimpleLayer, WMSLayer } from "../api";
 import { BkgTopPlusOpen } from "../layers/BkgTopPlusOpen";
 import { MapModelImpl } from "./MapModelImpl";
 import { createMapModel } from "./createMapModel";
 import { SimpleLayerImpl } from "./layers/SimpleLayerImpl";
 import { WMSLayerImpl } from "./layers/WMSLayerImpl";
+
+const THIS_DIR = dirname(fileURLToPath(import.meta.url));
+const WMTS_CAPAS = readFileSync(
+    resolve(THIS_DIR, "./layers/test-data/SimpleWMSCapas.xml"),
+    "utf-8"
+);
+
+const MOCKED_HTTP_SERVICE = {
+    fetch: vi.fn()
+};
 
 let model: MapModelImpl | undefined;
 afterEach(() => {
@@ -18,7 +36,7 @@ afterEach(() => {
 });
 
 it("makes the map layers accessible", async () => {
-    model = await createMapModel("foo", {
+    model = await create("foo", {
         layers: [
             new SimpleLayer({
                 title: "OSM",
@@ -70,11 +88,12 @@ it("makes the map layers accessible", async () => {
 
     const allLayers = model.layers.getAllLayers();
     expect(allLayers).toEqual(layers);
-    expect(model.olMap.getAllLayers().length).toBe(2);
+    // OSM + TopPlus Open + "highlight-layer" = 3
+    expect(model.olMap.getAllLayers().length).toBe(3);
 });
 
 it("supports ordered retrieval of layers", async () => {
-    model = await createMapModel("foo", {
+    model = await create("foo", {
         layers: [
             new SimpleLayer({
                 title: "OSM",
@@ -117,7 +136,7 @@ it("supports ordered retrieval of layers", async () => {
 });
 
 it("generates automatic unique ids for layers", async () => {
-    model = await createMapModel("foo", {
+    model = await create("foo", {
         layers: [
             new SimpleLayer({
                 title: "OSM",
@@ -148,7 +167,15 @@ it("generates automatic unique ids for layers", async () => {
 });
 
 it("supports adding custom layer instances", async () => {
-    model = await createMapModel("foo", {
+    MOCKED_HTTP_SERVICE.fetch.mockImplementation(async (req: string) => {
+        if (req.includes("GetCapabilities")) {
+            // just valid enough to suppress error messages
+            return new Response(WMTS_CAPAS, { status: 200 });
+        }
+        throw new Error("unexpected request");
+    });
+
+    model = await create("foo", {
         layers: [
             new SimpleLayer({
                 id: "l1",
@@ -179,7 +206,7 @@ it("supports adding custom layer instances", async () => {
 });
 
 it("supports lookup by layer id", async () => {
-    model = await createMapModel("foo", {
+    model = await create("foo", {
         layers: [
             new SimpleLayer({
                 id: "l-1",
@@ -211,7 +238,7 @@ it("supports lookup by layer id", async () => {
 
 it("results in an error, if using the same layer id twice", async () => {
     await expect(async () => {
-        model = await createMapModel("foo", {
+        model = await create("foo", {
             layers: [
                 new SimpleLayer({
                     id: "l-1",
@@ -230,7 +257,7 @@ it("results in an error, if using the same layer id twice", async () => {
             ]
         });
     }).rejects.toThrowErrorMatchingInlineSnapshot(
-        "\"Layer id 'l-1' is not unique. Either assign a unique id yourself or skip configuring 'id' for an automatically generated id.\""
+        `[Error: Layer id 'l-1' is not unique. Either assign a unique id yourself or skip configuring 'id' for an automatically generated id.]`
     );
 });
 
@@ -242,7 +269,7 @@ it("supports reverse lookup from OpenLayers layer", async () => {
         source: new BkgTopPlusOpen()
     });
 
-    model = await createMapModel("foo", {
+    model = await create("foo", {
         layers: [
             new SimpleLayer({
                 id: "l-1",
@@ -265,7 +292,7 @@ it("registering the same OpenLayers layer twice throws an error", async () => {
     });
 
     await expect(async () => {
-        model = await createMapModel("foo", {
+        model = await create("foo", {
             layers: [
                 new SimpleLayer({
                     id: "l-1",
@@ -280,12 +307,12 @@ it("registering the same OpenLayers layer twice throws an error", async () => {
             ]
         });
     }).rejects.toThrowErrorMatchingInlineSnapshot(
-        '"OlLayer has already been used in this or another layer."'
+        `[Error: OlLayer has already been used in this or another layer.]`
     );
 });
 
 it("supports adding a layer to the model", async () => {
-    model = await createMapModel("foo", {
+    model = await create("foo", {
         layers: []
     });
     expect(model.layers.getAllLayers()).toHaveLength(0);
@@ -316,7 +343,7 @@ it("supports adding a layer to the model", async () => {
 });
 
 it("supports removing a layer from the model", async () => {
-    model = await createMapModel("foo", {
+    model = await create("foo", {
         layers: [
             new SimpleLayer({
                 id: "l-1",
@@ -341,7 +368,7 @@ it("supports removing a layer from the model", async () => {
 
 describe("base layers", () => {
     it("supports configuration and manipulation of base layers", async () => {
-        model = await createMapModel("foo", {
+        model = await create("foo", {
             layers: [
                 new SimpleLayer({
                     id: "b-1",
@@ -399,7 +426,7 @@ describe("base layers", () => {
     });
 
     it("supports removal of base layers", async () => {
-        model = await createMapModel("foo", {
+        model = await create("foo", {
             layers: [
                 new SimpleLayer({
                     id: "b-1",
@@ -449,4 +476,8 @@ function getLayerProps(layer: Layer) {
         description: layer.description,
         visible: layer.visible
     };
+}
+
+function create(mapId: string, mapConfig: MapConfig) {
+    return createMapModel(mapId, mapConfig, MOCKED_HTTP_SERVICE as HttpService);
 }
