@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { expect, it } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
 import { cleanDir, readText } from "./testing/io";
@@ -449,7 +449,7 @@ it("supports imports in node modules", async function () {
         packageDirectory,
         outputDirectory,
         entryPoints,
-        strict: false,
+        strict: true,
         packageJson: {
             dependencies: {
                 "package-with-index": "*",
@@ -526,19 +526,91 @@ it("checks that imports to other packages can be resolved at compile time", asyn
     // No errors / warnings
     expect(messages[0]).toMatch(
         // The node package links to an invalid file via exports
-        /Failed to import module 'package-with-exports', the resolved path (.*?) does not exist/
+        /Failed to import 'package-with-exports', the resolved path (.*?) does not exist/
     );
     expect(messages[1]).toMatch(
         // The export does not exist
-        /Failed to import module 'package-with-exports\/does-not-exist'/
+        /Failed to import 'package-with-exports\/does-not-exist'/
     );
     expect(messages[2]).toMatch(
         // File does not exist
-        /Failed to import module 'package-with-index\/does-not-exist'/
+        /Failed to import 'package-with-index\/does-not-exist'/
     );
     expect(messages[3]).toMatch(
         // File used for 'main' does not exist
-        /Failed to import module 'package-with-main'/
+        /Failed to import 'package-with-main'/
+    );
+});
+
+it("supports trails packages that import other linked trails packages (during development)", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-valid-trails-neighbors/package");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-valid-trails-neighbors");
+    const entryPoints = normalize(["index"]);
+
+    const defaults = testDefaults();
+    const logger = defaults.logger;
+
+    await cleanDir(outputDirectory);
+    await buildJs({
+        ...defaults,
+        packageDirectory,
+        outputDirectory,
+        entryPoints,
+        strict: true,
+        packageJsonPath: join(packageDirectory, "package.json"),
+        packageJson: {
+            dependencies: {
+                "package-a": "*",
+                "package-b": "*"
+            }
+        }
+    });
+
+    // No errors / warnings
+    expect(logger.messages).toMatchInlineSnapshot(`[]`);
+});
+
+it("emits errors when trails packages import internal modules from other trails packages (during development)", async function () {
+    const packageDirectory = resolve(
+        TEST_DATA_DIR,
+        "project-with-invalid-trails-neighbors/package"
+    );
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-invalid-trails-neighbors");
+    const entryPoints = normalize(["index"]);
+
+    const defaults = testDefaults();
+    const logger = defaults.logger;
+
+    await cleanDir(outputDirectory);
+    const error = await expectError(() =>
+        buildJs({
+            ...defaults,
+            packageDirectory,
+            outputDirectory,
+            entryPoints,
+            strict: true,
+            packageJsonPath: join(packageDirectory, "package.json"),
+            packageJson: {
+                dependencies: {
+                    "package-a": "*",
+                    "package-b": "*"
+                }
+            }
+        })
+    );
+    expect(error.message).toMatchInlineSnapshot(
+        `"[plugin check-imports] Aborting due to dependency problems (strict validation is enabled)."`
+    );
+
+    const messages = logger.messages.map((msg) => msg.args[0]! as any).sort() as string[];
+    expect(messages[0]).toMatch(
+        /Failed to import 'package-a\/does-not-exist-at-all': 'does-not-exist-at-all' is not an entry point of package-a/
+    );
+    expect(messages[1]).toMatch(
+        /Failed to import 'package-a\/exists-but-not-an-entry-point': 'exists-but-not-an-entry-point' is not an entry point of package-a/
+    );
+    expect(messages[2]).toMatch(
+        /Failed to import 'package-a\/my-services': the module is the package's services entry point, which should not be imported directly/
     );
 });
 

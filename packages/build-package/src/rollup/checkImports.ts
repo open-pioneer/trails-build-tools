@@ -1,12 +1,16 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { existsSync } from "fs";
-import { isAbsolute } from "path";
+import { BUILD_CONFIG_NAME, loadBuildConfig } from "@open-pioneer/build-common";
+import { existsSync, lstatSync, realpathSync } from "fs";
+import { ErrnoException, resolve as importMetaResolve } from "import-meta-resolve";
+import { dirname, isAbsolute, join } from "path";
 import { Plugin, PluginContext, ResolvedId } from "rollup";
-import { resolve as importMetaResolve, ErrnoException } from "import-meta-resolve";
-import { getFileNameWithQuery } from "../utils/pathUtils";
 import { fileURLToPath, pathToFileURL } from "url";
+import { loadPackageJson } from "../model/InputModel";
+import { getEntryPointsFromBuildConfig } from "../model/PackageModel";
 import { createDebugger } from "../utils/debug";
+import { NormalizedEntryPoint } from "../utils/entryPoints";
+import { getFileNameWithQuery } from "../utils/pathUtils";
 
 export interface CheckImportsOptions {
     packageJson: Record<string, unknown>;
@@ -18,6 +22,7 @@ const ESM_EXTENSIONS = ["js", "mjs"];
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:check-imports");
+// const debug = console.info.bind(console);
 
 /**
  * Plugin data exposed by the node-resolve plugin.
@@ -108,7 +113,12 @@ export function checkImportsPlugin({
                 const result = await this.resolve(moduleId, parentId, options);
                 const importedPath = result?.id ?? moduleId;
                 if (!result || (result.external && !isAbsolute(result.id))) {
-                    const newModuleId = state!.visitModuleId(this, importedPath, parentId, result);
+                    const newModuleId = await state!.visitModuleId(
+                        this,
+                        importedPath,
+                        parentId,
+                        result
+                    );
                     if (newModuleId) {
                         isDebug && debug("Rewriting import %s to %s", importedPath, newModuleId);
                         return {
@@ -131,6 +141,20 @@ interface ImportContext {
     rewrite(newModuleId: string): void;
 }
 
+interface TrailsPackageInfo {
+    // Path in node modules, usually a symlink
+    rawPackagePath: string;
+
+    // Resolved path on disk
+    resolvedPackagePath: string;
+
+    packageJson: Record<string, unknown>;
+
+    // Parsed entry points from build config
+    entryPointsByModuleId: Map<string, NormalizedEntryPoint>;
+    servicesEntryPoint: NormalizedEntryPoint | undefined;
+}
+
 class CheckImportsState {
     private packageJson: Record<string, unknown>;
     private packageJsonPath: string;
@@ -139,6 +163,15 @@ class CheckImportsState {
 
     // package name -> package is declared (or not)
     private checkedDependencyDeclarations = new Map<string, boolean>();
+
+    // package name -> trails info (or undefined, if no trails package)
+    private trailsInfoCache = new Map<
+        string,
+        {
+            result: TrailsPackageInfo | undefined;
+            promise: Promise<void>;
+        }
+    >();
 
     // module id -> file path and package metadata
     private nodeModulesOnDisk = new Map<
@@ -158,12 +191,12 @@ class CheckImportsState {
      * - the package must be declared in the package.json as a dependency
      * - the module must actually exist on disk
      */
-    visitModuleId(
+    async visitModuleId(
         ctx: PluginContext,
         moduleId: string,
         parentId: string | undefined,
         resolveResult: ResolvedId | null
-    ): string | undefined {
+    ): Promise<string | undefined> {
         isDebug && debug("Visiting module %s from %s", moduleId, parentId);
 
         let newModuleId: string | undefined = undefined;
@@ -196,8 +229,16 @@ class CheckImportsState {
         if (!this.checkDependencyIsDeclared(packageName, importCtx)) {
             return newModuleId;
         }
-        if (!this.checkResolveResult(importCtx, resolveResult)) {
-            return newModuleId;
+
+        const trailsPackageInfo = await this.detectTrailsPackage(packageName);
+        if (trailsPackageInfo) {
+            if (!this.checkTrailsPackageImport(importCtx, trailsPackageInfo, packageName)) {
+                return newModuleId;
+            }
+        } else {
+            if (!this.checkResolveResult(importCtx, resolveResult)) {
+                return newModuleId;
+            }
         }
         return newModuleId;
     }
@@ -218,6 +259,9 @@ class CheckImportsState {
         }
     }
 
+    /**
+     * Emits an error if the given package is not listed as a dependency.
+     */
     private checkDependencyIsDeclared(packageName: string, importCtx: ImportContext): boolean {
         const cachedValue = this.checkedDependencyDeclarations.get(packageName);
         if (cachedValue != null) {
@@ -236,13 +280,16 @@ class CheckImportsState {
         return declared;
     }
 
+    /**
+     * Checks the result of the node style resolution.
+     */
     private checkResolveResult(
         importCtx: ImportContext,
         resolveResult: ResolvedId | null
     ): boolean {
         if (!resolveResult) {
             importCtx.warn(
-                `Failed to import module '${importCtx.moduleId}'. If the module refers to a dependency, make sure that it is installed correctly in the node_modules directory.`
+                `Failed to import '${importCtx.moduleId}'. If the module refers to a dependency, make sure that it is installed correctly in the node_modules directory.`
             );
             return false;
         }
@@ -262,7 +309,7 @@ class CheckImportsState {
         isDebug && debug("Resolved path %s exists: %s", resolvedPath, resolvedFileExists);
         if (!resolvedFileExists) {
             importCtx.warn(
-                `Failed to import module '${importCtx.moduleId}', the resolved path '${resolvedPath}' does not exist`
+                `Failed to import '${importCtx.moduleId}', the resolved path '${resolvedPath}' does not exist`
             );
             return false;
         }
@@ -274,8 +321,8 @@ class CheckImportsState {
         // See also https://github.com/open-pioneer/trails-openlayers-base-packages/issues/314
         if (
             packageInfo &&
-            shouldVerifyModuleImports(packageInfo.packageJson, importCtx.moduleId) &&
-            importCtx.parentId
+            importCtx.parentId &&
+            shouldEnableModuleImportCompatibility(packageInfo.packageJson, importCtx.moduleId)
         ) {
             const moduleId = importCtx.moduleId;
             const parentId = importCtx.parentId;
@@ -293,6 +340,148 @@ class CheckImportsState {
             }
         }
         return true;
+    }
+
+    /**
+     * Checks whether the given import into the trails dependency is allowed.
+     * Only public entry points defined by the package are allowed, anything else is an error.
+     *
+     * We don't check that those files actually exist.
+     * If they would not, _that_ package's build will fail.
+     */
+    private checkTrailsPackageImport(
+        importCtx: ImportContext,
+        trailsInfo: TrailsPackageInfo,
+        packageName: string
+    ): boolean {
+        const moduleId = importCtx.moduleId;
+
+        // Extract the module part after the package name
+        let relativeModuleId;
+        if (moduleId === packageName || moduleId.startsWith(`${packageName}/`)) {
+            relativeModuleId = moduleId.substring(packageName.length);
+            if (relativeModuleId.startsWith("/")) {
+                relativeModuleId = relativeModuleId.substring(1);
+            }
+        } else {
+            // Can this happen?
+            throw new Error(`Internal error: expected '${moduleId}' to start with ${packageName}`);
+        }
+
+        // Use the 'main' field as a fallback
+        let packageMain = trailsInfo.packageJson.main as string | undefined;
+        if (packageMain) {
+            packageMain = packageMain.replace(/\.[^/.]+$/, ""); // strip extension
+        }
+        if (!relativeModuleId) {
+            relativeModuleId = packageMain || "index";
+        }
+
+        isDebug &&
+            debug(
+                "Checking relative module id '%s' in trails package %s",
+                relativeModuleId,
+                packageName
+            );
+
+        // The module must be an entry point.
+        const entryPoint = trailsInfo.entryPointsByModuleId.get(relativeModuleId);
+        if (!entryPoint) {
+            importCtx.warn(
+                `Failed to import '${moduleId}': '${relativeModuleId}' is not an entry point of ${packageName}`
+            );
+            return false;
+        }
+
+        // It must _not_ be the services entry point.
+        if (
+            trailsInfo.servicesEntryPoint &&
+            trailsInfo.servicesEntryPoint.outputModuleId === entryPoint.outputModuleId
+        ) {
+            importCtx.warn(
+                `Failed to import '${moduleId}': the module is the package's services entry point, which should not be imported directly`
+            );
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks whether the given package is a linked trails package during development.
+     */
+    private async detectTrailsPackage(packageName: string): Promise<TrailsPackageInfo | undefined> {
+        let cacheEntry = this.trailsInfoCache.get(packageName);
+        if (!cacheEntry) {
+            cacheEntry = {
+                result: undefined,
+                promise: this.detectTrailsPackageImpl(packageName).then((result) => {
+                    cacheEntry!.result = result;
+                })
+            };
+            this.trailsInfoCache.set(packageName, cacheEntry);
+        }
+
+        await cacheEntry.promise;
+        return cacheEntry.result;
+    }
+
+    private async detectTrailsPackageImpl(
+        packageName: string
+    ): Promise<TrailsPackageInfo | undefined> {
+        const thisPackageDir = dirname(this.packageJsonPath);
+        const importedPackageDir = join(thisPackageDir, "node_modules", packageName);
+        if (!existsSync(importedPackageDir)) {
+            isDebug && debug("Dependency %s does not exist in package's node_modules", packageName);
+            return undefined;
+        }
+
+        const realImportedPackageDir = realpathSync(importedPackageDir);
+        const buildConfigPath = join(importedPackageDir, BUILD_CONFIG_NAME);
+        const isSymlink = lstatSync(importedPackageDir).isSymbolicLink();
+        const hasBuildConfig = existsSync(buildConfigPath);
+        const isLinkedTrailsPackage = isSymlink && hasBuildConfig;
+        isDebug &&
+            debug(
+                "Checking if %s is a linked trails package: %s (symlink: %s, build config: %s)",
+                thisPackageDir,
+                isLinkedTrailsPackage,
+                isSymlink,
+                hasBuildConfig
+            );
+
+        if (!isLinkedTrailsPackage) {
+            return undefined;
+        }
+
+        let packageJson;
+        try {
+            packageJson = await loadPackageJson(join(realImportedPackageDir, "package.json"));
+        } catch (e) {
+            throw new Error(`Failed to load package json for package ${packageName}`, { cause: e });
+        }
+
+        try {
+            const buildConfig = await loadBuildConfig(buildConfigPath);
+            const { jsEntryPointsByModuleId, servicesEntryPoint } = getEntryPointsFromBuildConfig(
+                realImportedPackageDir,
+                buildConfig,
+                buildConfigPath,
+                undefined,
+                (..._args) => undefined // don't report anything for foreign packages
+            );
+
+            const result: TrailsPackageInfo = {
+                rawPackagePath: importedPackageDir,
+                resolvedPackagePath: realImportedPackageDir,
+                packageJson,
+                entryPointsByModuleId: jsEntryPointsByModuleId,
+                servicesEntryPoint
+            };
+            isDebug && debug("Detected trails package %s: %O", packageName, result);
+            return result;
+        } catch (e) {
+            throw new Error(`Failed to parse package information for ${packageName}`, { cause: e });
+        }
     }
 }
 
@@ -313,7 +502,7 @@ function tryNodeImport(moduleId: string, parentFile: string): "found" | "not-fou
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isDeclaredDependency(packageName: string, packageJson: Record<string, any>): boolean {
-    return (
+    return !!(
         packageJson?.dependencies?.[packageName] ||
         packageJson?.peerDependencies?.[packageName] ||
         false
@@ -340,7 +529,7 @@ function parsePackageName(absoluteId: string): string | undefined {
     return match;
 }
 
-function shouldVerifyModuleImports(
+function shouldEnableModuleImportCompatibility(
     packageJson: Record<string, unknown> | undefined,
     moduleId: string
 ): boolean {
