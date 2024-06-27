@@ -3,7 +3,7 @@
 import { existsSync } from "fs";
 import { isAbsolute } from "path";
 import { Plugin, PluginContext, ResolvedId } from "rollup";
-import { getFileNameWithQuery } from "./resolve";
+import { getFileNameWithQuery } from "../utils/pathUtils";
 
 export interface CheckImportsOptions {
     packageJson: Record<string, unknown>;

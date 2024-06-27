@@ -21,3 +21,12 @@ export function isInDirectory(file: string, directory: string): boolean {
     const isChild = rel && !rel.startsWith("..") && !isAbsolute(rel);
     return !!isChild;
 }
+
+/**
+ * Splits a module id into a fileName and query (after '?') part.
+ */
+export function getFileNameWithQuery(moduleId: string) {
+    const match = moduleId.match(/^(?<fileName>.*?)(?:\?(?<query>.*))?$/)?.groups ?? {};
+    const { fileName = moduleId, query = "" } = match;
+    return { fileName, query };
+}

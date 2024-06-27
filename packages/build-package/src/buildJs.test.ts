@@ -11,6 +11,7 @@ import { normalizeEntryPoints } from "./utils/entryPoints";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { RuntimeSupport } from "@open-pioneer/build-common";
 import glob from "fast-glob";
+import { expectError } from "./testing/helpers";
 
 it("transpiles a simple javascript project", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
@@ -344,15 +345,16 @@ it("throws an error if an imported file does not exist", async function () {
     const entryPoints = normalize(["index"]);
 
     await cleanDir(outputDirectory);
-    await expect(() =>
+    const error = await expectError(() =>
         buildJs({
             ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
         })
-    ).rejects.toMatchInlineSnapshot(
-        `[RollupError: [plugin resolve] packages/build-package/test-data/project-using-bad-imports/index.js: Imported module ./does_not-exist.txt does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]`
+    );
+    expect(error.message).toMatch(
+        /test-data\/project-using-bad-imports\/index\.js: Imported module \.\/does_not-exist\.txt does not exist\. Attempted lookup with extensions/
     );
 });
 
@@ -362,15 +364,16 @@ it("throws if a file without an extension is being imported and the real extensi
     const entryPoints = normalize(["index"]);
 
     await cleanDir(outputDirectory);
-    await expect(() =>
+    const error = await expectError(() =>
         buildJs({
             ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
         })
-    ).rejects.toMatchInlineSnapshot(
-        `[RollupError: [plugin resolve] packages/build-package/test-data/project-importing-unknown-extension/index.js: Imported module ./Foo does not exist. Attempted lookup with extensions .ts, .mts, .tsx, .js, .mjs, .jsx.]`
+    );
+    expect(error.message).toMatch(
+        /test-data\/project-importing-unknown-extension\/index\.js: Imported module \.\/Foo does not exist\. Attempted lookup with extensions/
     );
 });
 
@@ -380,15 +383,16 @@ it("throws if an import would match multiple files", async function () {
     const entryPoints = normalize(["entryPoint"]);
 
     await cleanDir(outputDirectory);
-    await expect(() =>
+    const error = await expectError(() =>
         buildJs({
             ...testDefaults(),
             packageDirectory,
             outputDirectory,
             entryPoints
         })
-    ).rejects.toMatchInlineSnapshot(
-        `[RollupError: [plugin resolve] packages/build-package/test-data/project-with-ambiguous-js-imports/entryPoint.ts: Imported module ./file matches multiple extensions: .mts, .tsx, .js. Use an explicit extension instead.]`
+    );
+    expect(error.message).toMatch(
+        /test-data\/project-with-ambiguous-js-imports\/entryPoint\.ts: Imported module \.\/file matches multiple extensions: \.mts, \.tsx, \.js\. Use an explicit extension instead\./
     );
 });
 

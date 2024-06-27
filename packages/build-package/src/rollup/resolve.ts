@@ -5,7 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type { Plugin, PluginContext } from "rollup";
 import { normalizePath } from "@rollup/pluginutils";
 import { resolveWithExtensions } from "../utils/resolve";
-import { getExtension } from "../utils/pathUtils";
+import { getExtension, getFileNameWithQuery } from "../utils/pathUtils";
 
 export interface ResolvePluginOptions {
     packageDirectory: string;
@@ -91,12 +91,6 @@ export function resolvePlugin({
             };
         }
     };
-}
-
-export function getFileNameWithQuery(id: string) {
-    const match = id.match(/^(?<fileName>.*?)(?:\?(?<query>.*))?$/)?.groups ?? {};
-    const { fileName = id, query = "" } = match;
-    return { fileName, query };
 }
 
 function appendQuery(id: string, query: string) {
