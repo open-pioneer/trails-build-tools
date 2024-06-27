@@ -1,0 +1,14 @@
+{
+    "name": "simple-js-project",
+    "version": "0.0.1",
+    "license": "MIT",
+    "dependencies": {
+        "foo": "^1.2.3",
+        "@open-pioneer/runtime": "*",
+        "somewhere-external": "*",
+        "@scope/somewhere-external": "*"
+    },
+    "publishConfig": {
+        "directory": "dist"
+    }
+}

@@ -73,7 +73,8 @@ const Search = (props) => {
       tabSelectsValue: false,
       components,
       onChange: handleSelectChange,
-      value: selectedOption
+      value: selectedOption,
+      menuPosition: "fixed"
     }
   ) });
 };
@@ -173,7 +174,7 @@ function useController(sources, searchTypingDelay, maxResultsPerGroup, map) {
   }, [controller, searchTypingDelay]);
   useEffect(() => {
     controller && (controller.maxResultsPerSource = maxResultsPerGroup);
-  });
+  }, [controller, maxResultsPerGroup]);
   return controller;
 }
 function useSearchState(controller) {

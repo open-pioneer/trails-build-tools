@@ -3,7 +3,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * @vitest-environment jsdom
+ * @vitest-environment happy-dom
  */
 import { createService } from "@open-pioneer/test-utils/services";
 import { expect, it } from "vitest";

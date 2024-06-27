@@ -160,7 +160,6 @@ class CheckImportsState {
 
         const declared = isDeclaredDependency(packageName, this.packageJson);
         if (!declared) {
-            this.hasProblems = true;
             importCtx.warn(
                 `Failed to import '${importCtx.moduleId}', the package '${packageName}' must` +
                     ` be configured either as a dependency or as a peerDependency in ${this.packageJsonPath}`
@@ -175,7 +174,9 @@ class CheckImportsState {
         resolveResult: ResolvedId | null
     ): boolean {
         if (!resolveResult) {
-            importCtx.warn(`Failed to import module '${importCtx.moduleId}'`);
+            importCtx.warn(
+                `Failed to import module '${importCtx.moduleId}'. If the module refers to a dependency, make sure that it is installed correctly in the node_modules directory.`
+            );
             return false;
         }
 

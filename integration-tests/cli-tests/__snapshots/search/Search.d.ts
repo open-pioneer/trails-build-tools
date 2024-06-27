@@ -40,12 +40,12 @@ export interface SearchProps extends CommonComponentProps {
     sources: SearchSource[];
     /**
      * Typing delay (in milliseconds) before the async search query starts after the user types in the search term.
-     * Default value: 200.
+     * Defaults to `200`.
      */
     searchTypingDelay?: number;
     /**
      * The maximum number of results shown per group.
-     * Default value: 5.
+     * Defaults to `5`.
      */
     maxResultsPerGroup?: number;
     /**

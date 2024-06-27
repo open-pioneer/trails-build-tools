@@ -1,16 +1,6 @@
 import { CommonComponentProps } from "@open-pioneer/react-utils";
 import { ReactNode } from "react";
-/**
- * Map padding, all values are pixels.
- *
- * See https://openlayers.org/en/latest/apidoc/module-ol_View-View.html#padding
- */
-export interface MapPadding {
-    left?: number;
-    right?: number;
-    top?: number;
-    bottom?: number;
-}
+import { MapPadding } from "../api";
 export interface MapContainerProps extends CommonComponentProps {
     /** The id of the map to display. */
     mapId: string;

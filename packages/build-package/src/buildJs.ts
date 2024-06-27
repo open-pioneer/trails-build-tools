@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { RollupLog, rollup } from "rollup";
+import { LogLevel, RollupLog, rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
 import nativePath from "node:path";
@@ -67,10 +67,12 @@ export async function buildJs({
                 packageDirectory,
                 allowedExtensions: SUPPORTED_JS_EXTENSIONS
             }),
-            // Used to look into node modules and verify if packages / modules actually exist.
+            // Used to look into node modules and verify that packages / modules actually exist.
             // The code in other packages in not bundled, their imports are re-mapped to be external by the checkImportsPlugin.
             nodeResolve({
-                jail: packageDirectory,
+                // Jail is not really necessary because the checkImportsPlugin checks that the dependency is declared in the package.json.
+                // A hard jail interferes with monorepo setups where packages are linked to wild locations.
+                // jail: packageDirectory
                 rootDir: packageDirectory,
                 preferBuiltins: false
             }),
@@ -80,8 +82,20 @@ export async function buildJs({
                 target: "es2022"
             })
         ],
-        onwarn(warning) {
-            logger.warn(formatMessage(warning));
+        onLog(level: LogLevel, log: RollupLog) {
+            let method;
+            switch (level) {
+                case "debug":
+                    break;
+                case "info":
+                case "warn":
+                    method = level;
+                    break;
+            }
+
+            if (method) {
+                logger[method]?.(formatMessage(log));
+            }
         }
     });
     await result.write({
@@ -114,19 +128,14 @@ export async function buildJs({
 
 // See example in https://rollupjs.org/configuration-options/#onwarn
 function formatMessage(props: RollupLog): string {
-    const { plugin, message, frame, loc, id } = props;
+    const { message, frame, loc, id } = props;
 
     let output = "";
     function write(str: string) {
         output += str;
     }
 
-    let description = message;
-    if (plugin) {
-        description = `[plugin ${plugin}] ${description}`;
-    }
-
-    write(`${description}\n`);
+    write(`${message}\n`);
     if (loc) {
         if (frame) {
             write(`${frame}\n`);

@@ -13,7 +13,7 @@ dist
 temp
 node_modules
 
-# allow node_modules in vite-plugin/test-data to simulate dependencies
+# allow node_modules in test-data to simulate dependencies
 !**/test-data/**/node_modules
 
 # Editor directories and files

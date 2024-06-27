@@ -16,15 +16,17 @@ registerProjections({
   "EPSG:25833": "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"
 });
 const LOG = createLogger("map:createMapModel");
-async function createMapModel(mapId, mapConfig) {
-  return await new MapModelFactory(mapId, mapConfig).createMapModel();
+async function createMapModel(mapId, mapConfig, httpService) {
+  return await new MapModelFactory(mapId, mapConfig, httpService).createMapModel();
 }
 class MapModelFactory {
   mapId;
   mapConfig;
-  constructor(mapId, mapConfig) {
+  httpService;
+  constructor(mapId, mapConfig, httpService) {
     this.mapId = mapId;
     this.mapConfig = mapConfig;
+    this.httpService = httpService;
   }
   async createMapModel() {
     const mapId = this.mapId;
@@ -68,7 +70,8 @@ class MapModelFactory {
     const mapModel = new MapModelImpl({
       id: mapId,
       olMap,
-      initialExtent
+      initialExtent,
+      httpService: this.httpService
     });
     try {
       if (mapConfig.layers) {

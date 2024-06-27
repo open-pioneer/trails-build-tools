@@ -1,6 +1,8 @@
-import { createLogger } from '@open-pioneer/core';
+import { createLogger, isAbortError } from '@open-pioneer/core';
+import WMSCapabilities from 'ol/format/WMSCapabilities';
 import ImageLayer from 'ol/layer/Image';
 import ImageWMS from 'ol/source/ImageWMS';
+import { fetchCapabilities } from '../../util/capabilities-utils.js';
 import { defer } from '../../util/defer.js';
 import { AbstractLayer } from '../AbstractLayer.js';
 import { AbstractLayerBase } from '../AbstractLayerBase.js';
@@ -13,6 +15,9 @@ class WMSLayerImpl extends AbstractLayer {
   #deferredSublayerUpdate;
   #layer;
   #source;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  #capabilities;
+  #abortController = new AbortController();
   constructor(config) {
     const layer = new ImageLayer();
     super({
@@ -24,6 +29,12 @@ class WMSLayerImpl extends AbstractLayer {
       url: config.url,
       params: {
         ...config.sourceOptions?.params
+      },
+      // Use http service to load tiles; needed for authentication etc.
+      imageLoadFunction: (wrapper, url) => {
+        return this.#loadImage(wrapper, url).catch((error) => {
+          LOG.error(`Failed to load tile at '${url}'`, error);
+        });
       }
     });
     this.#url = config.url;
@@ -32,17 +43,55 @@ class WMSLayerImpl extends AbstractLayer {
     this.#sublayers = new SublayersCollectionImpl(constructSublayers(config.sublayers));
     this.#updateLayersParam();
   }
+  get legend() {
+    return void 0;
+  }
   get url() {
     return this.#url;
   }
+  get __source() {
+    return this.#source;
+  }
   get sublayers() {
     return this.#sublayers;
+  }
+  get capabilities() {
+    return this.#capabilities;
   }
   __attach(map) {
     super.__attach(map);
     for (const sublayer of this.#sublayers.getSublayers()) {
       sublayer.__attach(map, this, this);
     }
+    const layers = [];
+    const getNestedSublayer = (sublayers, layers2) => {
+      for (const sublayer of sublayers) {
+        const nested = sublayer.sublayers.getSublayers();
+        if (nested.length) {
+          getNestedSublayer(nested, layers2);
+        } else {
+          if (sublayer.name) {
+            layers2.push(sublayer);
+          }
+        }
+      }
+    };
+    this.#fetchWMSCapabilities().then((result) => {
+      const parser = new WMSCapabilities();
+      const capabilities = parser.read(result);
+      this.#capabilities = capabilities;
+      getNestedSublayer(this.#sublayers.getSublayers(), layers);
+      for (const layer of layers) {
+        const legendUrl = getWMSLegendUrl(capabilities, layer.name);
+        layer.legend = legendUrl;
+      }
+    }).catch((error) => {
+      if (isAbortError(error)) {
+        LOG.error(`Layer ${this.id} has been destroyed before fetching the data`);
+        return;
+      }
+      LOG.error(`Failed fetching WMS capabilities for Layer ${this.id}`, error);
+    });
   }
   /** Called by the sublayers when their visibility changed. */
   __updateSublayerVisibility() {
@@ -84,7 +133,9 @@ class WMSLayerImpl extends AbstractLayer {
           visitSublayer(nestedSublayer);
         }
       } else {
-        layers.push(sublayer.name);
+        if (sublayer.name) {
+          layers.push(sublayer.name);
+        }
       }
     };
     for (const sublayer of this.sublayers.__getRawSublayers()) {
@@ -92,11 +143,35 @@ class WMSLayerImpl extends AbstractLayer {
     }
     return layers;
   }
+  async #fetchWMSCapabilities() {
+    const httpService = this.map.__sharedDependencies.httpService;
+    const url = `${this.#url}?LANGUAGE=ger&SERVICE=WMS&REQUEST=GetCapabilities`;
+    return fetchCapabilities(url, httpService, this.#abortController.signal);
+  }
+  async #loadImage(imageWrapper, imageUrl) {
+    const httpService = this.map.__sharedDependencies.httpService;
+    const image = imageWrapper.getImage();
+    const response = await httpService.fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}.`);
+    }
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const finish = () => {
+      URL.revokeObjectURL(objectUrl);
+      image.removeEventListener("load", finish);
+      image.removeEventListener("error", finish);
+    };
+    image.addEventListener("load", finish);
+    image.addEventListener("error", finish);
+    image.src = objectUrl;
+  }
 }
 class WMSSublayerImpl extends AbstractLayerBase {
   #parent;
   #parentLayer;
   #name;
+  #legend;
   #sublayers;
   #visible;
   constructor(config) {
@@ -124,6 +199,13 @@ class WMSSublayerImpl extends AbstractLayerBase {
       throw new Error(`WMS sublayer ${this.id} has not been attached to its parent yet.`);
     }
     return parentLayer;
+  }
+  get legend() {
+    return this.#legend;
+  }
+  set legend(legendUrl) {
+    this.#legend = legendUrl;
+    this.__emitChangeEvent("changed:legend");
   }
   /**
    * Called by the parent layer when it is attached to the map to attach all sublayers.
@@ -172,6 +254,31 @@ function constructSublayers(sublayerConfigs = []) {
     throw new Error("Failed to construct sublayers.", { cause: e });
   }
 }
+function getWMSLegendUrl(capabilities, layerName) {
+  const capabilitiesContent = capabilities?.Capability;
+  const rootLayerCapabilities = capabilitiesContent?.Layer;
+  let url = void 0;
+  const searchNestedLayer = (layer) => {
+    for (const currentLayer of layer) {
+      if (currentLayer?.Name === layerName) {
+        const activeLayer = currentLayer;
+        const styles = activeLayer.Style;
+        if (!styles || !styles.length) {
+          LOG.debug("No style in WMS layer capabilities - giving up.");
+          return;
+        }
+        const activeStyle = styles[0];
+        url = activeStyle.LegendURL?.[0]?.OnlineResource;
+      } else if (currentLayer.Layer) {
+        searchNestedLayer(currentLayer.Layer);
+      }
+    }
+  };
+  if (rootLayerCapabilities) {
+    searchNestedLayer(rootLayerCapabilities.Layer);
+  }
+  return url;
+}
 
-export { WMSLayerImpl };
+export { WMSLayerImpl, getWMSLegendUrl };
 //# sourceMappingURL=WMSLayerImpl.js.map

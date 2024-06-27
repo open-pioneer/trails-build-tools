@@ -17,6 +17,9 @@ beforeAll(async () => {
 
 describe(
     "package compilations",
+    {
+        timeout: 30 * 1000
+    },
     () => {
         it("should compile the integration package successfully", async () => {
             const sourceDir = resolve(TEST_DATA_DIR, "integration");
@@ -93,6 +96,7 @@ describe(
                 "README.md",
                 "_virtual/_virtual-pioneer-module_react-hooks.js",
                 "_virtual/_virtual-pioneer-module_react-hooks.js.map",
+                "api/BaseFeature.d.ts",
                 "api/MapConfig.d.ts",
                 "api/MapModel.d.ts",
                 "api/MapRegistry.d.ts",
@@ -103,6 +107,9 @@ describe(
                 "api/layers/WMSLayer.d.ts",
                 "api/layers/WMSLayer.js",
                 "api/layers/WMSLayer.js.map",
+                "api/layers/WMTSLayer.d.ts",
+                "api/layers/WMTSLayer.js",
+                "api/layers/WMTSLayer.js.map",
                 "api/layers/base.d.ts",
                 "api/layers/index.d.ts",
                 "api/shared.d.ts",
@@ -140,6 +147,9 @@ describe(
                 "model/layers/WMSLayerImpl.d.ts",
                 "model/layers/WMSLayerImpl.js",
                 "model/layers/WMSLayerImpl.js.map",
+                "model/layers/WMTSLayerImpl.d.ts",
+                "model/layers/WMTSLayerImpl.js",
+                "model/layers/WMTSLayerImpl.js.map",
                 "package.json",
                 "projections.d.ts",
                 "projections.js",
@@ -164,6 +174,9 @@ describe(
                 "ui/useMapModel.d.ts",
                 "ui/useMapModel.js",
                 "ui/useMapModel.js.map",
+                "util/capabilities-utils.d.ts",
+                "util/capabilities-utils.js",
+                "util/capabilities-utils.js.map",
                 "util/defer.d.ts",
                 "util/defer.js",
                 "util/defer.js.map",
@@ -241,9 +254,6 @@ describe(
                 );
             }
         });
-    },
-    {
-        timeout: 15 * 1000
     }
 );
 

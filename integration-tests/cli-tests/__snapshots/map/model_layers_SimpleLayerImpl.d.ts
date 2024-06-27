@@ -5,5 +5,6 @@ import { AbstractLayer } from "../AbstractLayer";
  * Some API features (such as sublayers) will not be available.
  */
 export declare class SimpleLayerImpl extends AbstractLayer {
+    get legend(): undefined;
     get sublayers(): undefined;
 }
