@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 2.0.4
+
+### Patch Changes
+
+-   d9a0c1b: Use timestamps instead of request ids to import build configs
+
 ## 2.0.3
 
 ### Patch Changes
