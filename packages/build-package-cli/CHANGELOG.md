@@ -1,5 +1,34 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 2.1.0
+
+### Minor Changes
+
+-   e4ae880: Switch to `type: module`
+-   e4ae880: Implement additional validations when importing modules from other packages.
+
+    -   When importing modules from normal node packages, `build-package` will now check that the imported module actually exists.
+    -   When importing modules from another trails package in the same repository, `build-package` now verifies that the imported module is an actual entry point of that package (declared in the `build.config.mjs`).
+
+    These validations are designed to errors where a package would run locally (in Vite's development mode)
+    but end up broken when published (see also https://github.com/open-pioneer/trails-core-packages/issues/42).
+
+-   e4ae880: Introduce an option to configure the root directory (`-r` for the CLI, `rootDirectory` for the JavaScript API).
+
+    The root directory is used to detect which packages are local to the project.
+    The option defaults to the root of the current workspace (e.g. the PNPM workspace root), or, if that doesn't work, to the root of the current git repository.
+    However, it can also be configured manually.
+
+### Patch Changes
+
+-   3550ca8: Update dependencies
+-   Updated dependencies [e4ae880]
+-   Updated dependencies [e4ae880]
+-   Updated dependencies [3550ca8]
+-   Updated dependencies [e4ae880]
+-   Updated dependencies [e4ae880]
+    -   @open-pioneer/build-package@3.0.0
+
 ## 2.0.3
 
 ### Patch Changes

@@ -1,5 +1,54 @@
 # Changelog @open-pioneer/build-package
 
+## 3.0.0
+
+### Major Changes
+
+-   e4ae880: Switch to `type: module`
+
+### Minor Changes
+
+-   e4ae880: Implement additional validations when importing modules from other packages.
+
+    -   When importing modules from normal node packages, `build-package` will now check that the imported module actually exists.
+    -   When importing modules from another trails package in the same repository, `build-package` now verifies that the imported module is an actual entry point of that package (declared in the `build.config.mjs`).
+
+    These validations are designed to errors where a package would run locally (in Vite's development mode)
+    but end up broken when published (see also https://github.com/open-pioneer/trails-core-packages/issues/42).
+
+-   e4ae880: Implement automatic rewrite for certain problematic import statements.
+
+    Under certain conditions, `build-package` will add extensions to imported modules when the imported module does not (strictly) exist.
+    For example, this rewrites
+
+    ```js
+    import * from "ol/proj/proj4";
+    ```
+
+    to
+
+    ```js
+    import * from "ol/proj/proj4.js";
+    ```
+
+    While the first import works with bundlers such as Vite or Rollup, Node will refuse to import it.
+    Because node is strict about extensions, the first snippet cannot execute in some environments (such as Vitest).
+
+    This new behavior is intended as a fix for https://github.com/open-pioneer/trails-openlayers-base-packages/issues/314.
+    Please open an issue if this fix causes any problems for your packages.
+
+-   e4ae880: Introduce an option to configure the root directory (`-r` for the CLI, `rootDirectory` for the JavaScript API).
+
+    The root directory is used to detect which packages are local to the project.
+    The option defaults to the root of the current workspace (e.g. the PNPM workspace root), or, if that doesn't work, to the root of the current git repository.
+    However, it can also be configured manually.
+
+### Patch Changes
+
+-   3550ca8: Update dependencies
+-   Updated dependencies [d9a0c1b]
+    -   @open-pioneer/build-common@2.0.4
+
 ## 2.0.3
 
 ### Patch Changes
