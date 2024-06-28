@@ -2,4 +2,5 @@
 import { A } from "package-a";
 import { MAIN } from "package-b";
 import { OTHER } from "package-b/other-entry";
-console.log(A, MAIN, OTHER);
+import { NESTED } from "package-b/nested";
+console.log(A, MAIN, OTHER, NESTED);

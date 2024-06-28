@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from "vitest";
-import { normalizeEntryPoints } from "./entryPoints";
+import { getExportedName, normalizeEntryPoints } from "./entryPoints";
 
 const EXTS = [".js", ".ts"];
 
-describe("entryPoints", function () {
+describe("normalizeEntryPoints", function () {
     it("normalizes valid entry point specifiers", function () {
         const rawEntryPoints = [
             "./index",
@@ -65,5 +65,14 @@ describe("entryPoints", function () {
         expect(() => normalizeEntryPoints(entryPoints, EXTS)).toThrowErrorMatchingInlineSnapshot(
             `[Error: Entry point 'index' is specified twice.]`
         );
+    });
+});
+
+describe("getExportedName", function () {
+    it("returns the expected exported name", function () {
+        expect(getExportedName("index")).toBe("");
+        expect(getExportedName("foo")).toBe("foo");
+        expect(getExportedName("foo/bar/baz")).toBe("foo/bar/baz");
+        expect(getExportedName("foo/bar/index")).toBe("foo/bar");
     });
 });

@@ -9,8 +9,8 @@ import { fileURLToPath, pathToFileURL } from "url";
 import { loadPackageJson } from "../model/InputModel";
 import { getEntryPointsFromBuildConfig } from "../model/PackageModel";
 import { createDebugger } from "../utils/debug";
-import { NormalizedEntryPoint } from "../utils/entryPoints";
 import { getFileNameWithQuery, isInDirectory } from "../utils/pathUtils";
+import { getExportedName } from "../utils/entryPoints";
 
 export interface CheckImportsOptions {
     packageJson: Record<string, unknown>;
@@ -153,8 +153,8 @@ interface TrailsPackageInfo {
     packageJson: Record<string, unknown>;
 
     // Parsed entry points from build config
-    entryPointsByModuleId: Map<string, NormalizedEntryPoint>;
-    servicesEntryPoint: NormalizedEntryPoint | undefined;
+    exportedModules: Set<string>;
+    servicesModule: string | undefined;
 }
 
 class CheckImportsState {
@@ -377,15 +377,6 @@ class CheckImportsState {
             throw new Error(`Internal error: expected '${moduleId}' to start with ${packageName}`);
         }
 
-        // Use the 'main' field as a fallback
-        let packageMain = trailsInfo.packageJson.main as string | undefined;
-        if (packageMain) {
-            packageMain = packageMain.replace(/\.[^/.]+$/, ""); // strip extension
-        }
-        if (!relativeModuleId) {
-            relativeModuleId = packageMain || "index";
-        }
-
         isDebug &&
             debug(
                 "Checking relative module id '%s' in trails package %s",
@@ -394,8 +385,7 @@ class CheckImportsState {
             );
 
         // The module must be an entry point.
-        const entryPoint = trailsInfo.entryPointsByModuleId.get(relativeModuleId);
-        if (!entryPoint) {
+        if (!trailsInfo.exportedModules.has(relativeModuleId)) {
             importCtx.warn(
                 `Failed to import '${moduleId}': '${relativeModuleId}' is not an entry point of ${packageName}`
             );
@@ -403,10 +393,7 @@ class CheckImportsState {
         }
 
         // It must _not_ be the services entry point.
-        if (
-            trailsInfo.servicesEntryPoint &&
-            trailsInfo.servicesEntryPoint.outputModuleId === entryPoint.outputModuleId
-        ) {
+        if (trailsInfo.servicesModule != null && relativeModuleId === trailsInfo.servicesModule) {
             importCtx.warn(
                 `Failed to import '${moduleId}': the module is the package's services entry point, which should not be imported directly`
             );
@@ -495,12 +482,20 @@ class CheckImportsState {
                 (..._args) => undefined // don't report anything for foreign packages
             );
 
+            const exportedModules = new Set<string>(
+                Array.from(jsEntryPointsByModuleId.values()).map((ep) =>
+                    getExportedName(ep.outputModuleId)
+                )
+            );
+            const servicesModule = servicesEntryPoint
+                ? getExportedName(servicesEntryPoint.outputModuleId)
+                : undefined;
             const result: TrailsPackageInfo = {
                 rawPackagePath: importedPackageDir,
                 resolvedPackagePath: realImportedPackageDir,
                 packageJson,
-                entryPointsByModuleId: jsEntryPointsByModuleId,
-                servicesEntryPoint
+                exportedModules,
+                servicesModule
             };
             isDebug && debug("Detected trails package %s: %O", packageName, result);
             return result;

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Service, PackageMetadataV1 as V1 } from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
-import posix from "node:path/posix";
 import nativePath from "node:path";
 import { PackageModel } from "./model/PackageModel";
 import { Logger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
 import { ResolvedValidationOptions } from "./model/Options";
+import { getExportedName } from "./utils/entryPoints";
 
 type SimplePackageModel = Pick<
     PackageModel,
@@ -129,7 +129,7 @@ function generateExports(model: SimplePackageModel, validationErrors: Validation
     };
     addEntryPoint("./package.json", "./package.json");
     for (const entryPoint of model.jsEntryPoints) {
-        const exportedName = getExportName(entryPoint.outputModuleId);
+        const exportedName = getPackageExportsKey(entryPoint.outputModuleId);
         const jsPath = `./${entryPoint.outputModuleId}.js`;
         const exportEntry: Record<string, string> = {
             import: jsPath
@@ -149,14 +149,12 @@ function generateExports(model: SimplePackageModel, validationErrors: Validation
     return exportedModules;
 }
 
-function getExportName(moduleId: string) {
-    if (moduleId === "index") {
+function getPackageExportsKey(moduleId: string) {
+    const name = getExportedName(moduleId);
+    if (!name) {
         return ".";
     }
-    if (posix.basename(moduleId) === "index") {
-        return "./" + posix.dirname(moduleId);
-    }
-    return `./${moduleId}`;
+    return `./${name}`;
 }
 
 function generateMetadata(model: SimplePackageModel): unknown {

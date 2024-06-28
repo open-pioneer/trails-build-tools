@@ -7,18 +7,14 @@ import type * as API from "../../types";
 
 type LoadBuildConfig = typeof API.loadBuildConfig;
 
-let requestId = 0;
-
 export const loadBuildConfig: LoadBuildConfig = async function loadBuildConfig(path) {
     if (!existsSync(path)) {
         throw new Error(`The configuration file at ${path} does not exist`);
     }
 
     const fileURL = pathToFileURL(path);
-    const importedModule = (await import(`${fileURL}?id=${++requestId}`)) as Record<
-        string,
-        unknown
-    >;
+    const moduleId = `${fileURL}?ts=${new Date().getTime()}`;
+    const importedModule = (await import(moduleId)) as Record<string, unknown>;
     if (!importedModule || !importedModule.default) {
         throw new Error(`The configuration file at ${path} must provide a default export`);
     }

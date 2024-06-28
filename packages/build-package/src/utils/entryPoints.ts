@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-
 import { getExtension } from "./pathUtils";
+import posix from "node:path/posix";
 
 // TODO: Refactor, use common resolve function
 
@@ -77,4 +77,23 @@ export function normalizeEntryPoint(entryPoint: string, supportedExtensions: str
         throw new Error(`Internal error: expected a normalized entry point`);
     }
     return normalized;
+}
+
+/**
+ * Returns the name of the module that can be imported from outside of the package.
+ * The `outputModuleId` should be taken from a {@link NormalizedEntryPoint}.
+ *
+ * Examples:
+ * - `"index"` -> `""`
+ * - `"foo/bar/baz"` -> `"foo/bar/baz"`
+ * - `"foo/bar/index"` -> `"foo/bar"`
+ */
+export function getExportedName(outputModuleId: string) {
+    if (outputModuleId === "index") {
+        return "";
+    }
+    if (posix.basename(outputModuleId) === "index") {
+        return posix.dirname(outputModuleId);
+    }
+    return outputModuleId;
 }
