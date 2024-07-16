@@ -47,11 +47,13 @@
         "//": [
             "overrides:",
             "semver: https://github.com/advisories/GHSA-c2qf-rxjj-qqgw",
-            "braces: https://github.com/advisories/GHSA-grv7-fg5c-xmjg"
+            "braces: https://github.com/advisories/GHSA-grv7-fg5c-xmjg",
+            "fast-loops: https://github.com/advisories/GHSA-3q56-9cc2-46j4"
         ],
         "overrides": {
             "semver@<7.5.2": ">=7.5.2",
-            "braces@<3.0.3": ">=3.0.3"
+            "braces@<3.0.3": ">=3.0.3",
+            "fast-loops@<1.1.4": ">=1.1.4"
         },
         "auditConfig": {
             "ignoreCves": []
