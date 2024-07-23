@@ -39,8 +39,8 @@ describe("tag command", () => {
             expect(git.tag).not.toHaveBeenCalled();
             await run(cwd);
             expect(git.tag).toHaveBeenCalledTimes(2);
-            expect((git.tag as Mock).mock.calls[0][0]).toEqual("pkg-a@1.0.0");
-            expect((git.tag as Mock).mock.calls[1][0]).toEqual("pkg-b@1.0.0");
+            expect((git.tag as Mock).mock.calls[0]![0]).toEqual("pkg-a@1.0.0");
+            expect((git.tag as Mock).mock.calls[1]![0]).toEqual("pkg-b@1.0.0");
         });
 
         it("skips tags that already exist", async () => {
@@ -72,7 +72,7 @@ describe("tag command", () => {
             expect(git.tag).not.toHaveBeenCalled();
             await run(cwd);
             expect(git.tag).toHaveBeenCalledTimes(1);
-            expect((git.tag as Mock).mock.calls[0][0]).toEqual("pkg-b@1.0.0");
+            expect((git.tag as Mock).mock.calls[0]![0]).toEqual("pkg-b@1.0.0");
         });
 
         it("skips private package", async () => {
