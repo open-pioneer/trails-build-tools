@@ -15,7 +15,7 @@
         "prettier-check": "pnpm prettier:common -c",
         "prettier": "pnpm prettier:common -w",
         "prettier:common": "prettier ./packages ./integration-tests --ignore-path .eslintignore --cache",
-        "prepare": "husky install",
+        "prepare": "husky",
         "ci:test": "pnpm run clean && pnpm run check-types && pnpm run lint && pnpm run build && pnpm install && pnpm run test run",
         "ci:version": "pnpm changeset version && pnpm prettier && pnpm install",
         "ci:publish": "pnpm run clean && pnpm run build && pnpm publish -r --access public && pnpm changeset tag"
