@@ -216,8 +216,8 @@ function buildMetadataContext(
     manualDeps: Map<string, Set<string>>
 ): MetadataContext {
     return {
-        warn: ctx.warn,
-        resolve: ctx.resolve,
+        warn: (...args) => ctx.warn(...args),
+        resolve: (...args) => ctx.resolve(...args),
         addWatchFile: (id) => {
             if (devServer) {
                 // TODO: Is there a better way? We want to trigger a hot reload when
