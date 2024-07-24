@@ -3,18 +3,21 @@ if [ "$NO_VERIFY" ]; then
     exit 0
 fi
 
-echo '--- run linting --- '
-pnpm run lint
-
-echo '--- run prettier ---'
-pnpm run prettier-check
+echo '--- check code style ---'
+pnpm exec lint-staged
 
 echo '--- run typescript check ---'
 pnpm run check-types
 
 echo '--- run tests ---'
 pnpm run clean
+
+# link built CLI for integration tests
 pnpm run build
-pnpm install # link built CLI for integration tests
-CI=1 pnpm run test run # CI=1 disallows `.only` in tests
+pnpm install
+
+# CI=1 disallows `.only` in tests
+# --changed only runs the tests affected by changed files
+CI=1 pnpm exec vitest run --changed --passWithNoTests
+
 
