@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/build-package
 
+## 3.0.1
+
+### Patch Changes
+
+-   2526935: Update dependencies
+-   Updated dependencies [2526935]
+    -   @open-pioneer/build-common@2.0.5
+
 ## 3.0.0
 
 ### Major Changes
