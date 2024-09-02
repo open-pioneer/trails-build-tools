@@ -49,12 +49,14 @@
             "overrides:",
             "semver: https://github.com/advisories/GHSA-c2qf-rxjj-qqgw",
             "braces: https://github.com/advisories/GHSA-grv7-fg5c-xmjg",
-            "fast-loops: https://github.com/advisories/GHSA-3q56-9cc2-46j4"
+            "fast-loops: https://github.com/advisories/GHSA-3q56-9cc2-46j4",
+            "micromatch: https://github.com/advisories/GHSA-952p-6rrq-rcjv"
         ],
         "overrides": {
             "semver@<7.5.2": ">=7.5.2",
             "braces@<3.0.3": ">=3.0.3",
-            "fast-loops@<1.1.4": ">=1.1.4"
+            "fast-loops@<1.1.4": ">=1.1.4",
+            "micromatch@<4.0.8": ">=4.0.8"
         },
         "auditConfig": {
             "ignoreCves": []
