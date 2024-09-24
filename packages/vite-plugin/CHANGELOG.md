@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 3.0.5
+
+### Patch Changes
+
+-   2526935: Update dependencies
+-   Updated dependencies [2526935]
+    -   @open-pioneer/build-common@2.0.5
+
 ## 3.0.4
 
 ### Patch Changes
