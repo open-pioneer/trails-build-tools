@@ -21,6 +21,19 @@ The tool can be invoked manually (via `pnpm check-pnpm-duplicates -c path/to/con
 }
 ```
 
+By default, all duplicate packages are reported as errors:
+
+```text
+$ pnpm check-pnpm-duplicates
+Found unexpected duplicate packages:
+  - "@changesets/types" # (versions 4.1.0, 6.0.0)
+  - "@pnpm/dependency-path" # (versions 5.1.3, 5.1.6)
+  - "@pnpm/resolver-base" # (versions 13.0.1, 13.0.4)
+  ...
+```
+
+To allow certain duplicates, see below.
+
 ## Configuration
 
 The tool can be configured using a YAML file.
