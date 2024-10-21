@@ -83,7 +83,7 @@ export class Highlights {
     /**
      * This method displays geometries or BaseFeatures with optional styling in the map
      */
-    addHighlight(displayTarget: DisplayTarget[], highlightOptions: HighlightOptions | undefined) {
+    addHighlight(displayTarget: DisplayTarget[], highlightOptions: HighlightOptions | undefined): Highlight {
         const geometries = this.#filterGeoobjects(displayTarget);
 
         if (geometries.length === 0) {
@@ -166,7 +166,7 @@ export class Highlights {
     addHighlightAndZoom(
         displayTarget: DisplayTarget[],
         highlightZoomStyle: HighlightZoomOptions | undefined
-    ) {
+    ): Highlight {
         const result = this.addHighlight(displayTarget, highlightZoomStyle);
         this.zoomToHighlight(displayTarget, highlightZoomStyle);
         return result;

@@ -141,7 +141,7 @@ export class MapModelImpl extends EventEmitter<MapModelEvents> implements MapMod
         this.#highlights.zoomToHighlight(geometries, options);
     }
 
-    highlightAndZoom(geometries: Geometry[], options?: HighlightZoomOptions) {
+    highlightAndZoom(geometries: Geometry[], options?: HighlightZoomOptions): Highlight {
         return this.#highlights.addHighlightAndZoom(geometries, options ?? {});
     }
 

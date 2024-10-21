@@ -133,28 +133,7 @@ describe(
             `);
 
             const messages = defaults.logger.messages.map((m) => m.args[0]!);
-            expect(messages[0]).match(/Cannot find module 'does-not-exist'/);
-            expect(messages[1]).match(/Cannot assign to 'A' because it is a constant/);
-            expect(messages[2]).match(/Cannot find name 'f'/);
-        });
-
-        it("throws when strict mode is enabled and typescript emits compiler errors", async function () {
-            const packageDirectory = resolve(TEST_DATA_DIR, "project-with-typescript-errors");
-            const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-typescript-errors-strict");
-            const defaults = testDefaults();
-
-            await cleanDir(outputDirectory);
-            await expect(
-                buildDts({
-                    ...defaults,
-                    packageDirectory,
-                    outputDirectory,
-                    entryPoints: normalize(["index"]),
-                    strict: true
-                })
-            ).rejects.toThrowErrorMatchingInlineSnapshot(
-                `[Error: Aborting due to compilation errors (strict validation is enabled).]`
-            );
+            expect(messages.length).toBe(0);
         });
     },
     {

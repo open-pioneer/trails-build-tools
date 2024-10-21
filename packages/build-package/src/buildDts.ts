@@ -175,7 +175,11 @@ function createTypeScriptConfig(
         emitDeclarationOnly: true,
         skipLibCheck: true,
         noEmitOnError: false,
-        declarationDir: outputDirectory
+        declarationDir: outputDirectory,
+
+        // Disable type checks. We expect that those are done by the main build
+        // and not during the compilation of individual packages.
+        noCheck: true
     };
 
     options = {

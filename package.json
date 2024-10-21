@@ -21,24 +21,24 @@
         "ci:publish": "pnpm run clean && pnpm run build && pnpm publish -r --access public && pnpm changeset tag"
     },
     "devDependencies": {
-        "@changesets/cli": "^2.27.7",
-        "@types/node": "^18.19.41",
-        "@typescript-eslint/eslint-plugin": "^7.17.0",
-        "@typescript-eslint/parser": "^7.17.0",
-        "esbuild": "^0.23.0",
-        "eslint": "^8.57.0",
+        "@changesets/cli": "^2.27.9",
+        "@types/node": "^18.19.57",
+        "@typescript-eslint/eslint-plugin": "^7.18.0",
+        "@typescript-eslint/parser": "^7.18.0",
+        "esbuild": "^0.24.0",
+        "eslint": "^8.57.1",
         "eslint-config-prettier": "^9.1.0",
-        "eslint-import-resolver-typescript": "^3.6.1",
+        "eslint-import-resolver-typescript": "^3.6.3",
         "eslint-plugin-header": "^3.1.1",
-        "eslint-plugin-import": "^2.29.1",
+        "eslint-plugin-import": "^2.31.0",
         "eslint-plugin-unused-imports": "^3.2.0",
-        "husky": "^9.1.1",
-        "lint-staged": "^15.2.7",
+        "husky": "^9.1.6",
+        "lint-staged": "^15.2.10",
         "prettier": "^3.3.3",
-        "rimraf": "^5.0.9",
-        "typescript": "^5.5.4",
-        "vite": "^5.4.8",
-        "vitest": "^2.0.4"
+        "rimraf": "^5.0.10",
+        "typescript": "^5.6.3",
+        "vite": "^5.4.9",
+        "vitest": "^2.1.3"
     },
     "engines": {
         "node": ">= 18",
@@ -50,20 +50,30 @@
             "semver: https://github.com/advisories/GHSA-c2qf-rxjj-qqgw",
             "braces: https://github.com/advisories/GHSA-grv7-fg5c-xmjg",
             "fast-loops: https://github.com/advisories/GHSA-3q56-9cc2-46j4",
-            "micromatch: https://github.com/advisories/GHSA-952p-6rrq-rcjv"
+            "micromatch: https://github.com/advisories/GHSA-952p-6rrq-rcjv",
+            "@open-pioneer/runtime: mixed versions, see below",
+            "",
+            "peers:",
+            "trails package overrides can be removed when they no longer use peer deps.",
+            "these are in conflict because the integration tests use old versions of those packages."
         ],
         "overrides": {
             "semver@<7.5.2": ">=7.5.2",
             "braces@<3.0.3": ">=3.0.3",
             "fast-loops@<1.1.4": ">=1.1.4",
-            "micromatch@<4.0.8": ">=4.0.8"
+            "micromatch@<4.0.8": ">=4.0.8",
+            "@open-pioneer/runtime": ">= 2.2.0"
         },
         "auditConfig": {
             "ignoreCves": []
         },
         "peerDependencyRules": {
             "allowedVersions": {
-                "@open-pioneer/chakra-integration>framer-motion": ">=4.0.0"
+                "@open-pioneer/chakra-integration>framer-motion": ">=4.0.0",
+                "@open-pioneer/base-theme": "*",
+                "@open-pioneer/chakra-integration@^2.2.0": "*",
+                "@open-pioneer/runtime-react-support@^1.0.2": "*",
+                "@open-pioneer/core": "*"
             }
         }
     }
