@@ -1,0 +1,5 @@
+# This is the configuration file for the check-pnpm-duplicates CLI.
+# See <https://www.npmjs.com/package/@open-pioneer/check-pnpm-duplicates> for more details.
+
+# Ignore any duplicates in devDependencies.
+skipDevDependencies: true

@@ -1,0 +1,11 @@
+{
+    "name": "check-pnpm-duplicates-tests",
+    "private": true,
+    "scripts": {
+        "test": "vitest"
+    },
+    "devDependencies": {
+        "@open-pioneer/check-pnpm-duplicates": "workspace:^",
+        "zx": "^8.1.9"
+    }
+}

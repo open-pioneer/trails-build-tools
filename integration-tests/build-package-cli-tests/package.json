@@ -1,5 +1,5 @@
 {
-    "name": "cli-tests",
+    "name": "build-package-cli-tests",
     "private": true,
     "devDependencies": {
         "@chakra-ui/icons": "2.1.1",
