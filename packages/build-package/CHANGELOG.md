@@ -1,5 +1,20 @@
 # Changelog @open-pioneer/build-package
 
+## 3.1.0
+
+### Minor Changes
+
+-   7668cd9: Use the new `noCheck` option when generation TypeScript declaration files (.d.ts). This can speed up the generation process, since typechecking is done during the main compilation (linting) stage.
+    This change may require updating TypeScript to a reject version.
+
+### Patch Changes
+
+-   2526935: Update dependencies
+-   7668cd9: Update dependencies.
+-   Updated dependencies [2526935]
+-   Updated dependencies [7668cd9]
+    -   @open-pioneer/build-common@2.0.5
+
 ## 3.0.0
 
 ### Major Changes

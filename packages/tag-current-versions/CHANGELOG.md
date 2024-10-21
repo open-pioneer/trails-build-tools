@@ -1,5 +1,11 @@
 # @open-pioneer/tag-current-versions
 
+## 2.0.3
+
+### Patch Changes
+
+-   2526935: Update dependencies
+
 ## 2.0.2
 
 ### Patch Changes
