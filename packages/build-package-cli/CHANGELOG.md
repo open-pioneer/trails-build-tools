@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 2.1.1
+
+### Patch Changes
+
+-   Updated dependencies [2526935]
+-   Updated dependencies [7668cd9]
+-   Updated dependencies [7668cd9]
+    -   @open-pioneer/build-package@3.1.0
+
 ## 2.1.0
 
 ### Minor Changes
