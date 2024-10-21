@@ -43,6 +43,18 @@ export async function runViteBuild(options: {
             }
         },
 
+        css: {
+            preprocessorOptions: {
+                scss: {
+                    silenceDeprecations: [
+                        // https://github.com/vitejs/vite/issues/18164
+                        "legacy-js-api",
+                        "import"
+                    ]
+                }
+            }
+        },
+
         plugins: [pioneer(options.pluginOptions)],
 
         logLevel: "silent"
