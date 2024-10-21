@@ -1,5 +1,9 @@
 # @open-pioneer/tag-current-versions
 
+**Archived: This package is no longer being developed. `changeset tag` can now be used instead, since it can filter private packages now.**
+
+---
+
 Creates `git` tags for all packages in the current workspace, according to the `version` field in their `package.json`.
 
 Only those packages are tagged that have a valid version and are not `private`.
