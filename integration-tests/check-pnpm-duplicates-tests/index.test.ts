@@ -1,12 +1,18 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { cpSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
-import { it } from "vitest";
-import { TEST_DATA_DIR } from "./paths";
+import { beforeAll, expect, it } from "vitest";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./paths";
 import { runCli } from "./runCli";
-import { expect } from "vitest";
 
-const LOCKFILE_DIR = resolve(TEST_DATA_DIR, "simple-dups-lockfile");
+const LOCKFILE_DIR = resolve(TEMP_DATA_DIR, "project-dir");
+
+beforeAll(() => {
+    const sourceLockfile = resolve(TEST_DATA_DIR, "_pnpm-lock.yaml");
+    rmSync(LOCKFILE_DIR, { recursive: true, force: true });
+    cpSync(sourceLockfile, resolve(LOCKFILE_DIR, "pnpm-lock.yaml"), { recursive: true });
+});
 
 it("reports all duplicates by default", async () => {
     const result = await runCli(LOCKFILE_DIR, undefined);
@@ -103,7 +109,7 @@ it("reports all duplicates by default", async () => {
 });
 
 it("supports filtering dev dependencies", async () => {
-    const result = await runCli(LOCKFILE_DIR, resolve(LOCKFILE_DIR, "only-prod-dups.yaml"));
+    const result = await runCli(LOCKFILE_DIR, resolve(TEST_DATA_DIR, "only-prod-dups.yaml"));
     expect(result).toMatchInlineSnapshot(`
       {
         "exitCode": 1,
@@ -133,7 +139,7 @@ it("supports filtering dev dependencies", async () => {
 });
 
 it("supports allowing duplicates", async () => {
-    const result = await runCli(LOCKFILE_DIR, resolve(LOCKFILE_DIR, "allow-dups.yaml"));
+    const result = await runCli(LOCKFILE_DIR, resolve(TEST_DATA_DIR, "allow-dups.yaml"));
     expect(result).toMatchInlineSnapshot(`
       {
         "exitCode": 0,
@@ -144,7 +150,7 @@ it("supports allowing duplicates", async () => {
 });
 
 it("warns when rules are redundant", async () => {
-    const result = await runCli(LOCKFILE_DIR, resolve(LOCKFILE_DIR, "redundant-rules.yaml"));
+    const result = await runCli(LOCKFILE_DIR, resolve(TEST_DATA_DIR, "redundant-rules.yaml"));
     expect(result).toMatchInlineSnapshot(`
       {
         "exitCode": 0,

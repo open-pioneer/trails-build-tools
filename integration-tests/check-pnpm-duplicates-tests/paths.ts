@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const PACKAGE_DIR = resolve(fileURLToPath(import.meta.url), "..");
+export const TEMP_DATA_DIR = resolve(PACKAGE_DIR, "temp");
 export const TEST_DATA_DIR = resolve(PACKAGE_DIR, "test-data");
 
 const PACKAGE_JSON_FILE = resolve(PACKAGE_DIR, "package.json");

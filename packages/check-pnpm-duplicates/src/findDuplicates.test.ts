@@ -1,15 +1,18 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, it } from "vitest";
-import { readLockfile } from "./readLockfile";
-import { TEST_DATA_DIR } from "./testing/paths";
-import { resolve } from "node:path";
+import { beforeAll, expect, it } from "vitest";
 import { findDuplicatePackages } from "./findDuplicates";
+import { readLockfile } from "./readLockfile";
+import { prepareLockfileDir } from "./testing/paths";
+
+let projectDir!: string;
+beforeAll(() => {
+    projectDir = prepareLockfileDir("simple-dups", "find-duplicates");
+});
 
 it("detects duplicate in simple lockfile", async () => {
-    const directory = resolve(TEST_DATA_DIR, "simple-dups");
-    const lockfile = await readLockfile(directory);
+    const lockfile = await readLockfile(projectDir);
     const duplicates = await findDuplicatePackages(lockfile, false);
     expect(duplicates).toMatchInlineSnapshot(`
       Map {
@@ -578,8 +581,7 @@ it("detects duplicate in simple lockfile", async () => {
 });
 
 it("can filter devDependencies", async () => {
-    const directory = resolve(TEST_DATA_DIR, "simple-dups");
-    const lockfile = await readLockfile(directory);
+    const lockfile = await readLockfile(projectDir);
     const duplicates = await findDuplicatePackages(lockfile, true);
     expect(duplicates).toMatchInlineSnapshot(`
       Map {
