@@ -51,6 +51,7 @@
             "braces: https://github.com/advisories/GHSA-grv7-fg5c-xmjg",
             "fast-loops: https://github.com/advisories/GHSA-3q56-9cc2-46j4",
             "micromatch: https://github.com/advisories/GHSA-952p-6rrq-rcjv",
+            "cross-spawn: https://github.com/advisories/GHSA-3xgq-45jj-v275",
             "@open-pioneer/runtime: mixed versions, see below",
             "",
             "peers:",
@@ -62,7 +63,8 @@
             "braces@<3.0.3": ">=3.0.3",
             "fast-loops@<1.1.4": ">=1.1.4",
             "micromatch@<4.0.8": ">=4.0.8",
-            "@open-pioneer/runtime": ">= 2.2.0"
+            "@open-pioneer/runtime": ">= 2.2.0",
+            "cross-spawn@<7.0.5": ">=7.0.5"
         },
         "auditConfig": {
             "ignoreCves": []
