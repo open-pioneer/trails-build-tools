@@ -5,8 +5,8 @@ import { useMapModel } from '@open-pioneer/map';
 import { useCommonComponentProps, useEvent } from '@open-pioneer/react-utils';
 import { Select } from 'chakra-react-select';
 import { useIntl } from './_virtual/_virtual-pioneer-module_react-hooks.js';
-import { useRef, useMemo, useState, useEffect, useReducer, useCallback } from 'react';
-import { MenuComp, Input, SingleValue, HighlightOption, NoOptionsMessage, LoadingMessage, ValueContainer, IndicatorsContainer, ClearIndicator } from './CustomComponents.js';
+import { useRef, useState, useEffect, useReducer, useCallback, useMemo } from 'react';
+import { ClearIndicator, IndicatorsContainer, ValueContainer, LoadingMessage, NoOptionsMessage, HighlightOption, SingleValue, Input, MenuComp } from './CustomComponents.js';
 import { SearchController } from './SearchController.js';
 
 const LOG = createLogger("search:Search");

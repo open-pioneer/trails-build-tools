@@ -103,7 +103,7 @@ function detectRoot(packageDirectory: string): string | undefined {
         const gitRoot = dirname(findGitRoot(packageDirectory));
         isDebug && debug("Detected git repository at %s", gitRoot);
         return gitRoot;
-    } catch (e) {
+    } catch (_e) {
         return undefined;
     }
 }

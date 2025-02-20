@@ -1,4 +1,4 @@
-import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
+import { jsxs, jsx, Fragment } from 'react/jsx-runtime';
 import { SearchIcon } from '@chakra-ui/icons';
 import { chakra, CloseButton } from '@open-pioneer/chakra-integration';
 import { chakraComponents } from 'chakra-react-select';

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { Lockfile } from "./readLockfile";
+import { LockfileObject } from "./readLockfile";
 import { nameVerFromPkgSnapshot } from "@pnpm/lockfile.utils";
 import { LockedDependency, lockfileWalker } from "@pnpm/lockfile.walker";
 
@@ -13,7 +13,7 @@ export interface PackageEntry {
  * Returns duplicate package names and their versions.
  */
 export async function findDuplicatePackages(
-    lockfile: Lockfile,
+    lockfile: LockfileObject,
     skipDevDependencies: boolean
 ): Promise<Map<string, PackageEntry>> {
     const seenPackages = new Map<string, PackageEntry>();

@@ -2,7 +2,7 @@ import { Feature } from 'ol';
 import { createEmpty, extend, getCenter, getArea } from 'ol/extent.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
-import { Style, Icon, Stroke, Fill } from 'ol/style.js';
+import { Style, Stroke, Fill, Icon } from 'ol/style.js';
 import { toFunction } from 'ol/style/Style.js';
 import mapMarkerUrl from '../assets/images/mapMarker.png?url';
 import './AbstractLayer.js';

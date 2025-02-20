@@ -28,8 +28,6 @@ export function codegenPlugin(): Plugin {
     let repository!: MetadataRepository;
     let devServer: ViteDevServer | undefined;
 
-    devServer?.httpServer;
-
     return {
         name: "pioneer:codegen",
 
