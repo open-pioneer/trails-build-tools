@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { Plugin, ResolvedConfig } from "vite";
+import { Plugin, ResolvedConfig, UserConfig } from "vite";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { posix } from "node:path";
@@ -18,7 +18,7 @@ export function mpaPlugin(options: PioneerPluginOptions | undefined): Plugin {
     return {
         name: "pioneer:mpa",
 
-        config(config) {
+        config(config): UserConfig {
             const sourceRoot = config.root ?? cwd();
             const { entryPoints, appNames } = gatherEntryPoints({
                 apps,
