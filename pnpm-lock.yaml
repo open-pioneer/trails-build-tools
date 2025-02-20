@@ -5,14 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  semver@<7.5.2: '>=7.5.2'
-  braces@<3.0.3: '>=3.0.3'
-  fast-loops@<1.1.4: '>=1.1.4'
-  micromatch@<4.0.8: '>=4.0.8'
-  '@open-pioneer/runtime': '>= 2.2.0'
   cross-spawn@<7.0.5: '>=7.0.5'
-  nanoid@<3.3.8: ^3.3.8
   esbuild@<0.25.0: '>=0.25.0'
+  '@open-pioneer/runtime': '>= 2.2.0'
 
 importers:
 
@@ -3515,6 +3510,14 @@ packages:
     resolution: {integrity: sha512-9BakfsO2aUQN2K9Fdbj87RJIEZ82Q9IGim7FqM5OsebfoFC6ZHXgDq/KvniuLTPdeM8wY2o6Dj3WQ7KeQCj3cA==}
     engines: {node: '>=0.10.0'}
 
+  semver@5.7.2:
+    resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
+    hasBin: true
+
+  semver@6.3.1:
+    resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
+    hasBin: true
+
   semver@7.6.3:
     resolution: {integrity: sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==}
     engines: {node: '>=10'}
@@ -6237,7 +6240,7 @@ snapshots:
       object.fromentries: 2.0.8
       object.groupby: 1.0.3
       object.values: 1.2.0
-      semver: 7.6.3
+      semver: 6.3.1
       string.prototype.trimend: 1.0.8
       tsconfig-paths: 3.15.0
     optionalDependencies:
@@ -7014,7 +7017,7 @@ snapshots:
     dependencies:
       hosted-git-info: 2.8.9
       resolve: 1.22.8
-      semver: 7.6.3
+      semver: 5.7.2
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
@@ -7551,6 +7554,10 @@ snapshots:
       loose-envify: 1.4.0
 
   screenfull@5.2.0: {}
+
+  semver@5.7.2: {}
+
+  semver@6.3.1: {}
 
   semver@7.6.3: {}
 
