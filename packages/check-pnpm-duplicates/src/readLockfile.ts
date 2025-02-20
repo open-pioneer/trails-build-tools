@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2023 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { Lockfile, readWantedLockfile } from "@pnpm/lockfile.fs";
+import { LockfileObject, readWantedLockfile } from "@pnpm/lockfile.fs";
 
-export type { Lockfile };
+export type { LockfileObject };
 
 /**
  * Reads a pnpm lockfile from the given directory.
  */
-export async function readLockfile(directory: string): Promise<Lockfile> {
+export async function readLockfile(directory: string): Promise<LockfileObject> {
     const lockFile = await readWantedLockfile(directory, {
         ignoreIncompatible: false
     });

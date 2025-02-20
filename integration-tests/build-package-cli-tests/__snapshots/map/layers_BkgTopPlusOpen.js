@@ -3,7 +3,7 @@ import WMTSTileGrid from 'ol/tilegrid/WMTS.js';
 
 class BkgTopPlusOpen extends WMTS {
   constructor(options) {
-    const topLeftCorner = [-380316598427299e-8, 880590808284866e-8];
+    const topLeftCorner = [-3803165.98427299, 880590808284866e-8];
     const resolutions = [
       4891.96981025128,
       // AdV-Level 0  (1:17471320.7508974)
