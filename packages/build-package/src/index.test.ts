@@ -11,6 +11,9 @@ import { createMemoryLogger } from "./utils/Logger";
 
 describe(
     "build",
+    {
+        timeout: 20000
+    },
     function () {
         beforeAll(async () => {
             await mkdir(TEMP_DATA_DIR, { recursive: true });
@@ -155,8 +158,5 @@ describe(
           "
         `);
         });
-    },
-    {
-        timeout: 20000
     }
 );

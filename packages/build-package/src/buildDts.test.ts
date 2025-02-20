@@ -11,6 +11,9 @@ import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 
 describe(
     "buildDts",
+    {
+        timeout: 20000
+    },
     function () {
         it("generates .d.ts files for a simple typescript package", async function () {
             const packageDirectory = resolve(TEST_DATA_DIR, "simple-ts-project");
@@ -135,9 +138,6 @@ describe(
             const messages = defaults.logger.messages.map((m) => m.args[0]!);
             expect(messages.length).toBe(0);
         });
-    },
-    {
-        timeout: 20000
     }
 );
 
