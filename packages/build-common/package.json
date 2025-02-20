@@ -41,6 +41,6 @@
         "zod-validation-error": "^3.4.0"
     },
     "engines": {
-        "node": ">= 18"
+        "node": ">= 20"
     }
 }
