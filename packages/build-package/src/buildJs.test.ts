@@ -97,7 +97,8 @@ it("generates source maps when enabled", async function () {
     });
 
     // Expect source map comment at the bottom of the file
-    expect(readText(resolve(outputDirectory, "entryPointA.js"))).toMatchInlineSnapshot(`
+    expect(readText(resolve(outputDirectory, "entryPointA.js"))).toMatchInlineSnapshot(
+        restoreSourceMapComment(`
           "import { log } from './dir/log.js';
           import something from 'somewhere-external';
           import somethingElse from '@scope/somewhere-external';
@@ -109,9 +110,10 @@ it("generates source maps when enabled", async function () {
           }
 
           export { helloA };
-          //# sourceMappingURL=entryPointA.js.map
+          //_ sourceMappingURL=entryPointA.js.map
           "
-        `);
+        `)
+    );
 
     // Sourcemap exists
     const sourceMapPath = resolve(outputDirectory, "entryPointA.js.map");
@@ -211,15 +213,17 @@ it("generates correct sourcemaps for ts", async function () {
         sourceMap: true
     });
 
-    expect(readText(resolve(outputDirectory, "index.js"))).toMatchInlineSnapshot(`
+    expect(readText(resolve(outputDirectory, "index.js"))).toMatchInlineSnapshot(
+        restoreSourceMapComment(`
           "import { PI } from './utils/helper.js';
 
           console.log(PI);
 
           export { PI };
-          //# sourceMappingURL=index.js.map
+          //_ sourceMappingURL=index.js.map
           "
-        `);
+        `)
+    );
     const { sources: indexSources, sourcesContent: indexSourcesContent } = JSON.parse(
         readText(resolve(outputDirectory, "index.js.map"))
     );
@@ -242,13 +246,15 @@ it("generates correct sourcemaps for ts", async function () {
           ",
           ]
         `);
-    expect(readText(resolve(outputDirectory, "utils/helper.js"))).toMatchInlineSnapshot(`
+    expect(readText(resolve(outputDirectory, "utils/helper.js"))).toMatchInlineSnapshot(
+        restoreSourceMapComment(`
           "const PI = 3.14;
 
           export { PI };
-          //# sourceMappingURL=helper.js.map
+          //_ sourceMappingURL=helper.js.map
           "
-        `);
+        `)
+    );
     const { sources: helperSources, sourcesContent: helperSourcesContent } = JSON.parse(
         readText(resolve(outputDirectory, "utils/helper.js.map"))
     );
@@ -633,4 +639,9 @@ function testDefaults() {
 
 function normalize(entryPoints: string[]) {
     return normalizeEntryPoints(entryPoints, SUPPORTED_JS_EXTENSIONS);
+}
+
+// Cannot use raw source mapping urls in snapshot strings because vitest runs a regex against them.
+function restoreSourceMapComment(str: string) {
+    return str.replaceAll("//_ sourceMappingURL=", "//" + "# sourceMappingURL=");
 }

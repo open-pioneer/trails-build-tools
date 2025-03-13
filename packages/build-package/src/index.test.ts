@@ -43,7 +43,8 @@ describe(
             }
 
             const entryPointA = resolve(distDirectory, "entryPointA.js");
-            expect(readText(entryPointA)).toMatchInlineSnapshot(`
+            expect(readText(entryPointA)).toMatchInlineSnapshot(
+                restoreSourceMapComment(`
               "import { log } from './dir/log.js';
               import something from 'somewhere-external';
               import somethingElse from '@scope/somewhere-external';
@@ -55,9 +56,10 @@ describe(
               }
 
               export { helloA };
-              //# sourceMappingURL=entryPointA.js.map
+              //_ sourceMappingURL=entryPointA.js.map
               "
-            `);
+            `)
+            );
 
             const entryPointADts = resolve(distDirectory, "entryPointA.d.ts");
             expect(readText(entryPointADts)).toMatchInlineSnapshot(`
@@ -66,7 +68,8 @@ describe(
         `);
 
             const entryPointB = resolve(distDirectory, "entryPointB.js");
-            expect(readText(entryPointB)).toMatchInlineSnapshot(`
+            expect(readText(entryPointB)).toMatchInlineSnapshot(
+                restoreSourceMapComment(`
               "import { log } from './dir/log.js';
 
               function helloB() {
@@ -74,9 +77,10 @@ describe(
               }
 
               export { helloB };
-              //# sourceMappingURL=entryPointB.js.map
+              //_ sourceMappingURL=entryPointB.js.map
               "
-            `);
+            `)
+            );
 
             const entryPointBDts = resolve(distDirectory, "entryPointB.d.ts");
             expect(readText(entryPointBDts)).toMatchInlineSnapshot(`
@@ -160,3 +164,8 @@ describe(
         });
     }
 );
+
+// Cannot use raw source mapping urls in snapshot strings because vitest runs a regex against them.
+function restoreSourceMapComment(str: string) {
+    return str.replaceAll("//_ sourceMappingURL=", "//" + "# sourceMappingURL=");
+}
