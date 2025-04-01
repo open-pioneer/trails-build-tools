@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 4.0.1
+
+### Patch Changes
+
+- 1fefee8: Update babel dependencies (CVE-2025-27789)
+
 ## 4.0.0
 
 ### Major Changes
