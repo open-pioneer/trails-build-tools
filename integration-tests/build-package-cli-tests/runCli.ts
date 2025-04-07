@@ -1,12 +1,9 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { exec } from "node:child_process";
 import { relative, resolve } from "node:path";
 import { copy } from "fs-extra";
-import { promisify } from "node:util";
 import { PACKAGE_DIR, TEMP_DATA_DIR, TEST_DATA_DIR } from "./paths";
-
-const asyncExec = promisify(exec);
+import { $ } from "zx";
 
 export interface RunResult {
     targetDir: string;
@@ -23,12 +20,9 @@ export async function runCli(packageDirectory: string): Promise<RunResult> {
     // Copy package into temp, then invoke build-pioneer-package CLI.
     // Compiled output is written into copyDir/dist
     await copy(packageDirectory, copyDir);
-    const { stdout, stderr } = await asyncExec(cli, {
-        cwd: copyDir
-    });
 
+    const { stdout, stderr } = await $({ cwd: copyDir })`${cli}`.quiet();
     const stableStdout = stdout.replace(/Building package at .*/, "Building package at <PATH>");
-
     return {
         targetDir,
         stdout: stableStdout,
