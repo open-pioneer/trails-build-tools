@@ -6,7 +6,7 @@ import { expect, it } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { createConsoleLogger, createMemoryLogger } from "./utils/Logger";
+import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { RuntimeSupport } from "@open-pioneer/build-common";
