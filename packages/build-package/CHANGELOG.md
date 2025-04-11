@@ -1,5 +1,18 @@
 # Changelog @open-pioneer/build-package
 
+## 4.0.1
+
+### Patch Changes
+
+- 23c031a: Bump dependencies
+- 23c031a: Hide rollup warnings when a module contains 'use client' directives.
+
+    NOTE: These directives may currently be dropped during the build.
+    This is not a problem in practice (at this time) because we only use client components anyway.
+
+- Updated dependencies [23c031a]
+    - @open-pioneer/build-common@3.0.1
+
 ## 4.0.0
 
 ### Major Changes
