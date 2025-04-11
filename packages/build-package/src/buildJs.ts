@@ -88,6 +88,13 @@ export async function buildJs({
             })
         ],
         onLog(level: LogLevel, log: RollupLog) {
+            if (log.code === "SOURCEMAP_ERROR" || log.code === "MODULE_LEVEL_DIRECTIVE") {
+                // Ignore these warnings.
+                // 'use client' directives are currently dropped. If they are needed, take a look at this rollup issue:
+                // https://github.com/rollup/rollup/issues/4699
+                return;
+            }
+
             let method;
             switch (level) {
                 case "debug":

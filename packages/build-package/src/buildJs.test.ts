@@ -6,7 +6,7 @@ import { expect, it } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { createMemoryLogger } from "./utils/Logger";
+import { createConsoleLogger, createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { RuntimeSupport } from "@open-pioneer/build-common";
@@ -168,6 +168,33 @@ it("transpiles jsx to js", async function () {
           export { Greeting };
           "
         `);
+});
+
+it("emits no warnings when compiling 'use client' files", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-use-client-directive");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-use-client-directive");
+    const entryPoints = normalize(["index"]);
+
+    const logger = createMemoryLogger();
+
+    await cleanDir(outputDirectory);
+    await buildJs({
+        ...testDefaults(),
+        packageDirectory,
+        outputDirectory,
+        entryPoints,
+        sourceMap: true,
+        logger,
+        packageJson: {
+            dependencies: {
+                ...DEFAULT_DEPS,
+                react: "*"
+            }
+        }
+    });
+
+    // Expect no warnings for 'use client'
+    expect(logger.messages).toEqual([]);
 });
 
 it("transpiles ts to js", async function () {
@@ -621,6 +648,10 @@ it("emits errors when trails packages import internal modules from other trails 
     );
 });
 
+const DEFAULT_DEPS = {
+    [RuntimeSupport.RUNTIME_PACKAGE_NAME]: "*"
+};
+
 function testDefaults() {
     return {
         packageName: "test",
@@ -629,9 +660,7 @@ function testDefaults() {
         strict: false,
         logger: createMemoryLogger(),
         packageJson: {
-            dependencies: {
-                [RuntimeSupport.RUNTIME_PACKAGE_NAME]: "*"
-            }
+            dependencies: DEFAULT_DEPS
         },
         packageJsonPath: "test/package.json"
     } satisfies Partial<BuildJsOptions>;
