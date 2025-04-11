@@ -45,10 +45,10 @@
     "dependencies": {
         "@open-pioneer/build-common": "workspace:^",
         "@open-pioneer/build-support": "workspace:^",
-        "@rollup/plugin-node-resolve": "^16.0.0",
+        "@rollup/plugin-node-resolve": "^16.0.1",
         "chalk": "^5.4.1",
         "debug": "^4.4.0",
-        "esbuild": "^0.25.0",
+        "esbuild": "^0.25.2",
         "fast-glob": "^3.3.3",
         "find-git-root": "^1.0.4",
         "find-workspaces": "^0.3.1",
@@ -56,18 +56,18 @@
         "import-meta-resolve": "^4.1.0",
         "postcss": "^8.5.3",
         "postcss-import": "^16.0.0",
-        "rollup": "^4.34.8",
-        "rollup-plugin-esbuild": "^6.2.0"
+        "rollup": "^4.39.0",
+        "rollup-plugin-esbuild": "^6.2.1"
     },
     "devDependencies": {
         "@rollup/pluginutils": "^5.1.4",
         "@types/debug": "^4.1.12",
         "@types/fs-extra": "^11.0.4",
         "@types/postcss-import": "^14.0.3",
-        "@types/react": "^18.3.18",
+        "@types/react": "^19.1.0",
         "build-tools": "workspace:*",
-        "sass": "^1.85.0",
-        "typescript": "^5.7.3"
+        "sass": "^1.86.3",
+        "typescript": "^5.8.3"
     },
     "engines": {
         "node": ">= 20"
