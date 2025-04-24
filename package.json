@@ -42,37 +42,7 @@
     },
     "engines": {
         "node": ">= 20",
-        "pnpm": "^9"
+        "pnpm": ">= 10"
     },
-    "pnpm": {
-        "//": [
-            "overrides:",
-            "cross-spawn: https://github.com/advisories/GHSA-3xgq-45jj-v275",
-            "esbuild: https://github.com/advisories/GHSA-67mh-4wv8-2f99",
-            "@babel/runtime: https://github.com/advisories/GHSA-968p-4wvh-cqc8",
-            "@open-pioneer/runtime: mixed versions, see below",
-            "",
-            "peers:",
-            "trails package overrides can be removed when they no longer use peer deps.",
-            "these are in conflict because the integration tests use old versions of those packages."
-        ],
-        "overrides": {
-            "cross-spawn@<7.0.5": ">=7.0.5",
-            "esbuild@<0.25.0": ">=0.25.0",
-            "@babel/runtime@<7.26.10": ">= 7.26.10",
-            "@open-pioneer/runtime": ">= 2.2.0"
-        },
-        "auditConfig": {
-            "ignoreCves": []
-        },
-        "peerDependencyRules": {
-            "allowedVersions": {
-                "@open-pioneer/chakra-integration>framer-motion": ">=4.0.0",
-                "@open-pioneer/base-theme": "*",
-                "@open-pioneer/chakra-integration@^2.2.0": "*",
-                "@open-pioneer/runtime-react-support@^1.0.2": "*",
-                "@open-pioneer/core": "*"
-            }
-        }
-    }
+    "packageManager": "pnpm@10.9.0"
 }

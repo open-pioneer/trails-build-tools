@@ -6,3 +6,40 @@ packages:
     - "!**/temp/**"
     - "!**/test-data/**"
     - "!**/__snapshots/**"
+
+
+overrides:
+  # https://github.com/advisories/GHSA-3xgq-45jj-v275
+  "cross-spawn@<7.0.5": ">=7.0.5"
+  # https://github.com/advisories/GHSA-67mh-4wv8-2f99
+  "esbuild@<0.25.0": ">=0.25.0"
+  # https://github.com/advisories/GHSA-968p-4wvh-cqc8
+  "@babel/runtime@<7.26.10": ">= 7.26.10"
+
+  # Version doesn't really matter, this is used as a dep in integration tests
+  "@open-pioneer/runtime": ">= 2.2.0"
+  
+auditConfig:
+  ignoreCves: []
+
+peerDependencyRules:
+  allowedVersions:
+    # Versions don't really matter, these are used as deps in integration tests
+    "@open-pioneer/chakra-integration>framer-motion": ">=4.0.0"
+    "@open-pioneer/base-theme": "*"
+    "@open-pioneer/chakra-integration@^2.2.0": "*"
+    "@open-pioneer/runtime-react-support@^1.0.2": "*"
+    "@open-pioneer/core": "*"
+
+onlyBuiltDependencies:
+  - "@parcel/watcher"
+  - esbuild
+
+# Don't automatically link to workspace packages (use e.g. "workspace:^" instead).
+linkWorkspacePackages: false
+autoInstallPeers: true
+dedupePeerDependents: true
+strictPeerDependencies: true
+
+# Workaround for current problems regarding our vite plugin + vite's optimizeDeps feature
+shamefullyHoist: true
