@@ -16,16 +16,16 @@ catalog:
   "@changesets/logger": ^0.1.0
   "@changesets/test-utils": ^0.0.5
   "@manypkg/get-packages": ^2.2.2
-  "@pnpm/lockfile.fs": ^1001.1.9
-  "@pnpm/lockfile.utils": ^1001.0.8
-  "@pnpm/lockfile.walker": ^1001.0.7
-  "@pnpm/types": ^1000.4.0
+  "@pnpm/lockfile.fs": ^1001.1.11
+  "@pnpm/lockfile.utils": ^1001.0.10
+  "@pnpm/lockfile.walker": ^1001.0.8
+  "@pnpm/types": ^1000.5.0
   "@rollup/plugin-node-resolve": ^16.0.1
   "@rollup/pluginutils": ^5.1.4
   chalk: ^5.4.1
   commander: ^13.1.0
   debug: ^4.4.0
-  esbuild: ^0.25.2
+  esbuild: ^0.25.3
   fast-glob: ^3.3.3
   find-git-root: ^1.0.4
   find-workspaces: ^0.3.1
@@ -36,15 +36,14 @@ catalog:
   postcss: ^8.5.3
   prettier: ^3.5.3
   rollup-plugin-esbuild: ^6.2.1
-  rollup: ^4.39.0
-  sass: ^1.86.3
+  rollup: ^4.40.0
+  sass: ^1.87.0
   semver: ^7.7.1
   typescript: ^5.8.3
-  vite: ^6.2.6
   vitefu: ^1.0.6
   zod-validation-error: ^3.4.0
-  zod: ^3.24.2
-  zx: ^8.5.2
+  zod: ^3.24.3
+  zx: ^8.5.3
 
   # Dev tooling
   "@types/babel__generator": ^7.27.0
@@ -57,19 +56,20 @@ catalog:
   "@types/postcss-import": ^14.0.3
   "@types/react": ^19.1.0
   "@types/semver": ^7.7.0
-  "@typescript-eslint/eslint-plugin": ^8.29.1
-  "@typescript-eslint/parser": ^8.29.1
+  "@typescript-eslint/eslint-plugin": ^8.31.0
+  "@typescript-eslint/parser": ^8.31.0
   eslint-config-prettier: ^10.1.2
-  eslint-import-resolver-typescript: ^3.10.0
+  eslint-import-resolver-typescript: ^4.3.4
   eslint-plugin-header: ^3.1.1
   eslint-plugin-import: ^2.31.0
   eslint-plugin-unused-imports: ^4.1.4
   eslint: ^8.57.1
   husky: ^9.1.7
-  lint-staged: ^15.5.0
+  lint-staged: ^15.5.1
   npm-run-all: ^4.1.5
   rimraf: ^6.0.1
-  vitest: ^3.1.1
+  vite: ^6.3.3
+  vitest: ^3.1.2
 
 catalogs:
   # Used in integration tests, no need to keep these up to date
@@ -121,6 +121,11 @@ peerDependencyRules:
 onlyBuiltDependencies:
   - "@parcel/watcher"
   - esbuild
+
+ignoredBuiltDependencies:
+  # Seems to work fine without building
+  - unrs-resolver
+
 
 # Don't automatically link to workspace packages (use e.g. "workspace:^" instead).
 linkWorkspacePackages: false
