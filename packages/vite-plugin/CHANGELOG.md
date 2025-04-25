@@ -1,5 +1,16 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 4.0.1
+
+### Patch Changes
+
+- 23c031a: Bump dependencies
+- 1fefee8: Update babel dependencies (CVE-2025-27789)
+- 67ba039: Bump dependencies
+- Updated dependencies [23c031a]
+- Updated dependencies [67ba039]
+    - @open-pioneer/build-common@3.0.1
+
 ## 4.0.0
 
 ### Major Changes
