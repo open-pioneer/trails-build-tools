@@ -34,12 +34,12 @@
         "node": ">= 18"
     },
     "dependencies": {
-        "@changesets/git": "^3.0.0",
-        "@changesets/logger": "^0.1.0",
-        "@manypkg/get-packages": "^2.2.2"
+        "@changesets/git": "catalog:",
+        "@changesets/logger": "catalog:",
+        "@manypkg/get-packages": "catalog:"
     },
     "devDependencies": {
-        "@changesets/test-utils": "^0.0.5",
+        "@changesets/test-utils": "catalog:",
         "build-tools": "workspace:*"
     }
 }

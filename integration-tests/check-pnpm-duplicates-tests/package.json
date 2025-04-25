@@ -6,6 +6,6 @@
     },
     "devDependencies": {
         "@open-pioneer/check-pnpm-duplicates": "workspace:^",
-        "zx": "^8.5.2"
+        "zx": "catalog:"
     }
 }
