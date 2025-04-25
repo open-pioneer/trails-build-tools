@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-support
 
+## 3.0.1
+
+### Patch Changes
+
+- 67ba039: Bump dependencies
+
 ## 3.0.0
 
 ### Major Changes
