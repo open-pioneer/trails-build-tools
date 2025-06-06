@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package
 
+## 4.0.2
+
+### Patch Changes
+
+- 26cb9d8: Bump dependencies
+- Updated dependencies [26cb9d8]
+    - @open-pioneer/build-common@3.0.2
+    - @open-pioneer/build-support@3.0.2
+
 ## 4.0.1
 
 ### Patch Changes
