@@ -20,6 +20,7 @@ catalog:
   "@pnpm/lockfile.utils": ^1001.0.11
   "@pnpm/lockfile.walker": ^1001.0.9
   "@pnpm/types": ^1000.6.0
+  "@pnpm/logger": ^1001.0.0
   "@rollup/plugin-node-resolve": ^16.0.1
   "@rollup/pluginutils": ^5.1.4
   chalk: ^5.4.1
