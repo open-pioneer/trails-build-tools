@@ -13,7 +13,7 @@ catalog:
   "@babel/types": ^7.27.6
   "@changesets/cli": ^2.28.1
   "@changesets/git": ^3.0.0
-  "@changesets/logger": ^0.1.0
+  "@changesets/logger": ^0.1.1
   "@changesets/test-utils": ^0.0.5
   "@manypkg/get-packages": ^2.2.2
   "@pnpm/lockfile.fs": ^1001.1.12

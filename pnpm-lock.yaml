@@ -22,7 +22,7 @@ catalogs:
       specifier: ^3.0.0
       version: 3.0.2
     '@changesets/logger':
-      specifier: ^0.1.0
+      specifier: ^0.1.1
       version: 0.1.1
     '@changesets/test-utils':
       specifier: ^0.0.5
