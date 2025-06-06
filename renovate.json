@@ -27,6 +27,10 @@
             "matchCurrentVersion": "!/^0/",
             "groupName": "all non-major dependencies",
             "groupSlug": "all-minor-patch"
+        },
+        {
+            "matchDepTypes": "pnpm.catalog.tests",
+            "enabled": false
         }
     ]
 }
