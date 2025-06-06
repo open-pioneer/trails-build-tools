@@ -14,7 +14,7 @@
         "lint": "eslint ./packages ./integration-tests",
         "prettier-check": "pnpm prettier:common -c",
         "prettier": "pnpm prettier:common -w",
-        "prettier:common": "prettier ./packages ./integration-tests --ignore-path .eslintignore --cache",
+        "prettier:common": "prettier ./packages ./integration-tests --cache",
         "prepare": "husky",
         "ci:test": "pnpm run clean && pnpm run check-types && pnpm run lint && pnpm run build && pnpm install && pnpm run test run",
         "ci:version": "pnpm changeset version && pnpm prettier && pnpm install",
