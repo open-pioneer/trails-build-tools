@@ -25,6 +25,13 @@
         },
         {
             "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+            // skip engine and peerDependencies
+            "matchDepTypes": [
+                "dependencies",
+                "devDependencies",
+                "packageManager",
+                "pnpm.catalog.default"
+            ],
             "matchCurrentVersion": "!/^0/",
             "groupName": "all non-major dependencies",
             "groupSlug": "all-minor-patch"
