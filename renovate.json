@@ -15,6 +15,7 @@
     },
     "prConcurrentLimit": 0,
     "prHourlyLimit": 0,
+    "ignorePaths": ["**/node_modules/**", "**/test-data/**", "**/__snapshots/**"],
     "packageRules": [
         {
             "matchPackageNames": ["@changesets/*"],
