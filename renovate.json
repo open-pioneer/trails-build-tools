@@ -1,0 +1,36 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        "schedule:earlyMondays",
+        ":semanticCommitTypeAll(chore)",
+        ":approveMajorUpdates"
+    ],
+    "labels": ["dependencies"],
+    "dependencyDashboard": true,
+    "rebaseWhen": "conflicted",
+    "timezone": "UTC",
+    "lockFileMaintenance": {
+        "enabled": false
+    },
+    "prConcurrentLimit": 0,
+    "prHourlyLimit": 0,
+    "ignorePaths": ["**/node_modules/**", "**/test-data/**", "**/__snapshots/**"],
+    "packageRules": [
+        {
+            "matchPackageNames": ["@changesets/*"],
+            "enabled": false,
+            "description": "Pin changeset packages to current version"
+        },
+        {
+            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+            "matchCurrentVersion": "!/^0/",
+            "groupName": "all non-major dependencies",
+            "groupSlug": "all-minor-patch"
+        },
+        {
+            "matchDepTypes": "pnpm.catalog.tests",
+            "enabled": false
+        }
+    ]
+}
