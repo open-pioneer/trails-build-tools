@@ -34,6 +34,7 @@
         "@pnpm/lockfile.fs": "catalog:",
         "@pnpm/lockfile.utils": "catalog:",
         "@pnpm/lockfile.walker": "catalog:",
+        "@pnpm/logger": "catalog:",
         "@pnpm/types": "catalog:",
         "chalk": "catalog:",
         "commander": "catalog:",
