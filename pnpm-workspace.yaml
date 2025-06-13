@@ -99,15 +99,15 @@ overrides:
   # https://github.com/advisories/GHSA-968p-4wvh-cqc8
   "@babel/runtime@<7.26.10": ">= 7.26.10"
 
+  # https://github.com/advisories/GHSA-v6h2-p8h4-qcjw
+  "brace-expansion@>=1.0.0 <= 1.1.11": "^1.1.12"
+  "brace-expansion@>=2.0.0 <= 2.0.1": "^2.0.2"
+
   # Version doesn't really matter, this is used as a dep in integration tests
   "@open-pioneer/runtime": ">= 2.2.0"
 
 auditConfig:
   ignoreCves:
-    # brace-expansion is a dev dependency that runs on trusted input (source code).
-    # There is currently no patch available.
-    # See https://github.com/advisories/GHSA-v6h2-p8h4-qcjw
-    - "CVE-2025-5889"
 
 peerDependencyRules:
   allowedVersions:
