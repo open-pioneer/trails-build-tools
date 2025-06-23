@@ -41,7 +41,7 @@
         "vitest": "catalog:"
     },
     "engines": {
-        "node": ">= 20",
+        "node": ">= 20.19.3",
         "pnpm": ">= 10"
     },
     "packageManager": "pnpm@10.11.1"

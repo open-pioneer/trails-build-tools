@@ -44,6 +44,6 @@
         "build-tools": "workspace:*"
     },
     "engines": {
-        "node": ">= 20"
+        "node": ">= 20.19.3"
     }
 }
