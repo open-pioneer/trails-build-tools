@@ -33,6 +33,18 @@
         {
             "matchDepTypes": "pnpm.catalog.tests",
             "enabled": false
+        },
+        {
+            "description": "disable non-major engine updates",
+            "matchDepTypes": ["engines"],
+            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+            "enabled": false
+        },
+        {
+            "matchDepTypes": ["engines"],
+            "matchUpdateTypes": ["major"],
+            "groupName": "update engines",
+            "dependencyDashboardApproval": true
         }
     ]
 }
