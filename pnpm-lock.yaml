@@ -22,8 +22,8 @@ catalogs:
       specifier: ^1001.1.14
       version: 1001.1.14
     '@pnpm/lockfile.utils':
-      specifier: ^1001.0.12
-      version: 1001.0.12
+      specifier: ^1002.0.0
+      version: 1002.0.0
     '@pnpm/lockfile.walker':
       specifier: ^1001.0.10
       version: 1001.0.10
@@ -501,7 +501,7 @@ importers:
         version: 1001.1.14(@pnpm/logger@1001.0.0)
       '@pnpm/lockfile.utils':
         specifier: 'catalog:'
-        version: 1001.0.12
+        version: 1002.0.0
       '@pnpm/lockfile.walker':
         specifier: 'catalog:'
         version: 1001.0.10
@@ -1412,10 +1412,6 @@ packages:
     resolution: {integrity: sha512-tNe7a6U4rCpxLMBaR0SIYTdjxGdL0Vwb3G1zY8++sPtHSvy7qd54u8CIB0Z+Y6t5tc9pNYMYCMwhE/wdSY7ltg==}
     engines: {node: '>=18.12'}
 
-  '@pnpm/dependency-path@1000.0.9':
-    resolution: {integrity: sha512-0AhabApfiq3EEYeed5HKQEU3ftkrfyKTNgkMH9esGdp2yc+62Zu7eWFf8WW6IGyitDQPLWGYjSEWDC9Bvv8nPg==}
-    engines: {node: '>=18.12'}
-
   '@pnpm/dependency-path@1001.0.0':
     resolution: {integrity: sha512-6lDmcQUO87BntRHKmmv1+ZbdZUMsGM6WCFp3y1jEqgvDOaWHM2AgrLeiBs2zf2Wyf4HeijX6rNGohZvgY3uRqQ==}
     engines: {node: '>=18.12'}
@@ -1444,10 +1440,6 @@ packages:
 
   '@pnpm/lockfile.types@1001.0.8':
     resolution: {integrity: sha512-rKecvWutX7aZPFNyXGnGtiwfmnPRiQyG6AWQ1Ad0djWKbPeccg0s9B7cJqCJ4nEnwzhEvw9UtuofBkU/O0L+bQ==}
-    engines: {node: '>=18.12'}
-
-  '@pnpm/lockfile.utils@1001.0.12':
-    resolution: {integrity: sha512-8+jo/Qqn6tmwsGhaHaG1TVaqLzWzrr86RtF1Bi+GlwBrgVj+JkrymWAxcH9aKNEP2es6hJSVe3+71pTx/g1yhg==}
     engines: {node: '>=18.12'}
 
   '@pnpm/lockfile.utils@1002.0.0':
@@ -5255,12 +5247,6 @@ snapshots:
 
   '@pnpm/crypto.polyfill@1000.1.0': {}
 
-  '@pnpm/dependency-path@1000.0.9':
-    dependencies:
-      '@pnpm/crypto.hash': 1000.1.1
-      '@pnpm/types': 1000.6.0
-      semver: 7.7.2
-
   '@pnpm/dependency-path@1001.0.0':
     dependencies:
       '@pnpm/crypto.hash': 1000.1.1
@@ -5312,16 +5298,6 @@ snapshots:
     dependencies:
       '@pnpm/patching.types': 1000.1.0
       '@pnpm/types': 1000.6.0
-
-  '@pnpm/lockfile.utils@1001.0.12':
-    dependencies:
-      '@pnpm/dependency-path': 1000.0.9
-      '@pnpm/lockfile.types': 1001.0.8
-      '@pnpm/pick-fetcher': 1000.0.1
-      '@pnpm/resolver-base': 1004.0.0
-      '@pnpm/types': 1000.6.0
-      get-npm-tarball-url: 2.1.0
-      ramda: '@pnpm/ramda@0.28.1'
 
   '@pnpm/lockfile.utils@1002.0.0':
     dependencies:
