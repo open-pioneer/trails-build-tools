@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { PluginContext } from "rollup";
-import { normalizePath, Plugin, ResolvedConfig, ViteDevServer } from "vite";
+import { normalizePath, Plugin, ResolvedConfig, ViteDevServer, Rollup } from "vite";
 import { createDebugger } from "./utils/debug";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import { MetadataRepository } from "./metadata/MetadataRepository";
@@ -15,6 +14,8 @@ import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { MetadataContext } from "./metadata/Metadata";
 import { RuntimeSupport } from "@open-pioneer/build-common";
+
+type PluginContext = Rollup.PluginContext;
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
