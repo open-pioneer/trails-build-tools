@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-support
 
+## 3.0.3
+
+### Patch Changes
+
+- 340c415: Update dependencies
+
 ## 3.0.2
 
 ### Patch Changes
