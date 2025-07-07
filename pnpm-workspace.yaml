@@ -33,13 +33,13 @@ catalog:
   postcss: ^8.5.6
   prettier: ^3.6.2
   rollup-plugin-esbuild: ^6.2.1
-  rollup: ^4.44.1
+  rollup: ^4.44.2
   sass: ^1.89.2
   semver: ^7.7.2
   typescript: ^5.8.3
-  vitefu: ^1.0.7
+  vitefu: ^1.1.1
   zod-validation-error: ^3.5.2
-  zod: ^3.25.71
+  zod: ^3.25.74
   zx: ^8.6.1
 
   # Dev tooling
