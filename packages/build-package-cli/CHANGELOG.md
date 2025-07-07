@@ -49,7 +49,6 @@
 
 - e4ae880: Switch to `type: module`
 - e4ae880: Implement additional validations when importing modules from other packages.
-
     - When importing modules from normal node packages, `build-package` will now check that the imported module actually exists.
     - When importing modules from another trails package in the same repository, `build-package` now verifies that the imported module is an actual entry point of that package (declared in the `build.config.mjs`).
 
