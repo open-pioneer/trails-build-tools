@@ -17,6 +17,7 @@
     "prHourlyLimit": 0,
     "ignorePaths": ["**/node_modules/**", "**/test-data/**", "**/__snapshots/**"],
     "rangeStrategy": "bump",
+    "postUpdateOptions": ["pnpmDedupe"],
     "packageRules": [
         {
             "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
