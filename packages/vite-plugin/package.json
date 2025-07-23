@@ -33,7 +33,7 @@
     ],
     "peerDependencies": {
         "@open-pioneer/runtime": "*",
-        "sass": "^1.77.6",
+        "sass": "^1.89.2",
         "vite": "^6.0.0"
     },
     "dependencies": {
