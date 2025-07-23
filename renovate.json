@@ -59,6 +59,12 @@
             "matchUpdateTypes": ["major"],
             "groupName": "update engines",
             "dependencyDashboardApproval": true
+        },
+        {
+            "matchDepTypes": ["peerDependencies"],
+            "groupName": "Update peer dependencies",
+            "description": "Don't update peer dependencies automatically",
+            "enabled": false
         }
     ]
 }
