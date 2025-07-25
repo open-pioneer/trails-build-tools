@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/build-common
 
+## 3.1.0
+
+### Minor Changes
+
+- ba600ea: Update to zod v4.
+
+### Patch Changes
+
+- 340c415: Update dependencies
+
 ## 3.0.2
 
 ### Patch Changes

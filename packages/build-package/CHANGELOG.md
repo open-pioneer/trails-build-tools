@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/build-package
 
+## 4.0.3
+
+### Patch Changes
+
+- 340c415: Update dependencies
+- Updated dependencies [340c415]
+- Updated dependencies [ba600ea]
+    - @open-pioneer/build-common@3.1.0
+    - @open-pioneer/build-support@3.0.3
+
 ## 4.0.2
 
 ### Patch Changes
