@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { parseI18nYaml, parseI18nFile } from "./parseI18nYaml";
-import { describe, it, assert } from "vitest";
+import { describe, it, assert, expect } from "vitest";
 
 describe("parseI18nFile", function () {
     it("parses empty yaml", function () {
@@ -56,7 +56,9 @@ overrides:
     });
 
     it("throws for unexpected keys", function () {
-        assert.throws(() => parseI18nYaml(`foo:`), /Unrecognized key\(s\)/);
+        expect(() => parseI18nYaml(`foo:`)).toThrowErrorMatchingInlineSnapshot(
+            `[ZodValidationError: Validation error: Unrecognized key(s) "foo" in object]`
+        );
     });
 
     it("parses an empty i18n object", function () {
@@ -106,7 +108,10 @@ overrides:
                 foo: 4
             }
         };
-        assert.throws(() => parseI18nFile(input), /Expected string, received number/);
+
+        expect(() => parseI18nFile(input)).toThrowErrorMatchingInlineSnapshot(
+            `[ZodValidationError: Validation error: Expected string, received number at "messages.foo" or Expected record, received number at "messages.foo"]`
+        );
     });
 
     it("supports the 'overrides' blocks", function () {

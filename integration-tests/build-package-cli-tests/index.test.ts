@@ -257,7 +257,7 @@ describe(
     }
 );
 
-function snapshotPath(snapshotDir, filename) {
+function snapshotPath(snapshotDir: string, filename: string) {
     return resolve(snapshotDir, filename.replace(/[\\/]/g, "_"));
 }
 

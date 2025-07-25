@@ -13,7 +13,7 @@ import {
     ValidationOptions
 } from "@open-pioneer/build-support";
 import { z } from "zod";
-import { fromZodError } from "zod-validation-error";
+import { createErrorMap, fromZodError } from "zod-validation-error";
 import type * as API from "../../types";
 
 type VerifyBuildConfig = typeof API.verifyBuildConfig;
@@ -25,7 +25,7 @@ type Literal = z.infer<typeof LITERAL_SCHEMA>;
 type Json = Literal | { [key: string]: Json } | Json[];
 
 const JSON_SCHEMA: z.ZodType<Json> = z.lazy(() =>
-    z.union([LITERAL_SCHEMA, z.array(JSON_SCHEMA), z.record(JSON_SCHEMA)])
+    z.union([LITERAL_SCHEMA, z.array(JSON_SCHEMA), z.record(z.string(), JSON_SCHEMA)])
 );
 
 const PROPERTY_META_SCHEMA: z.ZodType<PropertyMetaConfig> = z.strictObject({
@@ -90,6 +90,8 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     publishConfig: PUBLISH_CONFIG_SCHEMA.optional()
 });
 
+const ERROR_MAP = createErrorMap();
+
 /**
  * Ensures that `value` conforms to the {@link BuildConfig} interface.
  * Throws an error if that is not the case.
@@ -97,7 +99,7 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
  * @returns `value` but casted to the appropriate type.
  */
 export const verifyBuildConfig: VerifyBuildConfig = function verifyBuildConfig(value) {
-    const result = BUILD_CONFIG_SCHEMA.safeParse(value);
+    const result = BUILD_CONFIG_SCHEMA.safeParse(value, { error: ERROR_MAP });
     if (result.success) {
         return result.data;
     }

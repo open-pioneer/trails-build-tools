@@ -3,3 +3,4 @@ node_modules
 temp
 test-data
 __snapshots
+.eslintrc.cjs

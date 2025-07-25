@@ -39,13 +39,12 @@ describe("packageMetadata v1", function () {
           {
             "cause": [ZodError: [
             {
-              "code": "invalid_type",
               "expected": "array",
-              "received": "number",
+              "code": "invalid_type",
               "path": [
                 "services"
               ],
-              "message": "Expected array, received number"
+              "message": "Invalid input: expected array, received number"
             }
           ]],
             "code": "validation-error",

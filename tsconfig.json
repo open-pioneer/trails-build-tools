@@ -8,7 +8,8 @@
         "module": "ES2022",
         "moduleResolution": "Bundler",
         "resolveJsonModule": true,
-        "allowJs": false,
+        "allowJs": true,
+        "checkJs": false,
 
         "strict": true,
         "noUncheckedIndexedAccess": true,
@@ -21,6 +22,6 @@
         "skipLibCheck": true, // small issue within vite typings (FSWatcher)
         "skipDefaultLibCheck": true
     },
-    "include": ["packages"],
+    "include": ["packages", "integration-tests"],
     "exclude": ["**/dist/**", "**/test-data/**", "**/temp/**", "**/node_modules/**"]
 }

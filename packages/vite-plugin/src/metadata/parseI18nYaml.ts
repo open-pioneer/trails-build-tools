@@ -1,10 +1,9 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-
 import { readFile } from "fs/promises";
 import { load as loadYaml } from "js-yaml";
 import { z } from "zod";
-import { fromZodError } from "zod-validation-error";
+import { createErrorMap, fromZodError } from "zod-validation-error";
 import { ReportableError } from "../ReportableError";
 
 export interface I18nFile {
@@ -34,14 +33,21 @@ interface RecursiveMessages {
 }
 
 const MESSAGES_SCHEMA: z.ZodType<RecursiveMessages | null | undefined> = z.lazy(() =>
-    z.record(z.union([z.string(), MESSAGES_SCHEMA])).nullish()
+    z
+        .record(
+            z.string(),
+            z.union([z.string(), MESSAGES_SCHEMA], {
+                error: "String or a nested record of messages"
+            })
+        )
+        .nullish()
 );
 
 // allow null for empty yaml objects
 const I18N_SCHEMA: z.ZodType<RawI18nFile | null | undefined> = z
     .strictObject({
         messages: MESSAGES_SCHEMA.nullish().optional(),
-        overrides: z.record(MESSAGES_SCHEMA).nullish().optional()
+        overrides: z.record(z.string(), MESSAGES_SCHEMA).nullish().optional()
     })
     .nullish();
 
@@ -71,11 +77,15 @@ export function parseI18nYaml(yaml: string): I18nFile {
     return parseI18nFile(data);
 }
 
+const ERROR_MAP = createErrorMap();
+
 /**
  * Parses the JavaScript object representing an i18n file.
  */
 export function parseI18nFile(data: unknown): I18nFile {
-    const result = I18N_SCHEMA.safeParse(data);
+    const result = I18N_SCHEMA.safeParse(data, {
+        error: ERROR_MAP
+    });
     if (!result.success) {
         throw fromZodError(result.error);
     }

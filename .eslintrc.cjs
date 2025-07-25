@@ -1,4 +1,4 @@
-{
+module.exports = {
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
@@ -6,6 +6,10 @@
         "prettier"
     ],
     "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "projectService": true,
+        "tsconfigRootDir": __dirname
+    },
     "plugins": ["@typescript-eslint", "import", "unused-imports", "header"],
     "env": {
         "node": true,
@@ -66,7 +70,9 @@
             {
                 "allowShortCircuit": true
             }
-        ]
+        ],
+
+        "@typescript-eslint/no-deprecated": "warn"
     },
 
     "overrides": [
@@ -79,4 +85,4 @@
             }
         }
     ]
-}
+};
