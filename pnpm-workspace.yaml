@@ -39,7 +39,7 @@ catalog:
   typescript: ^5.8.3
   vitefu: ^1.1.1
   zod-validation-error: ^3.5.3
-  zod: ^3.25.76
+  zod: ^4.0.10
   zx: ^8.7.1
 
   # Dev tooling

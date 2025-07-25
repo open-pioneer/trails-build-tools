@@ -163,8 +163,8 @@ catalogs:
       specifier: ^3.2.4
       version: 3.2.4
     zod:
-      specifier: ^3.25.76
-      version: 3.25.76
+      specifier: ^4.0.10
+      version: 4.0.10
     zod-validation-error:
       specifier: ^3.5.3
       version: 3.5.3
@@ -388,10 +388,10 @@ importers:
         version: 7.7.2
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.0.10
       zod-validation-error:
         specifier: 'catalog:'
-        version: 3.5.3(zod@3.25.76)
+        version: 3.5.3(zod@4.0.10)
     devDependencies:
       '@open-pioneer/build-support':
         specifier: workspace:^
@@ -550,10 +550,10 @@ importers:
         version: 1.1.1(vite@6.3.5(@types/node@20.19.9)(sass@1.89.2)(yaml@2.8.0))
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.0.10
       zod-validation-error:
         specifier: 'catalog:'
-        version: 3.5.3(zod@3.25.76)
+        version: 3.5.3(zod@4.0.10)
     devDependencies:
       '@open-pioneer/build-support':
         specifier: workspace:^
@@ -4050,8 +4050,8 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  zod@4.0.10:
+    resolution: {integrity: sha512-3vB+UU3/VmLL2lvwcY/4RV2i9z/YU0DTV/tDuYjrwmx5WeJ7hwy+rGEEx8glHp6Yxw7ibRbKSaIFBgReRPe5KA==}
 
   zstddec@0.1.0:
     resolution: {integrity: sha512-w2NTI8+3l3eeltKAdK8QpiLo/flRAr2p8AGeakfMZOXBxOg9HIu4LVDxBi81sYgVhFhdJjv1OrB5ssI8uFPoLg==}
@@ -7980,11 +7980,11 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod-validation-error@3.5.3(zod@3.25.76):
+  zod-validation-error@3.5.3(zod@4.0.10):
     dependencies:
-      zod: 3.25.76
+      zod: 4.0.10
 
-  zod@3.25.76: {}
+  zod@4.0.10: {}
 
   zstddec@0.1.0: {}
 
