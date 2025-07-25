@@ -32,6 +32,19 @@
             "groupSlug": "all-minor-patch"
         },
         {
+            "matchUpdateTypes": ["patch", "pin", "digest"],
+            "matchDepTypes": [
+                "dependencies",
+                "devDependencies",
+                "packageManager",
+                "pnpm.catalog.default"
+            ],
+            "matchCurrentVersion": "/^0/",
+            "description": "group all non-major dependencies with 0.x versions",
+            "groupName": "all non-major dependencies",
+            "groupSlug": "all-minor-patch"
+        },
+        {
             "matchDepTypes": "pnpm.catalog.tests",
             "enabled": false
         },
@@ -46,6 +59,12 @@
             "matchUpdateTypes": ["major"],
             "groupName": "update engines",
             "dependencyDashboardApproval": true
+        },
+        {
+            "matchDepTypes": ["peerDependencies"],
+            "groupName": "Update peer dependencies",
+            "description": "Don't update peer dependencies automatically",
+            "enabled": false
         }
     ]
 }
