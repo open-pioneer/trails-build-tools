@@ -12,7 +12,6 @@ import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
 import { readFile } from "node:fs/promises";
 import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
-import { MetadataContext } from "./metadata/Metadata";
 import { RuntimeSupport } from "@open-pioneer/build-common";
 
 type PluginContext = Rollup.PluginContext;
@@ -21,10 +20,6 @@ const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
 
 export function codegenPlugin(): Plugin {
-    // key: normalized path to package json.
-    // value: set of module ids that must be invalidated.
-    const manualDeps = new Map<string, Set<string>>();
-
     let config!: ResolvedConfig;
     let repository!: MetadataRepository;
     let devServer: ViteDevServer | undefined;
@@ -33,7 +28,6 @@ export function codegenPlugin(): Plugin {
         name: "pioneer:codegen",
 
         async buildStart(this: PluginContext) {
-            manualDeps.clear();
             repository?.reset();
         },
 
@@ -44,26 +38,6 @@ export function codegenPlugin(): Plugin {
 
         configureServer(server) {
             devServer = server;
-
-            // Trigger manual module reload when a watched file changes.
-            server.watcher.on("all", (_, path) => {
-                const moduleIds = manualDeps.get(normalizePath(path));
-                if (!moduleIds) {
-                    return;
-                }
-
-                isDebug && debug(`File changed: ${path}`);
-                repository.onFileChanged(path);
-                for (const moduleId of moduleIds) {
-                    const mod = server.moduleGraph.getModuleById(moduleId);
-                    if (mod) {
-                        isDebug && debug(`Triggering hmr of ${moduleId}`);
-                        server.reloadModule(mod).catch((err) => {
-                            config.logger.error(`Failed to trigger hmr`, { error: err });
-                        });
-                    }
-                }
-            });
         },
 
         async resolveId(this: PluginContext, moduleId, importer) {
@@ -160,11 +134,7 @@ export function codegenPlugin(): Plugin {
                     );
                 }
 
-                const context = buildMetadataContext(this, moduleId, devServer, manualDeps);
-                const appMetadata = await repository.getAppMetadata(
-                    context,
-                    dirname(packageJsonPath)
-                );
+                const appMetadata = await repository.getAppMetadata(this, dirname(packageJsonPath));
                 switch (mod.type) {
                     case "app-packages": {
                         const generatedSourceCode = generatePackagesMetadata({
@@ -192,8 +162,8 @@ export function codegenPlugin(): Plugin {
                             locale: mod.locale,
                             appName: appMetadata.name,
                             packages: appMetadata.packages,
-                            loadI18n(path) {
-                                return repository.getI18nFile(context, path);
+                            loadI18n: (path) => {
+                                return repository.getI18nFile(this, path);
                             }
                         });
                         isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
@@ -203,29 +173,11 @@ export function codegenPlugin(): Plugin {
             } catch (e) {
                 reportError(this, e, !!devServer);
             }
-        }
-    };
-}
+        },
 
-// Patches the addWatchFile function for manual watching
-function buildMetadataContext(
-    ctx: PluginContext,
-    moduleId: string,
-    devServer: ViteDevServer | undefined,
-    manualDeps: Map<string, Set<string>>
-): MetadataContext {
-    return {
-        warn: (...args) => ctx.warn(...args),
-        resolve: (...args) => ctx.resolve(...args),
-        addWatchFile: (id) => {
-            if (devServer) {
-                // TODO: Is there a better way? We want to trigger a hot reload when
-                // one of the build.config files or package.json files change!
-                isDebug && debug(`Adding manual watch for ${id}`);
-                devServer.watcher.add(id);
-                addManualDep(manualDeps, id, moduleId);
-            }
-            ctx.addWatchFile(id);
+        watchChange(id, _change) {
+            isDebug && debug("File %s changed", id);
+            repository.onFileChanged(id);
         }
     };
 }
@@ -253,16 +205,6 @@ function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         stack: (error as any).stack
     });
-}
-
-function addManualDep(manualDeps: Map<string, Set<string>>, file: string, moduleId: string) {
-    const normalizedPath = normalizePath(file);
-    let moduleIds = manualDeps.get(normalizedPath);
-    if (!moduleIds) {
-        moduleIds = new Set();
-        manualDeps.set(normalizedPath, moduleIds);
-    }
-    moduleIds.add(moduleId);
 }
 
 function findPackageJson(startDir: string, rootDir: string) {
