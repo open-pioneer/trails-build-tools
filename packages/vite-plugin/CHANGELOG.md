@@ -1,5 +1,23 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.0.0
+
+### Major Changes
+
+- 6dc999e: Update to Vite 7
+
+### Minor Changes
+
+- ba600ea: Update to zod v4.
+
+### Patch Changes
+
+- 340c415: Update dependencies
+- 6dc999e: Refactor caching of package.json, build.config.mjs and i18n files. Manual caching code was removed.
+- Updated dependencies [340c415]
+- Updated dependencies [ba600ea]
+    - @open-pioneer/build-common@3.1.0
+
 ## 4.0.2
 
 ### Patch Changes
