@@ -271,12 +271,12 @@ export class MetadataRepository {
                 // when a cached entry is returned.
                 const watchFiles = new Set<string>();
                 const trackingCtx: MetadataContext = {
-                    resolve: ctx.resolve,
+                    resolve: ctx.resolve.bind(ctx),
                     addWatchFile(id) {
                         ctx.addWatchFile(id);
                         watchFiles.add(id);
                     },
-                    warn: ctx.warn
+                    warn: ctx.warn.bind(ctx)
                 };
 
                 const metadata = await loadPackageMetadata(
