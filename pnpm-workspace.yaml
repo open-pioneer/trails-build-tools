@@ -64,7 +64,7 @@ catalog:
   husky: ^9.1.7
   lint-staged: ^16.1.2
   rimraf: ^6.0.1
-  vite: ^7.0.2
+  vite: ^7.0.6
   vitest: ^3.2.4
 
 catalogs:
