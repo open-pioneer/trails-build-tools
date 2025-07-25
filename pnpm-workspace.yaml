@@ -10,12 +10,12 @@ packages:
 catalog:
   "@babel/generator": ^7.28.0
   "@babel/template": ^7.27.2
-  "@babel/types": ^7.28.1
+  "@babel/types": ^7.28.2
   "@changesets/cli": ^2.29.5
-  "@pnpm/lockfile.fs": ^1001.1.15
-  "@pnpm/lockfile.utils": ^1002.0.1
-  "@pnpm/lockfile.walker": ^1001.0.11
-  "@pnpm/types": ^1000.6.0
+  "@pnpm/lockfile.fs": ^1001.1.16
+  "@pnpm/lockfile.utils": ^1002.1.0
+  "@pnpm/lockfile.walker": ^1001.0.12
+  "@pnpm/types": ^1000.7.0
   "@pnpm/logger": ^1001.0.0
   "@rollup/plugin-node-resolve": ^16.0.1
   "@rollup/pluginutils": ^5.2.0
