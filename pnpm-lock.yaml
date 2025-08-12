@@ -22,8 +22,8 @@ catalogs:
       specifier: ^1001.1.16
       version: 1001.1.16
     '@pnpm/lockfile.utils':
-      specifier: ^1002.1.0
-      version: 1002.1.0
+      specifier: ^1003.0.0
+      version: 1003.0.0
     '@pnpm/lockfile.walker':
       specifier: ^1001.0.12
       version: 1001.0.12
@@ -502,7 +502,7 @@ importers:
         version: 1001.1.16(@pnpm/logger@1001.0.0)
       '@pnpm/lockfile.utils':
         specifier: 'catalog:'
-        version: 1002.1.0
+        version: 1003.0.0
       '@pnpm/lockfile.walker':
         specifier: 'catalog:'
         version: 1001.0.12
@@ -1399,6 +1399,10 @@ packages:
     resolution: {integrity: sha512-sDIoqytKuNqff89tRY7yMzAkHONuOBRgEGUnqT3FDlnkVLrtpq9y7nTtcmskuD2U4t7Cyzn6I6GaUdidP4cHNA==}
     engines: {node: '>=18.12'}
 
+  '@pnpm/dependency-path@1001.1.0':
+    resolution: {integrity: sha512-hOVNtEu25HTNOdi0PkvDd27AQHXBke18njbGSYJ02J4GbyoufazqP8+YDiC/wQ+28rKOpgUylT7pVlZoTmdUsg==}
+    engines: {node: '>=18.12'}
+
   '@pnpm/error@1000.0.3':
     resolution: {integrity: sha512-Sr1wmJitZ768J+9MJVXXyd7tRaX3qThEiFH1K0AQovy2sIbLqo73MITphfVZH3YWIElt+Y1uMDnUZa676ZDA8g==}
     engines: {node: '>=18.12'}
@@ -1425,8 +1429,16 @@ packages:
     resolution: {integrity: sha512-/rfDUV8M9iMm0QXahHPv6SD6eKNkrMXlhECJVhDkdL4NIifcv6/HZwYtxd0PIndExz04+OE+iV9K8zKG9i/OEA==}
     engines: {node: '>=18.12'}
 
+  '@pnpm/lockfile.types@1002.0.0':
+    resolution: {integrity: sha512-Y1UZAFKviKGmftMF3hk2jxRTWymctSG+x+5XjOAuNAV6mwtdPdrjUVM8zTbLW+om7GoYhaSszyicO7Qn9InRfg==}
+    engines: {node: '>=18.12'}
+
   '@pnpm/lockfile.utils@1002.1.0':
     resolution: {integrity: sha512-6GFtAxzYv1sADCq4DP4vANfSpAR/gXSOCXd0RVhA/l+7rJWYy39cNoCWCnNWgGKOHnN9r26eoTEoQddnSqA+rQ==}
+    engines: {node: '>=18.12'}
+
+  '@pnpm/lockfile.utils@1003.0.0':
+    resolution: {integrity: sha512-yVXnBWNtgNsMMlxDaswgAUeqTMULocw7OdYWywkP8t/7MMw8G1BUZZ+K+mxZUv/a0xcZkd7gCKgfPzmnqs37kw==}
     engines: {node: '>=18.12'}
 
   '@pnpm/lockfile.walker@1001.0.12':
@@ -1449,11 +1461,19 @@ packages:
     resolution: {integrity: sha512-eoZk7uB37QC9V3yroMzAQ/jKN7/yRvQhCr15GBmUy0Nm3Q9IWBG5WNlcpdNL/joLEoSkRnx7DfX1+667kuKqHw==}
     engines: {node: '>=18.12'}
 
+  '@pnpm/pick-fetcher@1001.0.0':
+    resolution: {integrity: sha512-Zl8npMjFSS1gSGM27KkbmfmeOuwU2MCxRFIofAUo/PkqOE2IzzXr0yzB1XYJM8Ml1nUXt9BHfwAlUQKC5MdBLA==}
+    engines: {node: '>=18.12'}
+
   '@pnpm/ramda@0.28.1':
     resolution: {integrity: sha512-zcAG+lvU0fMziNeGXpPyCyCJYp5ZVrPElEE4t14jAmViaihohocZ+dDkcRIyAomox8pQsuZnv1EyHR+pOhmUWw==}
 
   '@pnpm/resolver-base@1004.1.0':
     resolution: {integrity: sha512-sG9ePMQDdsb3ofyCWbKzopzaeeDsSjic3EZISDiqCFC77kyHYnmv1Yqep8/dSltQSXkawy+PPfzPa26QbLMxzQ==}
+    engines: {node: '>=18.12'}
+
+  '@pnpm/resolver-base@1005.0.0':
+    resolution: {integrity: sha512-EGrQzH913uCHtkjIIR06JOUog0x0VlXS4dAD4unTrX6kPpRSPdISKn+LWRujoEJc8i0JBW6KIfUXcNmI0W5q+Q==}
     engines: {node: '>=18.12'}
 
   '@pnpm/types@1000.7.0':
@@ -5080,6 +5100,12 @@ snapshots:
       '@pnpm/types': 1000.7.0
       semver: 7.7.2
 
+  '@pnpm/dependency-path@1001.1.0':
+    dependencies:
+      '@pnpm/crypto.hash': 1000.2.0
+      '@pnpm/types': 1000.7.0
+      semver: 7.7.2
+
   '@pnpm/error@1000.0.3':
     dependencies:
       '@pnpm/constants': 1001.2.0
@@ -5126,12 +5152,28 @@ snapshots:
       '@pnpm/patching.types': 1000.1.0
       '@pnpm/types': 1000.7.0
 
+  '@pnpm/lockfile.types@1002.0.0':
+    dependencies:
+      '@pnpm/patching.types': 1000.1.0
+      '@pnpm/resolver-base': 1005.0.0
+      '@pnpm/types': 1000.7.0
+
   '@pnpm/lockfile.utils@1002.1.0':
     dependencies:
       '@pnpm/dependency-path': 1001.0.2
       '@pnpm/lockfile.types': 1001.1.0
       '@pnpm/pick-fetcher': 1000.1.0
       '@pnpm/resolver-base': 1004.1.0
+      '@pnpm/types': 1000.7.0
+      get-npm-tarball-url: 2.1.0
+      ramda: '@pnpm/ramda@0.28.1'
+
+  '@pnpm/lockfile.utils@1003.0.0':
+    dependencies:
+      '@pnpm/dependency-path': 1001.1.0
+      '@pnpm/lockfile.types': 1002.0.0
+      '@pnpm/pick-fetcher': 1001.0.0
+      '@pnpm/resolver-base': 1005.0.0
       '@pnpm/types': 1000.7.0
       get-npm-tarball-url: 2.1.0
       ramda: '@pnpm/ramda@0.28.1'
@@ -5156,9 +5198,15 @@ snapshots:
 
   '@pnpm/pick-fetcher@1000.1.0': {}
 
+  '@pnpm/pick-fetcher@1001.0.0': {}
+
   '@pnpm/ramda@0.28.1': {}
 
   '@pnpm/resolver-base@1004.1.0':
+    dependencies:
+      '@pnpm/types': 1000.7.0
+
+  '@pnpm/resolver-base@1005.0.0':
     dependencies:
       '@pnpm/types': 1000.7.0
 
