@@ -262,6 +262,9 @@ describe("codegen support", function () {
                 apps: ["test-app"]
             }
         });
+
+        const messages = readFileSync(join(outDir, "assets/chunk.js"), "utf-8");
+        expect(messages).includes("hello from i18n1 (override)");
     });
 
     it("generates an error if 'overrides' is used from a package's i18n file", async function () {

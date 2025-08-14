@@ -55,7 +55,30 @@ export async function runViteBuild(options: {
             }
         },
 
-        plugins: [pioneer(options.pluginOptions)],
+        plugins: [
+            pioneer(options.pluginOptions),
+            {
+                name: "force-chunk-names",
+                config(config, _env) {
+                    return {
+                        ...config,
+                        build: {
+                            ...config.build,
+                            rollupOptions: {
+                                ...config.build?.rollupOptions,
+                                output: {
+                                    ...config.build?.rollupOptions?.output,
+                                    chunkFileNames(_info) {
+                                        // Reliable filenames for tests
+                                        return "assets/chunk.js";
+                                    }
+                                }
+                            }
+                        }
+                    };
+                }
+            }
+        ],
 
         logLevel: "silent"
     });
