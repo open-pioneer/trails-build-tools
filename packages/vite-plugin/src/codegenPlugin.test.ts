@@ -251,6 +251,19 @@ describe("codegen support", function () {
         );
     });
 
+    it("supports defining new locales for packages via 'overrides' in an app", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-new-locale");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-new-locale");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+    });
+
     it("generates an error if 'overrides' is used from a package's i18n file", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-illegal-overrides");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-illegal-overrides");

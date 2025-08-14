@@ -21,6 +21,11 @@ export interface AppMetadata {
     locales: string[];
 
     /**
+     * The application package itself.
+     */
+    appPackage: PackageMetadata;
+
+    /**
      * Packages used by the app.
      * Includes the app package itself!
      */
