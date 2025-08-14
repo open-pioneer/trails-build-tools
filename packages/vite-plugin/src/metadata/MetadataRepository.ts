@@ -156,6 +156,7 @@ export class MetadataRepository {
             packageJsonPath: appPackageMetadata.packageJsonPath,
             packages: Array.from(packageMetadataByName.values())
         };
+        checkAppI18n(appMetadata);
         return appMetadata;
     }
 
@@ -324,6 +325,55 @@ export class MetadataRepository {
         };
         return new Cache(provider);
     }
+}
+
+function checkAppI18n(appMetadata: AppMetadata) {
+    const appLocales = new Set(appMetadata.locales);
+    const errors: PackageMetadata[] = [];
+    for (const pkg of appMetadata.packages) {
+        const pkgLocales = pkg.locales;
+        if (pkgLocales.length === 0) {
+            continue;
+        }
+        if (pkg.locales.some((locale) => appLocales.has(locale))) {
+            continue;
+        }
+        errors.push(pkg);
+    }
+    if (errors.length === 0) {
+        return;
+    }
+
+    errors.sort((p1, p2) => p1.name.localeCompare(p2.name, "en"));
+    const getPackageErrors = () => {
+        const MAX = 3;
+        const take = Math.min(errors.length, MAX);
+        const remaining = errors.length - take;
+
+        // Report errors for the first `take` packages
+        let buffer = "";
+        for (let i = 0; i < take; ++i) {
+            if (i > 0) {
+                buffer += ", ";
+            }
+
+            const pkg = errors[i]!;
+            buffer += `'${pkg.name}' (${pkg.locales.toSorted().join(", ")})`;
+        }
+
+        if (remaining > 0) {
+            buffer += ` (and ${remaining} more)`;
+        }
+        return buffer;
+    };
+
+    const formattedAppLocales = appMetadata.locales.join(", ") || "none";
+    const formattedPackageErrors = getPackageErrors();
+    throw new ReportableError(
+        `Invalid i18n configuration in application at ${appMetadata.directory}:\n` +
+            `There is no match between the locales supported by the application (${formattedAppLocales}) and the locales ` +
+            `supported by the packages ${formattedPackageErrors}.`
+    );
 }
 
 function propagateWatchFiles(watchFiles: Iterable<string>, ctx: MetadataContext) {

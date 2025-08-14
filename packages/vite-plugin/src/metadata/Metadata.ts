@@ -58,6 +58,11 @@ export interface PackageMetadata {
      */
     i18nPaths: Map<string, string>;
 
+    /**
+     * Locale ids. These are valid keys for `i18nPaths`.
+     */
+    readonly locales: string[];
+
     /** Runtime dependencies (from package.json). */
     dependencies: PackageDependency[];
 
