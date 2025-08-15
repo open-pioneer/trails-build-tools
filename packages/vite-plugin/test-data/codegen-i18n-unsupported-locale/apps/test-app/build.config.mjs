@@ -1,3 +1,3 @@
 export default {
-    i18n: ["de-simple"]
+    i18n: ["de", "de-simple"]
 }

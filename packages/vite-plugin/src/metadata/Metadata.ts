@@ -21,6 +21,11 @@ export interface AppMetadata {
     locales: string[];
 
     /**
+     * The application package itself.
+     */
+    appPackage: PackageMetadata;
+
+    /**
      * Packages used by the app.
      * Includes the app package itself!
      */
@@ -57,6 +62,11 @@ export interface PackageMetadata {
      * Key: locale, value: file path
      */
     i18nPaths: Map<string, string>;
+
+    /**
+     * Locale ids. These are valid keys for `i18nPaths`.
+     */
+    readonly locales: string[];
 
     /** Runtime dependencies (from package.json). */
     dependencies: PackageDependency[];

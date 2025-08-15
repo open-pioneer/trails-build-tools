@@ -210,7 +210,61 @@ describe("codegen support", function () {
             })
         );
 
-        assert.match(error.message, /requires messages for locale 'de-simple'/);
+        assert.match(error.message, /does not support locale 'de-simple'/);
+    });
+
+    it("generates an error if packages require i18n but the app does not list any supported locales", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-forgotten");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-forgotten");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+
+        expect(error.message).toMatch(
+            "There is no match between the locales supported by the application (none) and the locales supported by the packages 'i18n1' (de, en), 'i18n2' (de, en)."
+        );
+    });
+
+    it("generates an error if there is no overlap between app locales and package locales", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-no-overlap");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-no-overlap");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+
+        expect(error.message).toMatch(
+            "There is no match between the locales supported by the application (de-simple) and the locales supported by the packages 'i18n1' (de, en), 'i18n2' (de, en)."
+        );
+    });
+
+    it("supports defining new locales for packages via 'overrides' in an app", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-new-locale");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-new-locale");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        const messages = readFileSync(join(outDir, "assets/chunk.js"), "utf-8");
+        expect(messages).includes("hello from i18n1 (override)");
     });
 
     it("generates an error if 'overrides' is used from a package's i18n file", async function () {

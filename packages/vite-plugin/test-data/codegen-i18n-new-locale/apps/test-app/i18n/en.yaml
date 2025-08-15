@@ -1,0 +1,6 @@
+messages:
+    greeting: "Hello world"
+
+overrides:
+  i18n1:
+    x: "hello from i18n1 (override)"

@@ -123,7 +123,7 @@ export async function generateI18nMessages(options: I18nMessageOptions): Promise
         const messages = packageMessages.get(packageName);
         if (!messages) {
             throw new ReportableError(
-                `Package '${packageName}' requires messages for locale '${locale}'. Either update the package or add messages from the app via 'overrides'.`
+                `Package '${packageName}' does not support locale '${locale}'. Either update the package or add messages from the app via 'overrides'.`
             );
         }
     }

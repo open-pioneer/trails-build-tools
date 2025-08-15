@@ -155,6 +155,9 @@ class PackageMetadataReader {
             servicesModulePath: servicesModule,
             cssFilePath: cssFile,
             i18nPaths,
+            get locales() {
+                return Array.from(i18nPaths.keys());
+            },
             dependencies,
             config: config
         };
