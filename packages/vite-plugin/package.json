@@ -59,7 +59,7 @@
         "esbuild": "catalog:",
         "fast-glob": "catalog:",
         "rimraf": "catalog:",
-        "rollup": "catalog:",
+        "rolldown": "*",
         "sass": "catalog:",
         "vite": "catalog:"
     },

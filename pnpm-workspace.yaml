@@ -109,8 +109,10 @@ overrides:
   # Version doesn't really matter, this is used as a dep in integration tests
   "@open-pioneer/runtime": ">= 2.2.0"
 
+  "vite": "npm:rolldown-vite@latest"
+
 auditConfig:
-  ignoreCves:
+  ignoreCves: []
 
 peerDependencyRules:
   allowedVersions:

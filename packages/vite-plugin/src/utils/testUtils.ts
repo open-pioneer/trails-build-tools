@@ -46,11 +46,7 @@ export async function runViteBuild(options: {
         css: {
             preprocessorOptions: {
                 scss: {
-                    silenceDeprecations: [
-                        // https://github.com/vitejs/vite/issues/18164
-                        "legacy-js-api",
-                        "import"
-                    ]
+                    silenceDeprecations: ["import"]
                 }
             }
         },
@@ -64,10 +60,10 @@ export async function runViteBuild(options: {
                         ...config,
                         build: {
                             ...config.build,
-                            rollupOptions: {
-                                ...config.build?.rollupOptions,
+                            rolldownOptions: {
+                                ...config.build?.rolldownOptions,
                                 output: {
-                                    ...config.build?.rollupOptions?.output,
+                                    ...config.build?.rolldownOptions?.output,
                                     chunkFileNames(_info) {
                                         // Reliable filenames for tests
                                         return "assets/chunk.js";

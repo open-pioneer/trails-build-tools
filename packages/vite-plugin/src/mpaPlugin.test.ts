@@ -142,9 +142,7 @@ describe("multi page support", function () {
         const appContent = readFileSync(join(outDir, "my-app.js"), "utf-8");
         expect(appContent).toMatchInlineSnapshot(`
           "const SOME_EXPORT = 42;
-          export {
-            SOME_EXPORT
-          };
+          export { SOME_EXPORT };
           "
         `);
     });
