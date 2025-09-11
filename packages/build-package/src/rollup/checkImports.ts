@@ -59,6 +59,13 @@ export function checkImportsPlugin({
     let state: CheckImportsState | undefined;
     let getPackageInfo: (id: string) => NodeResolvePackageInfo | undefined;
 
+    const getState = () => {
+        if (!state) {
+            throw new Error("internal error: state was destroyed or never initialized");
+        }
+        return state;
+    };
+
     return {
         name: "check-imports",
         buildStart({ plugins }) {
@@ -78,7 +85,7 @@ export function checkImportsPlugin({
             state = new CheckImportsState(rootDirectory, packageJson, packageJsonPath, strict);
         },
         buildEnd() {
-            state!.finish(this);
+            getState().finish(this);
             state = undefined;
         },
         resolveId: {
@@ -101,7 +108,7 @@ export function checkImportsPlugin({
                     // Cannot use rollup's meta mechanism because it is not propagated by the node-resolve plugin
                     // when making the module external.
                     const packageInfo = getPackageInfo(nodeResolveData.resolved.id);
-                    state!.registerNodeModuleLocation(
+                    getState().registerNodeModuleLocation(
                         nodeResolveData.importee,
                         nodeResolveData.resolved.id,
                         packageInfo
@@ -115,7 +122,7 @@ export function checkImportsPlugin({
                 const result = await this.resolve(moduleId, parentId, options);
                 const importedPath = result?.id ?? moduleId;
                 if (!result || (result.external && !isAbsolute(result.id))) {
-                    const newModuleId = await state!.visitModuleId(
+                    const newModuleId = await getState().visitModuleId(
                         this,
                         importedPath,
                         parentId,
@@ -411,6 +418,8 @@ class CheckImportsState {
             cacheEntry = {
                 result: undefined,
                 promise: this.detectTrailsPackageImpl(packageName).then((result) => {
+                    // We know this is initialized, see assignment above
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     cacheEntry!.result = result;
                 })
             };

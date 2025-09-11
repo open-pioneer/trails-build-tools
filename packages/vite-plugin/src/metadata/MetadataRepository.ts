@@ -168,9 +168,15 @@ export class MetadataRepository {
         // Fetch app i18n files to detect whether an app overrides messages for a package.
         // key: locale
         const appI18nFiles = await Promise.all(
-            Array.from(appLocales).map((locale) =>
-                this.getI18nFile(ctx, appPackage.i18nPaths.get(locale)!)
-            )
+            Array.from(appLocales).map((locale) => {
+                const i18nPath = appPackage.i18nPaths.get(locale);
+                if (i18nPath == null) {
+                    throw new Error(
+                        `App package '${appPackage.name}' does not have an i18n file for locale '${locale}'.`
+                    );
+                }
+                return this.getI18nFile(ctx, i18nPath);
+            })
         );
         const errors: PackageMetadata[] = [];
         for (const pkg of appMetadata.packages) {
