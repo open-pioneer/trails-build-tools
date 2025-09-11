@@ -210,6 +210,7 @@ export class MetadataRepository {
                     buffer += ", ";
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const pkg = errors[i]!;
                 buffer += `'${pkg.name}' (${pkg.locales.toSorted().join(", ")})`;
             }

@@ -34,7 +34,6 @@ export function emptyConfig(): Config {
 export function readConfig(path: string): Config {
     try {
         const content = readFileSync(path, "utf-8");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rawConfig = loadYaml(content) as unknown as RawConfig;
 
         const allowed = rawConfig.allowed ?? [];
