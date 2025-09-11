@@ -378,7 +378,6 @@ function findModuleContaining(dir: string, needle: string) {
     throw new Error(`Failed to find file containing ${JSON.stringify(needle)}`);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function expectAsyncError(fn: () => Promise<void>): Promise<any> {
     return new Promise((resolve, reject) => {
         fn().then(() => {
