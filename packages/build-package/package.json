@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/build-package",
     "description": "Implements partial compilation for Open Pioneer Trails packages.",
-    "version": "4.0.3",
+    "version": "4.0.4",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "module",

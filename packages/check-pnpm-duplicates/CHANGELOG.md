@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/check-pnpm-duplicates
 
+## 0.2.4
+
+### Patch Changes
+
+- 1b99d82: Update eslint to version 9.
+
 ## 0.2.3
 
 ### Patch Changes

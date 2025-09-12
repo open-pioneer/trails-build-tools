@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package
 
+## 4.0.4
+
+### Patch Changes
+
+- 1b99d82: Update eslint to version 9.
+
 ## 4.0.3
 
 ### Patch Changes
