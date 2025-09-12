@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 3.0.4
+
+### Patch Changes
+
+- fe2e7d1: Update dependencies
+
 ## 3.0.3
 
 ### Patch Changes
