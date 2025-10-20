@@ -1,64 +1,11 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-        "config:recommended",
-        "schedule:earlyMondays",
-        ":semanticCommitTypeAll(chore)",
-        ":approveMajorUpdates"
-    ],
-    "labels": ["dependencies"],
-    "dependencyDashboard": true,
-    "rebaseWhen": "conflicted",
-    "timezone": "UTC",
-    "lockFileMaintenance": {
-        "enabled": false
-    },
-    "prConcurrentLimit": 0,
-    "prHourlyLimit": 0,
+    "extends": ["github>open-pioneer/trails-repo-automation//renovate/base.json"],
     "ignorePaths": ["**/node_modules/**", "**/test-data/**", "**/__snapshots/**"],
-    "rangeStrategy": "bump",
-    "postUpdateOptions": ["pnpmDedupe"],
     "packageRules": [
-        {
-            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-            "matchDepTypes": [
-                "dependencies",
-                "devDependencies",
-                "packageManager",
-                "pnpm.catalog.default"
-            ],
-            "matchCurrentVersion": "!/^0/",
-            "groupName": "all non-major dependencies",
-            "groupSlug": "all-minor-patch"
-        },
-        {
-            "matchUpdateTypes": ["patch", "pin", "digest"],
-            "matchDepTypes": [
-                "dependencies",
-                "devDependencies",
-                "packageManager",
-                "pnpm.catalog.default"
-            ],
-            "matchCurrentVersion": "/^0/",
-            "description": "group all non-major dependencies with 0.x versions",
-            "groupName": "all non-major dependencies",
-            "groupSlug": "all-minor-patch"
-        },
         {
             "matchDepTypes": "pnpm.catalog.tests",
             "enabled": false
-        },
-        {
-            "description": "disable non-major engine updates",
-            "matchDepTypes": ["engines"],
-            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-            "enabled": false
-        },
-        {
-            "matchDepTypes": ["engines"],
-            "matchUpdateTypes": ["major"],
-            "groupName": "update engines",
-            "dependencyDashboardApproval": true
         },
         {
             "matchDepTypes": ["peerDependencies"],
