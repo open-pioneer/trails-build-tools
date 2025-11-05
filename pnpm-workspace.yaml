@@ -65,7 +65,7 @@ catalog:
   lint-staged: ^16.2.3
   rimraf: ^6.0.1
   vite: ^7.1.7
-  vitest: ^3.2.4
+  vitest: ^4.0.6
 
 catalogs:
   # Used in integration tests, no need to keep these up to date
