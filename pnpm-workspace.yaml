@@ -38,7 +38,7 @@ catalog:
   semver: ^7.7.2
   typescript: ^5.9.3
   vitefu: ^1.1.1
-  zod-validation-error: ^4.0.2
+  zod-validation-error: ^5.0.0
   zod: ^4.1.11
   zx: ^8.8.4
 
