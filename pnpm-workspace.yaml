@@ -22,7 +22,7 @@ catalog:
   chalk: ^5.6.2
   commander: ^14.0.1
   debug: ^4.4.3
-  esbuild: ^0.25.10
+  esbuild: ^0.27.0
   fast-glob: ^3.3.3
   find-git-root: ^1.0.4
   find-workspaces: ^0.3.1
