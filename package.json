@@ -22,12 +22,11 @@
     },
     "devDependencies": {
         "@changesets/cli": "catalog:",
+        "@eslint/js": "catalog:",
         "@types/node": "catalog:",
         "@typescript-eslint/parser": "catalog:",
         "esbuild": "catalog:",
         "eslint": "catalog:",
-        "@eslint/js": "catalog:",
-        "typescript-eslint": "catalog:",
         "eslint-config-prettier": "catalog:",
         "eslint-import-resolver-typescript": "catalog:",
         "eslint-plugin-headers": "catalog:",
@@ -38,6 +37,7 @@
         "prettier": "catalog:",
         "rimraf": "catalog:",
         "typescript": "catalog:",
+        "typescript-eslint": "catalog:",
         "vite": "catalog:",
         "vitest": "catalog:"
     },
@@ -45,5 +45,5 @@
         "node": ">= 20",
         "pnpm": ">= 10"
     },
-    "packageManager": "pnpm@10.17.1"
+    "packageManager": "pnpm@10.22.0"
 }
