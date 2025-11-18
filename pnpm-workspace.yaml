@@ -110,6 +110,9 @@ overrides:
   # https://github.com/advisories/GHSA-mh29-5h37-fv8m
   "js-yaml@<3.14.2": "^3.14.2"
 
+  # https://github.com/advisories/GHSA-5j98-mcp5-4vw2
+  "glob@>=10.x <= 11.0.3": "^11.1.0"
+
   # Version doesn't really matter, this is used as a dep in integration tests
   "@open-pioneer/runtime": ">= 2.2.0"
 
