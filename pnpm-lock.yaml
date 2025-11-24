@@ -34,8 +34,8 @@ catalogs:
       specifier: ^1001.0.1
       version: 1001.0.1
     '@pnpm/types':
-      specifier: ^1000.9.0
-      version: 1000.9.0
+      specifier: ^1001.0.1
+      version: 1001.0.1
     '@rollup/plugin-node-resolve':
       specifier: ^16.0.3
       version: 16.0.3
@@ -519,7 +519,7 @@ importers:
         version: 1001.0.1
       '@pnpm/types':
         specifier: 'catalog:'
-        version: 1000.9.0
+        version: 1001.0.1
       chalk:
         specifier: 'catalog:'
         version: 5.6.2
@@ -1654,10 +1654,6 @@ packages:
 
   '@pnpm/resolver-base@1005.3.1':
     resolution: {integrity: sha512-d/l84T+J26xVfl28HbfTNaZcpbzr+VH3CFI2RLFWxI8Y34pIphKbD18Zke6dQmv+g7JenT6FmE8YSRIfwAEjaw==}
-    engines: {node: '>=18.12'}
-
-  '@pnpm/types@1000.9.0':
-    resolution: {integrity: sha512-UvDTCxnbyqkTg2X0dBOuZ4IdFJ8g4UFu0Ybv/5/cZAxCWVhNl1hC/Xc9hR4tZrlBL0NRFePLRhO/iw9LmA1lbw==}
     engines: {node: '>=18.12'}
 
   '@pnpm/types@1001.0.1':
@@ -5384,8 +5380,6 @@ snapshots:
   '@pnpm/resolver-base@1005.3.1':
     dependencies:
       '@pnpm/types': 1001.0.1
-
-  '@pnpm/types@1000.9.0': {}
 
   '@pnpm/types@1001.0.1': {}
 
