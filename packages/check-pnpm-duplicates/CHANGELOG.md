@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/check-pnpm-duplicates
 
+## 0.2.5
+
+### Patch Changes
+
+- f229f63: Bump dependencies
+
 ## 0.2.4
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.0.2
+
+### Patch Changes
+
+- fe37e18: Remove obsolete eslint directive from typings.
+- f229f63: Bump dependencies
+- Updated dependencies [f229f63]
+    - @open-pioneer/build-common@3.1.1
+
 ## 5.0.1
 
 ### Patch Changes
