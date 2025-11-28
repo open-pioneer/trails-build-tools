@@ -17,7 +17,6 @@ declare module "open-pioneer:app" {
 declare module "open-pioneer:react-hooks" {
     import {
         type PackageIntl,
-        // eslint-disable-next-line unused-imports/no-unused-imports
         type DeclaredService,
         type InterfaceNameForServiceType
     } from "@open-pioneer/runtime";

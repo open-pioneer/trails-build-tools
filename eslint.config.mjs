@@ -17,7 +17,8 @@ export default tseslint.config(
             "**/test-data",
             "support/licenses",
             "**/.*",
-            "**/__snapshots"
+            "**/__snapshots",
+            "packages/pnpm-plugin-defaults/pnpmfile.cjs"
         ]
     },
     {

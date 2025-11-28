@@ -1,0 +1,36 @@
+{
+    "name": "@open-pioneer/pnpm-plugin-defaults",
+    "description": "Provides default configuration options for pnpm.",
+    "version": "0.0.2",
+    "type": "commonjs",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-pioneer/trails-build-tools.git",
+        "directory": "packages/pnpm-plugin-defaults"
+    },
+    "homepage": "https://github.com/open-pioneer",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "scripts": {
+        "clean": "rimraf pnpmfile.*",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch",
+        "test": "vitest"
+    },
+    "files": [
+        "pnpmfile.cjs",
+        "pnpmfile.cjs.map",
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
+    "devDependencies": {
+        "build-tools": "workspace:*"
+    },
+    "engines": {
+        "node": ">= 20"
+    }
+}
