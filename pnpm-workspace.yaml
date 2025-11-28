@@ -1,5 +1,7 @@
+configDependencies:
+  "@open-pioneer/pnpm-plugin-defaults": 0.1.0+sha512-+m/wk7B8hZPfiFzM82JBYTD6TbrMHPdgPUITBMHzjlqzCo8YfPHc5NAsURCz/YcMBN5tNANDQDfclYhrsjmClQ==
+
 packages:
-  - "." # workaround for https://github.com/changesets/changesets/issues/1133 (packages don't find build-tools repo root)
   - "integration-tests/**"
   - "packages/**"
   - "!**/dist/**"
@@ -117,7 +119,7 @@ overrides:
   "@open-pioneer/runtime": ">= 2.2.0"
 
 auditConfig:
-  ignoreCves:
+  ignoreCves: []
 
 peerDependencyRules:
   allowedVersions:
@@ -135,12 +137,6 @@ onlyBuiltDependencies:
 ignoredBuiltDependencies:
   # Seems to work fine without building
   - unrs-resolver
-
-# Don't automatically link to workspace packages (use e.g. "workspace:^" instead).
-linkWorkspacePackages: false
-autoInstallPeers: true
-dedupePeerDependents: true
-strictPeerDependencies: true
 
 # Workaround for current problems regarding our vite plugin + vite's optimizeDeps feature
 shamefullyHoist: true
