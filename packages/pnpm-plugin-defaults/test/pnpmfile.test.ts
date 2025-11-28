@@ -17,6 +17,10 @@ it("applies default config options to user config", () => {
         "ignorePatchFailures": false,
         "linkWorkspacePackages": false,
         "minimumReleaseAge": 4320,
+        "minimumReleaseAgeExclude": [
+          "@open-pioneer/*",
+          "@conterra/*",
+        ],
         "resolutionMode": "time-based",
         "strictPeerDependencies": true,
       }

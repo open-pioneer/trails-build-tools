@@ -37,11 +37,12 @@ dist
 
 ## Default options
 
-| Option                 | Value           | Note                                                                   |
-| ---------------------- | --------------- | ---------------------------------------------------------------------- |
-| allowUnusedPatches     | `true`          |
-| ignorePatchFailures    | `false`         |
-| strictPeerDependencies | `true`          |
-| linkWorkspacePackages  | `false`         | Use `workspace:` protocol to link local packages                       |
-| resolutionMode         | `"time-based"`  | Prefers older packages (see <https://pnpm.io/settings#resolutionmode>) |
-| minimumReleaseAge      | `4320` (3 days) | Only install new versions after some time has passed                   |
+| Option                   | Value                                | Note                                                                   |
+| ------------------------ | ------------------------------------ | ---------------------------------------------------------------------- |
+| allowUnusedPatches       | `true`                               |
+| ignorePatchFailures      | `false`                              |
+| strictPeerDependencies   | `true`                               |
+| linkWorkspacePackages    | `false`                              | Use `workspace:` protocol to link local packages                       |
+| resolutionMode           | `"time-based"`                       | Prefers older packages (see <https://pnpm.io/settings#resolutionmode>) |
+| minimumReleaseAge        | `4320` (3 days)                      | Only install new versions after some time has passed                   |
+| minimumReleaseAgeExclude | `["@conterra/*", "@open-pioneer/*"]` | Packages excluded from the `minimumReleaseAge` rule                    |
