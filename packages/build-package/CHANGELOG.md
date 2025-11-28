@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package
 
+## 4.0.5
+
+### Patch Changes
+
+- f229f63: Bump dependencies
+- Updated dependencies [f229f63]
+    - @open-pioneer/build-common@3.1.1
+    - @open-pioneer/build-support@3.0.4
+
 ## 4.0.4
 
 ### Patch Changes
