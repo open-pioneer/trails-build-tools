@@ -241,8 +241,6 @@ overrides:
   glob@>=10.x <= 11.0.3: ^11.1.0
   '@open-pioneer/runtime': '>= 2.2.0'
 
-pnpmfileChecksum: sha256-FAQ+ylJChk4moYBCl+iwvCnDgmyWSUpwlv3NBRm9xrs=
-
 importers:
 
   .:
