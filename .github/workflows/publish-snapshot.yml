@@ -23,4 +23,5 @@ jobs:
         uses: open-pioneer/trails-repo-automation/.github/actions/publish-snapshots@main
         with:
           snapshot-tag: ${{ inputs.snapshot-tag }}
+          build-command: "build"
           npm-token: ${{ secrets.NPM_TOKEN }}
