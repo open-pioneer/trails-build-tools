@@ -1,18 +1,19 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { normalizePath, Plugin, ResolvedConfig, ViteDevServer, Rollup } from "vite";
-import { createDebugger } from "./utils/debug";
-import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
-import { MetadataRepository } from "./metadata/MetadataRepository";
-import { generateCombinedCss } from "./codegen/generateCombinedCss";
-import { generateAppMetadata } from "./codegen/generateAppMetadata";
-import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
-import { readFile } from "node:fs/promises";
-import { ReportableError } from "./ReportableError";
-import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { RuntimeSupport } from "@open-pioneer/build-common";
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { normalizePath, Plugin, ResolvedConfig, Rollup, ViteDevServer } from "vite";
+import { ReportableError } from "./ReportableError";
+import { generateAppMetadata } from "./codegen/generateAppMetadata";
+import { generateCombinedCss } from "./codegen/generateCombinedCss";
+import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
+import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
+import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
+import { MetadataRepository } from "./metadata/MetadataRepository";
+import { createDebugger } from "./utils/debug";
+import { fileExists } from "./utils/fileUtils";
 
 type PluginContext = Rollup.PluginContext;
 
@@ -162,8 +163,14 @@ export function codegenPlugin(): Plugin {
                             locale: mod.locale,
                             appName: appMetadata.name,
                             packages: appMetadata.packages,
-                            loadI18n: (path) => {
-                                return repository.getI18nFile(this, path);
+                            loadI18n: async (pkg, filePath) => {
+                                this.addWatchFile(filePath);
+                                if (!(await fileExists(filePath))) {
+                                    throw new ReportableError(
+                                        `I18n file in package '${pkg.name}' for locale '${mod.locale}' does not exist: '${filePath}'.`
+                                    );
+                                }
+                                return repository.getI18nFile(this, filePath);
                             }
                         });
                         isDebug && debug("Generated i18n messages: %O", generatedSourceCode);

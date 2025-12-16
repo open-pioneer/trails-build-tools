@@ -283,6 +283,24 @@ describe("codegen support", function () {
         assert.match(error.message, /Overrides are only supported in the app/);
     });
 
+    it("generates an error if the i18n file for a locale is missing from a package", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-missing-yaml");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-missing-yaml");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+        expect(error.message).toMatch(
+            /I18n file in package 'i18n1' for locale 'en' does not exist/
+        );
+    });
+
     it("excludes a service from the generated code if it's disabled by the app", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-disabled-service");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-disabled-service");

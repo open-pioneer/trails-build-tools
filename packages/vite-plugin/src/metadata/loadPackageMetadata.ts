@@ -136,13 +136,7 @@ class PackageMetadataReader {
             if (i18nPaths.has(locale)) {
                 throw new ReportableError(`Locale '${locale}' was defined twice in ${configPath}`);
             }
-
             const path = join(packageDir, "i18n", `${locale}.yaml`);
-            ctx.addWatchFile(path);
-            if (!(await fileExists(path))) {
-                throw new ReportableError(`i18n file '${path}' does not exist.`);
-            }
-
             i18nPaths.set(locale, normalizePath(path));
         }
 
