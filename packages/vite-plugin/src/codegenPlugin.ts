@@ -12,6 +12,7 @@ import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n"
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
 import { MetadataRepository } from "./metadata/MetadataRepository";
+import { validateI18nConfig } from "./metadata/validateI18nConfig";
 import { createDebugger } from "./utils/debug";
 import { fileExists } from "./utils/fileUtils";
 
@@ -151,6 +152,8 @@ export function codegenPlugin(): Plugin {
                         return generatedSourceCode;
                     }
                     case "app-i18n-index": {
+                        await validateI18nConfig(this, repository, appMetadata);
+
                         const generatedSourceCode = generateI18nIndex(
                             mod.packageDirectory,
                             appMetadata.locales
@@ -166,9 +169,7 @@ export function codegenPlugin(): Plugin {
                             loadI18n: async (pkg, filePath) => {
                                 this.addWatchFile(filePath);
                                 if (!(await fileExists(filePath))) {
-                                    throw new ReportableError(
-                                        `I18n file in package '${pkg.name}' for locale '${mod.locale}' does not exist: '${filePath}'.`
-                                    );
+                                    throw new ReportableError(`XXXX`);
                                 }
                                 return repository.getI18nFile(this, filePath);
                             }
