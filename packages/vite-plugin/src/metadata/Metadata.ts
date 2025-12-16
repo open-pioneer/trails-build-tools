@@ -60,6 +60,8 @@ export interface PackageMetadata {
     /**
      * Paths to i18n yaml config for any defined lang in build config.
      * Key: locale, value: file path
+     *
+     * NOTE: These have not (yet) been checked, they might not exist.
      */
     i18nPaths: Map<string, string>;
 

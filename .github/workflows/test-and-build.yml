@@ -21,9 +21,6 @@ jobs:
       - name: Install
         uses: open-pioneer/trails-repo-automation/.github/actions/install@main
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Run checks
         run: |
           pnpm run ci:test

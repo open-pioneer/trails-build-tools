@@ -48,7 +48,7 @@ describe("generateI18n", function () {
                     ])
                 }
             ],
-            loadI18n(path) {
+            loadI18n(_pkg, path) {
                 return loadI18nFile(path);
             }
         });
@@ -77,7 +77,7 @@ describe("generateI18n", function () {
                     ])
                 }
             ],
-            loadI18n(path) {
+            loadI18n(_pkg, path) {
                 return loadI18nFile(path);
             }
         });
