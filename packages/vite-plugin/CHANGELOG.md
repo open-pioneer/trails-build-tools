@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.0.3
+
+### Patch Changes
+
+- 2c45a18: Bump dependencies
+- Updated dependencies [2c45a18]
+    - @open-pioneer/build-common@3.1.2
+
 ## 5.0.2
 
 ### Patch Changes

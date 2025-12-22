@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/build-package
 
+## 4.0.6
+
+### Patch Changes
+
+- 2c45a18: Bump dependencies
+- 1d5852a: Resolve node modules using `browser` exports.
+- Updated dependencies [2c45a18]
+    - @open-pioneer/build-common@3.1.2
+    - @open-pioneer/build-support@3.0.5
+
 ## 4.0.5
 
 ### Patch Changes
