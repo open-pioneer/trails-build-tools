@@ -211,6 +211,8 @@ export interface PackageConfig {
      * This is undefined if the package does not use the 'overrides' property.
      */
     overrides: Map<string, PackageOverrides> | undefined;
+
+    runtimeVersion: RuntimeVersion;
 }
 
 /** Internal representation of a service. */
@@ -316,3 +318,7 @@ export function verifyBuildConfig(value: unknown): BuildConfig;
  * not export a valid build configuration object.
  */
 export function loadBuildConfig(path: string): Promise<BuildConfig>;
+
+export type RuntimeVersion = "1.0.0" | "2.0.0";
+export const RUNTIME_BASE_VERSION: RuntimeVersion;
+export function isRuntimeVersion(value: unknown): value is RuntimeVersion;

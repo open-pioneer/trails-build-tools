@@ -1,6 +1,12 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { BUILD_CONFIG_NAME } from "@open-pioneer/build-common";
+import {
+    BUILD_CONFIG_NAME,
+    isRuntimeVersion,
+    PackageMetadataV1,
+    RUNTIME_BASE_VERSION,
+    RuntimeVersion
+} from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
 import { normalizePath } from "vite";
@@ -18,6 +24,9 @@ import {
 } from "./Metadata";
 import { loadPackageMetadata } from "./loadPackageMetadata";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
+import { fileExists } from "../utils/fileUtils";
+import { join } from "node:path";
+import { readFile } from "node:fs/promises";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -56,6 +65,8 @@ export class MetadataRepository {
     // Key: path on disk.
     private i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
 
+    private runtimeVersion: RuntimeVersion;
+
     /**
      * @param sourceRoot Source folder on disk, needed to detect 'local' packages
      */
@@ -63,6 +74,10 @@ export class MetadataRepository {
         this.sourceRoot = sourceRoot;
         this.packageMetadataCache = this.createPackageMetadataCache();
         this.i18nCache = this.createI18nCache();
+        this.runtimeVersion = RUNTIME_BASE_VERSION;
+        this.readRootPackage(sourceRoot).then((result) => {
+            this.runtimeVersion = result;
+        });
     }
 
     reset() {
@@ -196,6 +211,10 @@ export class MetadataRepository {
         return i18n;
     }
 
+    getRuntimeVersion(): RuntimeVersion {
+        return this.runtimeVersion;
+    }
+
     private async resolvePackageLocation(loc: PackageLocation) {
         if (loc.type === "absolute") {
             return await realpath(loc.directory);
@@ -246,6 +265,33 @@ export class MetadataRepository {
                 isDebug && debug(`Returning cached entry for i18n file ${path}`);
             }
         });
+    }
+
+    private async readRootPackage(sourceRoot: string): Promise<RuntimeVersion> {
+        isDebug && debug(`Read root package for runtime version ${sourceRoot}`);
+        const sourcePackageJSON = join(sourceRoot, "..", "package.json");
+        if (!(await fileExists(sourcePackageJSON))) {
+            isDebug && debug(`No root package for runtime version ${sourceRoot} found`);
+            return RUNTIME_BASE_VERSION;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let packageJsonContent: any;
+        try {
+            packageJsonContent = JSON.parse(await readFile(sourcePackageJSON, "utf-8"));
+        } catch (e) {
+            throw new ReportableError(`Failed to read ${sourcePackageJSON}`, { cause: e });
+        }
+        const frameworkMetadata =
+            packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
+        if (frameworkMetadata && isRuntimeVersion(frameworkMetadata.runtimeVersion)) {
+            isDebug && debug(`Set runtime version to  ${frameworkMetadata.runtimeVersion}`);
+            return frameworkMetadata.runtimeVersion;
+        } else {
+            throw new ReportableError(
+                `Unsupported runtime version ${frameworkMetadata.runtimeVersion}`
+            );
+        }
     }
 
     private createPackageMetadataCache(): typeof this.packageMetadataCache {

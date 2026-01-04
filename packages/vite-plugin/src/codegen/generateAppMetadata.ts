@@ -32,36 +32,19 @@ export function generateAppMetadata(packageDirectory: string, metadataModuleId: 
 import { createBox } from ${JSON.stringify(metadataModuleId)};
 import packages from ${JSON.stringify(packagesModule)};
 import stylesString from ${JSON.stringify(cssModule)};
-import { locales, loadMessages as loadMessagesFn } from ${JSON.stringify(i18nModule)};
+import { locales, loadMessages } from ${JSON.stringify(i18nModule)};
 
 const styles = createBox(stylesString);
-const loadMessages = createBox(loadMessagesFn);
 if (import.meta.hot) {
     import.meta.hot.data.styles ??= styles;
-    import.meta.hot.data.loadMessages ??= loadMessages;
     import.meta.hot.accept((mod) => {
-        function arrayEq(a, b) {
-            if (a === b) {
-                return true;
-            }
-            if (!a || !b) {
-                return false;
-            }
-            return a.length === b.length && a.every((v, i) => v === b[i]);
-        }
-
-        if (!mod || mod.packages !== packages || !arrayEq(mod.locales, locales)) {
-            // Cannot handle these changes, trigger reload:
-            import.meta.hot.invalidate();
+        if (mod && mod.packages === packages && mod.locales === locales && mod.loadMessages === loadMessages) {
+            import.meta.hot.data.styles.setValue(mod.styles.value);
             return;
         }
-
-        if (mod.styles.value !== styles.value) {
-            import.meta.hot.data.styles.setValue(mod.styles.value);
-        }
-        if (mod.loadMessages.value !== loadMessages.value) {
-            import.meta.hot.data.loadMessages.setValue(mod.loadMessages.value);
-        }
+        
+        // Cannot handle all other changes the moment; trigger reload.
+        import.meta.hot.invalidate();
     });
 }
 

@@ -6,7 +6,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { normalizePath, Plugin, ResolvedConfig, Rollup, ViteDevServer } from "vite";
 import { ReportableError } from "./ReportableError";
-import { generateAppMetadata } from "./codegen/generateAppMetadata";
+import { AppMetadataGeneratorFactory } from "./codegen/AppMetadataGeneratorAdapter";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
@@ -130,7 +130,9 @@ export function codegenPlugin(): Plugin {
                 }
 
                 if (mod.type === "app-meta") {
-                    return generateAppMetadata(
+                    const runtimeVersion = repository.getRuntimeVersion();
+                    return AppMetadataGeneratorFactory.generate(
+                        runtimeVersion,
                         mod.packageDirectory,
                         RuntimeSupport.METADATA_MODULE_ID
                     );
