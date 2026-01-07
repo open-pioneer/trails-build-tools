@@ -8,10 +8,10 @@ import { findDepPkgJsonPath } from "vitefu";
 import { ReportableError } from "../ReportableError";
 import { Cache } from "../utils/Cache";
 import { createDebugger } from "../utils/debug";
+import { MetadataContext } from "./Context";
 import {
     AppMetadata,
     InternalPackageMetadata,
-    MetadataContext,
     PackageDependency,
     PackageLocation,
     PackageMetadata
@@ -348,7 +348,7 @@ export class MetadataRepository {
                 // when a cached entry is returned.
                 const watchFiles = new Set<string>();
                 const trackingCtx: MetadataContext = {
-                    resolve: ctx.resolve.bind(ctx),
+                    resolveLocalFile: ctx.resolveLocalFile.bind(ctx),
                     addWatchFile(id) {
                         ctx.addWatchFile(id);
                         watchFiles.add(id);
@@ -356,12 +356,10 @@ export class MetadataRepository {
                     warn: ctx.warn.bind(ctx)
                 };
 
-                const metadata = await loadPackageMetadata(
-                    trackingCtx,
-                    directory,
+                const metadata = await loadPackageMetadata(trackingCtx, directory, {
                     sourceRoot,
                     importedFrom
-                );
+                });
                 isDebug && debug(`Metadata for '${metadata.name}': %O`, metadata);
 
                 // Ensure only one version of a package exists in the app
