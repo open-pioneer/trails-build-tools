@@ -201,8 +201,8 @@ async function optimizeTrailsPackages(userConfig: UserConfig, rootDir: string) {
 
     isDebug && debug("Optimizing additional modules %O", trailsModules);
     const optimizeDeps = (userConfig.optimizeDeps ??= {});
-    const includes = optimizeDeps.include ?? [];
-    includes.push(`${RuntimeSupport.RUNTIME_PACKAGE_NAME}/**`, ...trailsModules);
+    const includes = (optimizeDeps.include ??= []);
+    includes.push(...trailsModules);
 }
 
 function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
