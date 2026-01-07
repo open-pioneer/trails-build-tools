@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join, relative } from "node:path";
+import { type Plugin as EsBuildPlugin } from "esbuild";
 import { normalizePath, Plugin, ResolvedConfig, ViteDevServer, Rollup } from "vite";
 import { createDebugger } from "./utils/debug";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
@@ -13,6 +14,8 @@ import { readFile } from "node:fs/promises";
 import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { RuntimeSupport } from "@open-pioneer/build-common";
+import { MetadataContext } from "./metadata/Metadata";
+import { isInDirectory } from "./utils/fileUtils";
 
 type PluginContext = Rollup.PluginContext;
 
@@ -25,10 +28,17 @@ export function codegenPlugin(): Plugin {
     let devServer: ViteDevServer | undefined;
 
     return {
-        name: "pioneer:codegen",
+        name: "open-pioneer:codegen",
 
         async buildStart(this: PluginContext) {
             repository?.reset();
+        },
+
+        config(userConfig) {
+            const optimizeDeps = (userConfig.optimizeDeps ??= {});
+            const esbuildOptions = (optimizeDeps.esbuildOptions ??= {});
+            const plugins = (esbuildOptions.plugins ??= []);
+            plugins.push(esbuildDepsPlugin(() => config.root));
         },
 
         configResolved(resolvedConfig) {
@@ -50,18 +60,6 @@ export function codegenPlugin(): Plugin {
                     return moduleId;
                 }
 
-                const getPackageDirectory = () => {
-                    const packageJsonPath = findPackageJson(dirname(importer), config.root);
-                    if (!packageJsonPath) {
-                        throw new ReportableError(
-                            `Failed to find package.json for package from '${importer}'.`
-                        );
-                    }
-
-                    const packageDir = dirname(packageJsonPath);
-                    return normalizePath(packageDir);
-                };
-
                 let virtualModule;
                 try {
                     virtualModule = RuntimeSupport.parseVirtualModule(moduleId);
@@ -77,12 +75,12 @@ export function codegenPlugin(): Plugin {
                     case "app":
                         return serializeModuleId({
                             type: "app-meta",
-                            packageDirectory: getPackageDirectory()
+                            packageDirectory: getPackageDirectoryFromImporter(importer, config.root)
                         });
                     case "react-hooks":
                         return serializeModuleId({
                             type: "package-hooks",
-                            packageDirectory: getPackageDirectory()
+                            packageDirectory: getPackageDirectoryFromImporter(importer, config.root)
                         });
                 }
             } catch (e) {
@@ -134,7 +132,22 @@ export function codegenPlugin(): Plugin {
                     );
                 }
 
-                const appMetadata = await repository.getAppMetadata(this, dirname(packageJsonPath));
+                const ctx: MetadataContext = {
+                    addWatchFile: (id) => {
+                        this.addWatchFile(id);
+                    },
+                    resolve: async (moduleId, importer) => {
+                        const result = await this.resolve(moduleId, importer, {
+                            skipSelf: true
+                        });
+                        return result?.id;
+                    },
+                    warn: (message) => {
+                        this.warn(message);
+                    }
+                };
+
+                const appMetadata = await repository.getAppMetadata(ctx, dirname(packageJsonPath));
                 switch (mod.type) {
                     case "app-packages": {
                         const generatedSourceCode = generatePackagesMetadata({
@@ -163,7 +176,7 @@ export function codegenPlugin(): Plugin {
                             appName: appMetadata.name,
                             packages: appMetadata.packages,
                             loadI18n: (path) => {
-                                return repository.getI18nFile(this, path);
+                                return repository.getI18nFile(ctx, path);
                             }
                         });
                         isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
@@ -178,6 +191,119 @@ export function codegenPlugin(): Plugin {
         watchChange(id, _change) {
             isDebug && debug("File %s changed", id);
             repository.onFileChanged(id);
+        }
+    };
+}
+
+function esbuildDepsPlugin(getRoot: () => string): EsBuildPlugin {
+    return {
+        name: "open-pioneer:dev-deps",
+        setup(build) {
+            // Source root is only available after vite's config is resolved.
+            const repository = new MetadataRepository(getRoot());
+            build.onResolve(
+                {
+                    filter: /^open-pioneer:/,
+                    namespace: "file"
+                },
+                ({ path: moduleId, resolveDir }) => {
+                    const module = RuntimeSupport.parseVirtualModule(moduleId);
+                    switch (module) {
+                        case "app":
+                        case "react-hooks":
+                            isDebug &&
+                                debug("Detected module import '%s' in %s", module, resolveDir);
+                            return {
+                                path: `${module}:${resolveDir}`,
+                                namespace: "open-pioneer:dev-deps"
+                            };
+                    }
+                }
+            );
+            build.onLoad(
+                {
+                    filter: /^app:/,
+                    namespace: "open-pioneer:dev-deps"
+                },
+                async ({ path: moduleId }) => {
+                    const originalDir = moduleId.match(/^app:(.*)/)?.[1];
+                    if (!originalDir) {
+                        throw new Error("Internal error: failed to match path.");
+                    }
+
+                    const appDir = getPackageDirectoryFromDirectory(
+                        originalDir,
+                        repository.sourceRoot
+                    );
+                    isDebug && debug("Generate module dependencies for app at %s", appDir);
+
+                    const appMetadata = await repository.getAppMetadata(
+                        {
+                            addWatchFile: (_id) => {},
+                            resolve: async (source, importer) => {
+                                const result = await build.resolve(source, {
+                                    importer,
+                                    resolveDir: importer ? dirname(importer) : undefined,
+                                    kind: "import-statement"
+                                });
+                                return result.path;
+                            },
+                            warn: (_e) => {}
+                        },
+                        appDir
+                    );
+
+                    const serviceEntryPoints = appMetadata.packages.flatMap((pkg) => {
+                        const servicesModule = pkg.servicesModulePath;
+                        if (!servicesModule) {
+                            return [];
+                        }
+
+                        if (
+                            isAbsolute(servicesModule) &&
+                            isInDirectory(servicesModule, repository.sourceRoot)
+                        ) {
+                            const localPath = relative(
+                                // dummy file
+                                join(appDir, "app.js"),
+                                servicesModule
+                            );
+                            return [normalizePath(localPath)];
+                        }
+
+                        return servicesModule ? [servicesModule] : [];
+                    });
+                    const allEntryPoints = [
+                        RuntimeSupport.RUNTIME_PACKAGE_NAME,
+                        RuntimeSupport.METADATA_MODULE_ID,
+                        ...serviceEntryPoints
+                    ];
+                    isDebug && debug("App dependencies for app at %s: %O", appDir, allEntryPoints);
+
+                    return {
+                        contents: allEntryPoints
+                            .map((e) => `import ${JSON.stringify(e)};`)
+                            .join("\n"),
+                        resolveDir: appDir
+                    };
+                }
+            );
+            build.onLoad(
+                {
+                    filter: /^react-hooks:/,
+                    namespace: "open-pioneer:dev-deps"
+                },
+                ({ path: moduleId }) => {
+                    const originalDir = moduleId.match(/^react-hooks:(.*)/)?.[1];
+                    if (!originalDir) {
+                        throw new Error("Internal error: failed to match path.");
+                    }
+                    return {
+                        contents: `import ${JSON.stringify(RuntimeSupport.REACT_INTEGRATION_MODULE_ID)}`,
+                        resolveDir: originalDir
+                    };
+                }
+            );
         }
     };
 }
@@ -205,6 +331,20 @@ function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         stack: (error as any).stack
     });
+}
+
+function getPackageDirectoryFromDirectory(directory: string, rootDir: string): string {
+    const packageJsonPath = findPackageJson(directory, rootDir);
+    if (!packageJsonPath) {
+        throw new ReportableError(`Failed to find package.json for package from '${directory}'.`);
+    }
+
+    const packageDir = dirname(packageJsonPath);
+    return normalizePath(packageDir);
+}
+
+function getPackageDirectoryFromImporter(importer: string, rootDir: string): string {
+    return getPackageDirectoryFromDirectory(dirname(importer), rootDir);
 }
 
 function findPackageJson(startDir: string, rootDir: string) {

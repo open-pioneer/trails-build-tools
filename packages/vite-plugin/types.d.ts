@@ -58,6 +58,20 @@ export interface PioneerPluginOptions {
      * @default []
      */
     apps?: string[] | AdvancedAppOptions | undefined | false;
+
+    /**
+     * Experimental options.
+     *
+     * These may be changed or removed at any time; use at your own risk.
+     */
+    experimental?: {
+        /**
+         * Enables or disables the esbuild plugin running in Vite's development server during dependency optimization.
+         *
+         * Default: `false`.
+         */
+        resolveDepOptimizerDependencies?: boolean;
+    };
 }
 
 export interface AdvancedAppOptions {

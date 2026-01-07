@@ -43,7 +43,7 @@ interface I18nEntry {
  * until one of the file dependencies has changed.
  */
 export class MetadataRepository {
-    private sourceRoot: string;
+    readonly sourceRoot: string;
 
     // Key: package directory on disk, value: existing metadata
     private packageMetadataCache: Cache<

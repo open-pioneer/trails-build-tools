@@ -15,7 +15,7 @@ export function mpaPlugin(options: PioneerPluginOptions | undefined): Plugin {
 
     let resolvedConfig: ResolvedConfig;
     return {
-        name: "pioneer:mpa",
+        name: "open-pioneer:mpa",
 
         config(config): UserConfig {
             const sourceRoot = config.root ?? cwd();

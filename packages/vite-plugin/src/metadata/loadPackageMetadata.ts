@@ -373,10 +373,7 @@ async function resolveLocalFile(ctx: MetadataContext, packageDir: string, localM
         localModuleId = `./${localModuleId}`;
     }
 
-    const result = await ctx.resolve(localModuleId, `${packageDir}/package.json`, {
-        skipSelf: true
-    });
-    return result?.id;
+    return await ctx.resolve(localModuleId, `${packageDir}/package.json`);
 }
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/;

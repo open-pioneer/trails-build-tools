@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PackageConfig } from "@open-pioneer/build-common";
-import { PluginContext } from "rollup";
 
 /**
  * Contains build-time information about an app.
@@ -105,7 +104,11 @@ export interface PlainPackageMetadata {
  */
 export type InternalPackageMetadata = PackageMetadata | PlainPackageMetadata;
 
-export type MetadataContext = Pick<PluginContext, "addWatchFile" | "resolve" | "warn">;
+export interface MetadataContext {
+    addWatchFile(file: string): void;
+    resolve(moduleId: string, importer: string | undefined): Promise<string | undefined>;
+    warn(message: string): void;
+}
 
 export interface ResolvedPackageLocation {
     type: "absolute";
