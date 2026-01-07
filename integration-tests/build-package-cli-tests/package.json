@@ -17,7 +17,7 @@
         "@types/uuid": "catalog:tests",
         "chakra-react-select": "catalog:tests",
         "classnames": "catalog:tests",
-        "fast-glob": "catalog:",
+        "tinyglobby": "catalog:",
         "fs-extra": "catalog:",
         "ol": "catalog:tests",
         "proj4": "catalog:tests",
