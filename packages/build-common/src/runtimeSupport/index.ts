@@ -60,7 +60,7 @@ function generateSourceInfo(packageName: string, packageDirectory: string, modul
     });
 }
 
-export function getSourceId(packageName: string, packageDirectory: string, modulePath: string) {
+function getSourceId(packageName: string, packageDirectory: string, modulePath: string) {
     packageDirectory = normalizePath(packageDirectory);
     modulePath = normalizePath(modulePath);
 

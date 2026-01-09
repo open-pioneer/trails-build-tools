@@ -3,7 +3,7 @@ import { SearchIcon } from '@chakra-ui/icons';
 import { chakra, CloseButton } from '@open-pioneer/chakra-integration';
 import { chakraComponents } from 'chakra-react-select';
 import classNames from 'classnames';
-import { useIntl } from './_virtual/_virtual-pioneer-module_react-hooks.js';
+import { useIntl } from './_virtual/hooks.js';
 
 function MenuComp(props) {
   const hasInput = props.selectProps.inputValue.length > 0;

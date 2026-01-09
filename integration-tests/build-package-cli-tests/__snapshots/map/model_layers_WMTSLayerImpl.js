@@ -149,5 +149,5 @@ function getWMTSLegendUrl(capabilities, activeLayerId, activeStyleId) {
   return legendUrl;
 }
 
-export { WMTSLayerImpl, getWMTSLegendUrl };
+export { WMTSLayerImpl };
 //# sourceMappingURL=WMTSLayerImpl.js.map

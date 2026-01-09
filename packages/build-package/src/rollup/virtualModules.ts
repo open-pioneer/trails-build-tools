@@ -9,8 +9,8 @@ export interface VirtualModulesPluginOptions {
     packageDirectory: string;
 }
 
-const REACT_HOOKS_ID = "\0virtual-pioneer-module:react-hooks";
-const SOURCE_INFO_ID = "\0virtual-pioneer-module:source-info";
+export const REACT_HOOKS_ID = "\0virtual-pioneer-module:react-hooks";
+export const SOURCE_INFO_ID = "\0virtual-pioneer-module:source-info";
 
 /**
  * Generates the virtual module `open-pioneer:react-hooks` at compile time.

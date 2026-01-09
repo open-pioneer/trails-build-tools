@@ -33,19 +33,19 @@ it("transpiles a simple javascript project", async function () {
         External imports must be left as-is.
     */
     expect(readText(resolve(outputDirectory, "entryPointA.js"))).toMatchInlineSnapshot(`
-          "import { log } from './dir/log.js';
-          import something from 'somewhere-external';
-          import somethingElse from '@scope/somewhere-external';
-          import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
+      "import { log } from './dir/log.js';
+      import something from 'somewhere-external';
+      import somethingElse from '@scope/somewhere-external';
+      import { useService } from './_virtual/hooks.js';
 
-          console.log(something, somethingElse, useService);
-          function helloA() {
-            log("hello from entry point A");
-          }
+      console.log(something, somethingElse, useService);
+      function helloA() {
+        log("hello from entry point A");
+      }
 
-          export { helloA };
-          "
-        `);
+      export { helloA };
+      "
+    `);
     expect(readText(resolve(outputDirectory, "entryPointB.js"))).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
 
@@ -66,8 +66,7 @@ it("transpiles a simple javascript project", async function () {
         `);
 
     // React hooks are transpiled
-    expect(readText(resolve(outputDirectory, "./_virtual/_virtual-pioneer-module_react-hooks.js")))
-        .toMatchInlineSnapshot(`
+    expect(readText(resolve(outputDirectory, "./_virtual/hooks.js"))).toMatchInlineSnapshot(`
           "import { useServiceInternal } from '@open-pioneer/runtime/react-integration';
 
           const PACKAGE_NAME = "test";
@@ -95,7 +94,7 @@ it("transpiles a project with source-info imports", async function () {
     });
 
     expect(readText(resolve(outputDirectory, "index.js"))).toMatchInlineSnapshot(`
-      "import { sourceId } from './_virtual/_virtual-pioneer-module_source-info.js';
+      "import { sourceId$1 as sourceId } from './_virtual/source-info.js';
       import { logSourceId } from './dir/log.js';
 
       console.log(\`Hello from \${sourceId}\`);
@@ -103,7 +102,7 @@ it("transpiles a project with source-info imports", async function () {
       "
     `);
     expect(readText(resolve(outputDirectory, "dir/log.js"))).toMatchInlineSnapshot(`
-      "import { sourceId } from '../_virtual/_virtual-pioneer-module_source-info2.js';
+      "import { sourceId } from '../_virtual/source-info.js';
 
       function logSourceId() {
         console.log(\`Hello from \${sourceId}\`);
@@ -112,18 +111,12 @@ it("transpiles a project with source-info imports", async function () {
       export { logSourceId };
       "
     `);
-    expect(readText(resolve(outputDirectory, "./_virtual/_virtual-pioneer-module_source-info.js")))
-        .toMatchInlineSnapshot(`
-      "const sourceId = "test/index";
+    expect(readText(resolve(outputDirectory, "./_virtual/source-info.js"))).toMatchInlineSnapshot(`
+      "const sourceId$1 = "test/index";
 
-      export { sourceId };
-      "
-    `);
-    expect(readText(resolve(outputDirectory, "./_virtual/_virtual-pioneer-module_source-info2.js")))
-        .toMatchInlineSnapshot(`
-      "const sourceId = "test/dir/log";
+      const sourceId = "test/dir/log";
 
-      export { sourceId };
+      export { sourceId, sourceId$1 };
       "
     `);
 });
@@ -149,7 +142,7 @@ it("generates source maps when enabled", async function () {
           "import { log } from './dir/log.js';
           import something from 'somewhere-external';
           import somethingElse from '@scope/somewhere-external';
-          import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
+          import { useService } from './_virtual/hooks.js';
 
           console.log(something, somethingElse, useService);
           function helloA() {
