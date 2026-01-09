@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { RuntimeSupport } from "@open-pioneer/build-common";
-import glob from "fast-glob";
+import { glob } from "tinyglobby";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { expect, it, onTestFailed } from "vitest";

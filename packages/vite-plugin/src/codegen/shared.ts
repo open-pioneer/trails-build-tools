@@ -70,7 +70,7 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
         return undefined;
     }
 
-    const sourceFile = getSourceFile(moduleId); // module id with out query
+    const sourceFile = getSourceFile(moduleId); // module id without query
     if (!sourceFile) {
         return undefined;
     }

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { dirname } from "node:path";
-import { normalizePath, Plugin, ResolvedConfig, ViteDevServer, Rollup } from "vite";
+import { normalizePath, Plugin as VitePlugin, Rollup, UserConfig } from "vite";
 import { createDebugger } from "./utils/debug";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import { MetadataRepository } from "./metadata/MetadataRepository";
@@ -19,16 +19,19 @@ import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { RuntimeSupport } from "@open-pioneer/build-common";
 import { dataToEsm } from "@rollup/pluginutils";
+import { createMetadataContextFromRollup } from "./metadata/Context";
+import { cwd } from "node:process";
+import { findTrailsPackages } from "./metadata/findTrailsPackages";
 
 type PluginContext = Rollup.PluginContext;
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
 
-export function codegenPlugin(): Plugin {
-    let config!: ResolvedConfig;
+export function codegenPlugin(): VitePlugin {
+    let isDev!: boolean;
+    let rootDir!: string;
     let repository!: MetadataRepository;
-    let devServer: ViteDevServer | undefined;
 
     return {
         name: "pioneer:codegen",
@@ -37,13 +40,14 @@ export function codegenPlugin(): Plugin {
             repository?.reset();
         },
 
-        configResolved(resolvedConfig) {
-            config = resolvedConfig;
-            repository = new MetadataRepository(config.root);
-        },
+        async config(userConfig, env) {
+            isDev = env.command === "serve";
+            rootDir = userConfig.root ?? cwd();
+            repository = new MetadataRepository(rootDir);
 
-        configureServer(server) {
-            devServer = server;
+            if (isDev) {
+                await optimizeTrailsPackages(userConfig, rootDir);
+            }
         },
 
         async resolveId(this: PluginContext, moduleId, importer) {
@@ -55,18 +59,6 @@ export function codegenPlugin(): Plugin {
                 if (parseVirtualModuleId(moduleId)) {
                     return moduleId;
                 }
-
-                const getPackageDirectory = () => {
-                    const packageJsonPath = findPackageJson(dirname(importer), config.root);
-                    if (!packageJsonPath) {
-                        throw new ReportableError(
-                            `Failed to find package.json for package from '${importer}'.`
-                        );
-                    }
-
-                    const packageDir = dirname(packageJsonPath);
-                    return normalizePath(packageDir);
-                };
 
                 let virtualModule;
                 try {
@@ -83,22 +75,22 @@ export function codegenPlugin(): Plugin {
                     case "app":
                         return serializeModuleId({
                             type: "app-meta",
-                            packageDirectory: getPackageDirectory()
+                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
                     case "react-hooks":
                         return serializeModuleId({
                             type: "package-hooks",
-                            packageDirectory: getPackageDirectory()
+                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
                     case "source-info":
                         return serializeModuleId({
                             type: "source-info",
                             importer: importer,
-                            packageDirectory: getPackageDirectory()
+                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
                 }
             } catch (e) {
-                reportError(this, e, !!devServer);
+                reportError(this, e, isDev);
             }
         },
 
@@ -144,7 +136,8 @@ export function codegenPlugin(): Plugin {
                     );
                 }
 
-                const appMetadata = await repository.getAppMetadata(this, dirname(packageJsonPath));
+                const ctx = createMetadataContextFromRollup(this);
+                const appMetadata = await repository.getAppMetadata(ctx, dirname(packageJsonPath));
                 switch (mod.type) {
                     case "app-packages": {
                         const generatedSourceCode = generatePackagesMetadata({
@@ -173,7 +166,7 @@ export function codegenPlugin(): Plugin {
                             appName: appMetadata.name,
                             packages: appMetadata.packages,
                             loadI18n: (path) => {
-                                return repository.getI18nFile(this, path);
+                                return repository.getI18nFile(ctx, path);
                             }
                         });
                         isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
@@ -181,7 +174,7 @@ export function codegenPlugin(): Plugin {
                     }
                 }
             } catch (e) {
-                reportError(this, e, !!devServer);
+                reportError(this, e, isDev);
             }
         },
 
@@ -225,6 +218,36 @@ async function loadSourceInfo(modulePath: string, packageName: string, packageDi
     };
 }
 
+/**
+ * Find external trails packages and add their services modules (if any)
+ * to vite's `optimizeDeps.include`.
+ *
+ * This should reduce the number of `✨ optimized dependencies changed. reloading` events during development.
+ *
+ * NOTE: A better solution would be to teach vite's dependency optimizer how to interpret "open-pioneer:*",
+ * so that it accurately understands the actual additional imports from trails into node modules (i.e. all services etc.).
+ *
+ * I couldn't get the esbuild plugin working, however.
+ * This could be reattempted when vite has migrated to rolldown.
+ */
+async function optimizeTrailsPackages(userConfig: UserConfig, rootDir: string) {
+    const trailsPackages = await findTrailsPackages(rootDir);
+    const trailsModules = trailsPackages.flatMap((pkg) => {
+        if (!/[/\\]node_modules[/\\]/.test(pkg.directory)) {
+            return [];
+        }
+
+        const serviceModule = pkg.servicesModuleId;
+        return serviceModule ? [serviceModule] : [];
+    });
+    trailsModules.push(`${RuntimeSupport.RUNTIME_PACKAGE_NAME}/**`);
+
+    isDebug && debug("Optimizing additional modules %O", trailsModules);
+    const optimizeDeps = (userConfig.optimizeDeps ??= {});
+    const includes = (optimizeDeps.include ??= []);
+    includes.push(...trailsModules);
+}
+
 function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
     let message: string;
     if (error instanceof ReportableError) {
@@ -248,6 +271,20 @@ function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         stack: (error as any).stack
     });
+}
+
+function getPackageDirectoryFromDirectory(directory: string, rootDir: string): string {
+    const packageJsonPath = findPackageJson(directory, rootDir);
+    if (!packageJsonPath) {
+        throw new ReportableError(`Failed to find package.json for package from '${directory}'.`);
+    }
+
+    const packageDir = dirname(packageJsonPath);
+    return normalizePath(packageDir);
+}
+
+function getPackageDirectoryFromImporter(importer: string, rootDir: string): string {
+    return getPackageDirectoryFromDirectory(dirname(importer), rootDir);
 }
 
 async function getPackageName(ctx: PluginContext, packageJsonPath: string) {
