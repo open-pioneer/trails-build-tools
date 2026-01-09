@@ -1,18 +1,24 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { normalizePath, Plugin, ResolvedConfig, ViteDevServer, Rollup } from "vite";
 import { createDebugger } from "./utils/debug";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
-import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
+import {
+    findPackageJson,
+    parseVirtualModuleId,
+    serializeModuleId,
+    VirtualPackageModule,
+    VirtualSourceInfoModule
+} from "./codegen/shared";
 import { readFile } from "node:fs/promises";
 import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { RuntimeSupport } from "@open-pioneer/build-common";
+import { dataToEsm } from "@rollup/pluginutils";
 
 type PluginContext = Rollup.PluginContext;
 
@@ -84,6 +90,12 @@ export function codegenPlugin(): Plugin {
                             type: "package-hooks",
                             packageDirectory: getPackageDirectory()
                         });
+                    case "source-info":
+                        return serializeModuleId({
+                            type: "source-info",
+                            importer: importer,
+                            packageDirectory: getPackageDirectory()
+                        });
                 }
             } catch (e) {
                 reportError(this, e, !!devServer);
@@ -111,20 +123,18 @@ export function codegenPlugin(): Plugin {
                 }
 
                 if (mod.type === "package-hooks") {
-                    const directory = mod.packageDirectory;
-                    // use forward slashes instead of platform separator
-                    const packageJsonPath = (await this.resolve(directory + "/package.json"))?.id;
-                    if (!packageJsonPath) {
-                        throw new ReportableError(`Failed to resolve package.json in ${directory}`);
-                    }
-
-                    const packageName = await getPackageName(this, packageJsonPath);
+                    const packageName = await resolvePackageName(this, mod);
                     const generatedSourceCode = RuntimeSupport.generateReactHooks(
                         packageName,
                         RuntimeSupport.REACT_INTEGRATION_MODULE_ID
                     );
                     isDebug && debug("Generated hooks code: %O", generatedSourceCode);
                     return generatedSourceCode;
+                }
+
+                if (mod.type === "source-info") {
+                    const packageName = await resolvePackageName(this, mod);
+                    return loadSourceInfo(mod.importer, packageName, mod.packageDirectory);
                 }
 
                 if (mod.type === "app-meta") {
@@ -182,6 +192,39 @@ export function codegenPlugin(): Plugin {
     };
 }
 
+async function resolvePackageName(
+    ctx: PluginContext,
+    mod: VirtualSourceInfoModule | VirtualPackageModule
+) {
+    const directory = mod.packageDirectory;
+    // use forward slashes instead of platform separator
+    const packageJsonPath = (await ctx.resolve(directory + "/package.json"))?.id;
+    if (!packageJsonPath) {
+        throw new ReportableError(`Failed to resolve package.json in ${directory}`);
+    }
+
+    return await getPackageName(ctx, packageJsonPath);
+}
+
+async function loadSourceInfo(modulePath: string, packageName: string, packageDirectory: string) {
+    const sourceId = await RuntimeSupport.generateSourceId(
+        packageName,
+        packageDirectory,
+        modulePath
+    );
+    const sourceInfo = {
+        sourceId
+    };
+    return {
+        code: dataToEsm(sourceInfo, {
+            compact: false,
+            namedExports: true,
+            preferConst: true,
+            objectShorthand: true
+        })
+    };
+}
+
 function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
     let message: string;
     if (error instanceof ReportableError) {
@@ -205,24 +248,6 @@ function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         stack: (error as any).stack
     });
-}
-
-function findPackageJson(startDir: string, rootDir: string) {
-    let dir = startDir;
-    while (dir) {
-        const candidate = join(dir, "package.json");
-        if (existsSync(candidate)) {
-            return candidate;
-        }
-
-        if (normalizePath(dir) == normalizePath(rootDir)) {
-            return undefined;
-        }
-
-        const parent = dirname(dir);
-        dir = parent === dir || parent === "." ? "" : parent;
-    }
-    return undefined;
 }
 
 async function getPackageName(ctx: PluginContext, packageJsonPath: string) {

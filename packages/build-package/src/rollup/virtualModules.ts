@@ -1,8 +1,9 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { RuntimeSupport } from "@open-pioneer/build-common";
+import { dataToEsm } from "@rollup/pluginutils";
 import { Plugin } from "rollup";
 import { isInDirectory } from "../utils/pathUtils";
-import { RuntimeSupport } from "@open-pioneer/build-common";
 
 export interface VirtualModulesPluginOptions {
     packageName: string;
@@ -10,6 +11,7 @@ export interface VirtualModulesPluginOptions {
 }
 
 const REACT_HOOKS_ID = "\0virtual-pioneer-module:react-hooks";
+const SOURCE_INFO_ID = "\0virtual-pioneer-module:source-info";
 
 /**
  * Generates the virtual module `open-pioneer:react-hooks` at compile time.
@@ -39,9 +41,14 @@ export function virtualModulesPlugin({
                 });
             }
 
+            importer = assertDefined(importer);
+
             switch (virtualModuleType) {
                 case "react-hooks":
                     return REACT_HOOKS_ID;
+                case "source-info": {
+                    return `${SOURCE_INFO_ID}?importer=${encodeURIComponent(importer)}`;
+                }
                 default:
                     this.error({
                         id: importer,
@@ -50,10 +57,41 @@ export function virtualModulesPlugin({
             }
         },
         load(id) {
-            if (id !== REACT_HOOKS_ID) {
-                return undefined;
+            if (id === REACT_HOOKS_ID) {
+                return RuntimeSupport.generateReactHooks(packageName);
             }
-            return RuntimeSupport.generateReactHooks(packageName);
+            if (id.startsWith(SOURCE_INFO_ID)) {
+                const encodedModulePath = id.split(`${SOURCE_INFO_ID}?importer=`)[1] || "";
+                const modulePath = decodeURIComponent(encodedModulePath).replace(/[?#].*$/, "");
+                return loadSourceInfo(packageName, packageDirectory, modulePath);
+            }
+            return undefined;
         }
     };
+}
+
+async function loadSourceInfo(packageName: string, packageDirectory: string, modulePath: string) {
+    const sourceId = await RuntimeSupport.generateSourceId(
+        packageName,
+        packageDirectory,
+        modulePath
+    );
+    const sourceInfo = {
+        sourceId
+    };
+    return {
+        code: dataToEsm(sourceInfo, {
+            compact: false,
+            namedExports: true,
+            preferConst: true,
+            objectShorthand: true
+        })
+    };
+}
+
+function assertDefined<T>(value: T | undefined | null): T {
+    if (value == null) {
+        throw new Error("Value is required but was undefined or null.");
+    }
+    return value;
 }

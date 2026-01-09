@@ -3,7 +3,7 @@
 import glob from "fast-glob";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { assert, describe, expect, it } from "vitest";
+import { assert, describe, expect, it, onTestFailed } from "vitest";
 import { TEMP_DATA_DIR, TEST_DATA_DIR, runViteBuild } from "./utils/testUtils";
 
 describe("codegen support", function () {
@@ -133,6 +133,51 @@ describe("codegen support", function () {
         assert.include(appJs, "useServiceInternal");
         assert.include(appJs, "usePropertiesInternal");
         assert.include(appJs, "useIntlInternal");
+    });
+
+    it("generates sourceId constants", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-source-info");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-source-info");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+
+        onTestFailed(() => {
+            console.log(`Generated app JS:\n${appJs}`);
+        });
+
+        assert.match(appJs, /const sourceId\$?\d? = "package1\/Component";/);
+        assert.match(appJs, /const sourceId\$?\d? = "package1\/log";/);
+        assert.match(appJs, /const sourceId\$?\d? = "package1\/dir\/log";/);
+        assert.match(appJs, /const sourceId\$?\d? = "test-app\/Component";/);
+    });
+
+    it("throws if sourceId is used outside a package", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-source-info-edge-cases");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-source-info-edge-cases");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+
+        onTestFailed(() => {
+            console.log(`Error message:\n${error.message}`);
+        });
+
+        assert.match(error.message, /Failed to find package.json for package/);
     });
 
     it("fails if build config is missing", async function () {

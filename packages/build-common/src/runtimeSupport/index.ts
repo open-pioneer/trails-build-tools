@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { relative } from "node:path";
 import type * as API from "../../types";
 
 const PACKAGE_NAME = "@open-pioneer/runtime";
@@ -11,10 +12,11 @@ export const RuntimeSupport: typeof API.RuntimeSupport = {
     REACT_INTEGRATION_MODULE_ID,
     METADATA_MODULE_ID,
     generateReactHooks,
-    parseVirtualModule
+    parseVirtualModule,
+    generateSourceId
 };
 
-function parseVirtualModule(moduleId: string): "app" | "react-hooks" | undefined {
+function parseVirtualModule(moduleId: string): API.VirtualModuleType | undefined {
     if (!/^open-pioneer:/.test(moduleId)) {
         return undefined;
     }
@@ -24,6 +26,8 @@ function parseVirtualModule(moduleId: string): "app" | "react-hooks" | undefined
             return "app";
         case "open-pioneer:react-hooks":
             return "react-hooks";
+        case "open-pioneer:source-info":
+            return "source-info";
     }
     throw new Error(`Unsupported module id '${moduleId}'.`);
 }
@@ -40,4 +44,14 @@ export const useServices = /*@__PURE__*/ useServicesInternal.bind(undefined, PAC
 export const useProperties = /*@__PURE__*/ usePropertiesInternal.bind(undefined, PACKAGE_NAME);
 export const useIntl = /*@__PURE__*/ useIntlInternal.bind(undefined, PACKAGE_NAME);
     `.trim();
+}
+
+export async function generateSourceId(
+    packageName: string,
+    packageDirectory: string,
+    modulePath: string
+) {
+    const relativeModulePath = relative(packageDirectory, modulePath).replace(/\\/g, "/");
+    const relativeModuleId = relativeModulePath.replace(/\.[^/]*$/, ""); // strip ext
+    return `${packageName}/${relativeModuleId}`;
 }

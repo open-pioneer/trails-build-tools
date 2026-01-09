@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { dirname, basename } from "node:path/posix";
+import { existsSync } from "fs";
+import { basename, dirname } from "node:path/posix";
+import { join } from "path/posix";
 import { normalizePath } from "vite";
 
 const APP_MODULE = "@@open-pioneer-app";
@@ -23,9 +25,16 @@ const APP_I18N_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
 
 const PACKAGE_HOOKS_MODULE = "@@open-pioneer-react-hooks";
 
+const SOURCE_INFO_MODULE = "@@open-pioneer-source-info";
+const SOURCE_INFO_MODULE_IMPORTER_RE = /@@open-pioneer-source-info&importer=(?<importer>.*)$/;
+
 const SOURCE_FILE_RE = /^(.*?)(?:\?|$)/;
 
-export type VirtualModule = VirtualAppModule | VirtualI18nMessages | VirtualPackageModule;
+export type VirtualModule =
+    | VirtualAppModule
+    | VirtualI18nMessages
+    | VirtualPackageModule
+    | VirtualSourceInfoModule;
 
 export interface VirtualAppModule {
     type: "app-meta" | "app-packages" | "app-css" | "app-i18n-index";
@@ -40,6 +49,12 @@ export interface VirtualI18nMessages {
 
 export interface VirtualPackageModule {
     type: "package-hooks";
+    packageDirectory: string;
+}
+
+export interface VirtualSourceInfoModule {
+    type: "source-info";
+    importer: string;
     packageDirectory: string;
 }
 
@@ -67,10 +82,38 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
             packageDirectory: dirname(sourceFile)
         };
     }
+
+    const sourceInfoMatch = moduleId.match(SOURCE_INFO_MODULE_IMPORTER_RE);
+    if (sourceInfoMatch) {
+        return parseSourceInfoModule(moduleId, sourceInfoMatch);
+    }
+
     if (base === APP_MODULE) {
         return parseAppModuleId(sourceFile, moduleId);
     }
     return undefined;
+}
+
+function parseSourceInfoModule(moduleId: string, sourceInfoMatch: RegExpMatchArray): VirtualModule {
+    const encodedImporterPath = sourceInfoMatch?.groups?.["importer"];
+    const importer = encodedImporterPath
+        ? getSourceFile(decodeURIComponent(encodedImporterPath))
+        : undefined;
+    if (!importer) {
+        throw new Error(`Missing importer in source info module id: ${moduleId}`);
+    }
+    const moduleRoot = moduleId.substring(0, moduleId.indexOf(`${SOURCE_INFO_MODULE}`));
+    if (!moduleRoot) {
+        throw new Error(
+            `Cannot determine module root directory for source info module id: ${moduleId}`
+        );
+    }
+    const packageJsonPath = findPackageJson(dirname(importer), moduleRoot);
+    if (!packageJsonPath) {
+        throw new Error(`Cannot determine package.json for source info module id: ${moduleId}`);
+    }
+    const packageDirectory = dirname(packageJsonPath);
+    return { type: "source-info", importer, packageDirectory };
 }
 
 function parseAppModuleId(sourceFile: string, moduleId: string): VirtualModule | undefined {
@@ -111,6 +154,8 @@ export function serializeModuleId(mod: VirtualModule): string {
     switch (mod.type) {
         case "package-hooks":
             return `${mod.packageDirectory}/${PACKAGE_HOOKS_MODULE}`;
+        case "source-info":
+            return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}&importer=${encodeURIComponent(mod.importer)}`;
         case "app-meta":
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_META_QUERY}`;
         case "app-packages":
@@ -130,4 +175,22 @@ function getSourceFile(moduleId: string) {
         return undefined;
     }
     return sourceFile;
+}
+
+export function findPackageJson(startDir: string, rootDir: string) {
+    let dir = startDir;
+    while (dir) {
+        const candidate = join(dir, "package.json");
+        if (existsSync(candidate)) {
+            return candidate;
+        }
+
+        if (normalizePath(dir) == normalizePath(rootDir)) {
+            return undefined;
+        }
+
+        const parent = dirname(dir);
+        dir = parent === dir || parent === "." ? "" : parent;
+    }
+    return undefined;
 }

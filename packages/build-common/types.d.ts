@@ -3,6 +3,8 @@
 export { BuildConfig } from "@open-pioneer/build-support";
 import { BuildConfig } from "@open-pioneer/build-support";
 
+export type VirtualModuleType = "app" | "react-hooks" | "source-info";
+
 export namespace RuntimeSupport {
     /** Package name of the Open Pioneer Trails runtime library. */
     export const RUNTIME_PACKAGE_NAME: string;
@@ -18,13 +20,22 @@ export namespace RuntimeSupport {
      * Returns the type of the virtual module or undefined if the module id does not match anything.
      *
      * Throws an error if the module id uses the virtual prefix without a match, as that might be a mistake by the user. */
-    export function parseVirtualModule(moduleId: string): "app" | "react-hooks" | undefined;
+    export function parseVirtualModule(moduleId: string): VirtualModuleType | undefined;
 
     /** Returns the module content to implement the `open-pioneer:react-hooks` module. */
     export function generateReactHooks(
         packageName: string,
         reactIntegrationModuleId?: string
     ): string;
+
+    /**
+     * Generates a source id for the current module path within the given package.
+     */
+    export function generateSourceId(
+        packageName: string,
+        packageDirectory: string,
+        modulePath: string
+    ): Promise<string>;
 }
 
 /**

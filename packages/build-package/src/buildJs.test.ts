@@ -81,6 +81,53 @@ it("transpiles a simple javascript project", async function () {
     expect(existsSync(resolve(outputDirectory, "dir/hiddenFile.js"))).toBe(false);
 });
 
+it("transpiles a project with source-info imports", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-source-info");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-source-info-transpile");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+    await buildJs({
+        ...testDefaults(),
+        packageDirectory,
+        outputDirectory,
+        entryPoints
+    });
+
+    expect(readText(resolve(outputDirectory, "index.js"))).toMatchInlineSnapshot(`
+      "import { sourceId } from './_virtual/_virtual-pioneer-module_source-info.js';
+      import { logSourceId } from './dir/log.js';
+
+      console.log(\`Hello from \${sourceId}\`);
+      logSourceId();
+      "
+    `);
+    expect(readText(resolve(outputDirectory, "dir/log.js"))).toMatchInlineSnapshot(`
+      "import { sourceId } from '../_virtual/_virtual-pioneer-module_source-info2.js';
+
+      function logSourceId() {
+        console.log(\`Hello from \${sourceId}\`);
+      }
+
+      export { logSourceId };
+      "
+    `);
+    expect(readText(resolve(outputDirectory, "./_virtual/_virtual-pioneer-module_source-info.js")))
+        .toMatchInlineSnapshot(`
+      "const sourceId = "test/index";
+
+      export { sourceId };
+      "
+    `);
+    expect(readText(resolve(outputDirectory, "./_virtual/_virtual-pioneer-module_source-info2.js")))
+        .toMatchInlineSnapshot(`
+      "const sourceId = "test/dir/log";
+
+      export { sourceId };
+      "
+    `);
+});
+
 it("generates source maps when enabled", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
     const outputDirectory = resolve(TEMP_DATA_DIR, "simple-js-sourcemaps");

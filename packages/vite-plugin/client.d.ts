@@ -8,6 +8,28 @@ declare module "open-pioneer:app" {
 }
 
 /**
+ * Provides source information for a module.
+ */
+declare module "open-pioneer:source-info" {
+    /**
+     * The unique source id of the module.
+     *
+     * @example
+     * // current file is 'Component.ts' in package 'my-package'
+     * import { sourceId } from "open-pioneer:source-info";
+     * // prints 'my-package/Component'
+     * console.log(`${sourceId}`);
+     *
+     * @example
+     * // Create a logger using the source id.
+     * import { createLogger } from '@open-pioneer/core';
+     * import { sourceId } from "open-pioneer:source-info";
+     * const LOG = createLogger(sourceId);
+     */
+    export const sourceId: string;
+}
+
+/**
  * Provides react hooks to a module.
  * The module must be inside a valid Open Pioneer Trails package (or app).
  *
