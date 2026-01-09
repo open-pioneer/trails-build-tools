@@ -3,9 +3,9 @@
 export { BuildConfig } from "@open-pioneer/build-support";
 import { BuildConfig } from "@open-pioneer/build-support";
 
-export type VirtualModuleType = "app" | "react-hooks" | "source-info";
-
 export namespace RuntimeSupport {
+    export type VirtualModuleType = "app" | "react-hooks" | "source-info";
+
     /** Package name of the Open Pioneer Trails runtime library. */
     export const RUNTIME_PACKAGE_NAME: string;
 
@@ -29,13 +29,16 @@ export namespace RuntimeSupport {
     ): string;
 
     /**
-     * Generates a source id for the current module path within the given package.
+     * Generates the module containing the sourceId of the importing file.
+     *
+     * `packageDirectory` and `modulePath` must be fully resolved paths.
+     * `modulePath` must be a child of `packageDirectory`.
      */
-    export function generateSourceId(
+    export function generateSourceInfo(
         packageName: string,
         packageDirectory: string,
         modulePath: string
-    ): Promise<string>;
+    ): string;
 }
 
 /**

@@ -36,6 +36,7 @@
         "build-tools": "workspace:*"
     },
     "dependencies": {
+        "@rollup/pluginutils": "catalog:",
         "semver": "catalog:",
         "zod": "catalog:",
         "zod-validation-error": "catalog:"

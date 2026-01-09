@@ -395,6 +395,9 @@ importers:
 
   packages/build-common:
     dependencies:
+      '@rollup/pluginutils':
+        specifier: 'catalog:'
+        version: 5.3.0(rollup@4.53.5)
       semver:
         specifier: 'catalog:'
         version: 7.7.3

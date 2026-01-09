@@ -63,29 +63,10 @@ export function virtualModulesPlugin({
             if (id.startsWith(SOURCE_INFO_ID)) {
                 const encodedModulePath = id.split(`${SOURCE_INFO_ID}?importer=`)[1] || "";
                 const modulePath = decodeURIComponent(encodedModulePath).replace(/[?#].*$/, "");
-                return loadSourceInfo(packageName, packageDirectory, modulePath);
+                return RuntimeSupport.generateSourceInfo(packageName, packageDirectory, modulePath);
             }
             return undefined;
         }
-    };
-}
-
-async function loadSourceInfo(packageName: string, packageDirectory: string, modulePath: string) {
-    const sourceId = await RuntimeSupport.generateSourceId(
-        packageName,
-        packageDirectory,
-        modulePath
-    );
-    const sourceInfo = {
-        sourceId
-    };
-    return {
-        code: dataToEsm(sourceInfo, {
-            compact: false,
-            namedExports: true,
-            preferConst: true,
-            objectShorthand: true
-        })
     };
 }
 

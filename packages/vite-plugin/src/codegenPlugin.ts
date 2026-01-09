@@ -126,7 +126,11 @@ export function codegenPlugin(): VitePlugin {
 
                 if (mod.type === "source-info") {
                     const packageName = await resolvePackageName(this, mod);
-                    return loadSourceInfo(mod.importer, packageName, mod.packageDirectory);
+                    return RuntimeSupport.generateSourceInfo(
+                        packageName,
+                        mod.packageDirectory,
+                        mod.importer
+                    );
                 }
 
                 if (mod.type === "app-meta") {
@@ -197,25 +201,6 @@ async function resolvePackageName(
     }
 
     return await getPackageName(ctx, packageJsonPath);
-}
-
-async function loadSourceInfo(modulePath: string, packageName: string, packageDirectory: string) {
-    const sourceId = await RuntimeSupport.generateSourceId(
-        packageName,
-        packageDirectory,
-        modulePath
-    );
-    const sourceInfo = {
-        sourceId
-    };
-    return {
-        code: dataToEsm(sourceInfo, {
-            compact: false,
-            namedExports: true,
-            preferConst: true,
-            objectShorthand: true
-        })
-    };
 }
 
 /**
