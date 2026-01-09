@@ -25,8 +25,8 @@ catalogs:
       specifier: ^1001.1.27
       version: 1001.1.27
     '@pnpm/lockfile.utils':
-      specifier: ^1003.0.9
-      version: 1003.0.9
+      specifier: ^1004.0.0
+      version: 1004.0.0
     '@pnpm/lockfile.walker':
       specifier: ^1001.0.22
       version: 1001.0.22
@@ -513,7 +513,7 @@ importers:
         version: 1001.1.27(@pnpm/logger@1001.0.1)
       '@pnpm/lockfile.utils':
         specifier: 'catalog:'
-        version: 1003.0.9
+        version: 1004.0.0
       '@pnpm/lockfile.walker':
         specifier: 'catalog:'
         version: 1001.0.22
@@ -940,20 +940,11 @@ packages:
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
 
-  '@emnapi/core@1.4.3':
-    resolution: {integrity: sha512-4m62DuCE07lw01soJwPiBGC0nAww0Q+RY70VZ+n49yDIO13yyinhbWCeNnaob0lakDtWQzSdtNWzJeOJt2ma+g==}
-
   '@emnapi/core@1.8.1':
     resolution: {integrity: sha512-AvT9QFpxK0Zd8J0jopedNm+w/2fIzvtPKPjqyw9jwvBaReTTqPBk9Hixaz7KbjimP+QNz605/XnjFcDAL2pqBg==}
 
-  '@emnapi/runtime@1.4.3':
-    resolution: {integrity: sha512-pBPWdu6MLKROBX05wSNKcNb++m5Er+KQ9QkB+WVM+pW2Kx9hoSrVTnu3BdkI5eBLZoKu/J6mW/B6i6bJB2ytXQ==}
-
   '@emnapi/runtime@1.8.1':
     resolution: {integrity: sha512-mehfKSMWjjNol8659Z8KxEMrdSJDDot5SXMq00dM8BN4o+CLNXQ0xH2V7EchNHV4RmbZLmmPdEaXZc5H2FXmDg==}
-
-  '@emnapi/wasi-threads@1.0.2':
-    resolution: {integrity: sha512-5n3nTJblwRi8LlXkJ9eBzu+kZR8Yxcc7ubakyQTFzPMtIhFpUBRbsnc2Dv88IZDIbCDlBiWrknhB4Lsz7mg6BA==}
 
   '@emnapi/wasi-threads@1.1.0':
     resolution: {integrity: sha512-WI0DdZ8xFSbgMjR1sFsKABJ/C5OnRrjT06JXbZKexJGrDuPTzZdDYfFlsgcCXCyf+suG5QU2e/y1Wo2V/OapLQ==}
@@ -1607,8 +1598,16 @@ packages:
     resolution: {integrity: sha512-4KT+rlDtHaGIDUVX0KJ6dG26hJyMEV9LCW0e29zYb9L/9libYdLzuyY2cCIbBI/9NlpCfiy82NcqFg7A3HASaw==}
     engines: {node: '>=18.12'}
 
+  '@pnpm/lockfile.types@1002.0.8':
+    resolution: {integrity: sha512-dNoCS0Wqd4an1Wn4XYkTSiNj7HD/IQaTLaCGbeMwlEmQ/0sNoeZ/cl5CBVFyBhzuliqTImAZxqRxZLEeVyo8GQ==}
+    engines: {node: '>=18.12'}
+
   '@pnpm/lockfile.utils@1003.0.9':
     resolution: {integrity: sha512-x7LZMBLPOLWZvw/f+eMhLpIbVtQnj7jupDZdp6jx2wBEcAwyh8kyxlGl1hLYJOG7eyowC3DVatdMnIxuAVpAIg==}
+    engines: {node: '>=18.12'}
+
+  '@pnpm/lockfile.utils@1004.0.0':
+    resolution: {integrity: sha512-lm2aUC4kHCHaYjHHa7Dw0JNQq6N08fSnRbmDnwleYkTQTi4PsC/1XY2FJaaXLo7gJ+II+PsAJXJHcw1cOJPsxQ==}
     engines: {node: '>=18.12'}
 
   '@pnpm/lockfile.walker@1001.0.22':
@@ -1636,6 +1635,10 @@ packages:
 
   '@pnpm/resolver-base@1005.3.3':
     resolution: {integrity: sha512-mwh5nHZXP1iORD6bQLYAYp9WWma9kwHsK9tLWICLvrWPxw+RqRthKsp0NxYPR7nV1Yd1cEgAi1lWxgWNxjJ8wA==}
+    engines: {node: '>=18.12'}
+
+  '@pnpm/resolver-base@1005.4.0':
+    resolution: {integrity: sha512-hGttP7Kz3NLcXu70NKlPZcmxjcMt7oxXk4+tnXQ9lmmg4F2kbz+z2No4qld/aGlMsFlWgYk4Bxno2S7NsAHcBQ==}
     engines: {node: '>=18.12'}
 
   '@pnpm/types@1001.2.0':
@@ -4681,29 +4684,13 @@ snapshots:
       human-id: 4.1.1
       prettier: 2.8.8
 
-  '@emnapi/core@1.4.3':
-    dependencies:
-      '@emnapi/wasi-threads': 1.0.2
-      tslib: 2.8.1
-    optional: true
-
   '@emnapi/core@1.8.1':
     dependencies:
       '@emnapi/wasi-threads': 1.1.0
       tslib: 2.8.1
     optional: true
 
-  '@emnapi/runtime@1.4.3':
-    dependencies:
-      tslib: 2.8.1
-    optional: true
-
   '@emnapi/runtime@1.8.1':
-    dependencies:
-      tslib: 2.8.1
-    optional: true
-
-  '@emnapi/wasi-threads@1.0.2':
     dependencies:
       tslib: 2.8.1
     optional: true
@@ -5058,8 +5045,8 @@ snapshots:
 
   '@napi-rs/wasm-runtime@0.2.10':
     dependencies:
-      '@emnapi/core': 1.4.3
-      '@emnapi/runtime': 1.4.3
+      '@emnapi/core': 1.8.1
+      '@emnapi/runtime': 1.8.1
       '@tybys/wasm-util': 0.9.0
     optional: true
 
@@ -5352,12 +5339,28 @@ snapshots:
       '@pnpm/resolver-base': 1005.3.3
       '@pnpm/types': 1001.2.0
 
+  '@pnpm/lockfile.types@1002.0.8':
+    dependencies:
+      '@pnpm/patching.types': 1000.1.0
+      '@pnpm/resolver-base': 1005.4.0
+      '@pnpm/types': 1001.2.0
+
   '@pnpm/lockfile.utils@1003.0.9':
     dependencies:
       '@pnpm/dependency-path': 1001.1.8
       '@pnpm/lockfile.types': 1002.0.7
       '@pnpm/pick-fetcher': 1001.0.0
       '@pnpm/resolver-base': 1005.3.3
+      '@pnpm/types': 1001.2.0
+      get-npm-tarball-url: 2.1.0
+      ramda: '@pnpm/ramda@0.28.1'
+
+  '@pnpm/lockfile.utils@1004.0.0':
+    dependencies:
+      '@pnpm/dependency-path': 1001.1.8
+      '@pnpm/lockfile.types': 1002.0.8
+      '@pnpm/pick-fetcher': 1001.0.0
+      '@pnpm/resolver-base': 1005.4.0
       '@pnpm/types': 1001.2.0
       get-npm-tarball-url: 2.1.0
       ramda: '@pnpm/ramda@0.28.1'
@@ -5385,6 +5388,10 @@ snapshots:
   '@pnpm/ramda@0.28.1': {}
 
   '@pnpm/resolver-base@1005.3.3':
+    dependencies:
+      '@pnpm/types': 1001.2.0
+
+  '@pnpm/resolver-base@1005.4.0':
     dependencies:
       '@pnpm/types': 1001.2.0
 
