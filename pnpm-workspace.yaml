@@ -64,8 +64,8 @@ catalog:
   husky: ^9.1.7
   lint-staged: ^16.1.5
   rimraf: ^6.0.1
-  vite: ^7.1.2
-  vitest: ^3.2.4
+  vite: ^8.0.0-beta.7
+  vitest: ^4.0.16
 
 catalogs:
   # Used in integration tests, no need to keep these up to date
@@ -109,7 +109,7 @@ overrides:
   # Version doesn't really matter, this is used as a dep in integration tests
   "@open-pioneer/runtime": ">= 2.2.0"
 
-  "vite": "npm:rolldown-vite@latest"
+  vite: ^8.0.0-beta.7
 
 auditConfig:
   ignoreCves: []
