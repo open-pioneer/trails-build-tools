@@ -44,6 +44,14 @@ export interface VirtualPackageModule {
 }
 
 /**
+ * Filter for rolldown.
+ *
+ * These regular expressions should match against our virtual modules (see above)
+ * but should filter out as many unrelated module ids as possible for performance.
+ */
+export const VIRTUAL_ID_FILTER = [/^open-pioneer:/, /[?&]open-pioneer/, /@@open-pioneer/];
+
+/**
  * Takes a module id as input and parses it.
  * If this plugin is not responsible to load the module id, this function returns `undefined`.
  *

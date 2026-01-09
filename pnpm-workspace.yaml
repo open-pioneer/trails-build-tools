@@ -33,6 +33,7 @@ catalog:
   prettier: ^3.7.4
   rollup-plugin-esbuild: ^6.2.1
   rollup: ^4.53.5
+  rolldown: ^1.0.0-beta.59 # TODO
   sass: ^1.97.0
   semver: ^7.7.3
   tinyglobby: ^0.2.15
@@ -64,7 +65,7 @@ catalog:
   husky: ^9.1.7
   lint-staged: ^16.2.7
   rimraf: ^6.1.2
-  vite: ^7.3.0
+  vite: ^8.0.0-beta.7
   vitest: ^4.0.16
 
 catalogs:
@@ -100,6 +101,9 @@ minimumReleaseAge: 4320 # 3 days in minutes
 minimumReleaseAgeExclude:
   - "@open-pioneer/*"
   - "@conterra/*"
+  - vite
+  - "rolldown"
+  - "@rolldown/*"
 
 overrides:
   # https://github.com/advisories/GHSA-3xgq-45jj-v275
@@ -124,6 +128,10 @@ overrides:
 
   # Version doesn't really matter, this is used as a dep in integration tests
   "@open-pioneer/runtime": ">= 2.2.0"
+
+  # TODO: Remove overrides when fully migrating to vite 8
+  vite: ^8.0.0-beta.7
+  "vite>esbuild": "$esbuild"
 
 auditConfig:
   ignoreCves: []

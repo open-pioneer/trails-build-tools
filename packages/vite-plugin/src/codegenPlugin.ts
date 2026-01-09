@@ -2,22 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { normalizePath, Plugin as VitePlugin, Rollup, UserConfig } from "vite";
+import { normalizePath, Plugin as VitePlugin, UserConfig } from "vite";
 import { createDebugger } from "./utils/debug";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
-import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
+import { parseVirtualModuleId, serializeModuleId, VIRTUAL_ID_FILTER } from "./codegen/shared";
 import { readFile } from "node:fs/promises";
 import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { RuntimeSupport } from "@open-pioneer/build-common";
-import { createMetadataContextFromRollup } from "./metadata/Context";
+import { createMetadataContextFromRolldown as createMetadataContextFromRolldown } from "./metadata/Context";
 import { cwd } from "node:process";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
-
-type PluginContext = Rollup.PluginContext;
+import { PluginContext } from "rolldown";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
@@ -30,7 +29,7 @@ export function codegenPlugin(): VitePlugin {
     return {
         name: "pioneer:codegen",
 
-        async buildStart(this: PluginContext) {
+        async buildStart() {
             repository?.reset();
         },
 
@@ -44,127 +43,144 @@ export function codegenPlugin(): VitePlugin {
             }
         },
 
-        async resolveId(this: PluginContext, moduleId, importer) {
-            try {
-                if (!importer) {
-                    return undefined;
-                }
-
-                if (parseVirtualModuleId(moduleId)) {
-                    return moduleId;
-                }
-
-                let virtualModule;
+        resolveId: {
+            filter: {
+                id: VIRTUAL_ID_FILTER
+            },
+            async handler(this: PluginContext, moduleId, importer) {
                 try {
-                    virtualModule = RuntimeSupport.parseVirtualModule(moduleId);
-                } catch (e) {
-                    this.error({
-                        id: moduleId,
-                        message: "Invalid virtual module id",
-                        cause: e
-                    });
-                }
+                    if (!importer) {
+                        return undefined;
+                    }
 
-                switch (virtualModule) {
-                    case "app":
-                        return serializeModuleId({
-                            type: "app-meta",
-                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                    if (parseVirtualModuleId(moduleId)) {
+                        return moduleId;
+                    }
+
+                    let virtualModule;
+                    try {
+                        virtualModule = RuntimeSupport.parseVirtualModule(moduleId);
+                    } catch (e) {
+                        this.error({
+                            id: moduleId,
+                            message: "Invalid virtual module id",
+                            cause: e
                         });
-                    case "react-hooks":
-                        return serializeModuleId({
-                            type: "package-hooks",
-                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
-                        });
+                    }
+
+                    switch (virtualModule) {
+                        case "app":
+                            return serializeModuleId({
+                                type: "app-meta",
+                                packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                            });
+                        case "react-hooks":
+                            return serializeModuleId({
+                                type: "package-hooks",
+                                packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                            });
+                    }
+                } catch (e) {
+                    reportError(this, e, isDev);
                 }
-            } catch (e) {
-                reportError(this, e, isDev);
             }
         },
 
-        async load(this: PluginContext, moduleId) {
-            try {
-                const mod = parseVirtualModuleId(moduleId);
-                if (!mod) {
-                    return undefined;
-                }
+        load: {
+            filter: {
+                id: VIRTUAL_ID_FILTER
+            },
+            async handler(this: PluginContext, moduleId) {
+                try {
+                    const mod = parseVirtualModuleId(moduleId);
+                    if (!mod) {
+                        return undefined;
+                    }
 
-                isDebug && debug("Loading virtual module %O", mod);
+                    isDebug && debug("Loading virtual module %O", mod);
 
-                // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
-                // This uses the dev server to attempt to resolve the directory back to a complete path.
-                // Hit me up if you know a better way to do this.
-                const packageJsonPath = (await this.resolve(mod.packageDirectory + "/package.json"))
-                    ?.id;
-                if (!packageJsonPath) {
-                    throw new ReportableError(
-                        `Failed to resolve package.json in ${mod.packageDirectory}`
-                    );
-                }
-
-                if (mod.type === "package-hooks") {
-                    const directory = mod.packageDirectory;
-                    // use forward slashes instead of platform separator
-                    const packageJsonPath = (await this.resolve(directory + "/package.json"))?.id;
+                    // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
+                    // This uses the dev server to attempt to resolve the directory back to a complete path.
+                    // Hit me up if you know a better way to do this.
+                    const packageJsonPath = (
+                        await this.resolve(mod.packageDirectory + "/package.json")
+                    )?.id;
                     if (!packageJsonPath) {
-                        throw new ReportableError(`Failed to resolve package.json in ${directory}`);
-                    }
-
-                    const packageName = await getPackageName(this, packageJsonPath);
-                    const generatedSourceCode = RuntimeSupport.generateReactHooks(
-                        packageName,
-                        RuntimeSupport.REACT_INTEGRATION_MODULE_ID
-                    );
-                    isDebug && debug("Generated hooks code: %O", generatedSourceCode);
-                    return generatedSourceCode;
-                }
-
-                if (mod.type === "app-meta") {
-                    return generateAppMetadata(
-                        mod.packageDirectory,
-                        RuntimeSupport.METADATA_MODULE_ID
-                    );
-                }
-
-                const ctx = createMetadataContextFromRollup(this);
-                const appMetadata = await repository.getAppMetadata(ctx, dirname(packageJsonPath));
-                switch (mod.type) {
-                    case "app-packages": {
-                        const generatedSourceCode = generatePackagesMetadata({
-                            appName: appMetadata.name,
-                            packages: appMetadata.packages
-                        });
-                        isDebug && debug("Generated app metadata: %O", generatedSourceCode);
-                        return generatedSourceCode;
-                    }
-                    case "app-css": {
-                        const generatedSourceCode = generateCombinedCss(appMetadata.packages);
-                        isDebug && debug("Generated app css: %O", generatedSourceCode);
-                        return generatedSourceCode;
-                    }
-                    case "app-i18n-index": {
-                        const generatedSourceCode = generateI18nIndex(
-                            mod.packageDirectory,
-                            appMetadata.locales
+                        throw new ReportableError(
+                            `Failed to resolve package.json in ${mod.packageDirectory}`
                         );
-                        isDebug && debug("Generated i18n lookup: %O", generatedSourceCode);
+                    }
+
+                    if (mod.type === "package-hooks") {
+                        const directory = mod.packageDirectory;
+                        // use forward slashes instead of platform separator
+                        const packageJsonPath = (await this.resolve(directory + "/package.json"))
+                            ?.id;
+                        if (!packageJsonPath) {
+                            throw new ReportableError(
+                                `Failed to resolve package.json in ${directory}`
+                            );
+                        }
+
+                        const packageName = await getPackageName(this, packageJsonPath);
+                        const generatedSourceCode = RuntimeSupport.generateReactHooks(
+                            packageName,
+                            RuntimeSupport.REACT_INTEGRATION_MODULE_ID
+                        );
+                        isDebug && debug("Generated hooks code: %O", generatedSourceCode);
                         return generatedSourceCode;
                     }
-                    case "app-i18n": {
-                        const generatedSourceCode = await generateI18nMessages({
-                            locale: mod.locale,
-                            appName: appMetadata.name,
-                            packages: appMetadata.packages,
-                            loadI18n: (path) => {
-                                return repository.getI18nFile(ctx, path);
-                            }
-                        });
-                        isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
-                        return generatedSourceCode;
+
+                    if (mod.type === "app-meta") {
+                        return generateAppMetadata(
+                            mod.packageDirectory,
+                            RuntimeSupport.METADATA_MODULE_ID
+                        );
                     }
+
+                    const ctx = createMetadataContextFromRolldown(this);
+                    const appMetadata = await repository.getAppMetadata(
+                        ctx,
+                        dirname(packageJsonPath)
+                    );
+                    switch (mod.type) {
+                        case "app-packages": {
+                            const generatedSourceCode = generatePackagesMetadata({
+                                appName: appMetadata.name,
+                                packages: appMetadata.packages
+                            });
+                            isDebug && debug("Generated app metadata: %O", generatedSourceCode);
+                            return generatedSourceCode;
+                        }
+                        case "app-css": {
+                            const generatedSourceCode = generateCombinedCss(appMetadata.packages);
+                            isDebug && debug("Generated app css: %O", generatedSourceCode);
+                            return generatedSourceCode;
+                        }
+                        case "app-i18n-index": {
+                            const generatedSourceCode = generateI18nIndex(
+                                mod.packageDirectory,
+                                appMetadata.locales
+                            );
+                            isDebug && debug("Generated i18n lookup: %O", generatedSourceCode);
+                            return generatedSourceCode;
+                        }
+                        case "app-i18n": {
+                            const generatedSourceCode = await generateI18nMessages({
+                                locale: mod.locale,
+                                appName: appMetadata.name,
+                                packages: appMetadata.packages,
+                                loadI18n: (path) => {
+                                    return repository.getI18nFile(ctx, path);
+                                }
+                            });
+                            isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
+                            return generatedSourceCode;
+                        }
+                    }
+                } catch (e) {
+                    reportError(this, e, isDev);
                 }
-            } catch (e) {
-                reportError(this, e, isDev);
             }
         },
 

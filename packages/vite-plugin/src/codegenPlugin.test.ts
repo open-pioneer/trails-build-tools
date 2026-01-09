@@ -41,7 +41,7 @@ describe("codegen support", function () {
         // metadata was read from package.json and contents were found
         const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
         assert.include(testAppJs, 'console.log("in MapContainer");');
-        assert.include(testAppJs, 'import { OlMapRegistry } from "ol-map/my-services";');
+        assert.include(testAppJs, 'console.log("in OlMapRegistry");');
         assert.include(testAppJs, 'console.log("in useMap");');
         assert.include(testAppJs, '".map {\\n    color: black;\\n}"');
     });
@@ -181,19 +181,19 @@ describe("codegen support", function () {
 
         const assetsDir = resolve(outDir, "assets");
 
-        const deModule = findModuleContaining(assetsDir, '"Hallo Welt"');
-        assert.include(deModule, '"test-app"');
-        assert.include(deModule, '"i18n1"');
-        assert.include(deModule, '"hallo von i18n1"');
-        assert.include(deModule, '"i18n2"');
-        assert.include(deModule, '"hallo von i18n2"');
+        const deModule = findModuleContaining(assetsDir, '\\"Hallo Welt\\"');
+        assert.include(deModule, '\\"test-app\\"');
+        assert.include(deModule, '\\"i18n1\\"');
+        assert.include(deModule, '\\"hallo von i18n1\\"');
+        assert.include(deModule, '\\"i18n2\\"');
+        assert.include(deModule, '\\"hallo von i18n2\\"');
 
-        const enModule = findModuleContaining(assetsDir, '"Hello world"');
-        assert.include(enModule, '"test-app"');
-        assert.include(enModule, '"i18n1"');
-        assert.include(enModule, '"hello from i18n1"');
-        assert.include(enModule, '"i18n2"');
-        assert.include(enModule, '"hello from i18n1"');
+        const enModule = findModuleContaining(assetsDir, '\\"Hello world\\"');
+        assert.include(enModule, '\\"test-app\\"');
+        assert.include(enModule, '\\"i18n1\\"');
+        assert.include(enModule, '\\"hello from i18n1\\"');
+        assert.include(enModule, '\\"i18n2\\"');
+        assert.include(enModule, '\\"hello from i18n1\\"');
     });
 
     it("generates an error if an unsupported locale is requested", async function () {
