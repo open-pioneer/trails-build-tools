@@ -75,7 +75,3 @@ function getSourceId(packageName: string, packageDirectory: string, modulePath: 
     const relativeSourceId = posix.join(parsedResult.dir, nameWithoutExt);
     return `${packageName}/${relativeSourceId}`;
 }
-
-function isWindowsPath(path: string): boolean {
-    return /\\/.test(path) || /^[a-zA-Z]:/.test(path);
-}

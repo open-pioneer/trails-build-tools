@@ -128,7 +128,7 @@ export async function buildJs({
         chunkFileNames: "[name].js",
         hoistTransitiveImports: false,
 
-        manualChunks(id, meta) {
+        manualChunks(id, _meta) {
             // Group virtual modules (identified by \0 prefix) into a shared chunk
             if (id.startsWith("\0")) {
                 if (id === REACT_HOOKS_ID) {
