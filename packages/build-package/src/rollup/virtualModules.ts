@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { RuntimeSupport } from "@open-pioneer/build-common";
-import { dataToEsm } from "@rollup/pluginutils";
 import { Plugin } from "rollup";
 import { isInDirectory } from "../utils/pathUtils";
 

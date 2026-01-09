@@ -18,7 +18,6 @@ import { readFile } from "node:fs/promises";
 import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { RuntimeSupport } from "@open-pioneer/build-common";
-import { dataToEsm } from "@rollup/pluginutils";
 import { createMetadataContextFromRollup } from "./metadata/Context";
 import { cwd } from "node:process";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";

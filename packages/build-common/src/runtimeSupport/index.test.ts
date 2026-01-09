@@ -72,7 +72,7 @@ describe("generateSourceId", function () {
             "C:\\repo\\project\\packages\\pkg\\lib\\file.name.with.dots.tsx"
         );
         expect(code).toMatchInlineSnapshot(`
-          "export const sourceId = "pkg/lib/file.name.with.dots";
+          "export const sourceId = "pkg/lib/file";
           export default {
           	sourceId
           };

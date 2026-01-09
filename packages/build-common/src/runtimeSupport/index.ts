@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { posix, win32 } from "node:path";
-import { dataToEsm } from "@rollup/pluginutils";
+import { posix } from "node:path";
+import { dataToEsm, normalizePath } from "@rollup/pluginutils";
 import type * as API from "../../types";
 
 const PACKAGE_NAME = "@open-pioneer/runtime";
@@ -61,18 +61,19 @@ function generateSourceInfo(packageName: string, packageDirectory: string, modul
 }
 
 export function getSourceId(packageName: string, packageDirectory: string, modulePath: string) {
-    const useWin32 = isWindowsPath(packageDirectory) || isWindowsPath(modulePath);
-    const path = useWin32 ? win32 : posix;
+    packageDirectory = normalizePath(packageDirectory);
+    modulePath = normalizePath(modulePath);
 
-    const relativePath = path.relative(packageDirectory, modulePath);
-    const normalizedPath = relativePath.split(path.sep).join(posix.sep);
+    const relativePath = posix.relative(packageDirectory, modulePath);
+    if (relativePath.match(/^\.\.?[\\/]/)) {
+        // must not start with ./ or ../
+        throw new Error("Internal error: unexpected relative path");
+    }
 
-    const extension = posix.extname(normalizedPath);
-    const resolvedRelativePath = extension
-        ? normalizedPath.slice(0, -extension.length)
-        : normalizedPath;
-
-    return `${packageName}/${resolvedRelativePath}`;
+    const parsedResult = posix.parse(relativePath);
+    const nameWithoutExt = parsedResult.name.replace(/\..*$/, "");
+    const relativeSourceId = posix.join(parsedResult.dir, nameWithoutExt);
+    return `${packageName}/${relativeSourceId}`;
 }
 
 function isWindowsPath(path: string): boolean {
