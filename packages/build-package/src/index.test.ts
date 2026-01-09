@@ -48,7 +48,7 @@ describe(
               "import { log } from './dir/log.js';
               import something from 'somewhere-external';
               import somethingElse from '@scope/somewhere-external';
-              import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
+              import { useService } from './_virtual/hooks.js';
 
               console.log(something, somethingElse, useService);
               function helloA() {

@@ -1,5 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { posix } from "node:path";
+import { dataToEsm, normalizePath } from "@rollup/pluginutils";
 import type * as API from "../../types";
 
 const PACKAGE_NAME = "@open-pioneer/runtime";
@@ -11,10 +13,11 @@ export const RuntimeSupport: typeof API.RuntimeSupport = {
     REACT_INTEGRATION_MODULE_ID,
     METADATA_MODULE_ID,
     generateReactHooks,
-    parseVirtualModule
+    parseVirtualModule,
+    generateSourceInfo
 };
 
-function parseVirtualModule(moduleId: string): "app" | "react-hooks" | undefined {
+function parseVirtualModule(moduleId: string): API.RuntimeSupport.VirtualModuleType | undefined {
     if (!/^open-pioneer:/.test(moduleId)) {
         return undefined;
     }
@@ -24,6 +27,8 @@ function parseVirtualModule(moduleId: string): "app" | "react-hooks" | undefined
             return "app";
         case "open-pioneer:react-hooks":
             return "react-hooks";
+        case "open-pioneer:source-info":
+            return "source-info";
     }
     throw new Error(`Unsupported module id '${moduleId}'.`);
 }
@@ -40,4 +45,37 @@ export const useServices = /*@__PURE__*/ useServicesInternal.bind(undefined, PAC
 export const useProperties = /*@__PURE__*/ usePropertiesInternal.bind(undefined, PACKAGE_NAME);
 export const useIntl = /*@__PURE__*/ useIntlInternal.bind(undefined, PACKAGE_NAME);
     `.trim();
+}
+
+function generateSourceInfo(packageName: string, packageDirectory: string, modulePath: string) {
+    const sourceId = getSourceId(packageName, packageDirectory, modulePath);
+    const sourceInfo = {
+        sourceId
+    };
+    return dataToEsm(sourceInfo, {
+        compact: false,
+        namedExports: true,
+        preferConst: true,
+        objectShorthand: true
+    });
+}
+
+function getSourceId(packageName: string, packageDirectory: string, modulePath: string) {
+    packageDirectory = normalizePath(packageDirectory);
+    modulePath = normalizePath(modulePath);
+
+    const relativePath = posix.relative(packageDirectory, modulePath);
+    if (relativePath.match(/^\.\.?[\\/]/)) {
+        // must not start with ./ or ../
+        throw new Error("Internal error: unexpected relative path");
+    }
+
+    const parsedResult = posix.parse(relativePath);
+    const nameWithoutExt = parsedResult.name.replace(/\..*$/, "");
+    const relativeSourceId = posix.join(parsedResult.dir, nameWithoutExt);
+    return `${packageName}/${relativeSourceId}`;
+}
+
+function isWindowsPath(path: string): boolean {
+    return /\\/.test(path) || /^[a-zA-Z]:/.test(path);
 }

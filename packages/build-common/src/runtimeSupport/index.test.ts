@@ -48,3 +48,35 @@ describe("generateReactHooks", function () {
         `);
     });
 });
+
+describe("generateSourceId", function () {
+    it("builds a module id for unix-like paths", async function () {
+        const code = RuntimeSupport.generateSourceInfo(
+            "my-pkg",
+            "/repo/project/packages/my-pkg",
+            "/repo/project/packages/my-pkg/src/utils/helpers.ts"
+        );
+        expect(code).toMatchInlineSnapshot(`
+          "export const sourceId = "my-pkg/src/utils/helpers";
+          export default {
+          	sourceId
+          };
+          "
+        `);
+    });
+
+    it("normalizes windows-style paths and strips the extension", async function () {
+        const code = RuntimeSupport.generateSourceInfo(
+            "pkg",
+            "C:\\repo\\project\\packages\\pkg",
+            "C:\\repo\\project\\packages\\pkg\\lib\\file.name.with.dots.tsx"
+        );
+        expect(code).toMatchInlineSnapshot(`
+          "export const sourceId = "pkg/lib/file";
+          export default {
+          	sourceId
+          };
+          "
+        `);
+    });
+});

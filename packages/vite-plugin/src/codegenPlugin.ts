@@ -1,14 +1,19 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { normalizePath, Plugin as VitePlugin, Rollup, UserConfig } from "vite";
 import { createDebugger } from "./utils/debug";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
-import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
+import {
+    findPackageJson,
+    parseVirtualModuleId,
+    serializeModuleId,
+    VirtualPackageModule,
+    VirtualSourceInfoModule
+} from "./codegen/shared";
 import { readFile } from "node:fs/promises";
 import { ReportableError } from "./ReportableError";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
@@ -76,6 +81,12 @@ export function codegenPlugin(): VitePlugin {
                             type: "package-hooks",
                             packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
+                    case "source-info":
+                        return serializeModuleId({
+                            type: "source-info",
+                            importer: importer,
+                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                        });
                 }
             } catch (e) {
                 reportError(this, e, isDev);
@@ -103,20 +114,22 @@ export function codegenPlugin(): VitePlugin {
                 }
 
                 if (mod.type === "package-hooks") {
-                    const directory = mod.packageDirectory;
-                    // use forward slashes instead of platform separator
-                    const packageJsonPath = (await this.resolve(directory + "/package.json"))?.id;
-                    if (!packageJsonPath) {
-                        throw new ReportableError(`Failed to resolve package.json in ${directory}`);
-                    }
-
-                    const packageName = await getPackageName(this, packageJsonPath);
+                    const packageName = await resolvePackageName(this, mod);
                     const generatedSourceCode = RuntimeSupport.generateReactHooks(
                         packageName,
                         RuntimeSupport.REACT_INTEGRATION_MODULE_ID
                     );
                     isDebug && debug("Generated hooks code: %O", generatedSourceCode);
                     return generatedSourceCode;
+                }
+
+                if (mod.type === "source-info") {
+                    const packageName = await resolvePackageName(this, mod);
+                    return RuntimeSupport.generateSourceInfo(
+                        packageName,
+                        mod.packageDirectory,
+                        mod.importer
+                    );
                 }
 
                 if (mod.type === "app-meta") {
@@ -173,6 +186,20 @@ export function codegenPlugin(): VitePlugin {
             repository.onFileChanged(id);
         }
     };
+}
+
+async function resolvePackageName(
+    ctx: PluginContext,
+    mod: VirtualSourceInfoModule | VirtualPackageModule
+) {
+    const directory = mod.packageDirectory;
+    // use forward slashes instead of platform separator
+    const packageJsonPath = (await ctx.resolve(directory + "/package.json"))?.id;
+    if (!packageJsonPath) {
+        throw new ReportableError(`Failed to resolve package.json in ${directory}`);
+    }
+
+    return await getPackageName(ctx, packageJsonPath);
 }
 
 /**
@@ -242,24 +269,6 @@ function getPackageDirectoryFromDirectory(directory: string, rootDir: string): s
 
 function getPackageDirectoryFromImporter(importer: string, rootDir: string): string {
     return getPackageDirectoryFromDirectory(dirname(importer), rootDir);
-}
-
-function findPackageJson(startDir: string, rootDir: string) {
-    let dir = startDir;
-    while (dir) {
-        const candidate = join(dir, "package.json");
-        if (existsSync(candidate)) {
-            return candidate;
-        }
-
-        if (normalizePath(dir) == normalizePath(rootDir)) {
-            return undefined;
-        }
-
-        const parent = dirname(dir);
-        dir = parent === dir || parent === "." ? "" : parent;
-    }
-    return undefined;
 }
 
 async function getPackageName(ctx: PluginContext, packageJsonPath: string) {

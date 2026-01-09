@@ -1,0 +1,8 @@
+{
+    "name": "project-with-source-info",
+    "version": "0.0.1",
+    "license": "MIT",
+    "dependencies": {
+        "@open-pioneer/runtime": "*"
+    }
+}

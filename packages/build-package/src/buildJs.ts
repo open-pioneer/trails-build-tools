@@ -3,16 +3,17 @@
 import { LogLevel, RollupLog, rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import { resolvePlugin } from "./rollup/resolve";
-import nativePath from "node:path";
+import nativePath, { posix } from "node:path";
 import { Logger } from "./utils/Logger";
 import { cwd } from "node:process";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { isInDirectory } from "./utils/pathUtils";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
-import { virtualModulesPlugin } from "./rollup/virtualModules";
+import { REACT_HOOKS_ID, SOURCE_INFO_ID, virtualModulesPlugin } from "./rollup/virtualModules";
 import { checkImportsPlugin } from "./rollup/checkImports";
 import { rebaseSourcemapPath } from "./utils/sourceMaps";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+import { normalizePath } from "@rollup/pluginutils";
 
 export interface BuildJsOptions {
     /** Package name from package.json */
@@ -55,6 +56,7 @@ export async function buildJs({
     strict,
     logger
 }: BuildJsOptions) {
+    const normalizedPackageDirectory = normalizePath(packageDirectory);
     const result = await rollup({
         input: Object.fromEntries(entryPoints.map((e) => [e.outputModuleId, e.inputModulePath])),
         plugins: [
@@ -96,6 +98,10 @@ export async function buildJs({
                 // https://github.com/rollup/rollup/issues/4699
                 return;
             }
+            if (log.code === "EMPTY_BUNDLE") {
+                // Not really an error/warning
+                return;
+            }
 
             let method;
             switch (level) {
@@ -113,12 +119,40 @@ export async function buildJs({
         }
     });
     await result.write({
-        preserveModules: true,
         dir: outputDirectory,
         minifyInternalExports: false,
         compact: false,
         format: "es",
         sourcemap: sourceMap,
+
+        chunkFileNames: "[name].js",
+        hoistTransitiveImports: false,
+
+        manualChunks(id, meta) {
+            // Group virtual modules (identified by \0 prefix) into a shared chunk
+            if (id.startsWith("\0")) {
+                if (id === REACT_HOOKS_ID) {
+                    return "_virtual/hooks";
+                }
+                if (id.startsWith(SOURCE_INFO_ID)) {
+                    return "_virtual/source-info";
+                }
+                return id;
+            }
+
+            // A re-implementation of "preserveModules", but for _real_ files only.
+            const normalizedId = normalizePath(id);
+            const relativePath = posix.relative(normalizedPackageDirectory, normalizedId);
+            if (relativePath.match(/^\.\.?[\\/]/)) {
+                // must not start with ./ or ../
+                throw new Error("Internal error: unexpected relative path");
+            }
+
+            const parsedResult = posix.parse(relativePath);
+            const nameWithoutExt = parsedResult.name.replace(/\..*$/, "");
+            const relativeSourceId = posix.join(parsedResult.dir, nameWithoutExt);
+            return relativeSourceId;
+        },
 
         // Prettier source map paths.
         // See https://rollupjs.org/configuration-options/#output-sourcemappathtransform
