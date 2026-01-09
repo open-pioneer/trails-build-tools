@@ -1,44 +1,34 @@
 {
-    "name": "@open-pioneer/build-common",
-    "description": "Common functionality used when building Open Pioneer Trails applications or packages.",
-    "version": "3.1.2",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
+    "name": "@open-pioneer/pnpm-plugin-defaults",
+    "description": "Provides default configuration options for pnpm.",
+    "version": "0.1.1",
     "type": "commonjs",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
-        "directory": "packages/build-common"
+        "directory": "packages/pnpm-plugin-defaults"
     },
     "homepage": "https://github.com/open-pioneer",
     "keywords": [
         "open-pioneer-trails"
     ],
     "scripts": {
-        "clean": "rimraf dist temp",
+        "clean": "rimraf pnpmfile.*",
         "build": "node build.mjs build",
         "build-dev": "node build.mjs buildDev",
         "dev": "node build.mjs watch",
         "test": "vitest"
     },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
-        "types.d.ts",
+        "pnpmfile.cjs",
+        "pnpmfile.cjs.map",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
     "devDependencies": {
-        "@open-pioneer/build-support": "workspace:^",
-        "@types/semver": "catalog:",
         "build-tools": "workspace:*"
-    },
-    "dependencies": {
-        "semver": "catalog:",
-        "zod": "catalog:",
-        "zod-validation-error": "catalog:"
     },
     "engines": {
         "node": ">= 20"

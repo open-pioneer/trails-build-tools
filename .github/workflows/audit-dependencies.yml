@@ -12,21 +12,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.19.4
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+        uses: actions/checkout@v6
+      - name: Install
+        uses: open-pioneer/trails-repo-automation/.github/actions/install@main
       - name: Audit dependencies
         run: pnpm audit

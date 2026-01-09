@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { RuntimeSupport } from "@open-pioneer/build-common";
+import { glob } from "tinyglobby";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { expect, it } from "vitest";
+import { expect, it, onTestFailed } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
+import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
+import { expectError } from "./testing/helpers";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
-import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
-import { RuntimeSupport } from "@open-pioneer/build-common";
-import glob from "fast-glob";
-import { expectError } from "./testing/helpers";
 
 it("transpiles a simple javascript project", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
@@ -476,6 +476,10 @@ it("supports imports in node modules", async function () {
     const defaults = testDefaults();
     const logger = defaults.logger;
 
+    onTestFailed(() => {
+        console.error(logger.messages);
+    });
+
     await cleanDir(outputDirectory);
     await buildJs({
         ...defaults,
@@ -487,7 +491,8 @@ it("supports imports in node modules", async function () {
             dependencies: {
                 "package-with-index": "*",
                 "package-with-main": "*",
-                "package-with-exports": "*"
+                "package-with-exports": "*",
+                "package-with-browser-exports": "*"
             }
         }
     });
@@ -502,8 +507,9 @@ it("supports imports in node modules", async function () {
       import { PACKAGE_EXPORT as PACKAGE_EXPORT$1 } from 'package-with-main';
       import { PACKAGE_EXPORT as PACKAGE_EXPORT$2 } from 'package-with-exports';
       import { PACKAGE_EXPORT as PACKAGE_EXPORT$3 } from 'package-with-exports/other-entry';
+      import { PACKAGE_EXPORT as PACKAGE_EXPORT$4 } from 'package-with-browser-exports';
 
-      console.log(PACKAGE_EXPORT, PACKAGE_EXPORT$1, PACKAGE_EXPORT$2, PACKAGE_EXPORT$3);
+      console.log(PACKAGE_EXPORT, PACKAGE_EXPORT$1, PACKAGE_EXPORT$2, PACKAGE_EXPORT$3, PACKAGE_EXPORT$4);
       "
     `);
 

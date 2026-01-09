@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import glob from "fast-glob";
+import { glob } from "tinyglobby";
 import { resolve } from "node:path";
 import { copy } from "fs-extra";
 import { createDebugger } from "./utils/debug";
@@ -39,9 +39,9 @@ export async function copyAssets({
         cwd: packageDirectory,
         dot: false,
         ignore: ["**/node_modules/**"],
-        unique: true,
         onlyFiles: true
     });
+    const uniqueFiles = Array.from(new Set(files));
 
     const copySingleFile = async (name: string) => {
         const absoluteSrc = resolve(packageDirectory, name);
@@ -54,5 +54,5 @@ export async function copyAssets({
         }
     };
 
-    await Promise.all(files.map(copySingleFile));
+    await Promise.all(uniqueFiles.map(copySingleFile));
 }

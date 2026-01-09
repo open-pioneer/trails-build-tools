@@ -1,0 +1,27 @@
+name: Publish snapshot
+on:
+  workflow_dispatch:
+    inputs:
+      snapshot-tag:
+        type: string
+        description: Name of the snapshot build tag. Use "dev" for the main branch and "dev-XYZ" for other branches.
+        default: dev
+        required: true
+jobs:
+  build_packages:
+    name: "Build and publish"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install
+        uses: open-pioneer/trails-repo-automation/.github/actions/install@main
+
+      - name: "Publish packages"
+        uses: open-pioneer/trails-repo-automation/.github/actions/publish-snapshots@main
+        with:
+          snapshot-tag: ${{ inputs.snapshot-tag }}
+          build-command: "build"
+          npm-token: ${{ secrets.NPM_TOKEN }}

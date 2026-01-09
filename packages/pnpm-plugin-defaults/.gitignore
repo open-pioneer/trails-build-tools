@@ -1,0 +1,3 @@
+# Needs to be in root dir to be picked up by PNPM
+pnpmfile.cjs
+pnpmfile.cjs.map

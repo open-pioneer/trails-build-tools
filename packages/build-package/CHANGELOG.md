@@ -1,5 +1,30 @@
 # Changelog @open-pioneer/build-package
 
+## 4.0.6
+
+### Patch Changes
+
+- 2c45a18: Bump dependencies
+- 1d5852a: Resolve node modules using `browser` exports.
+- Updated dependencies [2c45a18]
+    - @open-pioneer/build-common@3.1.2
+    - @open-pioneer/build-support@3.0.5
+
+## 4.0.5
+
+### Patch Changes
+
+- f229f63: Bump dependencies
+- Updated dependencies [f229f63]
+    - @open-pioneer/build-common@3.1.1
+    - @open-pioneer/build-support@3.0.4
+
+## 4.0.4
+
+### Patch Changes
+
+- 1b99d82: Update eslint to version 9.
+
 ## 4.0.3
 
 ### Patch Changes

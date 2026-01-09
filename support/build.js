@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-/* eslint-disable @typescript-eslint/no-require-imports */
 import esbuild from "esbuild";
 
 /*
@@ -58,16 +57,27 @@ export async function build(mode, customOptions) {
 
     const { minify, sourceMap, watch } = options;
 
+    let outOptions = {
+        outdir: "dist"
+    };
+    if (customOptions?.outFile) {
+        outOptions = {
+            outfile: customOptions.outFile
+        };
+    }
+
+    const packages = customOptions?.bundleDependencies === true ? "bundle" : "external";
+
     /** @type {import("esbuild").BuildOptions} */
     const esbuildOptions = {
-        entryPoints: ["./src/index.ts"],
+        entryPoints: customOptions?.entryPoints ?? ["./src/index.ts"],
         bundle: true,
-        outdir: "dist",
+        ...outOptions,
         minify: minify ?? false,
         sourcemap: sourceMap ?? false,
         target: "node16",
         platform: "node",
-        packages: "external",
+        packages,
         logLevel: "info",
         format: customOptions?.format ?? "cjs"
     };

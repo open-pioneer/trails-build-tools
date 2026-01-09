@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/build-package",
     "description": "Implements partial compilation for Open Pioneer Trails packages.",
-    "version": "4.0.3",
+    "version": "4.0.6",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "module",
@@ -49,7 +49,7 @@
         "chalk": "catalog:",
         "debug": "catalog:",
         "esbuild": "catalog:",
-        "fast-glob": "catalog:",
+        "tinyglobby": "catalog:",
         "find-git-root": "catalog:",
         "find-workspaces": "catalog:",
         "fs-extra": "catalog:",

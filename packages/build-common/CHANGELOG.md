@@ -1,5 +1,17 @@
 # Changelog @open-pioneer/build-common
 
+## 3.1.2
+
+### Patch Changes
+
+- 2c45a18: Bump dependencies
+
+## 3.1.1
+
+### Patch Changes
+
+- f229f63: Bump dependencies
+
 ## 3.1.0
 
 ### Minor Changes

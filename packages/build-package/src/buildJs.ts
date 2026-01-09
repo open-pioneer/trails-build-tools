@@ -79,7 +79,9 @@ export async function buildJs({
                 // A hard jail interferes with monorepo setups where packages are linked to wild locations.
                 // jail: packageDirectory
                 rootDir: packageDirectory,
-                preferBuiltins: false
+                preferBuiltins: false,
+                browser: true,
+                exportConditions: ["browser"]
             }),
             esbuild({
                 jsx: "automatic",

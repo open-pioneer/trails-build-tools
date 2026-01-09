@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/build-package-cli",
     "description": "Provides a CLI tool to compile Open Pioneer Trails packages.",
-    "version": "3.0.3",
+    "version": "3.0.6",
     "type": "module",
     "license": "Apache-2.0",
     "repository": {

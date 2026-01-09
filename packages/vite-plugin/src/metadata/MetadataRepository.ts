@@ -8,10 +8,10 @@ import { findDepPkgJsonPath } from "vitefu";
 import { ReportableError } from "../ReportableError";
 import { Cache } from "../utils/Cache";
 import { createDebugger } from "../utils/debug";
+import { MetadataContext } from "./Context";
 import {
     AppMetadata,
     InternalPackageMetadata,
-    MetadataContext,
     PackageDependency,
     PackageLocation,
     PackageMetadata
@@ -168,9 +168,15 @@ export class MetadataRepository {
         // Fetch app i18n files to detect whether an app overrides messages for a package.
         // key: locale
         const appI18nFiles = await Promise.all(
-            Array.from(appLocales).map((locale) =>
-                this.getI18nFile(ctx, appPackage.i18nPaths.get(locale)!)
-            )
+            Array.from(appLocales).map((locale) => {
+                const i18nPath = appPackage.i18nPaths.get(locale);
+                if (i18nPath == null) {
+                    throw new Error(
+                        `App package '${appPackage.name}' does not have an i18n file for locale '${locale}'.`
+                    );
+                }
+                return this.getI18nFile(ctx, i18nPath);
+            })
         );
         const errors: PackageMetadata[] = [];
         for (const pkg of appMetadata.packages) {
@@ -210,6 +216,7 @@ export class MetadataRepository {
                     buffer += ", ";
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const pkg = errors[i]!;
                 buffer += `'${pkg.name}' (${pkg.locales.toSorted().join(", ")})`;
             }
@@ -341,7 +348,7 @@ export class MetadataRepository {
                 // when a cached entry is returned.
                 const watchFiles = new Set<string>();
                 const trackingCtx: MetadataContext = {
-                    resolve: ctx.resolve.bind(ctx),
+                    resolveLocalFile: ctx.resolveLocalFile.bind(ctx),
                     addWatchFile(id) {
                         ctx.addWatchFile(id);
                         watchFiles.add(id);
@@ -349,12 +356,10 @@ export class MetadataRepository {
                     warn: ctx.warn.bind(ctx)
                 };
 
-                const metadata = await loadPackageMetadata(
-                    trackingCtx,
-                    directory,
+                const metadata = await loadPackageMetadata(trackingCtx, directory, {
                     sourceRoot,
                     importedFrom
-                );
+                });
                 isDebug && debug(`Metadata for '${metadata.name}': %O`, metadata);
 
                 // Ensure only one version of a package exists in the app

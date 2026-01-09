@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import glob from "fast-glob";
+import { globSync } from "tinyglobby";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { assert, describe, expect, it } from "vitest";
@@ -365,7 +365,7 @@ describe("codegen support", function () {
 });
 
 function findModuleContaining(dir: string, needle: string) {
-    const files = glob.sync("./**/*.js", {
+    const files = globSync("./**/*.js", {
         cwd: dir,
         absolute: true
     });
@@ -378,7 +378,6 @@ function findModuleContaining(dir: string, needle: string) {
     throw new Error(`Failed to find file containing ${JSON.stringify(needle)}`);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function expectAsyncError(fn: () => Promise<void>): Promise<any> {
     return new Promise((resolve, reject) => {
         fn().then(() => {
