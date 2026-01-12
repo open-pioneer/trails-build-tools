@@ -26,8 +26,7 @@ const APP_I18N_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
 const PACKAGE_HOOKS_MODULE = "@@open-pioneer-react-hooks";
 
 const SOURCE_INFO_MODULE = "@@open-pioneer-source-info";
-const SOURCE_INFO_MODULE_MODULE_PATH_RE =
-    /@@open-pioneer-source-info\/(?<module_path>.*)&lang=\.js$/;
+const SOURCE_INFO_MODULE_MODULE_PATH_RE = /@@open-pioneer-source-info\/(?<module_path>.*)&lang=js$/;
 
 const SOURCE_FILE_RE = /^(.*?)(?:\?|$)/;
 
@@ -176,7 +175,7 @@ function serializeSourceInfoModule(mod: VirtualSourceInfoModule): string {
     const parsedResult = posix.parse(normalizedPath);
     const nameWithoutExt = parsedResult.name.replace(/\..*$/, "");
     const fullPath = posix.join(parsedResult.dir, nameWithoutExt);
-    return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}/${encodeURIComponent(fullPath)}&lang=.js`;
+    return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}/${encodeURIComponent(fullPath)}&lang=js`;
 }
 
 function getSourceFile(moduleId: string) {
