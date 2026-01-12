@@ -96,24 +96,23 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
 
 function parseSourceInfoModule(moduleId: string, sourceInfoMatch: RegExpMatchArray): VirtualModule {
     const encodedModulePath = sourceInfoMatch?.groups?.["module_path"];
-    const sourceFilePath = encodedModulePath
-        ? getSourceFile(decodeURIComponent(encodedModulePath))
-        : undefined;
-    if (!sourceFilePath) {
-        throw new Error(`Missing source module in source info module id: ${moduleId}`);
+    if (!encodedModulePath) {
+        throw new Error(`Missing module path in source info module id: ${moduleId}`);
     }
+    const relativeModulePath = decodeURIComponent(encodedModulePath);
     const moduleRoot = moduleId.substring(0, moduleId.indexOf(`${SOURCE_INFO_MODULE}`));
     if (!moduleRoot) {
         throw new Error(
             `Cannot determine module root directory for source info module id: ${moduleId}`
         );
     }
-    const packageJsonPath = findPackageJson(dirname(sourceFilePath), moduleRoot);
+    const fullModulePath = join(moduleRoot, relativeModulePath);
+    const packageJsonPath = findPackageJson(dirname(fullModulePath), moduleRoot);
     if (!packageJsonPath) {
         throw new Error(`Cannot determine package.json for source info module id: ${moduleId}`);
     }
     const packageDirectory = dirname(packageJsonPath);
-    return { type: "source-info", modulePath: sourceFilePath, packageDirectory };
+    return { type: "source-info", modulePath: relativeModulePath, packageDirectory };
 }
 
 function parseAppModuleId(sourceFile: string, moduleId: string): VirtualModule | undefined {
@@ -170,12 +169,16 @@ export function serializeModuleId(mod: VirtualModule): string {
 }
 
 function serializeSourceInfoModule(mod: VirtualSourceInfoModule): string {
+    const packageDirectory = mod.packageDirectory;
     const modulePath = mod.modulePath;
-    const normalizedPath = normalizePath(modulePath);
-    const parsedResult = posix.parse(normalizedPath);
-    const nameWithoutExt = parsedResult.name.replace(/\..*$/, "");
-    const fullPath = posix.join(parsedResult.dir, nameWithoutExt);
-    return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}/${encodeURIComponent(fullPath)}&lang=js`;
+    const normalizedModulePath = normalizePath(modulePath);
+
+    const relativeModulePath = posix.relative(packageDirectory, normalizedModulePath);
+    if (relativeModulePath.match(/^\.\.?[\\/]/)) {
+        // must not start with ./ or ../
+        throw new Error("Internal error: unexpected relative path");
+    }
+    return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}/${encodeURIComponent(relativeModulePath)}&lang=js`;
 }
 
 function getSourceFile(moduleId: string) {

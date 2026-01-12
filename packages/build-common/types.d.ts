@@ -34,11 +34,7 @@ export namespace RuntimeSupport {
      * `packageDirectory` and `modulePath` must be fully resolved paths.
      * `modulePath` must be a child of `packageDirectory`.
      */
-    export function generateSourceInfo(
-        packageName: string,
-        packageDirectory: string,
-        modulePath: string
-    ): string;
+    export function generateSourceInfo(packageName: string, relativeModulePath: string): string;
 }
 
 /**

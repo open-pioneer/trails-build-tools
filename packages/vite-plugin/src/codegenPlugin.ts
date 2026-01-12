@@ -125,11 +125,7 @@ export function codegenPlugin(): VitePlugin {
 
                 if (mod.type === "source-info") {
                     const packageName = await resolvePackageName(this, mod);
-                    return RuntimeSupport.generateSourceInfo(
-                        packageName,
-                        mod.packageDirectory,
-                        mod.modulePath
-                    );
+                    return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
                 }
 
                 if (mod.type === "app-meta") {
