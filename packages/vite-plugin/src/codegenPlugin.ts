@@ -84,7 +84,7 @@ export function codegenPlugin(): VitePlugin {
                     case "source-info":
                         return serializeModuleId({
                             type: "source-info",
-                            importer: importer,
+                            modulePath: importer,
                             packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
                 }
@@ -128,7 +128,7 @@ export function codegenPlugin(): VitePlugin {
                     return RuntimeSupport.generateSourceInfo(
                         packageName,
                         mod.packageDirectory,
-                        mod.importer
+                        mod.modulePath
                     );
                 }
 

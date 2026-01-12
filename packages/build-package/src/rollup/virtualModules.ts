@@ -46,7 +46,7 @@ export function virtualModulesPlugin({
                 case "react-hooks":
                     return REACT_HOOKS_ID;
                 case "source-info": {
-                    return `${SOURCE_INFO_ID}?importer=${encodeURIComponent(importer)}`;
+                    return `${SOURCE_INFO_ID}/${encodeURIComponent(importer)}`;
                 }
                 default:
                     this.error({
@@ -60,7 +60,7 @@ export function virtualModulesPlugin({
                 return RuntimeSupport.generateReactHooks(packageName);
             }
             if (id.startsWith(SOURCE_INFO_ID)) {
-                const encodedModulePath = id.split(`${SOURCE_INFO_ID}?importer=`)[1] || "";
+                const encodedModulePath = id.split(`${SOURCE_INFO_ID}/`)[1] || "";
                 const modulePath = decodeURIComponent(encodedModulePath).replace(/[?#].*$/, "");
                 return RuntimeSupport.generateSourceInfo(packageName, packageDirectory, modulePath);
             }
