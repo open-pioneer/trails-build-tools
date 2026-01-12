@@ -31,8 +31,8 @@ export namespace RuntimeSupport {
     /**
      * Generates the module containing the sourceId of the importing file.
      *
-     * `packageDirectory` and `modulePath` must be fully resolved paths.
-     * `modulePath` must be a child of `packageDirectory`.
+     * `packageName` is the name of the package.
+     * `relativeModulePath` is the path of the module relative to the package root.
      */
     export function generateSourceInfo(packageName: string, relativeModulePath: string): string;
 }
