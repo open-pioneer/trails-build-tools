@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { existsSync } from "fs";
-import { basename, dirname } from "node:path/posix";
+import { basename, dirname, posix } from "node:path/posix";
 import { join } from "path/posix";
 import { normalizePath } from "vite";
 
@@ -26,7 +26,7 @@ const APP_I18N_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
 const PACKAGE_HOOKS_MODULE = "@@open-pioneer-react-hooks";
 
 const SOURCE_INFO_MODULE = "@@open-pioneer-source-info";
-const SOURCE_INFO_MODULE_IMPORTER_RE = /@@open-pioneer-source-info&importer=(?<importer>.*)$/;
+const SOURCE_INFO_MODULE_MODULE_PATH_RE = /@@open-pioneer-source-info\/(?<module_path>.*)&lang=js$/;
 
 const SOURCE_FILE_RE = /^(.*?)(?:\?|$)/;
 
@@ -54,7 +54,7 @@ export interface VirtualPackageModule {
 
 export interface VirtualSourceInfoModule {
     type: "source-info";
-    importer: string;
+    modulePath: string;
     packageDirectory: string;
 }
 
@@ -83,7 +83,7 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
         };
     }
 
-    const sourceInfoMatch = moduleId.match(SOURCE_INFO_MODULE_IMPORTER_RE);
+    const sourceInfoMatch = moduleId.match(SOURCE_INFO_MODULE_MODULE_PATH_RE);
     if (sourceInfoMatch) {
         return parseSourceInfoModule(moduleId, sourceInfoMatch);
     }
@@ -95,25 +95,24 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
 }
 
 function parseSourceInfoModule(moduleId: string, sourceInfoMatch: RegExpMatchArray): VirtualModule {
-    const encodedImporterPath = sourceInfoMatch?.groups?.["importer"];
-    const importer = encodedImporterPath
-        ? getSourceFile(decodeURIComponent(encodedImporterPath))
-        : undefined;
-    if (!importer) {
-        throw new Error(`Missing importer in source info module id: ${moduleId}`);
+    const encodedModulePath = sourceInfoMatch?.groups?.["module_path"];
+    if (!encodedModulePath) {
+        throw new Error(`Missing module path in source info module id: ${moduleId}`);
     }
+    const relativeModulePath = decodeURIComponent(encodedModulePath);
     const moduleRoot = moduleId.substring(0, moduleId.indexOf(`${SOURCE_INFO_MODULE}`));
     if (!moduleRoot) {
         throw new Error(
             `Cannot determine module root directory for source info module id: ${moduleId}`
         );
     }
-    const packageJsonPath = findPackageJson(dirname(importer), moduleRoot);
+    const fullModulePath = join(moduleRoot, relativeModulePath);
+    const packageJsonPath = findPackageJson(dirname(fullModulePath), moduleRoot);
     if (!packageJsonPath) {
         throw new Error(`Cannot determine package.json for source info module id: ${moduleId}`);
     }
     const packageDirectory = dirname(packageJsonPath);
-    return { type: "source-info", importer, packageDirectory };
+    return { type: "source-info", modulePath: relativeModulePath, packageDirectory };
 }
 
 function parseAppModuleId(sourceFile: string, moduleId: string): VirtualModule | undefined {
@@ -155,7 +154,7 @@ export function serializeModuleId(mod: VirtualModule): string {
         case "package-hooks":
             return `${mod.packageDirectory}/${PACKAGE_HOOKS_MODULE}`;
         case "source-info":
-            return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}&importer=${encodeURIComponent(mod.importer)}`;
+            return serializeSourceInfoModule(mod);
         case "app-meta":
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_META_QUERY}`;
         case "app-packages":
@@ -167,6 +166,19 @@ export function serializeModuleId(mod: VirtualModule): string {
         case "app-i18n":
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_QUERY}&locale=${mod.locale}`;
     }
+}
+
+function serializeSourceInfoModule(mod: VirtualSourceInfoModule): string {
+    const packageDirectory = mod.packageDirectory;
+    const modulePath = mod.modulePath;
+    const normalizedModulePath = normalizePath(modulePath);
+
+    const relativeModulePath = posix.relative(packageDirectory, normalizedModulePath);
+    if (relativeModulePath.match(/^\.\.?[\\/]/)) {
+        // must not start with ./ or ../
+        throw new Error("Internal error: unexpected relative path");
+    }
+    return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}/${encodeURIComponent(relativeModulePath)}&lang=js`;
 }
 
 function getSourceFile(moduleId: string) {

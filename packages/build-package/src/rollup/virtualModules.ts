@@ -3,6 +3,8 @@
 import { RuntimeSupport } from "@open-pioneer/build-common";
 import { Plugin } from "rollup";
 import { isInDirectory } from "../utils/pathUtils";
+import { normalizePath } from "@rollup/pluginutils";
+import { posix } from "node:path";
 
 export interface VirtualModulesPluginOptions {
     packageName: string;
@@ -46,7 +48,7 @@ export function virtualModulesPlugin({
                 case "react-hooks":
                     return REACT_HOOKS_ID;
                 case "source-info": {
-                    return `${SOURCE_INFO_ID}?importer=${encodeURIComponent(importer)}`;
+                    return createSourceInfoId(packageDirectory, importer);
                 }
                 default:
                     this.error({
@@ -60,13 +62,25 @@ export function virtualModulesPlugin({
                 return RuntimeSupport.generateReactHooks(packageName);
             }
             if (id.startsWith(SOURCE_INFO_ID)) {
-                const encodedModulePath = id.split(`${SOURCE_INFO_ID}?importer=`)[1] || "";
+                const encodedModulePath = id.split(`${SOURCE_INFO_ID}/`)[1] || "";
                 const modulePath = decodeURIComponent(encodedModulePath).replace(/[?#].*$/, "");
-                return RuntimeSupport.generateSourceInfo(packageName, packageDirectory, modulePath);
+                return RuntimeSupport.generateSourceInfo(packageName, modulePath);
             }
             return undefined;
         }
     };
+}
+
+function createSourceInfoId(packageDirectory: string, importer: string) {
+    packageDirectory = normalizePath(packageDirectory);
+    importer = normalizePath(importer);
+
+    const relativePath = posix.relative(packageDirectory, importer);
+    if (relativePath.match(/^\.\.?[\\/]/)) {
+        // must not start with ./ or ../
+        throw new Error("Internal error: unexpected relative path");
+    }
+    return `${SOURCE_INFO_ID}/${encodeURIComponent(relativePath)}`;
 }
 
 function assertDefined<T>(value: T | undefined | null): T {

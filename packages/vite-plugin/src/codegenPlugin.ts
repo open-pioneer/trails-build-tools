@@ -84,7 +84,7 @@ export function codegenPlugin(): VitePlugin {
                     case "source-info":
                         return serializeModuleId({
                             type: "source-info",
-                            importer: importer,
+                            modulePath: importer,
                             packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
                 }
@@ -125,11 +125,7 @@ export function codegenPlugin(): VitePlugin {
 
                 if (mod.type === "source-info") {
                     const packageName = await resolvePackageName(this, mod);
-                    return RuntimeSupport.generateSourceInfo(
-                        packageName,
-                        mod.packageDirectory,
-                        mod.importer
-                    );
+                    return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
                 }
 
                 if (mod.type === "app-meta") {

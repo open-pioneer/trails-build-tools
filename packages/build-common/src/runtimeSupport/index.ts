@@ -47,8 +47,8 @@ export const useIntl = /*@__PURE__*/ useIntlInternal.bind(undefined, PACKAGE_NAM
     `.trim();
 }
 
-function generateSourceInfo(packageName: string, packageDirectory: string, modulePath: string) {
-    const sourceId = getSourceId(packageName, packageDirectory, modulePath);
+function generateSourceInfo(packageName: string, modulePath: string) {
+    const sourceId = getSourceId(packageName, modulePath);
     const sourceInfo = {
         sourceId
     };
@@ -60,17 +60,9 @@ function generateSourceInfo(packageName: string, packageDirectory: string, modul
     });
 }
 
-function getSourceId(packageName: string, packageDirectory: string, modulePath: string) {
-    packageDirectory = normalizePath(packageDirectory);
-    modulePath = normalizePath(modulePath);
-
-    const relativePath = posix.relative(packageDirectory, modulePath);
-    if (relativePath.match(/^\.\.?[\\/]/)) {
-        // must not start with ./ or ../
-        throw new Error("Internal error: unexpected relative path");
-    }
-
-    const parsedResult = posix.parse(relativePath);
+function getSourceId(packageName: string, relativeModulePath: string) {
+    const normalizedModulePath = normalizePath(relativeModulePath);
+    const parsedResult = posix.parse(normalizedModulePath);
     const nameWithoutExt = parsedResult.name.replace(/\..*$/, "");
     const relativeSourceId = posix.join(parsedResult.dir, nameWithoutExt);
     return `${packageName}/${relativeSourceId}`;
