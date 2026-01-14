@@ -5,4 +5,7 @@ export { verifyBuildConfig } from "./verifyBuildConfig";
 export { loadBuildConfig } from "./loadBuildConfig";
 export { isRuntimeVersion } from "./isRuntimeVersion";
 export const BUILD_CONFIG_NAME: typeof API.BUILD_CONFIG_NAME = "build.config.mjs";
-export const RUNTIME_BASE_VERSION: typeof API.RUNTIME_BASE_VERSION = "1.0.0";
+export const MIN_SUPPORTED_RUNTIME_VERSION: typeof API.MIN_SUPPORTED_RUNTIME_VERSION = "1.0.0";
+export const CURRENT_RUNTIME_VERSION: typeof API.CURRENT_RUNTIME_VERSION = "1.1.0";
+export const RUNTIME_VERSIONS: typeof API.RUNTIME_VERSIONS = ["1.0.0", "1.1.0"];
+export {canParse} from "../packageMetadata/versionUtils";

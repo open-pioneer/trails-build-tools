@@ -4,8 +4,8 @@ import {
     BUILD_CONFIG_NAME,
     isRuntimeVersion,
     PackageMetadataV1,
-    RUNTIME_BASE_VERSION,
-    RuntimeVersion
+    MIN_SUPPORTED_RUNTIME_VERSION,
+    RuntimeVersion, RUNTIME_VERSIONS
 } from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
@@ -27,6 +27,7 @@ import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 import { fileExists } from "../utils/fileUtils";
 import { join } from "node:path";
 import { readFile } from "node:fs/promises";
+import { canParse } from "@open-pioneer/build-common";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -65,7 +66,7 @@ export class MetadataRepository {
     // Key: path on disk.
     private i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
 
-    private runtimeVersion: RuntimeVersion;
+    private readonly runtimeVersion: Promise<RuntimeVersion>;
 
     /**
      * @param sourceRoot Source folder on disk, needed to detect 'local' packages
@@ -74,9 +75,9 @@ export class MetadataRepository {
         this.sourceRoot = sourceRoot;
         this.packageMetadataCache = this.createPackageMetadataCache();
         this.i18nCache = this.createI18nCache();
-        this.runtimeVersion = RUNTIME_BASE_VERSION;
-        this.readRootPackage(sourceRoot).then((result) => {
-            this.runtimeVersion = result;
+        this.runtimeVersion = this.readRootPackage(sourceRoot)
+            .then((result) => {
+                return result;
         });
     }
 
@@ -211,7 +212,7 @@ export class MetadataRepository {
         return i18n;
     }
 
-    getRuntimeVersion(): RuntimeVersion {
+    getRuntimeVersion(): Promise<RuntimeVersion> {
         return this.runtimeVersion;
     }
 
@@ -272,7 +273,7 @@ export class MetadataRepository {
         const sourcePackageJSON = join(sourceRoot, "..", "package.json");
         if (!(await fileExists(sourcePackageJSON))) {
             isDebug && debug(`No root package for runtime version ${sourceRoot} found`);
-            return RUNTIME_BASE_VERSION;
+            return MIN_SUPPORTED_RUNTIME_VERSION;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -284,12 +285,12 @@ export class MetadataRepository {
         }
         const frameworkMetadata =
             packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
-        if (frameworkMetadata && isRuntimeVersion(frameworkMetadata.runtimeVersion)) {
+        if (frameworkMetadata && isRuntimeVersion(frameworkMetadata.runtimeVersion) && canParse("1.1.0",frameworkMetadata.runtimeVersion)) {
             isDebug && debug(`Set runtime version to  ${frameworkMetadata.runtimeVersion}`);
             return frameworkMetadata.runtimeVersion;
         } else {
             throw new ReportableError(
-                `Unsupported runtime version ${frameworkMetadata.runtimeVersion}`
+                `Unsupported runtime version ${frameworkMetadata.runtimeVersion}! Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
             );
         }
     }

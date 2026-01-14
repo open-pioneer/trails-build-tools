@@ -6,7 +6,6 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { normalizePath, Plugin, ResolvedConfig, Rollup, ViteDevServer } from "vite";
 import { ReportableError } from "./ReportableError";
-import { AppMetadataGeneratorFactory } from "./codegen/AppMetadataGeneratorAdapter";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
@@ -15,6 +14,7 @@ import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
 import { createDebugger } from "./utils/debug";
 import { fileExists } from "./utils/fileUtils";
+import { generateAppMetadata } from "./codegen/generateAppMetadata";
 
 type PluginContext = Rollup.PluginContext;
 
@@ -130,11 +130,11 @@ export function codegenPlugin(): Plugin {
                 }
 
                 if (mod.type === "app-meta") {
-                    const runtimeVersion = repository.getRuntimeVersion();
-                    return AppMetadataGeneratorFactory.generate(
-                        runtimeVersion,
+                    const runtimeVersion = await repository.getRuntimeVersion();
+                    return generateAppMetadata(
                         mod.packageDirectory,
-                        RuntimeSupport.METADATA_MODULE_ID
+                        RuntimeSupport.METADATA_MODULE_ID,
+                        runtimeVersion
                     );
                 }
 

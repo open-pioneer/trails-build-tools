@@ -7,12 +7,12 @@ import { isRuntimeVersion } from "./isRuntimeVersion";
 describe("isRuntimeVersion", function () {
     it("accepts right runtime versions", async function () {
         const v1 = "1.0.0";
+        const v1_1 = "1.1.0";
         const v2 = "2.0.0";
-        const v3 = "3.0.0";
-        const test = { value: "1.0.0" };
+        const arbitraryConstruct = { value: "1.0.0" };
         expect(isRuntimeVersion(v1)).toEqual(true);
-        expect(isRuntimeVersion(v2)).toEqual(true);
-        expect(isRuntimeVersion(v3)).toEqual(false);
-        expect(isRuntimeVersion(test)).toEqual(false);
+        expect(isRuntimeVersion(v1_1)).toEqual(true);
+        expect(isRuntimeVersion(v2)).toEqual(false);
+        expect(isRuntimeVersion(arbitraryConstruct)).toEqual(false);
     });
 });
