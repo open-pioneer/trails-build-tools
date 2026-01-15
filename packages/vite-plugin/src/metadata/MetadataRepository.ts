@@ -308,7 +308,7 @@ export class MetadataRepository {
         if (
             frameworkMetadata &&
             isRuntimeVersion(frameworkMetadata.runtimeVersion) &&
-            canParse("1.1.0", frameworkMetadata.runtimeVersion)
+            canParse(CURRENT_RUNTIME_VERSION, frameworkMetadata.runtimeVersion)
         ) {
             isDebug && debug(`Set runtime version to  ${frameworkMetadata.runtimeVersion}`);
             return frameworkMetadata.runtimeVersion;

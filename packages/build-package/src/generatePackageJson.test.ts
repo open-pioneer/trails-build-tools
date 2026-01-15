@@ -35,6 +35,7 @@ describe("generatePackageJson", function () {
               },
               "packageFormatVersion": "1.0.0",
               "properties": [],
+              "runtimeVersion": "1.0.0",
               "services": [],
               "ui": {
                 "references": [],
@@ -286,6 +287,7 @@ describe("generatePackageJson", function () {
                 "required": false,
               },
             ],
+            "runtimeVersion": "1.0.0",
             "services": [
               {
                 "provides": [

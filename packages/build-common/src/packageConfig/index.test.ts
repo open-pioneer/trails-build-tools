@@ -222,7 +222,7 @@ describe("packageConfig", function () {
                 "required": false,
               },
             },
-            "runtimeVersion": "1.0.0",
+            "runtimeVersion": "1.1.0",
             "services": Map {
               "A" => {
                 "provides": [
