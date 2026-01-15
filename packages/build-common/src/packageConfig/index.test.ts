@@ -92,6 +92,7 @@ describe("packageConfig", function () {
                 "required": false,
               },
             },
+            "runtimeVersion": "1.0.0",
             "services": Map {
               "A" => {
                 "provides": [
@@ -221,6 +222,7 @@ describe("packageConfig", function () {
                 "required": false,
               },
             },
+            "runtimeVersion": "1.0.0",
             "services": Map {
               "A" => {
                 "provides": [
