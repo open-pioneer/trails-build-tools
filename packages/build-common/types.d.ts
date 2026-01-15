@@ -75,6 +75,9 @@ export namespace PackageMetadataV1 {
 
         /** Properties defined by the package. */
         properties?: Nullish<PropertyConfig[]>;
+        
+        /** runtime version of the vite-plugin. */
+        runtimeVersion?: Nullish<RuntimeVersion>;
     }
 
     /**

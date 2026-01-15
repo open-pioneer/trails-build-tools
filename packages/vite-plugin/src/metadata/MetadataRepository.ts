@@ -5,7 +5,7 @@ import {
     isRuntimeVersion,
     PackageMetadataV1,
     MIN_SUPPORTED_RUNTIME_VERSION,
-    RuntimeVersion, RUNTIME_VERSIONS
+    RuntimeVersion, RUNTIME_VERSIONS, CURRENT_RUNTIME_VERSION
 } from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
@@ -165,13 +165,28 @@ export class MetadataRepository {
             appPackageMetadata.packageJsonPath
         );
 
+        let runtimeVersion: RuntimeVersion;
+        if(appPackageMetadata?.runtimeVersion) {
+            isDebug && debug(`App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.runtimeVersion}`);    
+            runtimeVersion = appPackageMetadata.runtimeVersion;
+        } else {
+            runtimeVersion = await this.getRuntimeVersion();
+        }
+        if (!(isRuntimeVersion(runtimeVersion) && canParse(CURRENT_RUNTIME_VERSION, runtimeVersion))) {
+            throw new ReportableError(
+                `App runtime ${appPackageMetadata.runtimeVersion} of ${appPackageMetadata.name} is not supported!
+                 Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
+            );
+        }
+        
         const appMetadata: AppMetadata = {
             name: appPackageMetadata.name,
             directory: appPackageMetadata.directory,
             locales: appLocales,
             packageJsonPath: appPackageMetadata.packageJsonPath,
             appPackage: appPackageMetadata,
-            packages: Array.from(packageMetadataByName.values())
+            packages: Array.from(packageMetadataByName.values()),
+            runtimeVersion: runtimeVersion
         };
         return appMetadata;
     }
@@ -199,7 +214,6 @@ export class MetadataRepository {
             isDebug && debug(`Skipping package '${packageDir}'.`);
             return undefined;
         }
-
         return entry.metadata;
     }
 

@@ -129,8 +129,9 @@ export function codegenPlugin(): Plugin {
                     return generatedSourceCode;
                 }
 
+                const appMetadata = await repository.getAppMetadata(this, dirname(packageJsonPath));
                 if (mod.type === "app-meta") {
-                    const runtimeVersion = await repository.getRuntimeVersion();
+                    const runtimeVersion = appMetadata.runtimeVersion;
                     return generateAppMetadata(
                         mod.packageDirectory,
                         RuntimeSupport.METADATA_MODULE_ID,
@@ -138,7 +139,6 @@ export function codegenPlugin(): Plugin {
                     );
                 }
 
-                const appMetadata = await repository.getAppMetadata(this, dirname(packageJsonPath));
                 switch (mod.type) {
                     case "app-packages": {
                         const generatedSourceCode = generatePackagesMetadata({

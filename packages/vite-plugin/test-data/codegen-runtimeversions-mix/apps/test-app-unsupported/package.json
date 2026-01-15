@@ -1,0 +1,9 @@
+{
+    "name": "test-app-unsupported",
+    "dependencies": {
+    },
+    "openPioneerFramework": {
+        "packageFormatVersion": "1.0.0",
+        "runtimeVersion": "127.0.0.1"
+    }
+}

@@ -3,8 +3,9 @@
 import glob from "fast-glob";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { assert, describe, expect, it } from "vitest";
+import { assert, describe, expect, it, vi } from "vitest";
 import { TEMP_DATA_DIR, TEST_DATA_DIR, runViteBuild } from "./utils/testUtils";
+import { MetadataRepository } from "./metadata/MetadataRepository";
 
 describe("codegen support", function () {
     it("generates app packages content", async function () {
@@ -380,6 +381,101 @@ describe("codegen support", function () {
         assert.include(appJs, `console.info("Service A");`);
         assert.include(appJs, `console.info("Service B");`);
     });
+});
+
+it("support runtime version set in app", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-runtimeversions-mix");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-runtimeversions-mix");
+
+    const appname = "test-app-1.0.0";
+    const appname1_1 = "test-app-1.1.0";
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: [appname],
+        }
+    });
+
+    const appJs = readFileSync(join(outDir, (appname + ".js")), "utf-8");
+    assert.include(appJs, "const loadMessages = loadMessages$1;");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: [appname1_1],
+        }
+    });
+
+    const appJs1_1 = readFileSync(join(outDir, (appname1_1 + ".js")), "utf-8");
+    assert.include(appJs1_1, "const loadMessages = createBox(loadMessages$1);");
+
+});
+
+it("support no runtime version set in app and use MIN_SUPPORTED_RUNTIME_VERSION", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-runtimeversions-mix");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-runtimeversions-mix");
+
+    const appname = "test-app-no-runtime";
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: [appname],
+        }
+    });
+
+    const appJs = readFileSync(join(outDir, (appname + ".js")), "utf-8");
+    assert.include(appJs, "const loadMessages = loadMessages$1;");
+});
+
+it("support no runtime version set in app and use the global setting", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-runtimeversions-mix");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-runtimeversions-mix");
+
+    const appname = "test-app-no-runtime";
+    
+    const mockGetAppMetadata = vi.spyOn(MetadataRepository.prototype, "getAppMetadata");
+    // we mock the app metadata to return a global runtime version
+    // @ts-expect-error we dont care about full metadata here
+    mockGetAppMetadata.mockResolvedValueOnce({
+        name: appname,
+        runtimeVersion: "1.1.0"
+    });
+    
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: [appname],
+        }
+    });
+
+    const appJs = readFileSync(join(outDir, (appname + ".js")), "utf-8");
+    assert.include(appJs, "const loadMessages = createBox(loadMessages$1);");
+    mockGetAppMetadata.mockRestore();
+});
+
+it("fail on unsupported runtime version", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-runtimeversions-mix");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-runtimeversions-mix");
+
+    const appname = "test-app-unsupported";
+    const error = await expectAsyncError(() =>
+        runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: [appname]
+            }
+        })
+    );
+
+    expect(error.message).toMatch(
+        /App runtime 127.0.0.1 of test-app-unsupported is not supported!/
+    );
+
 });
 
 function findModuleContaining(dir: string, needle: string) {

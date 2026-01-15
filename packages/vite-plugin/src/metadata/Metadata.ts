@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { PackageConfig } from "@open-pioneer/build-common";
+import { PackageConfig, RuntimeVersion } from "@open-pioneer/build-common";
 import { PluginContext } from "rollup";
 
 /**
@@ -25,6 +25,9 @@ export interface AppMetadata {
      */
     appPackage: PackageMetadata;
 
+    /** runtime version of the vite-plugin. */
+    runtimeVersion: RuntimeVersion;
+    
     /**
      * Packages used by the app.
      * Includes the app package itself!
@@ -75,6 +78,9 @@ export interface PackageMetadata {
 
     /** Parsed metadata (from build config file). */
     config: PackageConfig;
+
+    /** runtime version of the vite-plugin. */
+    runtimeVersion: RuntimeVersion;
 }
 
 /**
