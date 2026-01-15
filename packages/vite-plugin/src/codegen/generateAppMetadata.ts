@@ -7,7 +7,11 @@ import { CURRENT_RUNTIME_VERSION } from "@open-pioneer/build-common";
  * Generates the main app metadata module.
  * It delegates the actual metadata generation to auxiliary modules.
  */
-export function generateAppMetadata(packageDirectory: string, metadataModuleId: string, runtimeVersion: string) {
+export function generateAppMetadata(
+    packageDirectory: string,
+    metadataModuleId: string,
+    runtimeVersion: string
+) {
     /*
         CSS loading: 
         - 'inline' loads the (s)css as a string literal.

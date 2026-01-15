@@ -27,7 +27,7 @@ export interface AppMetadata {
 
     /** runtime version of the vite-plugin. */
     runtimeVersion: RuntimeVersion;
-    
+
     /**
      * Packages used by the app.
      * Includes the app package itself!

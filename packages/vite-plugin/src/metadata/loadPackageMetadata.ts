@@ -11,7 +11,11 @@ import {
     PackageMetadataV1,
     createPackageConfigFromBuildConfig,
     createPackageConfigFromPackageMetadata,
-    loadBuildConfig, RuntimeVersion, isRuntimeVersion, canParse, CURRENT_RUNTIME_VERSION,
+    loadBuildConfig,
+    RuntimeVersion,
+    isRuntimeVersion,
+    canParse,
+    CURRENT_RUNTIME_VERSION,
     RUNTIME_VERSIONS
 } from "@open-pioneer/build-common";
 import { normalizePath } from "vite";
@@ -142,19 +146,24 @@ class PackageMetadataReader {
         }
 
         let runtimeVersion: RuntimeVersion;
-        if(frameworkMetadata?.runtimeVersion) {
-            isDebug && debug(`App runtime of ${packageName} is set to ${frameworkMetadata.runtimeVersion}`);
+        if (frameworkMetadata?.runtimeVersion) {
+            isDebug &&
+                debug(
+                    `App runtime of ${packageName} is set to ${frameworkMetadata.runtimeVersion}`
+                );
             runtimeVersion = frameworkMetadata.runtimeVersion;
         } else {
             runtimeVersion = config.runtimeVersion;
         }
-        if (!(isRuntimeVersion(runtimeVersion) && canParse(CURRENT_RUNTIME_VERSION, runtimeVersion))) {
+        if (
+            !(isRuntimeVersion(runtimeVersion) && canParse(CURRENT_RUNTIME_VERSION, runtimeVersion))
+        ) {
             throw new ReportableError(
                 `App runtime ${runtimeVersion} of ${packageName} is not supported!
                  Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
             );
         }
-        
+
         return {
             type: "pioneer-package",
             name: packageName,
@@ -169,7 +178,7 @@ class PackageMetadataReader {
             },
             dependencies,
             config: config,
-            runtimeVersion: runtimeVersion,
+            runtimeVersion: runtimeVersion
         };
     }
 

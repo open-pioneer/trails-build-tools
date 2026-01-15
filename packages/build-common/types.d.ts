@@ -75,7 +75,7 @@ export namespace PackageMetadataV1 {
 
         /** Properties defined by the package. */
         properties?: Nullish<PropertyConfig[]>;
-        
+
         /** runtime version of the vite-plugin. */
         runtimeVersion?: Nullish<RuntimeVersion>;
     }
@@ -323,7 +323,7 @@ export function verifyBuildConfig(value: unknown): BuildConfig;
 export function loadBuildConfig(path: string): Promise<BuildConfig>;
 
 export const RUNTIME_VERSIONS: string[];
-export type RuntimeVersion = typeof RUNTIME_VERSIONS[number];
+export type RuntimeVersion = (typeof RUNTIME_VERSIONS)[number];
 export const MIN_SUPPORTED_RUNTIME_VERSION: RuntimeVersion;
 export const CURRENT_RUNTIME_VERSION: RuntimeVersion;
 export function isRuntimeVersion(value: unknown): value is RuntimeVersion;

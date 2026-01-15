@@ -5,7 +5,9 @@ import {
     isRuntimeVersion,
     PackageMetadataV1,
     MIN_SUPPORTED_RUNTIME_VERSION,
-    RuntimeVersion, RUNTIME_VERSIONS, CURRENT_RUNTIME_VERSION
+    RuntimeVersion,
+    RUNTIME_VERSIONS,
+    CURRENT_RUNTIME_VERSION
 } from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
@@ -75,9 +77,8 @@ export class MetadataRepository {
         this.sourceRoot = sourceRoot;
         this.packageMetadataCache = this.createPackageMetadataCache();
         this.i18nCache = this.createI18nCache();
-        this.runtimeVersion = this.readRootPackage(sourceRoot)
-            .then((result) => {
-                return result;
+        this.runtimeVersion = this.readRootPackage(sourceRoot).then((result) => {
+            return result;
         });
     }
 
@@ -166,19 +167,24 @@ export class MetadataRepository {
         );
 
         let runtimeVersion: RuntimeVersion;
-        if(appPackageMetadata?.runtimeVersion) {
-            isDebug && debug(`App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.runtimeVersion}`);    
+        if (appPackageMetadata?.runtimeVersion) {
+            isDebug &&
+                debug(
+                    `App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.runtimeVersion}`
+                );
             runtimeVersion = appPackageMetadata.runtimeVersion;
         } else {
             runtimeVersion = await this.getRuntimeVersion();
         }
-        if (!(isRuntimeVersion(runtimeVersion) && canParse(CURRENT_RUNTIME_VERSION, runtimeVersion))) {
+        if (
+            !(isRuntimeVersion(runtimeVersion) && canParse(CURRENT_RUNTIME_VERSION, runtimeVersion))
+        ) {
             throw new ReportableError(
                 `App runtime ${appPackageMetadata.runtimeVersion} of ${appPackageMetadata.name} is not supported!
                  Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
             );
         }
-        
+
         const appMetadata: AppMetadata = {
             name: appPackageMetadata.name,
             directory: appPackageMetadata.directory,
@@ -299,7 +305,11 @@ export class MetadataRepository {
         }
         const frameworkMetadata =
             packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
-        if (frameworkMetadata && isRuntimeVersion(frameworkMetadata.runtimeVersion) && canParse("1.1.0",frameworkMetadata.runtimeVersion)) {
+        if (
+            frameworkMetadata &&
+            isRuntimeVersion(frameworkMetadata.runtimeVersion) &&
+            canParse("1.1.0", frameworkMetadata.runtimeVersion)
+        ) {
             isDebug && debug(`Set runtime version to  ${frameworkMetadata.runtimeVersion}`);
             return frameworkMetadata.runtimeVersion;
         } else {
