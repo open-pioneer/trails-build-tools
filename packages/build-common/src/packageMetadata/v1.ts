@@ -36,12 +36,14 @@
 import type { PackageMetadataV1 as V1 } from "../../types";
 import { canParse } from "./versionUtils";
 import { z } from "zod";
+import { CURRENT_RUNTIME_VERSION } from "../buildConfig";
 
 export const CURRENT_VERSION = "1.0.0";
 
 /* NOTE: do not use .strict() for objects here to allow future additions of optional properties */
 
 const VERSION_FIELD = "packageFormatVersion";
+const RUNTIME_FIELD = "runtimeVersion";
 
 const VERSION_SCHEMA = z.object({
     [VERSION_FIELD]: z.string()
@@ -85,7 +87,8 @@ const PACKAGE_METADATA_SCHEMA: z.ZodType<V1.PackageMetadata> = VERSION_SCHEMA.ex
     styles: z.string().nullish().optional(),
     i18n: I18N_CONFIG_SCHEMA.nullish().optional(),
     ui: UI_CONFIG_SCHEMA.nullish().optional(),
-    properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional()
+    properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional(),
+    runtimeVersion: z.string().optional()
 });
 
 export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) => {
@@ -129,6 +132,27 @@ export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) 
             message: "Metadata validation failed.",
             cause: metadataResult.error
         };
+    }
+    const serializedRuntimeVersion = metadataResult.data[RUNTIME_FIELD];
+    if (serializedRuntimeVersion) {
+        // Check whether the runtime version is supported.
+        try {
+            if (!canParse(CURRENT_RUNTIME_VERSION, serializedRuntimeVersion)) {
+                return {
+                    type: "error",
+                    code: "unsupported-runtime-version",
+                    message: `The current version of the runtime cannot support version ${serializedRuntimeVersion} required by this package.`
+                };
+            }
+        } catch (e) {
+            // Invalid version
+            return {
+                type: "error",
+                code: "unsupported-runtime-version",
+                message: `Cannot determine support status of runtime version ${serializedRuntimeVersion}.`,
+                cause: e
+            };
+        }
     }
 
     return {

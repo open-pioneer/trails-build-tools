@@ -1,0 +1,10 @@
+{
+    "name": "test-app-1.1.0",
+    "dependencies": {
+        "test-package": "string234"
+    },
+    "openPioneerFramework": {
+        "packageFormatVersion": "1.0.0",
+        "runtimeVersion": "5.0.0"
+    }
+}

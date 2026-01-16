@@ -12,11 +12,8 @@ import {
     createPackageConfigFromBuildConfig,
     createPackageConfigFromPackageMetadata,
     loadBuildConfig,
-    RuntimeVersion,
-    isRuntimeVersion,
-    canParse,
-    CURRENT_RUNTIME_VERSION,
-    RUNTIME_VERSIONS
+    RUNTIME_VERSIONS,
+    MIN_SUPPORTED_RUNTIME_VERSION
 } from "@open-pioneer/build-common";
 import { normalizePath } from "vite";
 import { join } from "node:path";
@@ -145,23 +142,12 @@ class PackageMetadataReader {
             i18nPaths.set(locale, normalizePath(path));
         }
 
-        let runtimeVersion: RuntimeVersion;
-        if (frameworkMetadata?.runtimeVersion) {
+        if (!config.runtimeVersion) {
             isDebug &&
                 debug(
-                    `App runtime of ${packageName} is set to ${frameworkMetadata.runtimeVersion}`
+                    `package ${packageName} does not specify a runtime version, assuming minimum supported.`
                 );
-            runtimeVersion = frameworkMetadata.runtimeVersion;
-        } else {
-            runtimeVersion = config.runtimeVersion;
-        }
-        if (
-            !(isRuntimeVersion(runtimeVersion) && canParse(CURRENT_RUNTIME_VERSION, runtimeVersion))
-        ) {
-            throw new ReportableError(
-                `App runtime ${runtimeVersion} of ${packageName} is not supported!
-                 Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
-            );
+            config.runtimeVersion = MIN_SUPPORTED_RUNTIME_VERSION;
         }
 
         return {
@@ -177,8 +163,7 @@ class PackageMetadataReader {
                 return Array.from(i18nPaths.keys());
             },
             dependencies,
-            config: config,
-            runtimeVersion: runtimeVersion
+            config: config
         };
     }
 
@@ -269,6 +254,13 @@ class PackageMetadataReader {
                 throw new ReportableError(
                     `Package '${packageName}' in ${packageDir} uses an unsupported package metadata version.` +
                         ` Try updating ${PACKAGE_NAME}.\n\n` +
+                        metadataResult.message,
+                    { cause: metadataResult.cause }
+                );
+            } else if (metadataResult.code === "unsupported-runtime-version") {
+                throw new ReportableError(
+                    `Package '${packageName}' in ${packageDir} uses an unsupported runtime version.` +
+                        `Supported versions are: ${RUNTIME_VERSIONS.join(", ")}. ` +
                         metadataResult.message,
                     { cause: metadataResult.cause }
                 );

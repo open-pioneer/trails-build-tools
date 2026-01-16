@@ -25,14 +25,14 @@ export interface AppMetadata {
      */
     appPackage: PackageMetadata;
 
-    /** runtime version of the vite-plugin. */
-    runtimeVersion: RuntimeVersion;
-
     /**
      * Packages used by the app.
      * Includes the app package itself!
      */
     packages: PackageMetadata[];
+
+    /** runtime version of the vite-plugin. */
+    runtimeVersion: RuntimeVersion;
 }
 
 /**
@@ -78,9 +78,6 @@ export interface PackageMetadata {
 
     /** Parsed metadata (from build config file). */
     config: PackageConfig;
-
-    /** runtime version of the vite-plugin. */
-    runtimeVersion: RuntimeVersion;
 }
 
 /**

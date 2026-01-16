@@ -9,13 +9,7 @@ import {
 import { join } from "node:path";
 import { ValidationReporter } from "../utils/ValidationReporter";
 import { BuildConfig } from "@open-pioneer/build-support";
-import {
-    PackageConfig,
-    createPackageConfigFromBuildConfig,
-    PackageMetadataV1,
-    RuntimeVersion,
-    isRuntimeVersion
-} from "@open-pioneer/build-common";
+import { PackageConfig, createPackageConfigFromBuildConfig } from "@open-pioneer/build-common";
 
 export const SUPPORTED_TS_EXTENSIONS = [".ts", ".mts", ".tsx"];
 export const SUPPORTED_JS_EXTENSIONS = [...SUPPORTED_TS_EXTENSIONS, ".js", ".mjs", ".jsx"];
@@ -60,9 +54,6 @@ export interface PackageModel {
 
     /** Glob patterns for copying assets. */
     assetPatterns: string[];
-
-    //     todo
-    runtimeVersion: RuntimeVersion;
 }
 
 export function createPackageModel(
@@ -97,17 +88,6 @@ export function createPackageModel(
         const i18nPath = join("i18n", `${language}.yaml`);
         i18nFiles.add(i18nPath);
     }
-    const frameworkMetadata = input.packageJson[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
-    let runtimeVersion: RuntimeVersion;
-    if (
-        typeof frameworkMetadata === "object" &&
-        "runtimeVersion" in frameworkMetadata &&
-        isRuntimeVersion(frameworkMetadata.runtimeVersion)
-    ) {
-        runtimeVersion = frameworkMetadata.runtimeVersion;
-    } else {
-        runtimeVersion = pkgConfig.runtimeVersion;
-    }
 
     const assetPatterns = toArray(input.buildConfig.publishConfig?.assets ?? "assets/**");
     reporter.check();
@@ -120,8 +100,7 @@ export function createPackageModel(
         cssEntryPoint: normalizedCssEntryPoint,
         i18nFiles,
         assetPatterns,
-        servicesEntryPoint,
-        runtimeVersion
+        servicesEntryPoint
     };
 }
 

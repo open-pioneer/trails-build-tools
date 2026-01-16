@@ -77,9 +77,7 @@ export class MetadataRepository {
         this.sourceRoot = sourceRoot;
         this.packageMetadataCache = this.createPackageMetadataCache();
         this.i18nCache = this.createI18nCache();
-        this.runtimeVersion = this.readRootPackage(sourceRoot).then((result) => {
-            return result;
-        });
+        this.runtimeVersion = this.readRootPackageForRuntimeVersion(sourceRoot);
     }
 
     reset() {
@@ -167,12 +165,12 @@ export class MetadataRepository {
         );
 
         let runtimeVersion: RuntimeVersion;
-        if (appPackageMetadata?.runtimeVersion) {
+        if (appPackageMetadata?.config?.runtimeVersion) {
             isDebug &&
                 debug(
-                    `App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.runtimeVersion}`
+                    `App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.config.runtimeVersion}`
                 );
-            runtimeVersion = appPackageMetadata.runtimeVersion;
+            runtimeVersion = appPackageMetadata.config.runtimeVersion;
         } else {
             runtimeVersion = await this.getRuntimeVersion();
         }
@@ -180,7 +178,7 @@ export class MetadataRepository {
             !(isRuntimeVersion(runtimeVersion) && canParse(CURRENT_RUNTIME_VERSION, runtimeVersion))
         ) {
             throw new ReportableError(
-                `App runtime ${appPackageMetadata.runtimeVersion} of ${appPackageMetadata.name} is not supported!
+                `App runtime ${appPackageMetadata.config.runtimeVersion} of ${appPackageMetadata.name} is not supported!
                  Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
             );
         }
@@ -288,11 +286,14 @@ export class MetadataRepository {
         });
     }
 
-    private async readRootPackage(sourceRoot: string): Promise<RuntimeVersion> {
+    private async readRootPackageForRuntimeVersion(sourceRoot: string): Promise<RuntimeVersion> {
         isDebug && debug(`Read root package for runtime version ${sourceRoot}`);
         const sourcePackageJSON = join(sourceRoot, "..", "package.json");
         if (!(await fileExists(sourcePackageJSON))) {
-            isDebug && debug(`No root package for runtime version ${sourceRoot} found`);
+            isDebug &&
+                debug(
+                    `No root package for runtime version ${sourceRoot} found. Assume minimum supported Version.`
+                );
             return MIN_SUPPORTED_RUNTIME_VERSION;
         }
 

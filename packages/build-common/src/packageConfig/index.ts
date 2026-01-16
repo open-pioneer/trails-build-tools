@@ -9,7 +9,7 @@ import {
     ServiceConfig,
     ServiceOverridesConfig
 } from "@open-pioneer/build-support";
-import { CURRENT_RUNTIME_VERSION, MIN_SUPPORTED_RUNTIME_VERSION } from "../buildConfig";
+import { MIN_SUPPORTED_RUNTIME_VERSION } from "../buildConfig";
 
 export const createPackageConfigFromBuildConfig: typeof API.createPackageConfigFromBuildConfig =
     normalizeConfig;
@@ -237,7 +237,7 @@ function readConfig(metadata: API.PackageMetadataV1.PackageMetadata): API.Packag
         uiReferences: readUiReferences(metadata.ui),
         properties,
         overrides: undefined,
-        runtimeVersion: CURRENT_RUNTIME_VERSION
+        runtimeVersion: metadata.runtimeVersion
     };
 }
 

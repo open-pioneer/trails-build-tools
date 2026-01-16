@@ -11,12 +11,7 @@ import { getExportedName } from "./utils/entryPoints";
 
 type SimplePackageModel = Pick<
     PackageModel,
-    | "input"
-    | "jsEntryPoints"
-    | "servicesEntryPoint"
-    | "cssEntryPoint"
-    | "outputDirectory"
-    | "runtimeVersion"
+    "input" | "jsEntryPoints" | "servicesEntryPoint" | "cssEntryPoint" | "outputDirectory"
 >;
 
 export interface GeneratePackageJsonOptions {
@@ -176,7 +171,7 @@ function generateMetadata(model: SimplePackageModel): unknown {
         ui: {
             references: Array.from(pkgConfig.uiReferences)
         },
-        runtimeVersion: model.runtimeVersion || pkgConfig.runtimeVersion,
+        runtimeVersion: model.input?.packageConfig?.runtimeVersion || pkgConfig.runtimeVersion,
         properties: Array.from(pkgConfig.properties.values())
     };
     return V1.serializePackageMetadata(metadata);

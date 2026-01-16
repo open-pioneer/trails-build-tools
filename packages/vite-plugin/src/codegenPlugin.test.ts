@@ -398,6 +398,7 @@ it("support runtime version set in app", async function () {
     });
 
     const appJs = readFileSync(join(outDir, appname + ".js"), "utf-8");
+    // runtime 1.0.0 just uses loadMessages directly
     assert.include(appJs, "const loadMessages = loadMessages$1;");
 
     await runViteBuild({
@@ -452,6 +453,7 @@ it("support no runtime version set in app and use the global setting", async fun
     });
 
     const appJs = readFileSync(join(outDir, appname + ".js"), "utf-8");
+    // runtime 1.1.0 uses loadMessages with createBox
     assert.include(appJs, "const loadMessages = createBox(loadMessages$1);");
     mockGetAppMetadata.mockRestore();
 });
@@ -471,8 +473,21 @@ it("fail on unsupported runtime version", async function () {
         })
     );
 
-    expect(error.message).toMatch(
-        /App runtime 127.0.0.1 of test-app-unsupported is not supported!/
+    expect(error.message).toMatch(/Cannot determine support status of runtime version 127.0.0.1/);
+
+    const appname5 = "test-app-5.0.0";
+    const error5 = await expectAsyncError(() =>
+        runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: [appname5]
+            }
+        })
+    );
+
+    expect(error5.message).toMatch(
+        /The current version of the runtime cannot support version 5.0.0 required by this package./
     );
 });
 

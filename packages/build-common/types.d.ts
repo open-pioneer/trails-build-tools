@@ -76,8 +76,8 @@ export namespace PackageMetadataV1 {
         /** Properties defined by the package. */
         properties?: Nullish<PropertyConfig[]>;
 
-        /** runtime version of the vite-plugin. */
-        runtimeVersion?: Nullish<RuntimeVersion>;
+        /** optional runtime version set by the package. */
+        runtimeVersion?: RuntimeVersion;
     }
 
     /**
@@ -215,7 +215,8 @@ export interface PackageConfig {
      */
     overrides: Map<string, PackageOverrides> | undefined;
 
-    runtimeVersion: RuntimeVersion;
+    /** Optional runtime version set by the package. */
+    runtimeVersion?: RuntimeVersion;
 }
 
 /** Internal representation of a service. */
