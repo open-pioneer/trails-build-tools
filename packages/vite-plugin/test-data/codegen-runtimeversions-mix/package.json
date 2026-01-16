@@ -1,0 +1,21 @@
+{
+    "name": "test-packages",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "license": "Apache-2.0",
+    "scripts": {
+        "dev": "vite"
+    },
+    "devDependencies": {
+        "vitest": "catalog:"
+    },
+    "engines": {
+        "node": ">= 20",
+        "pnpm": ">= 10"
+    },
+    "packageManager": "pnpm@10.22.0",
+    "openPioneerFramework": {
+        "runtimeVersion": "1.1.0"
+    }
+}

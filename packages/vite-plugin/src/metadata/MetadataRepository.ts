@@ -3,8 +3,6 @@
 import {
     BUILD_CONFIG_NAME,
     isRuntimeVersion,
-    PackageMetadataV1,
-    MIN_SUPPORTED_RUNTIME_VERSION,
     RuntimeVersion,
     RUNTIME_VERSIONS,
     CURRENT_RUNTIME_VERSION
@@ -26,10 +24,8 @@ import {
 } from "./Metadata";
 import { loadPackageMetadata } from "./loadPackageMetadata";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
-import { fileExists } from "../utils/fileUtils";
-import { join } from "node:path";
-import { readFile } from "node:fs/promises";
 import { canParse } from "@open-pioneer/build-common";
+import { readRootPackageForRuntimeVersion } from "./parseIGlobalPackageJson";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -77,7 +73,7 @@ export class MetadataRepository {
         this.sourceRoot = sourceRoot;
         this.packageMetadataCache = this.createPackageMetadataCache();
         this.i18nCache = this.createI18nCache();
-        this.runtimeVersion = this.readRootPackageForRuntimeVersion(sourceRoot);
+        this.runtimeVersion = readRootPackageForRuntimeVersion(sourceRoot);
     }
 
     reset() {
@@ -284,40 +280,6 @@ export class MetadataRepository {
                 isDebug && debug(`Returning cached entry for i18n file ${path}`);
             }
         });
-    }
-
-    private async readRootPackageForRuntimeVersion(sourceRoot: string): Promise<RuntimeVersion> {
-        isDebug && debug(`Read root package for runtime version ${sourceRoot}`);
-        const sourcePackageJSON = join(sourceRoot, "..", "package.json");
-        if (!(await fileExists(sourcePackageJSON))) {
-            isDebug &&
-                debug(
-                    `No root package for runtime version ${sourceRoot} found. Assume minimum supported Version.`
-                );
-            return MIN_SUPPORTED_RUNTIME_VERSION;
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let packageJsonContent: any;
-        try {
-            packageJsonContent = JSON.parse(await readFile(sourcePackageJSON, "utf-8"));
-        } catch (e) {
-            throw new ReportableError(`Failed to read ${sourcePackageJSON}`, { cause: e });
-        }
-        const frameworkMetadata =
-            packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
-        if (
-            frameworkMetadata &&
-            isRuntimeVersion(frameworkMetadata.runtimeVersion) &&
-            canParse(CURRENT_RUNTIME_VERSION, frameworkMetadata.runtimeVersion)
-        ) {
-            isDebug && debug(`Set runtime version to  ${frameworkMetadata.runtimeVersion}`);
-            return frameworkMetadata.runtimeVersion;
-        } else {
-            throw new ReportableError(
-                `Unsupported runtime version ${frameworkMetadata.runtimeVersion}! Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
-            );
-        }
     }
 
     private createPackageMetadataCache(): typeof this.packageMetadataCache {

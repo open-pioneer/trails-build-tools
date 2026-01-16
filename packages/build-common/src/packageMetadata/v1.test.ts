@@ -30,6 +30,33 @@ describe("packageMetadata v1", function () {
         `);
     });
 
+    it("fails to parse when runtime version is not supported", function () {
+        const result = parsePackageMetadata({
+            packageFormatVersion: "1.0.0",
+            runtimeVersion: "999.999.999"
+        });
+        expect(result).toMatchInlineSnapshot(`
+          {
+            "code": "unsupported-runtime-version",
+            "message": "The current version of the runtime cannot support version 999.999.999 required by this package.",
+            "type": "error",
+          }
+        `);
+
+        const result2 = parsePackageMetadata({
+            packageFormatVersion: "1.0.0",
+            runtimeVersion: "127.0.0.1"
+        });
+        expect(result2).toMatchInlineSnapshot(`
+          {
+            "cause": [Error: Serialized metadata version is invalid: '127.0.0.1'. Expected a valid semver.],
+            "code": "unsupported-runtime-version",
+            "message": "Cannot determine support status of runtime version 127.0.0.1.",
+            "type": "error",
+          }
+        `);
+    });
+
     it("fails to parse when schema is violated", function () {
         const result = parsePackageMetadata({
             packageFormatVersion: CURRENT_VERSION,

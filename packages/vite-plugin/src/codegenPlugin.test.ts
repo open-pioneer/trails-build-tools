@@ -410,6 +410,7 @@ it("support runtime version set in app", async function () {
     });
 
     const appJs1_1 = readFileSync(join(outDir, appname1_1 + ".js"), "utf-8");
+    // runtime 1.1.0 uses loadMessages with createBox
     assert.include(appJs1_1, "const loadMessages = createBox(loadMessages$1);");
 });
 
@@ -427,6 +428,7 @@ it("support no runtime version set in app and use MIN_SUPPORTED_RUNTIME_VERSION"
     });
 
     const appJs = readFileSync(join(outDir, appname + ".js"), "utf-8");
+    // runtime 1.0.0 just uses loadMessages directly
     assert.include(appJs, "const loadMessages = loadMessages$1;");
 });
 
