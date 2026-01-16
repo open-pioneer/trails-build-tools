@@ -1,6 +1,13 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { Service, PackageMetadataV1 as V1 } from "@open-pioneer/build-common";
+import {
+    Service,
+    PackageMetadataV1 as V1,
+    PackageMetadataV1,
+    isRuntimeVersion,
+    canParse,
+    CURRENT_RUNTIME_VERSION
+} from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
 import nativePath from "node:path";
 import { PackageModel } from "./model/PackageModel";
@@ -171,10 +178,27 @@ function generateMetadata(model: SimplePackageModel): unknown {
         ui: {
             references: Array.from(pkgConfig.uiReferences)
         },
-        runtimeVersion: model.input?.packageConfig?.runtimeVersion || pkgConfig.runtimeVersion,
+        runtimeVersion: pkgConfig.runtimeVersion || setRuntimeVersion(model),
         properties: Array.from(pkgConfig.properties.values())
     };
     return V1.serializePackageMetadata(metadata);
+}
+
+function setRuntimeVersion(model: SimplePackageModel) {
+    const pkgOpenPioneerFramework = model.input.packageJson[PackageMetadataV1.PACKAGE_JSON_KEY];
+    if (
+        pkgOpenPioneerFramework &&
+        typeof pkgOpenPioneerFramework === "object" &&
+        "runtimeVersion" in pkgOpenPioneerFramework
+    ) {
+        if (
+            isRuntimeVersion(pkgOpenPioneerFramework.runtimeVersion) &&
+            canParse(CURRENT_RUNTIME_VERSION, pkgOpenPioneerFramework.runtimeVersion)
+        ) {
+            return pkgOpenPioneerFramework.runtimeVersion;
+        }
+    }
+    return undefined;
 }
 
 function writeServices(services: Service[]): V1.ServiceConfig[] {

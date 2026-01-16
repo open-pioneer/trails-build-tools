@@ -12,7 +12,7 @@ import {
     createPackageConfigFromBuildConfig,
     createPackageConfigFromPackageMetadata,
     loadBuildConfig,
-    RUNTIME_VERSIONS,
+    RUNTIME_VERSIONS
 } from "@open-pioneer/build-common";
 import { normalizePath } from "vite";
 import { join } from "node:path";
