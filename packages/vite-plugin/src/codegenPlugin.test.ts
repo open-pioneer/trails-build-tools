@@ -438,13 +438,9 @@ it("support no runtime version set in app and use the global setting", async fun
 
     const appname = "test-app-no-runtime";
 
-    const mockGetAppMetadata = vi.spyOn(MetadataRepository.prototype, "getAppMetadata");
+    const mockGetAppMetadata = vi.spyOn(MetadataRepository.prototype, "getRuntimeVersion");
     // we mock the app metadata to return a global runtime version
-    // @ts-expect-error we dont care about full metadata here
-    mockGetAppMetadata.mockResolvedValueOnce({
-        name: appname,
-        runtimeVersion: "1.1.0"
-    });
+    mockGetAppMetadata.mockResolvedValueOnce("1.1.0");
 
     await runViteBuild({
         outDir,

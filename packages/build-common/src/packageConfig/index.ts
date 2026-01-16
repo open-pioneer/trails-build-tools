@@ -9,7 +9,6 @@ import {
     ServiceConfig,
     ServiceOverridesConfig
 } from "@open-pioneer/build-support";
-import { MIN_SUPPORTED_RUNTIME_VERSION } from "../buildConfig";
 
 export const createPackageConfigFromBuildConfig: typeof API.createPackageConfigFromBuildConfig =
     normalizeConfig;
@@ -69,7 +68,6 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
             );
         }
     }
-    const runtimeVersion = MIN_SUPPORTED_RUNTIME_VERSION;
 
     return {
         services,
@@ -79,7 +77,7 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
         languages,
         properties,
         overrides,
-        runtimeVersion
+        runtimeVersion: undefined
     };
 }
 

@@ -92,7 +92,7 @@ describe("packageConfig", function () {
                 "required": false,
               },
             },
-            "runtimeVersion": "1.0.0",
+            "runtimeVersion": undefined,
             "services": Map {
               "A" => {
                 "provides": [

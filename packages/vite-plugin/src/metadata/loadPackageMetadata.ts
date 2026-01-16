@@ -13,7 +13,6 @@ import {
     createPackageConfigFromPackageMetadata,
     loadBuildConfig,
     RUNTIME_VERSIONS,
-    MIN_SUPPORTED_RUNTIME_VERSION
 } from "@open-pioneer/build-common";
 import { normalizePath } from "vite";
 import { join } from "node:path";
@@ -140,14 +139,6 @@ class PackageMetadataReader {
             }
             const path = join(packageDir, "i18n", `${locale}.yaml`);
             i18nPaths.set(locale, normalizePath(path));
-        }
-
-        if (!config.runtimeVersion) {
-            isDebug &&
-                debug(
-                    `package ${packageName} does not specify a runtime version, assuming minimum supported.`
-                );
-            config.runtimeVersion = MIN_SUPPORTED_RUNTIME_VERSION;
         }
 
         return {
@@ -295,10 +286,11 @@ class PackageMetadataReader {
         } else {
             throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
         }
-        return {
+        const test = {
             configPath: buildConfigPath,
             config: createPackageConfigFromBuildConfig(buildConfig)
         };
+        return test;
     }
 }
 
