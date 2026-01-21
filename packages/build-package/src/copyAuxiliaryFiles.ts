@@ -70,13 +70,17 @@ export async function copyAuxiliaryFiles({
 
 function findOverride(packageDirectory: string, name: string, override: string) {
     const sourcePath = resolve(packageDirectory, override);
+    isDebug && debug(`Using '${sourcePath}' as override for ${name}`);
+
     if (!existsSync(sourcePath)) {
         throw new Error(`File '${override}' does not exist (configured as ${name})`);
     }
 
     const filename = basename(override);
     if (parse(filename).name !== name) {
-        throw new Error(`File '${override}' should have basename ${name}`);
+        throw new Error(
+            `File '${override}' should have basename ${name} (with any file extension)`
+        );
     }
 
     return {

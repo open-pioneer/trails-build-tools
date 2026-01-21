@@ -247,6 +247,7 @@ export interface PublishConfig {
 
     /**
      * Custom path to a LICENSE file.
+     * The file's name must be `LICENSE` (with optional file extension, in any directory).
      *
      * By default, the license file is expected in the package directory.
      */
@@ -254,6 +255,7 @@ export interface PublishConfig {
 
     /**
      * Custom path to a NOTICE file.
+     * The file's name must be `NOTICE` (with optional file extension, in any directory).
      *
      * By default, the NOTICE file is expected in the package directory.
      */
