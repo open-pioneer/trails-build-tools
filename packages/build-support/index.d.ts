@@ -246,6 +246,20 @@ export interface PublishConfig {
     assets?: string | string[];
 
     /**
+     * Custom path to a LICENSE file.
+     *
+     * By default, the license file is expected in the package directory.
+     */
+    licenseFile?: string;
+
+    /**
+     * Custom path to a NOTICE file.
+     *
+     * By default, the NOTICE file is expected in the package directory.
+     */
+    noticeFile?: string;
+
+    /**
      * Enables or disables generation of TypeScript declaration files (`.d.ts`).
      *
      * Generation of declaration files requires a (minimal) `tsconfig.json` in the package's directory.
