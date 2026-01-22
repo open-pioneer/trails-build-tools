@@ -307,9 +307,25 @@ export function createPackageConfigFromPackageMetadata(
 /**
  * The name of the build config file expected in an Open Pioneer Trails page.
  *
- * This is currently always `build.config.mjs`.
+ * @deprecated Use resolveBuildConfigPath to find config files with any supported extension.
+ * This constant is kept for backward compatibility and represents the default .mjs extension.
  */
 export const BUILD_CONFIG_NAME: string;
+
+/**
+ * Supported build config file extensions in order of priority.
+ * The resolver checks for files with these extensions: .mts, .ts, .mjs, .js
+ */
+export const BUILD_CONFIG_EXTENSIONS: readonly string[];
+
+/**
+ * Resolves the path to a build config file in the given directory.
+ * Checks for files with supported extensions (.mts, .ts, .mjs, .js) in priority order.
+ *
+ * @param packageDir - The directory to search for the build config file
+ * @returns The full path to the config file if found, undefined otherwise
+ */
+export function resolveBuildConfigPath(packageDir: string): string | undefined;
 
 /**
  * Ensures that `value` conforms to the {@link BuildConfig} interface.
@@ -321,6 +337,7 @@ export function verifyBuildConfig(value: unknown): BuildConfig;
 
 /**
  * Loads the configuration object exported by the given configuration file.
+ * Supports both JavaScript (.mjs, .js) and TypeScript (.mts, .ts) files.
  *
  * Throws an error if the there is a problem loading the file or if the file does
  * not export a valid build configuration object.
