@@ -37,6 +37,7 @@
     },
     "dependencies": {
         "@rollup/pluginutils": "catalog:",
+        "jiti": "catalog:",
         "semver": "catalog:",
         "zod": "catalog:",
         "zod-validation-error": "catalog:"

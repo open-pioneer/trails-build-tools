@@ -193,7 +193,7 @@ describe("codegen support", function () {
                 }
             })
         );
-        assert.include(error.message, "Expected a build.config.mjs", "test-app");
+        assert.include(error.message, "Expected a build config file", "test-app");
         assert.include(error.message, "test-package", "test-app");
 
         const error2 = await expectAsyncError(() =>
@@ -205,7 +205,7 @@ describe("codegen support", function () {
                 }
             })
         );
-        assert.include(error2.message, "Expected a build.config.mjs", "test-app2");
+        assert.include(error2.message, "Expected a build config file", "test-app2");
         assert.include(error2.message, "test-app2", "test-app2");
     });
 
