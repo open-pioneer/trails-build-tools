@@ -5,7 +5,8 @@ import {
     BuildConfig,
     PackageConfig,
     createPackageConfigFromBuildConfig,
-    loadBuildConfig
+    loadBuildConfig,
+    resolveBuildConfigPath
 } from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -39,7 +40,10 @@ export async function createInputModel(packageDirectory: string): Promise<InputM
 
     const packageJsonPath = resolve(packageDirectory, "package.json");
     const packageJson = await loadPackageJson(packageJsonPath);
-    const buildConfigPath = resolve(packageDirectory, BUILD_CONFIG_NAME);
+    const buildConfigPath = resolveBuildConfigPath(packageDirectory);
+    if (!buildConfigPath) {
+        throw new Error(`No build config file found in ${packageDirectory}`);
+    }
     const buildConfig = await loadBuildConfig(buildConfigPath);
     return createInputModelFromData({
         packageDirectory,
