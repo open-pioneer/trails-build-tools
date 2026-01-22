@@ -12,7 +12,7 @@ type LoadBuildConfig = typeof API.loadBuildConfig;
  * Checks if a file is a TypeScript file based on its extension.
  */
 function isTypeScriptFile(path: string): boolean {
-    return path.endsWith(".ts") || path.endsWith(".mts") || path.endsWith(".cts");
+    return path.endsWith(".ts") || path.endsWith(".mts");
 }
 
 export const loadBuildConfig: LoadBuildConfig = async function loadBuildConfig(path) {
@@ -25,8 +25,8 @@ export const loadBuildConfig: LoadBuildConfig = async function loadBuildConfig(p
     // Use jiti for TypeScript files, dynamic import for JavaScript files
     if (isTypeScriptFile(path)) {
         // Create a jiti instance for loading TypeScript files
-        // Use the config file directory as the base for jiti
-        const jiti = createJiti(__filename, {
+        // Use the config file's location as the base for proper module resolution
+        const jiti = createJiti(path, {
             interopDefault: true,
             moduleCache: false,
             requireCache: false
