@@ -7,6 +7,11 @@ import type * as API from "../../types";
 type ResolveBuildConfig = typeof API.resolveBuildConfigPath;
 
 /**
+ * Base name for build configuration files (without extension).
+ */
+export const BUILD_CONFIG_BASE_NAME = "build.config";
+
+/**
  * Supported build config file extensions in order of priority.
  * Checks for TypeScript variants first, then JavaScript variants.
  */
@@ -24,10 +29,8 @@ export const resolveBuildConfigPath: ResolveBuildConfig = function resolveBuildC
     packageDir,
     addWatchFile
 ) {
-    const baseName = "build.config";
-
     for (const ext of BUILD_CONFIG_EXTENSIONS) {
-        const configPath = join(packageDir, baseName + ext);
+        const configPath = join(packageDir, BUILD_CONFIG_BASE_NAME + ext);
         // Register file for watching regardless of existence
         // This ensures watch mode detects when a config file is created
         if (addWatchFile) {

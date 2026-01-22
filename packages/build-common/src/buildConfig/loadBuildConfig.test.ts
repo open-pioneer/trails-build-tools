@@ -37,10 +37,7 @@ describe("loadBuildConfig", function () {
 
     it("throws an error if the config file does not have a default export", async function () {
         const path = resolve(TEST_DATA_DIR, "build-config-without-export.mjs");
-        // When there's no default export, jiti returns undefined, which triggers our check
-        await expect(loadBuildConfig(path)).rejects.toThrowError(
-            /must provide a default export|Validation error/
-        );
+        await expect(loadBuildConfig(path)).rejects.toThrowError(/must provide a default export/);
     });
 
     it("throws an error if the config file does not match the schema", async function () {

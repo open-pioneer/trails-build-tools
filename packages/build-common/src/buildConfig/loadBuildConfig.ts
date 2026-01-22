@@ -13,7 +13,7 @@ let jitiInstance: ReturnType<typeof createJiti> | undefined;
 function getJitiInstance(): ReturnType<typeof createJiti> {
     if (!jitiInstance) {
         jitiInstance = createJiti(__filename, {
-            interopDefault: true,
+            interopDefault: false,
             moduleCache: false,
             requireCache: false,
             // Enable filesystem caching for better performance
@@ -34,8 +34,9 @@ export const loadBuildConfig: LoadBuildConfig = async function loadBuildConfig(p
         // Use jiti for all file types (TypeScript and JavaScript)
         // jiti will handle both efficiently and provide consistent behavior
         const jiti = getJitiInstance();
-        // Use async import API with default: true option to get default export directly
-        config = await jiti.import(path, { default: true });
+        // Import the module and extract the default export
+        const imported = (await jiti.import(path)) as { default?: unknown };
+        config = imported?.default;
     } catch (e) {
         throw new Error(`Failed to load configuration file at ${path}`, { cause: e });
     }

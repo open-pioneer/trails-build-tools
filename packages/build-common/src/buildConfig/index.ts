@@ -2,4 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 export { verifyBuildConfig } from "./verifyBuildConfig";
 export { loadBuildConfig } from "./loadBuildConfig";
-export { resolveBuildConfigPath, BUILD_CONFIG_EXTENSIONS } from "./resolveBuildConfig";
+export {
+    resolveBuildConfigPath,
+    BUILD_CONFIG_EXTENSIONS,
+    BUILD_CONFIG_BASE_NAME
+} from "./resolveBuildConfig";

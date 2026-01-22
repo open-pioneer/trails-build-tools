@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { BUILD_CONFIG_EXTENSIONS } from "@open-pioneer/build-common";
+import { BUILD_CONFIG_EXTENSIONS, BUILD_CONFIG_BASE_NAME } from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
 import { normalizePath } from "vite";
@@ -430,7 +430,7 @@ function isPackageJson(file: string) {
 function isBuildConfig(file: string): boolean {
     const fileName = basename(file);
     // Check if file matches any of the supported build config extensions
-    return BUILD_CONFIG_EXTENSIONS.some((ext) => fileName === `build.config${ext}`);
+    return BUILD_CONFIG_EXTENSIONS.some((ext) => fileName === `${BUILD_CONFIG_BASE_NAME}${ext}`);
 }
 
 function formatPackage(packageMetadata: PackageMetadata) {

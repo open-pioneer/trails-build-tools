@@ -305,6 +305,11 @@ export function createPackageConfigFromPackageMetadata(
 ): PackageConfig;
 
 /**
+ * Base name for build configuration files (without extension).
+ */
+export const BUILD_CONFIG_BASE_NAME: string;
+
+/**
  * Supported build config file extensions in order of priority.
  * The resolver checks for files with these extensions: .mts, .ts, .mjs, .js
  */
