@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import {
-    BUILD_CONFIG_NAME,
     BuildConfig,
     PackageConfig,
     PackageMetadataV1,
@@ -188,7 +187,10 @@ class PackageMetadataReader {
             }
             /** Local packages may have either a build.config (the common case) or a built package.json for testing, but never both. */
             case "local": {
-                const buildConfigPath = resolveBuildConfigPath(packageDir);
+                // Pass addWatchFile callback for watch mode support
+                const buildConfigPath = resolveBuildConfigPath(packageDir, (path) =>
+                    ctx.addWatchFile(normalizePath(path))
+                );
                 const buildConfigExists = buildConfigPath !== undefined;
                 if (buildConfigExists && frameworkMetadata) {
                     throw new Error(

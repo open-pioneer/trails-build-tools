@@ -1,10 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import {
-    BUILD_CONFIG_NAME,
-    loadBuildConfig,
-    resolveBuildConfigPath
-} from "@open-pioneer/build-common";
+import { loadBuildConfig, resolveBuildConfigPath } from "@open-pioneer/build-common";
 import { existsSync, realpathSync } from "fs";
 import { ErrnoException, resolve as importMetaResolve } from "import-meta-resolve";
 import { dirname, isAbsolute, join } from "path";

@@ -17,15 +17,22 @@ export const BUILD_CONFIG_EXTENSIONS = [".mts", ".ts", ".mjs", ".js"] as const;
  * Checks for files with supported extensions in priority order.
  *
  * @param packageDir - The directory to search for the build config file
+ * @param addWatchFile - Optional callback to register files for watch mode
  * @returns The full path to the config file if found, undefined otherwise
  */
 export const resolveBuildConfigPath: ResolveBuildConfig = function resolveBuildConfigPath(
-    packageDir
+    packageDir,
+    addWatchFile
 ) {
     const baseName = "build.config";
 
     for (const ext of BUILD_CONFIG_EXTENSIONS) {
         const configPath = join(packageDir, baseName + ext);
+        // Register file for watching regardless of existence
+        // This ensures watch mode detects when a config file is created
+        if (addWatchFile) {
+            addWatchFile(configPath);
+        }
         if (existsSync(configPath)) {
             return configPath;
         }
