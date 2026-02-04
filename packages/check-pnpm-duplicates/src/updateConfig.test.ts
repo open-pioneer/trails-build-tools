@@ -46,6 +46,27 @@ it("updates an existing config with duplicates", () => {
     `);
 });
 
+it("removes stale allowed entries when no duplicates remain", () => {
+    const configPath = resolve(UPDATE_CONFIG_DIR, "config.yaml");
+    writeFileSync(
+        configPath,
+        `skipDevDependencies: true\nallowed:\n  - "old-package"\n  - "stale-package"\n`,
+        "utf-8"
+    );
+
+    const duplicates = makeDuplicates([]);
+    updateConfig(configPath, duplicates);
+
+    const result = readFileSync(configPath, "utf-8");
+    expect(result).toMatchInlineSnapshot(`
+        "# Configuration file for check-pnpm-duplicates.
+        # See https://www.npmjs.com/package/@open-pioneer/check-pnpm-duplicates for more details.
+        skipDevDependencies: true
+        allowed: []
+        "
+    `);
+});
+
 it("creates a new config file when none exists", () => {
     const configPath = resolve(UPDATE_CONFIG_DIR, "new-config.yaml");
 

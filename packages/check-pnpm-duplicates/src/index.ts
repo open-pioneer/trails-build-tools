@@ -54,7 +54,7 @@ async function main() {
         // Report results
         const ok = generateReport(config, duplicates);
 
-        if (update && configPath && duplicates.size > 0) {
+        if (update && configPath) {
             updateConfig(configPath, duplicates);
             console.log(`Updated allowed list in ${configPath}`);
         }
