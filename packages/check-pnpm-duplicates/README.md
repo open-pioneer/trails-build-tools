@@ -67,6 +67,7 @@ Checks a pnpm lockfile for duplicate packages.
 Options:
   -c, --config <path>  path to the configuration file
   -d, --debug          show exception stack traces
+  -u, --update         update the config file's allowed list with current duplicates
   -V, --version        output the version number
   -h, --help           display help for command
 ```

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { PackageEntry } from "./findDuplicates";
+import { formatPackageEntries, PackageEntry } from "./findDuplicates";
 import { Config, ConfigRule } from "./readConfig";
 
 /**
@@ -14,11 +14,7 @@ export function generateReport(config: Config, duplicates: Map<string, PackageEn
 
     if (unexpectedPackages.length > 0) {
         console.error(`Found unexpected duplicate packages:`);
-        for (const entry of unexpectedPackages) {
-            // Format supports direct copying into YAML
-            const versions = entry.versions.join(", ");
-            console.error(`  - ${JSON.stringify(entry.name)} # (versions ${versions})`);
-        }
+        console.error(formatPackageEntries(unexpectedPackages));
 
         console.error(``);
         console.error(`To resolve these issues, consider taking one of the following steps:`);
