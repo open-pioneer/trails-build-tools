@@ -9,6 +9,7 @@ import {
     ServiceConfig,
     ServiceOverridesConfig
 } from "@open-pioneer/build-support";
+import { CURRENT_RUNTIME_VERSION } from "../buildConfig/index";
 
 export const createPackageConfigFromBuildConfig: typeof API.createPackageConfigFromBuildConfig =
     normalizeConfig;
@@ -68,6 +69,8 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
             );
         }
     }
+    const appRuntimeMetadataversion =
+        rawConfig.appRuntimeMetadataversion ?? CURRENT_RUNTIME_VERSION;
 
     return {
         services,
@@ -77,7 +80,7 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
         languages,
         properties,
         overrides,
-        runtimeVersion: undefined
+        appRuntimeMetadataversion
     };
 }
 
@@ -234,8 +237,7 @@ function readConfig(metadata: API.PackageMetadataV1.PackageMetadata): API.Packag
         languages,
         uiReferences: readUiReferences(metadata.ui),
         properties,
-        overrides: undefined,
-        runtimeVersion: metadata.runtimeVersion
+        overrides: undefined
     };
 }
 

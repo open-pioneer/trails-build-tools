@@ -171,6 +171,9 @@ class PackageMetadataReader {
             /** External packages must have framework metadata in their package.json (or they are not considered Open Pioneer Trails packages at all). */
             case "external": {
                 if (!frameworkMetadata) {
+                    //TODO just for testing
+                    // const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
+                    // return this.parsePackageConfigFromBuildConfig(buildConfigPath);
                     return undefined;
                 }
                 return this.parsePackageConfigFromMetadata(packageName, frameworkMetadata);
@@ -248,15 +251,7 @@ class PackageMetadataReader {
                         metadataResult.message,
                     { cause: metadataResult.cause }
                 );
-            } else if (metadataResult.code === "unsupported-runtime-version") {
-                throw new ReportableError(
-                    `Package '${packageName}' in ${packageDir} uses an unsupported runtime version.` +
-                        `Supported versions are: ${RUNTIME_VERSIONS.join(", ")}. ` +
-                        metadataResult.message,
-                    { cause: metadataResult.cause }
-                );
             }
-
             throw new ReportableError(
                 `Failed to parse metadata of package '${packageName}' in ${packageDir}: ${metadataResult.message}`,
                 { cause: metadataResult.cause }
@@ -276,6 +271,8 @@ class PackageMetadataReader {
         let buildConfig: BuildConfig | undefined;
         ctx.addWatchFile(normalizePath(buildConfigPath));
         if (await fileExists(buildConfigPath)) {
+            //TODO just for testing
+            // ctx.addWatchFile(normalizePath(buildConfigPath));
             try {
                 buildConfig = await loadBuildConfig(buildConfigPath);
             } catch (e) {
@@ -284,13 +281,14 @@ class PackageMetadataReader {
                 });
             }
         } else {
+            //TODO just for testing
+            // return undefined;
             throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
         }
-        const test = {
+        return {
             configPath: buildConfigPath,
             config: createPackageConfigFromBuildConfig(buildConfig)
         };
-        return test;
     }
 }
 

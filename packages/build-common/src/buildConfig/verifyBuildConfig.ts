@@ -15,6 +15,10 @@ import {
 import { z } from "zod";
 import { createErrorMap, fromZodError } from "zod-validation-error";
 import type * as API from "../../types";
+import { canParse } from "../packageMetadata/versionUtils";
+import { CURRENT_RUNTIME_VERSION } from "./index";
+
+const RUNTIME_FIELD = "appRuntimeMetadataversion";
 
 type VerifyBuildConfig = typeof API.verifyBuildConfig;
 
@@ -87,7 +91,8 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     properties: z.record(z.string(), JSON_SCHEMA).optional(),
     propertiesMeta: z.record(z.string(), PROPERTY_META_SCHEMA).optional(),
     overrides: z.record(z.string(), PACKAGE_OVERRIDES_SCHEMA).optional(),
-    publishConfig: PUBLISH_CONFIG_SCHEMA.optional()
+    publishConfig: PUBLISH_CONFIG_SCHEMA.optional(),
+    appRuntimeMetadataversion: z.string().optional()
 });
 
 const ERROR_MAP = createErrorMap();
@@ -100,8 +105,25 @@ const ERROR_MAP = createErrorMap();
  */
 export const verifyBuildConfig: VerifyBuildConfig = function verifyBuildConfig(value) {
     const result = BUILD_CONFIG_SCHEMA.safeParse(value, { error: ERROR_MAP });
-    if (result.success) {
-        return result.data;
+    if (!result.success) {
+        throw fromZodError(result.error);
     }
-    throw fromZodError(result.error);
+    const serializedRuntimeVersion = result.data[RUNTIME_FIELD];
+    if (serializedRuntimeVersion) {
+        // Check whether the runtime version is supported.
+        try {
+            if (!canParse(CURRENT_RUNTIME_VERSION, serializedRuntimeVersion)) {
+                throw new Error(
+                    `The current version of the runtime cannot support version ${serializedRuntimeVersion} required by this package.`
+                );
+            }
+        } catch (e) {
+            // Invalid version
+            throw new Error(
+                `Cannot determine support status of runtime version ${serializedRuntimeVersion}.`,
+                e instanceof Error ? e : undefined
+            );
+        }
+    }
+    return result.data;
 };

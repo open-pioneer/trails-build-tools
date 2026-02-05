@@ -131,7 +131,12 @@ export function codegenPlugin(): Plugin {
 
                 const appMetadata = await repository.getAppMetadata(this, dirname(packageJsonPath));
                 if (mod.type === "app-meta") {
-                    const runtimeVersion = appMetadata.runtimeVersion;
+                    const runtimeVersion = appMetadata.appRuntimeMetadataversion;
+                    isDebug &&
+                        debug(
+                            "ARTUR Generating app metadata for runtime version %s",
+                            runtimeVersion
+                        );
                     return generateAppMetadata(
                         mod.packageDirectory,
                         RuntimeSupport.METADATA_MODULE_ID,

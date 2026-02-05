@@ -213,7 +213,6 @@ describe(
                   },
                   "packageFormatVersion": "1.0.0",
                   "properties": [],
-                  "runtimeVersion": "1.1.0",
                   "services": [],
                   "styles": "./my-styles.css",
                   "ui": {

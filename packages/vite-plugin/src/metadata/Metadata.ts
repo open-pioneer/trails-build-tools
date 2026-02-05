@@ -32,7 +32,7 @@ export interface AppMetadata {
     packages: PackageMetadata[];
 
     /** runtime version of the vite-plugin. */
-    runtimeVersion: RuntimeVersion;
+    appRuntimeMetadataversion: RuntimeVersion;
 }
 
 /**

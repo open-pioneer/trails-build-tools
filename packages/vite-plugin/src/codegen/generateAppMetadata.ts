@@ -10,7 +10,7 @@ import { CURRENT_RUNTIME_VERSION } from "@open-pioneer/build-common";
 export function generateAppMetadata(
     packageDirectory: string,
     metadataModuleId: string,
-    runtimeVersion: string
+    appRuntimeMetadataversion: string
 ) {
     /*
         CSS loading: 
@@ -33,7 +33,7 @@ export function generateAppMetadata(
     const cssModule =
         serializeModuleId({ type: "app-css", packageDirectory }) + "&inline&lang.scss";
     const i18nModule = serializeModuleId({ type: "app-i18n-index", packageDirectory });
-    const currentRuntimeVersion = runtimeVersion === CURRENT_RUNTIME_VERSION;
+    const currentRuntimeVersion = appRuntimeMetadataversion === CURRENT_RUNTIME_VERSION;
     return `
 import { createBox } from ${JSON.stringify(metadataModuleId)};
 import packages from ${JSON.stringify(packagesModule)};
@@ -42,6 +42,7 @@ import { locales, loadMessages as loadMessagesFn } from ${JSON.stringify(i18nMod
 
 const styles = createBox(stylesString);
 const loadMessages = ${JSON.stringify(currentRuntimeVersion)} ? createBox(loadMessagesFn) : loadMessagesFn ;
+const test = createBox(${JSON.stringify(appRuntimeMetadataversion)});
 
 if (import.meta.hot) {
     import.meta.hot.data.styles ??= styles;
@@ -77,7 +78,9 @@ export {
     packages,
     styles,
     locales,
-    loadMessages
+    loadMessages,
+    test
 };
 `.trim();
 }
+//TODO remove test

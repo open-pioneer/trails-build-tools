@@ -1,5 +1,4 @@
 {
     "name": "test-app-no-runtime",
-    "dependencies": {
-    }
+    "dependencies": {}
 }

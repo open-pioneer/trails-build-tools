@@ -25,7 +25,7 @@ import {
 import { loadPackageMetadata } from "./loadPackageMetadata";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 import { canParse } from "@open-pioneer/build-common";
-import { readRootPackageForRuntimeVersion } from "./parseIGlobalPackageJson";
+import semver from "semver";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -64,8 +64,6 @@ export class MetadataRepository {
     // Key: path on disk.
     private i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
 
-    private readonly runtimeVersion: Promise<RuntimeVersion>;
-
     /**
      * @param sourceRoot Source folder on disk, needed to detect 'local' packages
      */
@@ -73,7 +71,6 @@ export class MetadataRepository {
         this.sourceRoot = sourceRoot;
         this.packageMetadataCache = this.createPackageMetadataCache();
         this.i18nCache = this.createI18nCache();
-        this.runtimeVersion = readRootPackageForRuntimeVersion(sourceRoot);
     }
 
     reset() {
@@ -144,6 +141,24 @@ export class MetadataRepository {
                 if (!packageSeenByDirectory.has(packageMetadata.directory)) {
                     packageSeenByDirectory.add(packageMetadata.directory);
 
+                    // TODO better solution than just take the last depencency's runtime
+                    if (
+                        packageMetadata.config.appRuntimeMetadataversion &&
+                        isRuntimeVersion(packageMetadata.config.appRuntimeMetadataversion) &&
+                        (appPackageMetadata.config.appRuntimeMetadataversion === undefined ||
+                            semver.lt(
+                                packageMetadata.config.appRuntimeMetadataversion,
+                                appPackageMetadata.config.appRuntimeMetadataversion
+                            ))
+                    ) {
+                        appPackageMetadata.config.appRuntimeMetadataversion =
+                            packageMetadata.config.appRuntimeMetadataversion;
+                        isDebug &&
+                            debug(
+                                `ARTUR globale Version wird auf ${appPackageMetadata.config.appRuntimeMetadataversion} gesetzt durch ${packageMetadata.name} `
+                            );
+                    }
+
                     await visitDependencies(
                         packageMetadata.dependencies,
                         packageMetadata.packageJsonPath
@@ -160,21 +175,28 @@ export class MetadataRepository {
             appPackageMetadata.packageJsonPath
         );
 
-        let runtimeVersion: RuntimeVersion;
-        if (appPackageMetadata?.config?.runtimeVersion) {
+        let appRuntimeMetadataversion: RuntimeVersion;
+        if (appPackageMetadata?.config?.appRuntimeMetadataversion) {
             isDebug &&
                 debug(
-                    `App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.config.runtimeVersion}`
+                    `ARTUR App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.config.appRuntimeMetadataversion}`
                 );
-            runtimeVersion = appPackageMetadata.config.runtimeVersion;
+            appRuntimeMetadataversion = appPackageMetadata.config.appRuntimeMetadataversion;
         } else {
-            runtimeVersion = await this.getRuntimeVersion();
+            isDebug &&
+                debug(
+                    `ARTUR Else App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.config.appRuntimeMetadataversion}`
+                );
+            appRuntimeMetadataversion = CURRENT_RUNTIME_VERSION;
         }
         if (
-            !(isRuntimeVersion(runtimeVersion) && canParse(CURRENT_RUNTIME_VERSION, runtimeVersion))
+            !(
+                isRuntimeVersion(appRuntimeMetadataversion) &&
+                canParse(CURRENT_RUNTIME_VERSION, appRuntimeMetadataversion)
+            )
         ) {
             throw new ReportableError(
-                `App runtime ${appPackageMetadata.config.runtimeVersion} of ${appPackageMetadata.name} is not supported!
+                `App runtime ${appPackageMetadata.config.appRuntimeMetadataversion} of ${appPackageMetadata.name} is not supported!
                  Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
             );
         }
@@ -186,7 +208,7 @@ export class MetadataRepository {
             packageJsonPath: appPackageMetadata.packageJsonPath,
             appPackage: appPackageMetadata,
             packages: Array.from(packageMetadataByName.values()),
-            runtimeVersion: runtimeVersion
+            appRuntimeMetadataversion: appRuntimeMetadataversion
         };
         return appMetadata;
     }
@@ -224,10 +246,6 @@ export class MetadataRepository {
         const { i18n, watchFiles } = await this.i18nCache.get(path, ctx);
         propagateWatchFiles(watchFiles, ctx);
         return i18n;
-    }
-
-    getRuntimeVersion(): Promise<RuntimeVersion> {
-        return this.runtimeVersion;
     }
 
     private async resolvePackageLocation(loc: PackageLocation) {

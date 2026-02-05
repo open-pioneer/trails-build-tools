@@ -60,11 +60,13 @@ describe("packageConfig", function () {
                         }
                     }
                 }
-            }
+            },
+            appRuntimeMetadataversion: "1.0.0"
         };
         const packageConfig = createPackageConfigFromBuildConfig(buildConfig);
         expect(packageConfig).toMatchInlineSnapshot(`
           {
+            "appRuntimeMetadataversion": "1.0.0",
             "languages": Set {
               "x",
               "y",
@@ -92,7 +94,137 @@ describe("packageConfig", function () {
                 "required": false,
               },
             },
-            "runtimeVersion": undefined,
+            "services": Map {
+              "A" => {
+                "provides": [
+                  {
+                    "interfaceName": "foo",
+                    "qualifier": undefined,
+                  },
+                  {
+                    "interfaceName": "bar",
+                    "qualifier": "baz",
+                  },
+                ],
+                "references": Map {
+                  "r1" => {
+                    "interfaceName": "i1",
+                    "qualifier": undefined,
+                    "referenceName": "r1",
+                    "type": "unique",
+                  },
+                  "r2" => {
+                    "interfaceName": "i2",
+                    "qualifier": "q",
+                    "referenceName": "r2",
+                    "type": "all",
+                  },
+                },
+                "serviceName": "A",
+              },
+            },
+            "servicesModule": "./my-services",
+            "styles": "./my-styles.scss",
+            "uiReferences": [
+              {
+                "interfaceName": "i1",
+                "qualifier": undefined,
+                "type": "unique",
+              },
+              {
+                "interfaceName": "i2",
+                "qualifier": "q",
+                "type": "all",
+              },
+            ],
+          }
+        `);
+    });
+
+    it("maps build.config.mjs contents to internal representation with runtime Version not set", function () {
+        const buildConfig: BuildConfig = {
+            services: {
+                A: {
+                    provides: [
+                        "foo",
+                        {
+                            name: "bar",
+                            qualifier: "baz"
+                        }
+                    ],
+                    references: {
+                        r1: "i1",
+                        r2: {
+                            name: "i2",
+                            qualifier: "q",
+                            all: true
+                        }
+                    }
+                }
+            },
+            i18n: ["x", "y"],
+            styles: "./my-styles.scss",
+            servicesModule: "./my-services",
+            ui: {
+                references: [
+                    "i1",
+                    {
+                        name: "i2",
+                        qualifier: "q",
+                        all: true
+                    }
+                ]
+            },
+            properties: {
+                x: 123,
+                y: null
+            },
+            propertiesMeta: {
+                x: {
+                    required: true
+                }
+            },
+            overrides: {
+                otherPackage: {
+                    services: {
+                        otherService: {
+                            enabled: false
+                        }
+                    }
+                }
+            }
+        };
+        const packageConfig = createPackageConfigFromBuildConfig(buildConfig);
+        expect(packageConfig).toMatchInlineSnapshot(`
+          {
+            "appRuntimeMetadataversion": "1.1.0",
+            "languages": Set {
+              "x",
+              "y",
+            },
+            "overrides": Map {
+              "otherPackage" => {
+                "packageName": "otherPackage",
+                "services": Map {
+                  "otherService" => {
+                    "enabled": false,
+                    "serviceName": "otherService",
+                  },
+                },
+              },
+            },
+            "properties": Map {
+              "x" => {
+                "defaultValue": 123,
+                "propertyName": "x",
+                "required": true,
+              },
+              "y" => {
+                "defaultValue": null,
+                "propertyName": "y",
+                "required": false,
+              },
+            },
             "services": Map {
               "A" => {
                 "provides": [
@@ -222,7 +354,6 @@ describe("packageConfig", function () {
                 "required": false,
               },
             },
-            "runtimeVersion": undefined,
             "services": Map {
               "A" => {
                 "provides": [

@@ -75,9 +75,6 @@ export namespace PackageMetadataV1 {
 
         /** Properties defined by the package. */
         properties?: Nullish<PropertyConfig[]>;
-
-        /** optional runtime version set by the package. */
-        runtimeVersion?: RuntimeVersion;
     }
 
     /**
@@ -216,7 +213,7 @@ export interface PackageConfig {
     overrides: Map<string, PackageOverrides> | undefined;
 
     /** Optional runtime version set by the package. */
-    runtimeVersion?: RuntimeVersion;
+    appRuntimeMetadataversion?: RuntimeVersion;
 }
 
 /** Internal representation of a service. */
