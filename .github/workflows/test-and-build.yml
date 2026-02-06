@@ -5,6 +5,9 @@ on:
   - push
   - pull_request
 
+permissions:
+  contents: read
+
 jobs:
   test:
     # Don't run for pull requests from this repository to avoid duplicate builds (push also triggers build).
