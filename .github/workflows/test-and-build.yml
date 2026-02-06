@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -30,5 +30,8 @@ jobs:
     name: "Publish or create version PR"
     uses: "./.github/workflows/version.yml"
     needs: test
+    permissions:
+      contents: write
+      pull-requests: write
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
