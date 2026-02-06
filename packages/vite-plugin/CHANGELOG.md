@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.1.1
+
+### Patch Changes
+
+- c014023: test
+- Updated dependencies [c014023]
+    - @open-pioneer/build-common@3.2.1
+
 ## 5.1.0
 
 ### Minor Changes

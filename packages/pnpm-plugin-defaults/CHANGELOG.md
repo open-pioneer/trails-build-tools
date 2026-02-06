@@ -1,5 +1,11 @@
 # @open-pioneer/pnpm-plugin-defaults
 
+## 0.1.2
+
+### Patch Changes
+
+- c014023: test
+
 ## 0.1.1
 
 ### Patch Changes

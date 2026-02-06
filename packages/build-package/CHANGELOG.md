@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package
 
+## 4.1.1
+
+### Patch Changes
+
+- c014023: test
+- Updated dependencies [c014023]
+    - @open-pioneer/build-common@3.2.1
+    - @open-pioneer/build-support@3.0.6
+
 ## 4.1.0
 
 ### Minor Changes

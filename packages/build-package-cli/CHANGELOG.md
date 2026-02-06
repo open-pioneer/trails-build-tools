@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 3.0.8
+
+### Patch Changes
+
+- c014023: test
+- Updated dependencies [c014023]
+    - @open-pioneer/build-package@4.1.1
+
 ## 3.0.7
 
 ### Patch Changes
