@@ -3,7 +3,7 @@
     "description": "Contains support functionality used in Open Pioneer Trails applications.",
     "main": "index.js",
     "types": "index.d.ts",
-    "version": "3.0.5",
+    "version": "3.0.6",
     "license": "Apache-2.0",
     "type": "module",
     "repository": {

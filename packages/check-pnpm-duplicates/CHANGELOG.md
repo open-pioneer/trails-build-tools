@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/check-pnpm-duplicates
 
+## 0.2.7
+
+### Patch Changes
+
+- c014023: test
+
 ## 0.2.6
 
 ### Patch Changes
