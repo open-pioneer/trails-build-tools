@@ -106,24 +106,38 @@ const ERROR_MAP = createErrorMap();
 export const verifyBuildConfig: VerifyBuildConfig = function verifyBuildConfig(value) {
     const result = BUILD_CONFIG_SCHEMA.safeParse(value, { error: ERROR_MAP });
     if (!result.success) {
-        throw fromZodError(result.error);
+        const errorObject = fromZodError(result.error);
+        return {
+            type: "error",
+            code: "validation-error",
+            message: errorObject.message,
+            cause: errorObject.cause
+        };
     }
     const serializedRuntimeVersion = result.data[RUNTIME_FIELD];
     if (serializedRuntimeVersion) {
         // Check whether the runtime version is supported.
         try {
             if (!canParse(CURRENT_RUNTIME_VERSION, serializedRuntimeVersion)) {
-                throw new Error(
-                    `The current version of the runtime cannot support version ${serializedRuntimeVersion} required by this package.`
-                );
+                return {
+                    type: "error",
+                    code: "validation-error",
+                    message: `The current version of the runtime cannot support version ${serializedRuntimeVersion} required by this package.`,
+                    cause: `The current version of the runtime cannot support version ${serializedRuntimeVersion} required by this package.`
+                };
             }
         } catch (e) {
             // Invalid version
-            throw new Error(
-                `Cannot determine support status of runtime version ${serializedRuntimeVersion}.`,
-                e instanceof Error ? e : undefined
-            );
+            return {
+                type: "error",
+                code: "unsupported-version",
+                message: `Cannot determine support status of framework metadata version ${serializedRuntimeVersion}.`,
+                cause: `Cannot determine support status of framework metadata version ${serializedRuntimeVersion}.`
+            };
         }
     }
-    return result.data;
+    return {
+        type: "success",
+        value: result.data
+    };
 };

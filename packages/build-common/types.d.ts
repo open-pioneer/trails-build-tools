@@ -304,13 +304,29 @@ export function createPackageConfigFromPackageMetadata(
  */
 export const BUILD_CONFIG_NAME: string;
 
+export interface ParseRuntimeMetadataSuccess {
+    type: "success";
+    value: BuildConfig;
+}
+
+export interface ParseRuntimeMetadataError {
+    type: "error";
+
+    /** Note: new error codes might be introduced in the future. */
+    code: ExtensibleUnion<"unsupported-version" | "validation-error">;
+    message: string;
+    cause?: unknown;
+}
+
 /**
  * Ensures that `value` conforms to the {@link BuildConfig} interface.
  * Throws an error if that is not the case.
  *
  * @returns `value` but casted to the appropriate type.
  */
-export function verifyBuildConfig(value: unknown): BuildConfig;
+export function verifyBuildConfig(
+    value: unknown
+): ParseRuntimeMetadataSuccess | ParseRuntimeMetadataError;
 
 /**
  * Loads the configuration object exported by the given configuration file.

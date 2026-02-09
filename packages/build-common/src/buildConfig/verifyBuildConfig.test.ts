@@ -9,16 +9,31 @@ describe("verifyBuildConfigSchema", () => {
     });
 
     it("throws for invalid values", () => {
-        expect(() => verifyBuildConfig({ styles: 2 })).toThrowErrorMatchingInlineSnapshot(
-            `[ZodValidationError: Validation error: Expected string, received number at "styles"]`
-        );
+        const buildConfigResult = verifyBuildConfig({ styles: 2 });
+        expect(buildConfigResult.type === "error").toBe(true);
+        if (buildConfigResult.type === "error") {
+            expect(buildConfigResult.message).toMatch(
+                `Validation error: Expected string, received number at "styles"`
+            );
+        }
     });
 
     it("throws for invalid parameter names", () => {
-        expect(() =>
-            verifyBuildConfig({ notValidParameterName: 2 })
-        ).toThrowErrorMatchingInlineSnapshot(
-            `[ZodValidationError: Validation error: Unrecognized key(s) "notValidParameterName" in object]`
-        );
+        const buildConfigResult = verifyBuildConfig({ notValidParameterName: 2 });
+        expect(buildConfigResult.type === "error").toBe(true);
+        if (buildConfigResult.type === "error") {
+            expect(buildConfigResult.message).toMatch(
+                `Validation error: Unrecognized key(s) "notValidParameterName" in object`
+            );
+        }
+    });
+    it("throws for invalid runtime version", () => {
+        const buildConfigResult = verifyBuildConfig({ appRuntimeMetadataversion: "127.0.0.1" });
+        expect(buildConfigResult.type === "error").toBe(true);
+        if (buildConfigResult.type === "error") {
+            expect(buildConfigResult.message).toMatch(
+                `Cannot determine support status of framework metadata version 127.0.0.1.`
+            );
+        }
     });
 });

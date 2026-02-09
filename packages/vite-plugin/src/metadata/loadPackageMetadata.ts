@@ -276,9 +276,13 @@ class PackageMetadataReader {
             try {
                 buildConfig = await loadBuildConfig(buildConfigPath);
             } catch (e) {
-                throw new ReportableError(`Failed to load build config ${buildConfigPath}`, {
-                    cause: e
-                });
+                const cause = e instanceof Error ? e.cause : String(e);
+                throw new ReportableError(
+                    `Failed to load build config ${buildConfigPath}. ${cause}`,
+                    {
+                        cause: e
+                    }
+                );
             }
         } else {
             //TODO just for testing

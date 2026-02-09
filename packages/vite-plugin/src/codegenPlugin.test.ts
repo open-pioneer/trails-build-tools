@@ -465,7 +465,7 @@ describe("codegen support", function () {
             })
         );
         expect(error.message).toMatch(
-            /Cannot determine support status of runtime version 127.0.0.1/
+            /Cannot determine support status of framework metadata version 127.0.0.1/
         );
 
         const appname5 = "test-app-5.0.0";
@@ -480,7 +480,7 @@ describe("codegen support", function () {
         );
 
         expect(error5.message).toMatch(
-            /The current version of the runtime cannot support version 5.0.0 required by this package./
+            /The current version of the runtime cannot support version 5.0.0/
         );
     });
 });

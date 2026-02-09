@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { TEST_DATA_DIR } from "../test-utils/paths";
 import { loadBuildConfig } from "./loadBuildConfig";
+import { BuildConfig } from "@open-pioneer/build-support";
 
 describe("loadBuildConfig", function () {
     it("loads valid configuration file", async function () {
@@ -24,12 +25,15 @@ describe("loadBuildConfig", function () {
 
     it("throws an error if the config file does not match the schema", async function () {
         const path = resolve(TEST_DATA_DIR, "build-config-with-invalid-values.mjs");
-        await expect(loadBuildConfig(path)).rejects.toSatisfy((value) => {
-            const err = value as Error;
-            const matches =
-                err.message.match(/Validation error/) &&
-                (err.cause as Error)?.message.match(/Expected string, received number at "styles"/);
-            return !!matches;
-        });
+        const error = await expectAsyncError(() => loadBuildConfig(path));
+        expect(error.message).toMatch(/Expected string, received number at "styles"/);
     });
 });
+
+function expectAsyncError(fn: () => Promise<BuildConfig>): Promise<any> {
+    return new Promise((resolve, reject) => {
+        fn().then(() => {
+            reject(new Error("unexpected success: expected the operation to fail"));
+        }, resolve);
+    });
+}
