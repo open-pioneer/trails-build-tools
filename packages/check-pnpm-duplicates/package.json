@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/check-pnpm-duplicates",
     "description": "Provides a CLI tool to detect accidental duplicates in a pnpm lockfile.",
-    "version": "0.2.6",
+    "version": "0.3.0",
     "type": "module",
     "license": "Apache-2.0",
     "repository": {
