@@ -18,7 +18,7 @@ export interface ConfigRule {
 
 interface RawConfig {
     skipDevDependencies?: boolean | undefined;
-    allowed?: string[] | undefined;
+    allowed?: string[] | null | undefined;
 }
 
 export function emptyConfig(): Config {
@@ -33,10 +33,10 @@ function readRawConfig(path: string): RawConfig {
         const content = readFileSync(path, "utf-8");
         const rawConfig = loadYaml(content) as unknown as RawConfig;
 
-        const allowed: string[] | undefined = rawConfig?.allowed;
+        const allowed: string[] | null | undefined = rawConfig?.allowed;
         const skipDevDependencies: boolean | undefined = rawConfig?.skipDevDependencies;
 
-        if (allowed !== undefined && !Array.isArray(allowed)) {
+        if (allowed != null && !Array.isArray(allowed)) {
             throw new Error("Expected 'allowed' to be an array of strings");
         }
         if (skipDevDependencies !== undefined && typeof skipDevDependencies !== "boolean") {
