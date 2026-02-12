@@ -8,6 +8,7 @@ import { createDebugger } from "../utils/debug";
 import { MetadataContext } from "./Context";
 import { PackageMetadata } from "./Metadata";
 import { loadPackageMetadata } from "./loadPackageMetadata";
+import { normalizePath } from "vite";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -27,13 +28,13 @@ export async function findTrailsPackages(sourceRoot: string): Promise<PackageMet
 
     // packageDirectory must be a fully resolved, absolute path.
     const visit = (packageDirectory: string) => {
-        const linuxPath = packageDirectory.replace(/\\/g, "/");
-        if (seen.has(linuxPath)) {
+        const normalizedPath = normalizePath(packageDirectory);
+        if (seen.has(normalizedPath)) {
             return;
         }
 
-        seen.add(linuxPath);
-        workQueue.push(linuxPath);
+        seen.add(normalizedPath);
+        workQueue.push(normalizedPath);
     };
     for (const file of localPackageJsonFiles) {
         visit(dirname(file));
