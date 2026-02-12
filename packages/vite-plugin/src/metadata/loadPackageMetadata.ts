@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import {
-    BUILD_CONFIG_NAME,
     BuildConfig,
     PackageConfig,
     PackageMetadataV1,
     createPackageConfigFromBuildConfig,
     createPackageConfigFromPackageMetadata,
-    loadBuildConfig
+    loadBuildConfig,
+    resolveBuildConfigPath
 } from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -187,11 +187,14 @@ class PackageMetadataReader {
             }
             /** Local packages may have either a build.config (the common case) or a built package.json for testing, but never both. */
             case "local": {
-                const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
-                const buildConfigExists = existsSync(buildConfigPath);
+                // Pass addWatchFile callback for watch mode support
+                const buildConfigPath = resolveBuildConfigPath(packageDir, (path) =>
+                    ctx.addWatchFile(normalizePath(path))
+                );
+                const buildConfigExists = buildConfigPath !== undefined;
                 if (buildConfigExists && frameworkMetadata) {
                     throw new Error(
-                        `Package '${packageName}' at ${packageDir} contains both framework metadata in its package.json and a ${BUILD_CONFIG_NAME}.` +
+                        `Package '${packageName}' at ${packageDir} contains both framework metadata in its package.json and a build config file.` +
                             ` Mixing both formats is not supported.` +
                             ` Metadata in package.json files is only intended for distributed packages.`
                     );
@@ -199,7 +202,7 @@ class PackageMetadataReader {
 
                 if (frameworkMetadata) {
                     ctx.warn(
-                        `Using framework metadata from package.json instead of ${BUILD_CONFIG_NAME} in ${packageDir}, make sure that this intended.`
+                        `Using framework metadata from package.json instead of a build config file in ${packageDir}, make sure that this intended.`
                     );
                     return this.parsePackageConfigFromMetadata(packageName, frameworkMetadata);
                 }
@@ -272,24 +275,26 @@ class PackageMetadataReader {
     }
 
     private async parsePackageConfigFromBuildConfig(
-        buildConfigPath: string
+        buildConfigPath: string | undefined
     ): Promise<PackageConfigResult | undefined> {
         const { ctx, packageDir } = this;
-        let buildConfig: BuildConfig | undefined;
-        ctx.addWatchFile(normalizePath(buildConfigPath));
-        if (await fileExists(buildConfigPath)) {
-            try {
-                buildConfig = await loadBuildConfig(buildConfigPath);
-            } catch (e) {
-                throw new ReportableError(`Failed to load build config ${buildConfigPath}`, {
-                    cause: e
-                });
+        if (!buildConfigPath) {
+            if (!this.allowMissingBuildConfig) {
+                throw new ReportableError(`Expected a build config file in ${packageDir}`);
             }
-        } else if (!this.allowMissingBuildConfig) {
-            throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
-        } else {
             return undefined;
         }
+
+        let buildConfig: BuildConfig;
+        ctx.addWatchFile(normalizePath(buildConfigPath));
+        try {
+            buildConfig = await loadBuildConfig(buildConfigPath);
+        } catch (e) {
+            throw new ReportableError(`Failed to load build config ${buildConfigPath}`, {
+                cause: e
+            });
+        }
+
         return {
             configPath: buildConfigPath,
             config: createPackageConfigFromBuildConfig(buildConfig)
