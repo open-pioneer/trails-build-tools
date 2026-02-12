@@ -27,12 +27,13 @@ export async function findTrailsPackages(sourceRoot: string): Promise<PackageMet
 
     // packageDirectory must be a fully resolved, absolute path.
     const visit = (packageDirectory: string) => {
-        if (seen.has(packageDirectory)) {
+        const linuxPath = packageDirectory.replace(/\\/g, "/");
+        if (seen.has(linuxPath)) {
             return;
         }
 
-        seen.add(packageDirectory);
-        workQueue.push(packageDirectory);
+        seen.add(linuxPath);
+        workQueue.push(linuxPath);
     };
     for (const file of localPackageJsonFiles) {
         visit(dirname(file));
