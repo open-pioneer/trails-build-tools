@@ -117,9 +117,15 @@ export async function buildPackage({ input, options, logger }: BuildPackageOptio
 
     // Write license files etc.
     logger.info(chalk.gray("Copying auxiliary files..."));
+    const customLicense = model.input.buildConfig.publishConfig?.licenseFile;
+    const customNotice = model.input.buildConfig.publishConfig?.noticeFile;
     await copyAuxiliaryFiles({
         packageDirectory: model.input.packageDirectory,
         outputDirectory: model.outputDirectory,
+        fileOverrides: {
+            license: customLicense,
+            notice: customNotice
+        },
         validation: options.validation,
         reporter
     });
