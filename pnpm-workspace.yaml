@@ -110,7 +110,12 @@ overrides:
   "@open-pioneer/runtime": ">= 2.2.0"
 
 auditConfig:
-  ignoreCves: []
+  ignoreCves:
+    # This affects ajv, which is a transitive dependency of eslint.
+    # Eslint depends on ajv@v6, and an update to v8 might not be trivial.
+    # Only dev dependencies are (potentially) affected.
+    # https://github.com/advisories/GHSA-2g4f-4pwh-qvx6
+    - CVE-2025-69873
 
 allowUnusedPatches: true
 ignorePatchFailures: false
