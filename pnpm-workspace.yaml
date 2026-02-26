@@ -106,6 +106,9 @@ overrides:
   # https://github.com/advisories/GHSA-7h2j-956f-4vf2
   "@isaacs/brace-expansion@<=5.0.0": "^5.0.1"
 
+  # https://github.com/advisories/GHSA-mw96-cpmx-2vgc
+  "rollup@>=4.0.0 <4.59.0": "^4.59.0"
+
   # Version doesn't really matter, this is used as a dep in integration tests
   "@open-pioneer/runtime": ">= 2.2.0"
 
