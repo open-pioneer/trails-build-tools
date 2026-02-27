@@ -100,7 +100,7 @@ minimumReleaseAge: 4320 # 3 days in minutes
 minimumReleaseAgeExclude:
   - "@open-pioneer/*"
   - "@conterra/*"
-  - "@isaacs/brace-expansion@5.0.1" # see overrides
+  - "minimatch" # TODO: Remove after 2026-03-02
 
 overrides:
   # https://github.com/advisories/GHSA-7h2j-956f-4vf2
@@ -108,6 +108,12 @@ overrides:
 
   # https://github.com/advisories/GHSA-mw96-cpmx-2vgc
   "rollup@>=4.0.0 <4.59.0": "^4.59.0"
+
+  # https://github.com/advisories/GHSA-7r86-cg39-jmmj
+  # https://github.com/advisories/GHSA-23c5-xmqv-rm74
+  "minimatch@>=3.0.0 <3.1.4": "^3.1.4"
+  "minimatch@>=9.0.0 <9.0.7": "^9.0.9"
+  "minimatch@>=10.0.0 <10.2.3": "^10.2.3"
 
   # Version doesn't really matter, this is used as a dep in integration tests
   "@open-pioneer/runtime": ">= 2.2.0"
@@ -119,9 +125,6 @@ auditConfig:
     # Only dev dependencies are (potentially) affected.
     # https://github.com/advisories/GHSA-2g4f-4pwh-qvx6
     - CVE-2025-69873
-
-    # See CVE CVE-2025-69873
-    - CVE-2026-26996
 
 allowUnusedPatches: true
 ignorePatchFailures: false
