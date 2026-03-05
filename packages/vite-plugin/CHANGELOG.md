@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.1.1
+
+### Patch Changes
+
+- 093ae42: vite-plugin - prevent detection of duplicated packages on windows
+
 ## 5.1.0
 
 ### Minor Changes
