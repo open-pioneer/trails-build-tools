@@ -173,6 +173,14 @@ function generateMetadata(model: SimplePackageModel): unknown {
         },
         properties: Array.from(pkgConfig.properties.values())
     };
+
+    if (pkgConfig.runtimeMeta) {
+        // Only include this key if it was used in the build.config.mjs
+        metadata.runtimeMeta = {
+            metadataVersion: pkgConfig.runtimeMeta.metadataVersion ?? undefined
+        };
+    }
+
     return V1.serializePackageMetadata(metadata);
 }
 
