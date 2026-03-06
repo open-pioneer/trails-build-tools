@@ -133,7 +133,7 @@ export function codegenPlugin(): VitePlugin {
                 const ctx = createMetadataContextFromRollup(this);
                 const appMetadata = await repository.getAppMetadata(ctx, dirname(packageJsonPath));
                 if (mod.type === "app-meta") {
-                    const runtimeVersion = appMetadata.appRuntimeMetadataversion;
+                    const runtimeVersion = appMetadata.runtimeMetadataVersion;
                     isDebug &&
                         debug(
                             "ARTUR Generating app metadata for runtime version %s",

@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { RuntimeVersion } from "@open-pioneer/build-common";
 
 export interface BuildConfig {
     /**
@@ -137,7 +136,13 @@ export interface BuildConfig {
      */
     publishConfig?: PublishConfig;
 
-    appRuntimeMetadataversion?: RuntimeVersion;
+    /**
+     * Metadata supported on the runtime package.
+     */
+    runtimeMeta?: {
+        /** The metadata version supported by the package. */
+        metadataVersion?: string;
+    };
 }
 
 /**

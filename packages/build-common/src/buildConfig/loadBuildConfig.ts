@@ -20,13 +20,9 @@ export const loadBuildConfig: LoadBuildConfig = async function loadBuildConfig(p
     }
 
     const config = importedModule.default;
-    const buildConfigResult = await verifyBuildConfig(config);
-    if (buildConfigResult.type === "success") {
-        return buildConfigResult.value;
-    } else {
-        throw new Error(
-            `Validation error in configuration file at ${path}. ${buildConfigResult.message}`,
-            { cause: buildConfigResult.cause }
-        );
+    try {
+        return verifyBuildConfig(config);
+    } catch (e) {
+        throw new Error(`Validation error in configuration file at ${path}`, { cause: e });
     }
 };

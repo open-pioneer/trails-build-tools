@@ -1,12 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import {
-    BUILD_CONFIG_NAME,
-    isRuntimeVersion,
-    RuntimeVersion,
-    RUNTIME_VERSIONS,
-    CURRENT_RUNTIME_VERSION
-} from "@open-pioneer/build-common";
+import { BUILD_CONFIG_NAME, RuntimeSupport } from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
 import { normalizePath } from "vite";
@@ -24,8 +18,6 @@ import {
 } from "./Metadata";
 import { loadPackageMetadata } from "./loadPackageMetadata";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
-import { canParse } from "@open-pioneer/build-common";
-import semver from "semver";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -141,24 +133,6 @@ export class MetadataRepository {
                 if (!packageSeenByDirectory.has(packageMetadata.directory)) {
                     packageSeenByDirectory.add(packageMetadata.directory);
 
-                    // TODO better solution than just take the last depencency's runtime
-                    if (
-                        packageMetadata.config.appRuntimeMetadataversion &&
-                        isRuntimeVersion(packageMetadata.config.appRuntimeMetadataversion) &&
-                        (appPackageMetadata.config.appRuntimeMetadataversion === undefined ||
-                            semver.lt(
-                                packageMetadata.config.appRuntimeMetadataversion,
-                                appPackageMetadata.config.appRuntimeMetadataversion
-                            ))
-                    ) {
-                        appPackageMetadata.config.appRuntimeMetadataversion =
-                            packageMetadata.config.appRuntimeMetadataversion;
-                        isDebug &&
-                            debug(
-                                `ARTUR globale Version wird auf ${appPackageMetadata.config.appRuntimeMetadataversion} gesetzt durch ${packageMetadata.name} `
-                            );
-                    }
-
                     await visitDependencies(
                         packageMetadata.dependencies,
                         packageMetadata.packageJsonPath
@@ -175,31 +149,8 @@ export class MetadataRepository {
             appPackageMetadata.packageJsonPath
         );
 
-        let appRuntimeMetadataversion: RuntimeVersion;
-        if (appPackageMetadata?.config?.appRuntimeMetadataversion) {
-            isDebug &&
-                debug(
-                    `ARTUR App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.config.appRuntimeMetadataversion}`
-                );
-            appRuntimeMetadataversion = appPackageMetadata.config.appRuntimeMetadataversion;
-        } else {
-            isDebug &&
-                debug(
-                    `ARTUR Else App runtime of ${appPackageMetadata.name} is set to ${appPackageMetadata.config.appRuntimeMetadataversion}`
-                );
-            appRuntimeMetadataversion = CURRENT_RUNTIME_VERSION;
-        }
-        if (
-            !(
-                isRuntimeVersion(appRuntimeMetadataversion) &&
-                canParse(CURRENT_RUNTIME_VERSION, appRuntimeMetadataversion)
-            )
-        ) {
-            throw new ReportableError(
-                `App runtime ${appPackageMetadata.config.appRuntimeMetadataversion} of ${appPackageMetadata.name} is not supported!
-                 Supported versions are: ${RUNTIME_VERSIONS.join(", ")}`
-            );
-        }
+        const packages = Array.from(packageMetadataByName.values());
+        const runtimeMetadataVersion = detectRuntimeMetadataVersion(packages);
 
         const appMetadata: AppMetadata = {
             name: appPackageMetadata.name,
@@ -207,8 +158,8 @@ export class MetadataRepository {
             locales: appLocales,
             packageJsonPath: appPackageMetadata.packageJsonPath,
             appPackage: appPackageMetadata,
-            packages: Array.from(packageMetadataByName.values()),
-            appRuntimeMetadataversion: appRuntimeMetadataversion
+            packages,
+            runtimeMetadataVersion
         };
         return appMetadata;
     }
@@ -375,6 +326,36 @@ export class MetadataRepository {
         };
         return new Cache(provider);
     }
+}
+
+function detectRuntimeMetadataVersion(
+    packages: PackageMetadata[]
+): RuntimeSupport.RuntimeMetadataVersion {
+    const runtimePackage = packages.find((p) => p.name === RuntimeSupport.RUNTIME_PACKAGE_NAME);
+    if (!runtimePackage) {
+        return RuntimeSupport.DEFAULT_METADATA_VERSION;
+    }
+
+    const metadataVersion = runtimePackage.config.runtimeMeta?.metadataVersion;
+    if (!metadataVersion) {
+        return RuntimeSupport.DEFAULT_METADATA_VERSION;
+    }
+
+    const versionResult = RuntimeSupport.getSupportedRuntimeMetadataVersion(metadataVersion);
+    if ("code" in versionResult) {
+        switch (versionResult.code) {
+            case "invalid-version":
+                throw new ReportableError(`Invalid metadata version ${metadataVersion}`, {
+                    cause: versionResult.error
+                });
+            case "unsupported-version":
+                throw new ReportableError(
+                    `Runtime metadata version ${metadataVersion} of ${runtimePackage.name} is not supported.
+                         This plugin supports versions ^${RuntimeSupport.CURRENT_METADATA_MAJOR}.`
+                );
+        }
+    }
+    return versionResult;
 }
 
 function propagateWatchFiles(watchFiles: Iterable<string>, ctx: MetadataContext) {

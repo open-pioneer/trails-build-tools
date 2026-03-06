@@ -7,8 +7,7 @@ import {
     PackageMetadataV1,
     createPackageConfigFromBuildConfig,
     createPackageConfigFromPackageMetadata,
-    loadBuildConfig,
-    RUNTIME_VERSIONS
+    loadBuildConfig
 } from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";

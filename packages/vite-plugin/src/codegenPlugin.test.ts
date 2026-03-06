@@ -3,9 +3,8 @@
 import { globSync } from "tinyglobby";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { assert, describe, expect, it, vi, onTestFailed } from "vitest";
+import { assert, describe, expect, it, onTestFailed } from "vitest";
 import { TEMP_DATA_DIR, TEST_DATA_DIR, runViteBuild } from "./utils/testUtils";
-import { MetadataRepository } from "./metadata/MetadataRepository";
 
 describe("codegen support", function () {
     it("generates app packages content", async function () {
@@ -458,7 +457,7 @@ describe("codegen support", function () {
         assert.include(appJs1_1, "const loadMessages = createBox(loadMessages$1);");
     });
 
-    it("support no runtime version set in app and use current version", async function () {
+    it("support no runtime version set in app and use default version", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-runtimeversions-mix");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-runtimeversions-mix");
 

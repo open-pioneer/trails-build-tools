@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { serializeModuleId } from "./shared";
-import { CURRENT_RUNTIME_VERSION } from "@open-pioneer/build-common";
+import { RuntimeSupport } from "@open-pioneer/build-common";
 
 /**
  * Generates the main app metadata module.
@@ -10,7 +10,7 @@ import { CURRENT_RUNTIME_VERSION } from "@open-pioneer/build-common";
 export function generateAppMetadata(
     packageDirectory: string,
     metadataModuleId: string,
-    appRuntimeMetadataversion: string
+    runtimeMetadataVersion: RuntimeSupport.RuntimeMetadataVersion
 ) {
     /*
         CSS loading: 
@@ -33,7 +33,9 @@ export function generateAppMetadata(
     const cssModule =
         serializeModuleId({ type: "app-css", packageDirectory }) + "&inline&lang.scss";
     const i18nModule = serializeModuleId({ type: "app-i18n-index", packageDirectory });
-    const currentRuntimeVersion = appRuntimeMetadataversion === CURRENT_RUNTIME_VERSION;
+
+    const features = RuntimeSupport.getRuntimeFeatures(runtimeMetadataVersion);
+    const boxMessages = features.supportsMessageBox;
     return `
 import { createBox } from ${JSON.stringify(metadataModuleId)};
 import packages from ${JSON.stringify(packagesModule)};
@@ -41,8 +43,7 @@ import stylesString from ${JSON.stringify(cssModule)};
 import { locales, loadMessages as loadMessagesFn } from ${JSON.stringify(i18nModule)};
 
 const styles = createBox(stylesString);
-const loadMessages = ${JSON.stringify(currentRuntimeVersion)} ? createBox(loadMessagesFn) : loadMessagesFn ;
-const test = createBox(${JSON.stringify(appRuntimeMetadataversion)});
+const loadMessages = ${JSON.stringify(boxMessages)} ? createBox(loadMessagesFn) : loadMessagesFn ;
 
 if (import.meta.hot) {
     import.meta.hot.data.styles ??= styles;
@@ -59,7 +60,11 @@ if (import.meta.hot) {
             return a.length === b.length && a.every((v, i) => v === b[i]);
         }
 
-        if (!mod || mod.packages !== packages || (${JSON.stringify(currentRuntimeVersion)} && !arrayEq(mod.locales, locales))) {
+        // Update if
+        // - packages changed (no HMR)
+        // - locales changed (no HMR)
+        // - message boxing is not supported (runtime metadata version 1.0, no HMR)
+        if (!mod || mod.packages !== packages || !arrayEq(mod.locales, locales) || (${JSON.stringify(!boxMessages)} && mod.loadMessages !== loadMessagesFn)) {
             // Cannot handle these changes, trigger reload:
             import.meta.hot.invalidate();
             return;
@@ -68,7 +73,7 @@ if (import.meta.hot) {
         if (mod.styles.value !== styles.value) {
             import.meta.hot.data.styles.setValue(mod.styles.value);
         }
-        if (${JSON.stringify(currentRuntimeVersion)} && mod.loadMessages.value !== loadMessages.value) {
+        if (${JSON.stringify(boxMessages)} && mod.loadMessages.value !== loadMessages.value) {
             import.meta.hot.data.loadMessages.setValue(mod.loadMessages.value);
         }
     });
@@ -79,8 +84,6 @@ export {
     styles,
     locales,
     loadMessages,
-    test
 };
 `.trim();
 }
-//TODO remove test

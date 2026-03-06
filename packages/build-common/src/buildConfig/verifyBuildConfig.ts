@@ -15,10 +15,6 @@ import {
 import { z } from "zod";
 import { createErrorMap, fromZodError } from "zod-validation-error";
 import type * as API from "../../types";
-import { canParse } from "../packageMetadata/versionUtils";
-import { CURRENT_RUNTIME_VERSION } from "./index";
-
-const RUNTIME_FIELD = "appRuntimeMetadataversion";
 
 type VerifyBuildConfig = typeof API.verifyBuildConfig;
 
@@ -81,6 +77,10 @@ const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
     validation: VALIDATION_OPTIONS_SCHEMA.optional()
 });
 
+const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<BuildConfig["runtimeMeta"]> = z.object({
+    metadataVersion: z.string().optional()
+});
+
 const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     entryPoints: z.string().or(z.string().array()).optional(),
     styles: z.string().optional(),
@@ -92,7 +92,7 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     propertiesMeta: z.record(z.string(), PROPERTY_META_SCHEMA).optional(),
     overrides: z.record(z.string(), PACKAGE_OVERRIDES_SCHEMA).optional(),
     publishConfig: PUBLISH_CONFIG_SCHEMA.optional(),
-    appRuntimeMetadataversion: z.string().optional()
+    runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.optional()
 });
 
 const ERROR_MAP = createErrorMap();
@@ -105,39 +105,9 @@ const ERROR_MAP = createErrorMap();
  */
 export const verifyBuildConfig: VerifyBuildConfig = function verifyBuildConfig(value) {
     const result = BUILD_CONFIG_SCHEMA.safeParse(value, { error: ERROR_MAP });
-    if (!result.success) {
-        const errorObject = fromZodError(result.error);
-        return {
-            type: "error",
-            code: "validation-error",
-            message: errorObject.message,
-            cause: errorObject.cause
-        };
+    if (result.success) {
+        return result.data;
     }
-    const serializedRuntimeVersion = result.data[RUNTIME_FIELD];
-    if (serializedRuntimeVersion) {
-        // Check whether the runtime version is supported.
-        try {
-            if (!canParse(CURRENT_RUNTIME_VERSION, serializedRuntimeVersion)) {
-                return {
-                    type: "error",
-                    code: "validation-error",
-                    message: `The current version of the runtime cannot support version ${serializedRuntimeVersion} required by this package.`,
-                    cause: `The current version of the runtime cannot support version ${serializedRuntimeVersion} required by this package.`
-                };
-            }
-        } catch (e) {
-            // Invalid version
-            return {
-                type: "error",
-                code: "unsupported-version",
-                message: `Cannot determine support status of framework metadata version ${serializedRuntimeVersion}.`,
-                cause: `Cannot determine support status of framework metadata version ${serializedRuntimeVersion}.`
-            };
-        }
-    }
-    return {
-        type: "success",
-        value: result.data
-    };
+
+    throw fromZodError(result.error);
 };

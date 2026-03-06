@@ -33,7 +33,7 @@ describe("generatePackageJson", function () {
               "i18n": {
                 "languages": [],
               },
-              "packageFormatVersion": "1.0.0",
+              "packageFormatVersion": "1.1.0",
               "properties": [],
               "services": [],
               "ui": {
@@ -273,7 +273,7 @@ describe("generatePackageJson", function () {
                 "de",
               ],
             },
-            "packageFormatVersion": "1.0.0",
+            "packageFormatVersion": "1.1.0",
             "properties": [
               {
                 "defaultValue": 1,
@@ -315,6 +315,52 @@ describe("generatePackageJson", function () {
             },
           }
         `);
+    });
+
+    it("includes runtime metadata when specified", async function () {
+        const options = testDefaults({
+            packageJson: {
+                name: "my-package",
+                version: "1.0.0",
+                license: "MIT",
+                publishConfig: {
+                    directory: "dist"
+                }
+            },
+            buildConfig: {
+                runtimeMeta: {
+                    metadataVersion: "1.1.123456"
+                }
+            },
+            strict: false
+        });
+        const pkgJson = await generatePackageJson(options);
+        expect(pkgJson).toMatchInlineSnapshot(`
+          {
+            "exports": {
+              "./package.json": "./package.json",
+            },
+            "license": "MIT",
+            "name": "my-package",
+            "openPioneerFramework": {
+              "i18n": {
+                "languages": [],
+              },
+              "packageFormatVersion": "1.1.0",
+              "properties": [],
+              "runtimeMeta": {
+                "metadataVersion": "1.1.123456",
+              },
+              "services": [],
+              "ui": {
+                "references": [],
+              },
+            },
+            "type": "module",
+            "version": "1.0.0",
+          }
+        `);
+        expect(options.logger.messages).toEqual([]); // no warnings
     });
 });
 

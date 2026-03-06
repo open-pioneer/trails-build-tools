@@ -3,6 +3,8 @@
 import { posix } from "node:path";
 import { dataToEsm, normalizePath } from "@rollup/pluginutils";
 import type * as API from "../../types";
+import { canParse } from "../versionUtils";
+import { gte } from "semver";
 
 const PACKAGE_NAME = "@open-pioneer/runtime";
 const REACT_INTEGRATION_MODULE_ID = "@open-pioneer/runtime/react-integration";
@@ -14,7 +16,12 @@ export const RuntimeSupport: typeof API.RuntimeSupport = {
     METADATA_MODULE_ID,
     generateReactHooks,
     parseVirtualModule,
-    generateSourceInfo
+    generateSourceInfo,
+
+    DEFAULT_METADATA_VERSION: "1.0.0" as API.RuntimeSupport.RuntimeMetadataVersion,
+    CURRENT_METADATA_MAJOR: "1.0.0" as API.RuntimeSupport.RuntimeMetadataVersion,
+    getSupportedRuntimeMetadataVersion: canSupportRuntimeMetadataVersion,
+    getRuntimeFeatures
 };
 
 function parseVirtualModule(moduleId: string): API.RuntimeSupport.VirtualModuleType | undefined {
@@ -58,6 +65,34 @@ function generateSourceInfo(packageName: string, modulePath: string) {
         preferConst: true,
         objectShorthand: true
     });
+}
+
+const CURRENT_RUNTIME_METADATA_VERSION = "1.1.0";
+
+function canSupportRuntimeMetadataVersion(
+    runtimeMetadataVersion: string
+): API.RuntimeSupport.RuntimeMetadataVersion | API.RuntimeSupport.RuntimeValidationError {
+    let supports;
+    try {
+        supports = canParse(CURRENT_RUNTIME_METADATA_VERSION, runtimeMetadataVersion);
+    } catch (e) {
+        return {
+            code: "invalid-version",
+            error: e as Error
+        };
+    }
+
+    if (!supports) {
+        return { code: "unsupported-version" };
+    }
+    return runtimeMetadataVersion as API.RuntimeSupport.RuntimeMetadataVersion;
+}
+
+function getRuntimeFeatures(runtimeVersion: API.RuntimeSupport.RuntimeMetadataVersion) {
+    const supportsMessageBox = gte(runtimeVersion, "1.1.0");
+    return {
+        supportsMessageBox
+    };
 }
 
 function getSourceId(packageName: string, relativeModulePath: string) {
