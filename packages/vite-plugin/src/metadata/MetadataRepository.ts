@@ -342,7 +342,7 @@ function detectRuntimeMetadataVersion(
     }
 
     const versionResult = RuntimeSupport.getSupportedRuntimeMetadataVersion(metadataVersion);
-    if ("code" in versionResult) {
+    if (typeof versionResult != "string" &&  "code" in versionResult) {
         switch (versionResult.code) {
             case "invalid-version":
                 throw new ReportableError(`Invalid metadata version ${metadataVersion}`, {
@@ -355,7 +355,7 @@ function detectRuntimeMetadataVersion(
                 );
         }
     }
-    return versionResult;
+    return versionResult as RuntimeSupport.RuntimeMetadataVersion;
 }
 
 function propagateWatchFiles(watchFiles: Iterable<string>, ctx: MetadataContext) {

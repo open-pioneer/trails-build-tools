@@ -175,10 +175,7 @@ class PackageMetadataReader {
             /** External packages must have framework metadata in their package.json (or they are not considered Open Pioneer Trails packages at all). */
             case "external": {
                 if (!frameworkMetadata) {
-                    //TODO just for testing
-                    // const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
-                    // return this.parsePackageConfigFromBuildConfig(buildConfigPath);
-                    return undefined;
+                   return undefined;
                 }
                 return this.parsePackageConfigFromMetadata(packageName, frameworkMetadata);
             }
@@ -274,8 +271,7 @@ class PackageMetadataReader {
         let buildConfig: BuildConfig | undefined;
         ctx.addWatchFile(normalizePath(buildConfigPath));
         if (await fileExists(buildConfigPath)) {
-            //TODO just for testing
-            // ctx.addWatchFile(normalizePath(buildConfigPath));
+            ctx.addWatchFile(normalizePath(buildConfigPath));
             try {
                 buildConfig = await loadBuildConfig(buildConfigPath);
             } catch (e) {
