@@ -280,5 +280,5 @@ function getWMSLegendUrl(capabilities, layerName) {
   return url;
 }
 
-export { WMSLayerImpl, getWMSLegendUrl };
+export { WMSLayerImpl };
 //# sourceMappingURL=WMSLayerImpl.js.map

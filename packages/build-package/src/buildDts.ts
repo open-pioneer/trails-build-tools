@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import type * as Ts from "typescript";
 import { Logger } from "./utils/Logger";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
-import glob from "fast-glob";
+import { glob } from "tinyglobby";
 import { SUPPORTED_TS_EXTENSIONS } from "./model/PackageModel";
 import { createDebugger } from "./utils/debug";
 import { existsSync } from "node:fs";

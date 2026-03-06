@@ -1,4 +1,4 @@
-import { useService } from '../_virtual/_virtual-pioneer-module_react-hooks.js';
+import { useService } from '../_virtual/hooks.js';
 import { useMemo } from 'react';
 import { useAsync } from 'react-use';
 

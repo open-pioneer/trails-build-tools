@@ -1,9 +1,5 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-
-import { readFile } from "node:fs/promises";
-import { ReportableError } from "../ReportableError";
-import { fileExists, isInDirectory } from "../utils/fileUtils";
 import {
     BUILD_CONFIG_NAME,
     BuildConfig,
@@ -14,16 +10,26 @@ import {
     loadBuildConfig,
     RUNTIME_VERSIONS
 } from "@open-pioneer/build-common";
-import { normalizePath } from "vite";
-import { join } from "node:path";
-import { createDebugger } from "../utils/debug";
-import { InternalPackageMetadata, MetadataContext, PackageDependency } from "./Metadata";
-import { PACKAGE_NAME } from "../utils/package";
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import posix from "node:path/posix";
+import { normalizePath } from "vite";
+import { ReportableError } from "../ReportableError";
+import { createDebugger } from "../utils/debug";
+import { fileExists, isInDirectory } from "../utils/fileUtils";
+import { PACKAGE_NAME } from "../utils/package";
+import { MetadataContext } from "./Context";
+import { InternalPackageMetadata, PackageDependency } from "./Metadata";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
+
+export interface LoadPackageOptions {
+    sourceRoot: string;
+    importedFrom: string | undefined;
+    allowMissingBuildConfigInLocalPackage?: boolean;
+}
 
 /**
  * This function is called to read a package's metadata during build
@@ -35,15 +41,9 @@ const debug = createDebugger("open-pioneer:metadata");
 export async function loadPackageMetadata(
     ctx: MetadataContext,
     packageDir: string,
-    sourceRoot: string,
-    importedFrom: string | undefined
+    options: LoadPackageOptions
 ): Promise<InternalPackageMetadata> {
-    return await new PackageMetadataReader(
-        ctx,
-        packageDir,
-        sourceRoot,
-        importedFrom
-    ).readPackageMetadata();
+    return await new PackageMetadataReader(ctx, packageDir, options).readPackageMetadata();
 }
 
 interface PackageConfigResult {
@@ -57,18 +57,15 @@ class PackageMetadataReader {
     private sourceRoot: string;
     private packageJsonPath: string;
     private importedFrom: string | undefined;
+    private allowMissingBuildConfig: boolean;
 
-    constructor(
-        ctx: MetadataContext,
-        packageDir: string,
-        sourceRoot: string,
-        importedFrom: string | undefined
-    ) {
+    constructor(ctx: MetadataContext, packageDir: string, options: LoadPackageOptions) {
         this.ctx = ctx;
         this.packageDir = packageDir;
-        this.sourceRoot = sourceRoot;
+        this.sourceRoot = options.sourceRoot;
         this.packageJsonPath = join(packageDir, "package.json");
-        this.importedFrom = importedFrom;
+        this.importedFrom = options.importedFrom;
+        this.allowMissingBuildConfig = options?.allowMissingBuildConfigInLocalPackage ?? false;
     }
 
     /**
@@ -104,10 +101,17 @@ class PackageMetadataReader {
         }
         const { config, configPath } = configResult;
 
-        let servicesModule: string | undefined;
+        let servicesModuleId: string | undefined;
+        let servicesModulePath: string | undefined;
         if (config.services.size) {
+            const localModuleId = config.servicesModule ?? "./services";
+            servicesModuleId = posix.join(packageName, localModuleId);
             try {
-                servicesModule = await this.getServicesModule(mode, packageName, config);
+                servicesModulePath = await this.resolveServicesModule(
+                    mode,
+                    packageName,
+                    localModuleId
+                );
             } catch (e) {
                 throw new ReportableError(
                     `Failed to resolve services entry point for package ${packageDir}`,
@@ -119,7 +123,7 @@ class PackageMetadataReader {
         let cssFile: string | undefined;
         if (config.styles) {
             try {
-                cssFile = await resolveLocalFile(ctx, packageDir, config.styles);
+                cssFile = await resolveLocalFile(ctx, packageDir, packageName, config.styles);
             } catch (e) {
                 throw new ReportableError(`Failed to resolve css file for package ${packageDir}`, {
                     cause: e
@@ -147,7 +151,8 @@ class PackageMetadataReader {
             version: packageVersion,
             directory: packageDir,
             packageJsonPath: packageJsonPath,
-            servicesModulePath: servicesModule,
+            servicesModuleId,
+            servicesModulePath,
             cssFilePath: cssFile,
             i18nPaths,
             get locales() {
@@ -204,12 +209,11 @@ class PackageMetadataReader {
     /**
      * Attempts to resolve the package's services entry point (e.g. ./services.ts), depending on mode.
      */
-    private async getServicesModule(
+    private async resolveServicesModule(
         mode: "local" | "external",
         packageName: string,
-        config: PackageConfig
+        moduleId: string
     ): Promise<string | undefined> {
-        const localServicesModule = config.servicesModule ?? "./services";
         const importedFrom = this.importedFrom;
         if (mode === "external" && importedFrom) {
             /**
@@ -227,9 +231,9 @@ class PackageMetadataReader {
              * Because this is an unresolved import (e.g. @open-pioneer/some-package/services) from the app's virtual packages module
              * this package must be reachable from the app. For this reason we currently must use pnpm's "shamefully-hoist" option :(
              */
-            return posix.join(packageName, localServicesModule);
+            return posix.join(packageName, moduleId);
         } else {
-            return await resolveLocalFile(this.ctx, this.packageDir, localServicesModule);
+            return await resolveLocalFile(this.ctx, this.packageDir, packageName, moduleId);
         }
     }
 
@@ -284,10 +288,10 @@ class PackageMetadataReader {
                     }
                 );
             }
-        } else {
-            //TODO just for testing
-            // return undefined;
+        } else if (!this.allowMissingBuildConfig) {
             throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);
+        } else {
+            return undefined;
         }
         return {
             configPath: buildConfigPath,
@@ -373,15 +377,17 @@ async function parsePackageJson(packageJsonPath: string) {
     };
 }
 
-async function resolveLocalFile(ctx: MetadataContext, packageDir: string, localModuleId: string) {
+async function resolveLocalFile(
+    ctx: MetadataContext,
+    packageDir: string,
+    packageName: string,
+    localModuleId: string
+) {
     if (!localModuleId.startsWith("./")) {
         localModuleId = `./${localModuleId}`;
     }
 
-    const result = await ctx.resolve(localModuleId, `${packageDir}/package.json`, {
-        skipSelf: true
-    });
-    return result?.id;
+    return await ctx.resolveLocalFile(localModuleId, packageName, packageDir);
 }
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/;

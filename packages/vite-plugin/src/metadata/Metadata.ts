@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-
 import { PackageConfig, RuntimeVersion } from "@open-pioneer/build-common";
-import { PluginContext } from "rollup";
 
 /**
  * Contains build-time information about an app.
@@ -53,6 +51,9 @@ export interface PackageMetadata {
 
     /** Path to package.json file. */
     packageJsonPath: string;
+
+    /** The UNRESOLVED services module id (e.g. `@foo/packageName/services`). */
+    servicesModuleId: string | undefined;
 
     /** Path to entry point (contains service exports). */
     servicesModulePath: string | undefined;
@@ -109,8 +110,6 @@ export interface PlainPackageMetadata {
  * Either an Open Pioneer Trails package or a plain package.
  */
 export type InternalPackageMetadata = PackageMetadata | PlainPackageMetadata;
-
-export type MetadataContext = Pick<PluginContext, "addWatchFile" | "resolve" | "warn">;
 
 export interface ResolvedPackageLocation {
     type: "absolute";

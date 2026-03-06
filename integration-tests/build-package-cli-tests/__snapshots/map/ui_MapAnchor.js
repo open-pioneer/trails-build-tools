@@ -87,5 +87,5 @@ function stopPropagation(e) {
   e.stopPropagation();
 }
 
-export { MapAnchor, computeAttributionGap, computePositionStyles };
+export { MapAnchor };
 //# sourceMappingURL=MapAnchor.js.map

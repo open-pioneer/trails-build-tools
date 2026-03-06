@@ -3,7 +3,8 @@
 import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists } from "../utils/fileUtils";
-import { AppMetadata, MetadataContext, PackageMetadata } from "./Metadata";
+import { MetadataContext } from "./Context";
+import { AppMetadata, PackageMetadata } from "./Metadata";
 import { MetadataRepository } from "./MetadataRepository";
 
 const isDebug = !!process.env.DEBUG;

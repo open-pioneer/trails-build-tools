@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { dirname, basename } from "node:path/posix";
+import { existsSync } from "fs";
+import { basename, dirname, posix } from "node:path/posix";
+import { join } from "path/posix";
 import { normalizePath } from "vite";
 
 const APP_MODULE = "@@open-pioneer-app";
@@ -23,9 +25,16 @@ const APP_I18N_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
 
 const PACKAGE_HOOKS_MODULE = "@@open-pioneer-react-hooks";
 
+const SOURCE_INFO_MODULE = "@@open-pioneer-source-info";
+const SOURCE_INFO_MODULE_MODULE_PATH_RE = /@@open-pioneer-source-info\/(?<module_path>.*)&lang=js$/;
+
 const SOURCE_FILE_RE = /^(.*?)(?:\?|$)/;
 
-export type VirtualModule = VirtualAppModule | VirtualI18nMessages | VirtualPackageModule;
+export type VirtualModule =
+    | VirtualAppModule
+    | VirtualI18nMessages
+    | VirtualPackageModule
+    | VirtualSourceInfoModule;
 
 export interface VirtualAppModule {
     type: "app-meta" | "app-packages" | "app-css" | "app-i18n-index";
@@ -43,6 +52,12 @@ export interface VirtualPackageModule {
     packageDirectory: string;
 }
 
+export interface VirtualSourceInfoModule {
+    type: "source-info";
+    modulePath: string;
+    packageDirectory: string;
+}
+
 /**
  * Takes a module id as input and parses it.
  * If this plugin is not responsible to load the module id, this function returns `undefined`.
@@ -55,7 +70,7 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
         return undefined;
     }
 
-    const sourceFile = getSourceFile(moduleId); // module id with out query
+    const sourceFile = getSourceFile(moduleId); // module id without query
     if (!sourceFile) {
         return undefined;
     }
@@ -67,10 +82,37 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
             packageDirectory: dirname(sourceFile)
         };
     }
+
+    const sourceInfoMatch = moduleId.match(SOURCE_INFO_MODULE_MODULE_PATH_RE);
+    if (sourceInfoMatch) {
+        return parseSourceInfoModule(moduleId, sourceInfoMatch);
+    }
+
     if (base === APP_MODULE) {
         return parseAppModuleId(sourceFile, moduleId);
     }
     return undefined;
+}
+
+function parseSourceInfoModule(moduleId: string, sourceInfoMatch: RegExpMatchArray): VirtualModule {
+    const encodedModulePath = sourceInfoMatch?.groups?.["module_path"];
+    if (!encodedModulePath) {
+        throw new Error(`Missing module path in source info module id: ${moduleId}`);
+    }
+    const relativeModulePath = decodeURIComponent(encodedModulePath);
+    const moduleRoot = moduleId.substring(0, moduleId.indexOf(`${SOURCE_INFO_MODULE}`));
+    if (!moduleRoot) {
+        throw new Error(
+            `Cannot determine module root directory for source info module id: ${moduleId}`
+        );
+    }
+    const fullModulePath = join(moduleRoot, relativeModulePath);
+    const packageJsonPath = findPackageJson(dirname(fullModulePath), moduleRoot);
+    if (!packageJsonPath) {
+        throw new Error(`Cannot determine package.json for source info module id: ${moduleId}`);
+    }
+    const packageDirectory = dirname(packageJsonPath);
+    return { type: "source-info", modulePath: relativeModulePath, packageDirectory };
 }
 
 function parseAppModuleId(sourceFile: string, moduleId: string): VirtualModule | undefined {
@@ -111,6 +153,8 @@ export function serializeModuleId(mod: VirtualModule): string {
     switch (mod.type) {
         case "package-hooks":
             return `${mod.packageDirectory}/${PACKAGE_HOOKS_MODULE}`;
+        case "source-info":
+            return serializeSourceInfoModule(mod);
         case "app-meta":
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_META_QUERY}`;
         case "app-packages":
@@ -124,10 +168,41 @@ export function serializeModuleId(mod: VirtualModule): string {
     }
 }
 
+function serializeSourceInfoModule(mod: VirtualSourceInfoModule): string {
+    const packageDirectory = mod.packageDirectory;
+    const modulePath = mod.modulePath;
+    const normalizedModulePath = normalizePath(modulePath);
+
+    const relativeModulePath = posix.relative(packageDirectory, normalizedModulePath);
+    if (relativeModulePath.match(/^\.\.?[\\/]/)) {
+        // must not start with ./ or ../
+        throw new Error("Internal error: unexpected relative path");
+    }
+    return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}/${encodeURIComponent(relativeModulePath)}&lang=js`;
+}
+
 function getSourceFile(moduleId: string) {
     const sourceFile = moduleId.match(SOURCE_FILE_RE)?.[1];
     if (!sourceFile || moduleId[0] == "\0") {
         return undefined;
     }
     return sourceFile;
+}
+
+export function findPackageJson(startDir: string, rootDir: string) {
+    let dir = startDir;
+    while (dir) {
+        const candidate = join(dir, "package.json");
+        if (existsSync(candidate)) {
+            return candidate;
+        }
+
+        if (normalizePath(dir) == normalizePath(rootDir)) {
+            return undefined;
+        }
+
+        const parent = dirname(dir);
+        dir = parent === dir || parent === "." ? "" : parent;
+    }
+    return undefined;
 }

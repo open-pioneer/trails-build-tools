@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/vite-plugin-pioneer",
     "description": "The vite plugin provided by this package is required by Open Pioneer Trails applications.",
-    "version": "5.0.2",
+    "version": "5.1.0",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "module",
@@ -43,6 +43,7 @@
         "@open-pioneer/build-common": "workspace:^",
         "debug": "catalog:",
         "js-yaml": "catalog:",
+        "oxc-resolver": "catalog:",
         "vitefu": "catalog:",
         "zod": "catalog:",
         "zod-validation-error": "catalog:"
@@ -57,7 +58,7 @@
         "@types/js-yaml": "catalog:",
         "build-tools": "workspace:*",
         "esbuild": "catalog:",
-        "fast-glob": "catalog:",
+        "tinyglobby": "catalog:",
         "rimraf": "catalog:",
         "rollup": "catalog:",
         "sass": "catalog:",

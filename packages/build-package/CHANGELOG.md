@@ -1,5 +1,34 @@
 # Changelog @open-pioneer/build-package
 
+## 4.1.0
+
+### Minor Changes
+
+- 19aa36f: Implement sourceId helper which provides an easy way to obtain an id for the current source file:
+
+    ```ts
+    import { sourceId } from "open-pioneer:source-info";
+
+    // If imported from foo/bar/baz.ts in package my-package: my-package/foo/bar/baz
+    console.log(sourceId);
+    ```
+
+### Patch Changes
+
+- eac3ef4: Switch from fast-glob to tinyglobby (it has fewer dependencies).
+- Updated dependencies [19aa36f]
+    - @open-pioneer/build-common@3.2.0
+
+## 4.0.6
+
+### Patch Changes
+
+- 2c45a18: Bump dependencies
+- 1d5852a: Resolve node modules using `browser` exports.
+- Updated dependencies [2c45a18]
+    - @open-pioneer/build-common@3.1.2
+    - @open-pioneer/build-support@3.0.5
+
 ## 4.0.5
 
 ### Patch Changes

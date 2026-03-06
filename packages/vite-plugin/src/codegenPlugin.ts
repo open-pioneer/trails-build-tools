@@ -1,30 +1,38 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { RuntimeSupport } from "@open-pioneer/build-common";
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { normalizePath, Plugin, ResolvedConfig, Rollup, ViteDevServer } from "vite";
+import { dirname } from "node:path";
+import { cwd } from "node:process";
+import { normalizePath, Rollup, UserConfig, Plugin as VitePlugin } from "vite";
 import { ReportableError } from "./ReportableError";
+import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
-import { parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
+import {
+    findPackageJson,
+    parseVirtualModuleId,
+    serializeModuleId,
+    VirtualPackageModule,
+    VirtualSourceInfoModule
+} from "./codegen/shared";
+import { createMetadataContextFromRollup } from "./metadata/Context";
 import { MetadataRepository } from "./metadata/MetadataRepository";
+import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
 import { createDebugger } from "./utils/debug";
 import { fileExists } from "./utils/fileUtils";
-import { generateAppMetadata } from "./codegen/generateAppMetadata";
 
 type PluginContext = Rollup.PluginContext;
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
 
-export function codegenPlugin(): Plugin {
-    let config!: ResolvedConfig;
+export function codegenPlugin(): VitePlugin {
+    let isDev!: boolean;
+    let rootDir!: string;
     let repository!: MetadataRepository;
-    let devServer: ViteDevServer | undefined;
 
     return {
         name: "pioneer:codegen",
@@ -33,13 +41,14 @@ export function codegenPlugin(): Plugin {
             repository?.reset();
         },
 
-        configResolved(resolvedConfig) {
-            config = resolvedConfig;
-            repository = new MetadataRepository(config.root);
-        },
+        async config(userConfig, env) {
+            isDev = env.command === "serve";
+            rootDir = userConfig.root ?? cwd();
+            repository = new MetadataRepository(rootDir);
 
-        configureServer(server) {
-            devServer = server;
+            if (isDev) {
+                await optimizeTrailsPackages(userConfig, rootDir);
+            }
         },
 
         async resolveId(this: PluginContext, moduleId, importer) {
@@ -51,18 +60,6 @@ export function codegenPlugin(): Plugin {
                 if (parseVirtualModuleId(moduleId)) {
                     return moduleId;
                 }
-
-                const getPackageDirectory = () => {
-                    const packageJsonPath = findPackageJson(dirname(importer), config.root);
-                    if (!packageJsonPath) {
-                        throw new ReportableError(
-                            `Failed to find package.json for package from '${importer}'.`
-                        );
-                    }
-
-                    const packageDir = dirname(packageJsonPath);
-                    return normalizePath(packageDir);
-                };
 
                 let virtualModule;
                 try {
@@ -79,16 +76,22 @@ export function codegenPlugin(): Plugin {
                     case "app":
                         return serializeModuleId({
                             type: "app-meta",
-                            packageDirectory: getPackageDirectory()
+                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
                     case "react-hooks":
                         return serializeModuleId({
                             type: "package-hooks",
-                            packageDirectory: getPackageDirectory()
+                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                        });
+                    case "source-info":
+                        return serializeModuleId({
+                            type: "source-info",
+                            modulePath: importer,
+                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
                 }
             } catch (e) {
-                reportError(this, e, !!devServer);
+                reportError(this, e, isDev);
             }
         },
 
@@ -113,14 +116,7 @@ export function codegenPlugin(): Plugin {
                 }
 
                 if (mod.type === "package-hooks") {
-                    const directory = mod.packageDirectory;
-                    // use forward slashes instead of platform separator
-                    const packageJsonPath = (await this.resolve(directory + "/package.json"))?.id;
-                    if (!packageJsonPath) {
-                        throw new ReportableError(`Failed to resolve package.json in ${directory}`);
-                    }
-
-                    const packageName = await getPackageName(this, packageJsonPath);
+                    const packageName = await resolvePackageName(this, mod);
                     const generatedSourceCode = RuntimeSupport.generateReactHooks(
                         packageName,
                         RuntimeSupport.REACT_INTEGRATION_MODULE_ID
@@ -129,7 +125,13 @@ export function codegenPlugin(): Plugin {
                     return generatedSourceCode;
                 }
 
-                const appMetadata = await repository.getAppMetadata(this, dirname(packageJsonPath));
+                if (mod.type === "source-info") {
+                    const packageName = await resolvePackageName(this, mod);
+                    return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
+                }
+
+                const ctx = createMetadataContextFromRollup(this);
+                const appMetadata = await repository.getAppMetadata(ctx, dirname(packageJsonPath));
                 if (mod.type === "app-meta") {
                     const runtimeVersion = appMetadata.appRuntimeMetadataversion;
                     isDebug &&
@@ -159,8 +161,7 @@ export function codegenPlugin(): Plugin {
                         return generatedSourceCode;
                     }
                     case "app-i18n-index": {
-                        await validateI18nConfig(this, repository, appMetadata);
-
+                        await validateI18nConfig(ctx, repository, appMetadata);
                         const generatedSourceCode = generateI18nIndex(
                             mod.packageDirectory,
                             appMetadata.locales
@@ -174,11 +175,11 @@ export function codegenPlugin(): Plugin {
                             appName: appMetadata.name,
                             packages: appMetadata.packages,
                             loadI18n: async (pkg, filePath) => {
-                                this.addWatchFile(filePath);
+                                ctx.addWatchFile(filePath);
                                 if (!(await fileExists(filePath))) {
                                     throw new ReportableError(`XXXX`);
                                 }
-                                return repository.getI18nFile(this, filePath);
+                                return repository.getI18nFile(ctx, filePath);
                             }
                         });
                         isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
@@ -186,7 +187,7 @@ export function codegenPlugin(): Plugin {
                     }
                 }
             } catch (e) {
-                reportError(this, e, !!devServer);
+                reportError(this, e, isDev);
             }
         },
 
@@ -195,6 +196,50 @@ export function codegenPlugin(): Plugin {
             repository.onFileChanged(id);
         }
     };
+}
+
+async function resolvePackageName(
+    ctx: PluginContext,
+    mod: VirtualSourceInfoModule | VirtualPackageModule
+) {
+    const directory = mod.packageDirectory;
+    // use forward slashes instead of platform separator
+    const packageJsonPath = (await ctx.resolve(directory + "/package.json"))?.id;
+    if (!packageJsonPath) {
+        throw new ReportableError(`Failed to resolve package.json in ${directory}`);
+    }
+
+    return await getPackageName(ctx, packageJsonPath);
+}
+
+/**
+ * Find external trails packages and add their services modules (if any)
+ * to vite's `optimizeDeps.include`.
+ *
+ * This should reduce the number of `✨ optimized dependencies changed. reloading` events during development.
+ *
+ * NOTE: A better solution would be to teach vite's dependency optimizer how to interpret "open-pioneer:*",
+ * so that it accurately understands the actual additional imports from trails into node modules (i.e. all services etc.).
+ *
+ * I couldn't get the esbuild plugin working, however.
+ * This could be reattempted when vite has migrated to rolldown.
+ */
+async function optimizeTrailsPackages(userConfig: UserConfig, rootDir: string) {
+    const trailsPackages = await findTrailsPackages(rootDir);
+    const trailsModules = trailsPackages.flatMap((pkg) => {
+        if (!/[/\\]node_modules[/\\]/.test(pkg.directory)) {
+            return [];
+        }
+
+        const serviceModule = pkg.servicesModuleId;
+        return serviceModule ? [serviceModule] : [];
+    });
+    trailsModules.push(`${RuntimeSupport.RUNTIME_PACKAGE_NAME}/**`);
+
+    isDebug && debug("Optimizing additional modules %O", trailsModules);
+    const optimizeDeps = (userConfig.optimizeDeps ??= {});
+    const includes = (optimizeDeps.include ??= []);
+    includes.push(...trailsModules);
 }
 
 function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
@@ -222,22 +267,18 @@ function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
     });
 }
 
-function findPackageJson(startDir: string, rootDir: string) {
-    let dir = startDir;
-    while (dir) {
-        const candidate = join(dir, "package.json");
-        if (existsSync(candidate)) {
-            return candidate;
-        }
-
-        if (normalizePath(dir) == normalizePath(rootDir)) {
-            return undefined;
-        }
-
-        const parent = dirname(dir);
-        dir = parent === dir || parent === "." ? "" : parent;
+function getPackageDirectoryFromDirectory(directory: string, rootDir: string): string {
+    const packageJsonPath = findPackageJson(directory, rootDir);
+    if (!packageJsonPath) {
+        throw new ReportableError(`Failed to find package.json for package from '${directory}'.`);
     }
-    return undefined;
+
+    const packageDir = dirname(packageJsonPath);
+    return normalizePath(packageDir);
+}
+
+function getPackageDirectoryFromImporter(importer: string, rootDir: string): string {
+    return getPackageDirectoryFromDirectory(dirname(importer), rootDir);
 }
 
 async function getPackageName(ctx: PluginContext, packageJsonPath: string) {
