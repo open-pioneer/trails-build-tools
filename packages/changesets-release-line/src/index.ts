@@ -24,7 +24,7 @@ const getDependencyReleaseLine = async (
     _changesets: NewChangesetWithCommit[],
     _dependenciesUpdated: ModCompWithPackage[]
 ) => {
-    //do not log internal dependency updates in changelogs
+    //do not log internal dependency updates to changelogs
     return "";
 };
 
