@@ -509,13 +509,13 @@ importers:
 
   packages/changesets-release-line:
     dependencies:
-      '@changesets/cli':
-        specifier: 'catalog:'
-        version: 2.29.8(@types/node@20.19.35)
       '@open-pioneer/build-package':
         specifier: workspace:^
         version: link:../build-package
     devDependencies:
+      '@changesets/cli':
+        specifier: 'catalog:'
+        version: 2.29.8(@types/node@20.19.35)
       build-tools:
         specifier: workspace:*
         version: link:../..

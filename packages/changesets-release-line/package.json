@@ -28,11 +28,11 @@
         "LICENSE"
     ],
     "dependencies": {
-        "@open-pioneer/build-package": "workspace:^",
-        "@changesets/cli": "catalog:"
+        "@open-pioneer/build-package": "workspace:^"
     },
     "devDependencies": {
-        "build-tools": "workspace:*"
+        "build-tools": "workspace:*",
+        "@changesets/cli": "catalog:"
     },
     "engines": {
         "node": ">= 20"
