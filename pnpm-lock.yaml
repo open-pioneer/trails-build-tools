@@ -508,10 +508,6 @@ importers:
   packages/build-support: {}
 
   packages/changesets-release-line:
-    dependencies:
-      '@open-pioneer/build-package':
-        specifier: workspace:^
-        version: link:../build-package
     devDependencies:
       '@changesets/cli':
         specifier: 'catalog:'

@@ -27,9 +27,6 @@
         "README.md",
         "LICENSE"
     ],
-    "dependencies": {
-        "@open-pioneer/build-package": "workspace:^"
-    },
     "devDependencies": {
         "build-tools": "workspace:*",
         "@changesets/cli": "catalog:"
