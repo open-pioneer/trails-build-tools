@@ -1,5 +1,5 @@
 ---
-"@open-pioneer/changesets-release-line": patch
+"@open-pioneer/changesets-release-line": minor
 ---
 
 Custom Changesets Release Line

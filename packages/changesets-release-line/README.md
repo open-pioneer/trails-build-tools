@@ -14,3 +14,7 @@ Reference this package in changeset config (typically `./.changeset/config.json`
     ...
 }
 ```
+
+## Note
+
+This custom release line is derived from the [@changesets/changelog-git](https://github.com/changesets/changesets/tree/main/packages/changelog-git) release line.
