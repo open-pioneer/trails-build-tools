@@ -507,6 +507,15 @@ importers:
 
   packages/build-support: {}
 
+  packages/changesets-release-line:
+    devDependencies:
+      '@changesets/cli':
+        specifier: 'catalog:'
+        version: 2.29.8(@types/node@20.19.35)
+      build-tools:
+        specifier: workspace:*
+        version: link:../..
+
   packages/check-pnpm-duplicates:
     dependencies:
       '@pnpm/lockfile.fs':

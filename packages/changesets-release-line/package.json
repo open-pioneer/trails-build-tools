@@ -1,0 +1,37 @@
+{
+    "name": "@open-pioneer/changesets-release-line",
+    "description": "This package provides a custom release line for @changesets/cli to be used in official Open Pioneer Trails repositories.",
+    "version": "0.0.1",
+    "main": "dist/index.js",
+    "type": "module",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-pioneer/trails-build-tools.git",
+        "directory": "packages/changesets-release-line"
+    },
+    "homepage": "https://github.com/open-pioneer",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "scripts": {
+        "clean": "rimraf dist",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch"
+    },
+    "files": [
+        "dist/**/*.js",
+        "dist/**/*.js.map",
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
+    "devDependencies": {
+        "build-tools": "workspace:*",
+        "@changesets/cli": "catalog:"
+    },
+    "engines": {
+        "node": ">= 20"
+    }
+}
