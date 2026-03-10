@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { BUILD_CONFIG_NAME } from "@open-pioneer/build-common";
+import { BUILD_CONFIG_NAME, RuntimeSupport } from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
 import { normalizePath } from "vite";
@@ -149,91 +149,19 @@ export class MetadataRepository {
             appPackageMetadata.packageJsonPath
         );
 
+        const packages = Array.from(packageMetadataByName.values());
+        const runtimeMetadataVersion = detectRuntimeMetadataVersion(packages);
+
         const appMetadata: AppMetadata = {
             name: appPackageMetadata.name,
             directory: appPackageMetadata.directory,
             locales: appLocales,
             packageJsonPath: appPackageMetadata.packageJsonPath,
             appPackage: appPackageMetadata,
-            packages: Array.from(packageMetadataByName.values())
+            packages,
+            runtimeMetadataVersion
         };
-        await this.checkAppI18n(ctx, appMetadata);
         return appMetadata;
-    }
-
-    private async checkAppI18n(ctx: MetadataContext, appMetadata: AppMetadata) {
-        const appPackage = appMetadata.appPackage;
-        const appLocales = new Set(appMetadata.locales);
-
-        // Fetch app i18n files to detect whether an app overrides messages for a package.
-        // key: locale
-        const appI18nFiles = await Promise.all(
-            Array.from(appLocales).map((locale) => {
-                const i18nPath = appPackage.i18nPaths.get(locale);
-                if (i18nPath == null) {
-                    throw new Error(
-                        `App package '${appPackage.name}' does not have an i18n file for locale '${locale}'.`
-                    );
-                }
-                return this.getI18nFile(ctx, i18nPath);
-            })
-        );
-        const errors: PackageMetadata[] = [];
-        for (const pkg of appMetadata.packages) {
-            const pkgLocales = pkg.locales;
-
-            // If a package does not use i18n features: no error.
-            if (pkgLocales.length === 0) {
-                continue;
-            }
-
-            // If the application directly supports any of the package's locales, there is no error.
-            if (pkg.locales.some((locale) => appLocales.has(locale))) {
-                continue;
-            }
-
-            // If the application overrides the package's i18n messages for any locale, there is no error.
-            if (appI18nFiles.some((i18nFile) => i18nFile.overrides?.get(pkg.name))) {
-                continue;
-            }
-
-            errors.push(pkg);
-        }
-        if (errors.length === 0) {
-            return;
-        }
-
-        errors.sort((p1, p2) => p1.name.localeCompare(p2.name, "en"));
-        const getPackageErrors = () => {
-            const MAX = 3;
-            const take = Math.min(errors.length, MAX);
-            const remaining = errors.length - take;
-
-            // Report errors for the first `take` packages
-            let buffer = "";
-            for (let i = 0; i < take; ++i) {
-                if (i > 0) {
-                    buffer += ", ";
-                }
-
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                const pkg = errors[i]!;
-                buffer += `'${pkg.name}' (${pkg.locales.toSorted().join(", ")})`;
-            }
-
-            if (remaining > 0) {
-                buffer += ` (and ${remaining} more)`;
-            }
-            return buffer;
-        };
-
-        const formattedAppLocales = appMetadata.locales.join(", ") || "none";
-        const formattedPackageErrors = getPackageErrors();
-        throw new ReportableError(
-            `Invalid i18n configuration in application at ${appMetadata.directory}:\n` +
-                `There is no match between the locales supported by the application (${formattedAppLocales}) and the locales ` +
-                `supported by the packages ${formattedPackageErrors}.`
-        );
     }
 
     /**
@@ -259,7 +187,6 @@ export class MetadataRepository {
             isDebug && debug(`Skipping package '${packageDir}'.`);
             return undefined;
         }
-
         return entry.metadata;
     }
 
@@ -399,6 +326,36 @@ export class MetadataRepository {
         };
         return new Cache(provider);
     }
+}
+
+function detectRuntimeMetadataVersion(
+    packages: PackageMetadata[]
+): RuntimeSupport.RuntimeMetadataVersion {
+    const runtimePackage = packages.find((p) => p.name === RuntimeSupport.RUNTIME_PACKAGE_NAME);
+    if (!runtimePackage) {
+        return RuntimeSupport.DEFAULT_METADATA_VERSION;
+    }
+
+    const metadataVersion = runtimePackage.config.runtimeMeta?.metadataVersion;
+    if (!metadataVersion) {
+        return RuntimeSupport.DEFAULT_METADATA_VERSION;
+    }
+
+    const versionResult = RuntimeSupport.getSupportedRuntimeMetadataVersion(metadataVersion);
+    if (typeof versionResult != "string" &&  "code" in versionResult) {
+        switch (versionResult.code) {
+            case "invalid-version":
+                throw new ReportableError(`Invalid metadata version ${metadataVersion}`, {
+                    cause: versionResult.error
+                });
+            case "unsupported-version":
+                throw new ReportableError(
+                    `Runtime metadata version ${metadataVersion} of ${runtimePackage.name} is not supported.
+                         This plugin supports versions ^${RuntimeSupport.CURRENT_METADATA_MAJOR}.`
+                );
+        }
+    }
+    return versionResult as RuntimeSupport.RuntimeMetadataVersion;
 }
 
 function propagateWatchFiles(watchFiles: Iterable<string>, ctx: MetadataContext) {

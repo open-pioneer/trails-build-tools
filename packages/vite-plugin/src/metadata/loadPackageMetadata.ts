@@ -140,13 +140,7 @@ class PackageMetadataReader {
             if (i18nPaths.has(locale)) {
                 throw new ReportableError(`Locale '${locale}' was defined twice in ${configPath}`);
             }
-
             const path = join(packageDir, "i18n", `${locale}.yaml`);
-            ctx.addWatchFile(path);
-            if (!(await fileExists(path))) {
-                throw new ReportableError(`i18n file '${path}' does not exist.`);
-            }
-
             i18nPaths.set(locale, normalizePath(path));
         }
 
@@ -181,7 +175,7 @@ class PackageMetadataReader {
             /** External packages must have framework metadata in their package.json (or they are not considered Open Pioneer Trails packages at all). */
             case "external": {
                 if (!frameworkMetadata) {
-                    return undefined;
+                   return undefined;
                 }
                 return this.parsePackageConfigFromMetadata(packageName, frameworkMetadata);
             }
@@ -258,7 +252,6 @@ class PackageMetadataReader {
                     { cause: metadataResult.cause }
                 );
             }
-
             throw new ReportableError(
                 `Failed to parse metadata of package '${packageName}' in ${packageDir}: ${metadataResult.message}`,
                 { cause: metadataResult.cause }
@@ -278,12 +271,17 @@ class PackageMetadataReader {
         let buildConfig: BuildConfig | undefined;
         ctx.addWatchFile(normalizePath(buildConfigPath));
         if (await fileExists(buildConfigPath)) {
+            ctx.addWatchFile(normalizePath(buildConfigPath));
             try {
                 buildConfig = await loadBuildConfig(buildConfigPath);
             } catch (e) {
-                throw new ReportableError(`Failed to load build config ${buildConfigPath}`, {
-                    cause: e
-                });
+                const cause = e instanceof Error ? e.cause : String(e);
+                throw new ReportableError(
+                    `Failed to load build config ${buildConfigPath}. ${cause}`,
+                    {
+                        cause: e
+                    }
+                );
             }
         } else if (!this.allowMissingBuildConfig) {
             throw new ReportableError(`Expected a ${BUILD_CONFIG_NAME} in ${packageDir}`);

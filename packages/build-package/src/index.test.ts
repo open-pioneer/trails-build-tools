@@ -2,49 +2,44 @@
 // SPDX-License-Identifier: Apache-2.0
 import { cp, mkdir } from "fs/promises";
 import { resolve } from "node:path";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, expect, it, vi } from "vitest";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { existsSync } from "fs";
 import { build } from ".";
 import { createMemoryLogger } from "./utils/Logger";
 
-describe(
-    "build",
-    {
-        timeout: 20000
-    },
-    function () {
-        beforeAll(async () => {
-            await mkdir(TEMP_DATA_DIR, { recursive: true });
-            await cp(
-                resolve(TEST_DATA_DIR, "tsconfig.json"),
-                resolve(TEMP_DATA_DIR, "tsconfig.json")
-            );
-        });
+vi.setConfig({
+    testTimeout: 20_000
+});
 
-        it("should build package to `dist`", async function () {
-            const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project-valid-dependencies");
-            const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project-valid-dependencies");
-            const distDirectory = resolve(tempPackage, "dist");
-            const logger = createMemoryLogger();
+beforeAll(async () => {
+    await mkdir(TEMP_DATA_DIR, { recursive: true });
+    await cp(resolve(TEST_DATA_DIR, "tsconfig.json"), resolve(TEMP_DATA_DIR, "tsconfig.json"));
+});
 
-            await cleanDir(tempPackage);
-            await cp(srcPackage, tempPackage, {
-                recursive: true,
-                force: true
-            });
+it("should build package to `dist`", async function () {
+    const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project-valid-dependencies");
+    const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project-valid-dependencies");
+    const distDirectory = resolve(tempPackage, "dist");
+    const logger = createMemoryLogger();
 
-            try {
-                await build({ packageDirectory: tempPackage, logger });
-            } catch (e) {
-                console.error(logger.messages);
-                throw e;
-            }
+    await cleanDir(tempPackage);
+    await cp(srcPackage, tempPackage, {
+        recursive: true,
+        force: true
+    });
 
-            const entryPointA = resolve(distDirectory, "entryPointA.js");
-            expect(readText(entryPointA)).toMatchInlineSnapshot(
-                restoreSourceMapComment(`
+    try {
+        await build({ packageDirectory: tempPackage, logger });
+    } catch (e) {
+        console.error(logger.messages);
+        throw e;
+    }
+
+    const entryPointA = resolve(distDirectory, "entryPointA.js");
+    expect(readText(entryPointA)).toMatchInlineSnapshot(
+        restoreSourceMapComment(`
               "import { log } from './dir/log.js';
               import something from 'somewhere-external';
               import somethingElse from '@scope/somewhere-external';
@@ -59,17 +54,17 @@ describe(
               //_ sourceMappingURL=entryPointA.js.map
               "
             `)
-            );
+    );
 
-            const entryPointADts = resolve(distDirectory, "entryPointA.d.ts");
-            expect(readText(entryPointADts)).toMatchInlineSnapshot(`
+    const entryPointADts = resolve(distDirectory, "entryPointA.d.ts");
+    expect(readText(entryPointADts)).toMatchInlineSnapshot(`
           "export function helloA(): void;
           "
         `);
 
-            const entryPointB = resolve(distDirectory, "entryPointB.js");
-            expect(readText(entryPointB)).toMatchInlineSnapshot(
-                restoreSourceMapComment(`
+    const entryPointB = resolve(distDirectory, "entryPointB.js");
+    expect(readText(entryPointB)).toMatchInlineSnapshot(
+        restoreSourceMapComment(`
               "import { log } from './dir/log.js';
 
               function helloB() {
@@ -80,21 +75,21 @@ describe(
               //_ sourceMappingURL=entryPointB.js.map
               "
             `)
-            );
+    );
 
-            const entryPointBDts = resolve(distDirectory, "entryPointB.d.ts");
-            expect(readText(entryPointBDts)).toMatchInlineSnapshot(`
+    const entryPointBDts = resolve(distDirectory, "entryPointB.d.ts");
+    expect(readText(entryPointBDts)).toMatchInlineSnapshot(`
           "export function helloB(): void;
           "
         `);
 
-            // Not included
-            const hiddenFile = resolve(distDirectory, "hiddenFile.js");
-            expect(existsSync(hiddenFile)).toBe(false);
+    // Not included
+    const hiddenFile = resolve(distDirectory, "hiddenFile.js");
+    expect(existsSync(hiddenFile)).toBe(false);
 
-            // Styles are present
-            const styles = resolve(distDirectory, "my-styles.css");
-            expect(readText(styles)).toMatchInlineSnapshot(`
+    // Styles are present
+    const styles = resolve(distDirectory, "my-styles.css");
+    expect(readText(styles)).toMatchInlineSnapshot(`
           ".main {
               color: green;
           }
@@ -102,68 +97,127 @@ describe(
           /*# sourceMappingURL=my-styles.css.map */"
         `);
 
-            // Package.json was generated
-            const packageJson = resolve(distDirectory, "package.json");
-            expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
-          {
-            "dependencies": {
-              "@open-pioneer/runtime": "*",
-              "@scope/somewhere-external": "*",
-              "foo": "^1.2.3",
-              "somewhere-external": "*",
-            },
-            "exports": {
-              "./entryPointA": {
-                "import": "./entryPointA.js",
-                "types": "./entryPointA.d.ts",
-              },
-              "./entryPointB": {
-                "import": "./entryPointB.js",
-                "types": "./entryPointB.d.ts",
-              },
-              "./my-styles.css": "./my-styles.css",
-              "./package.json": "./package.json",
-            },
-            "license": "MIT",
-            "name": "simple-js-project",
-            "openPioneerFramework": {
-              "i18n": {
-                "languages": [],
-              },
-              "packageFormatVersion": "1.0.0",
-              "properties": [],
-              "services": [],
-              "styles": "./my-styles.css",
-              "ui": {
-                "references": [],
-              },
-            },
-            "type": "module",
-            "version": "0.0.1",
-          }
-        `);
+    // Package.json was generated
+    const packageJson = resolve(distDirectory, "package.json");
+    expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
+      {
+        "dependencies": {
+          "@open-pioneer/runtime": "*",
+          "@scope/somewhere-external": "*",
+          "foo": "^1.2.3",
+          "somewhere-external": "*",
+        },
+        "exports": {
+          "./entryPointA": {
+            "import": "./entryPointA.js",
+            "types": "./entryPointA.d.ts",
+          },
+          "./entryPointB": {
+            "import": "./entryPointB.js",
+            "types": "./entryPointB.d.ts",
+          },
+          "./my-styles.css": "./my-styles.css",
+          "./package.json": "./package.json",
+        },
+        "license": "MIT",
+        "name": "simple-js-project",
+        "openPioneerFramework": {
+          "i18n": {
+            "languages": [],
+          },
+          "packageFormatVersion": "1.1.0",
+          "properties": [],
+          "services": [],
+          "styles": "./my-styles.css",
+          "ui": {
+            "references": [],
+          },
+        },
+        "type": "module",
+        "version": "0.0.1",
+      }
+    `);
 
-            // License, changelog and readme were copied
-            const readme = resolve(distDirectory, "README.md");
-            expect(readText(readme)).toMatchInlineSnapshot(`
+    // License, changelog and readme were copied
+    const readme = resolve(distDirectory, "README.md");
+    expect(readText(readme)).toMatchInlineSnapshot(`
           "# README for simple package
           "
         `);
 
-            const changelog = resolve(distDirectory, "CHANGELOG.md");
-            expect(readText(changelog)).toMatchInlineSnapshot(`
+    const changelog = resolve(distDirectory, "CHANGELOG.md");
+    expect(readText(changelog)).toMatchInlineSnapshot(`
           "# Changelog for simple package
           "
         `);
 
-            const license = resolve(distDirectory, "LICENSE");
-            expect(readText(license)).toMatchInlineSnapshot(`
+    const license = resolve(distDirectory, "LICENSE");
+    expect(readText(license)).toMatchInlineSnapshot(`
           "LICENSE
           "
         `);
-        });
+});
+
+it("should build package to `dist` with runtime version", async function () {
+    const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project-with-runtime");
+    const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project-with-runtime");
+    const distDirectory = resolve(tempPackage, "dist");
+    const logger = createMemoryLogger();
+
+    await cleanDir(tempPackage);
+    await cp(srcPackage, tempPackage, {
+        recursive: true,
+        force: true
+    });
+
+    try {
+        await build({ packageDirectory: tempPackage, logger });
+    } catch (e) {
+        console.error(logger.messages);
+        throw e;
     }
-);
+
+    // Package.json was generated
+    const packageJson = resolve(distDirectory, "package.json");
+    expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
+      {
+        "dependencies": {
+          "@open-pioneer/runtime": "*",
+          "@scope/somewhere-external": "*",
+          "foo": "^1.2.3",
+          "somewhere-external": "*",
+        },
+        "exports": {
+          "./entryPointA": {
+            "import": "./entryPointA.js",
+            "types": "./entryPointA.d.ts",
+          },
+          "./entryPointB": {
+            "import": "./entryPointB.js",
+            "types": "./entryPointB.d.ts",
+          },
+          "./my-styles.css": "./my-styles.css",
+          "./package.json": "./package.json",
+        },
+        "license": "MIT",
+        "name": "simple-js-project-with-runtime",
+        "openPioneerFramework": {
+          "i18n": {
+            "languages": [],
+          },
+          "packageFormatVersion": "1.1.0",
+          "properties": [],
+          "services": [],
+          "styles": "./my-styles.css",
+          "ui": {
+            "references": [],
+          },
+        },
+        "type": "module",
+        "version": "0.0.1",
+      }
+    `);
+});
 
 // Cannot use raw source mapping urls in snapshot strings because vitest runs a regex against them.
 function restoreSourceMapComment(str: string) {

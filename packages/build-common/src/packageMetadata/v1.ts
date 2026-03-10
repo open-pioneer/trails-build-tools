@@ -34,10 +34,10 @@
  * @module
  */
 import type { PackageMetadataV1 as V1 } from "../../types";
-import { canParse } from "./versionUtils";
+import { canParse } from "../versionUtils";
 import { z } from "zod";
 
-export const CURRENT_VERSION = "1.0.0";
+export const CURRENT_VERSION = "1.1.0";
 
 /* NOTE: do not use .strict() for objects here to allow future additions of optional properties */
 
@@ -79,13 +79,18 @@ const SERVICE_CONFIG_SCHEMA: z.ZodType<V1.ServiceConfig> = z.object({
     references: REFERENCE_CONFIG_SCHEMA.array().nullish().optional()
 });
 
+const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<V1.RuntimeMeta> = z.object({
+    metadataVersion: z.string().nullish().optional()
+});
+
 const PACKAGE_METADATA_SCHEMA: z.ZodType<V1.PackageMetadata> = VERSION_SCHEMA.extend({
     services: SERVICE_CONFIG_SCHEMA.array().nullish().optional(),
     servicesModule: z.string().nullish().optional(),
     styles: z.string().nullish().optional(),
     i18n: I18N_CONFIG_SCHEMA.nullish().optional(),
     ui: UI_CONFIG_SCHEMA.nullish().optional(),
-    properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional()
+    properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional(),
+    runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.nullish().optional()
 });
 
 export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) => {

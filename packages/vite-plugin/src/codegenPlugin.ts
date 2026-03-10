@@ -1,12 +1,15 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { RuntimeSupport } from "@open-pioneer/build-common";
+import { readFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { normalizePath, Plugin as VitePlugin, Rollup, UserConfig } from "vite";
-import { createDebugger } from "./utils/debug";
-import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
-import { MetadataRepository } from "./metadata/MetadataRepository";
-import { generateCombinedCss } from "./codegen/generateCombinedCss";
+import { cwd } from "node:process";
+import { normalizePath, Rollup, UserConfig, Plugin as VitePlugin } from "vite";
+import { ReportableError } from "./ReportableError";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
+import { generateCombinedCss } from "./codegen/generateCombinedCss";
+import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
+import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import {
     findPackageJson,
     parseVirtualModuleId,
@@ -14,13 +17,12 @@ import {
     VirtualPackageModule,
     VirtualSourceInfoModule
 } from "./codegen/shared";
-import { readFile } from "node:fs/promises";
-import { ReportableError } from "./ReportableError";
-import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
-import { RuntimeSupport } from "@open-pioneer/build-common";
 import { createMetadataContextFromRollup } from "./metadata/Context";
-import { cwd } from "node:process";
+import { MetadataRepository } from "./metadata/MetadataRepository";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
+import { validateI18nConfig } from "./metadata/validateI18nConfig";
+import { createDebugger } from "./utils/debug";
+import { fileExists } from "./utils/fileUtils";
 
 type PluginContext = Rollup.PluginContext;
 
@@ -128,15 +130,22 @@ export function codegenPlugin(): VitePlugin {
                     return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
                 }
 
+                const ctx = createMetadataContextFromRollup(this);
+                const appMetadata = await repository.getAppMetadata(ctx, dirname(packageJsonPath));
                 if (mod.type === "app-meta") {
+                    const runtimeVersion = appMetadata.runtimeMetadataVersion;
+                    isDebug &&
+                        debug(
+                            "ARTUR Generating app metadata for runtime version %s",
+                            runtimeVersion
+                        );
                     return generateAppMetadata(
                         mod.packageDirectory,
-                        RuntimeSupport.METADATA_MODULE_ID
+                        RuntimeSupport.METADATA_MODULE_ID,
+                        runtimeVersion
                     );
                 }
 
-                const ctx = createMetadataContextFromRollup(this);
-                const appMetadata = await repository.getAppMetadata(ctx, dirname(packageJsonPath));
                 switch (mod.type) {
                     case "app-packages": {
                         const generatedSourceCode = generatePackagesMetadata({
@@ -152,6 +161,7 @@ export function codegenPlugin(): VitePlugin {
                         return generatedSourceCode;
                     }
                     case "app-i18n-index": {
+                        await validateI18nConfig(ctx, repository, appMetadata);
                         const generatedSourceCode = generateI18nIndex(
                             mod.packageDirectory,
                             appMetadata.locales
@@ -164,8 +174,12 @@ export function codegenPlugin(): VitePlugin {
                             locale: mod.locale,
                             appName: appMetadata.name,
                             packages: appMetadata.packages,
-                            loadI18n: (path) => {
-                                return repository.getI18nFile(ctx, path);
+                            loadI18n: async (pkg, filePath) => {
+                                ctx.addWatchFile(filePath);
+                                if (!(await fileExists(filePath))) {
+                                    throw new ReportableError(`XXXX`);
+                                }
+                                return repository.getI18nFile(ctx, filePath);
                             }
                         });
                         isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
