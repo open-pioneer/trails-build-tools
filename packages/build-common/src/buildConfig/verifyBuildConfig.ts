@@ -71,6 +71,8 @@ const VALIDATION_OPTIONS_SCHEMA: z.ZodType<ValidationOptions> = z.strictObject({
 
 const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
     assets: z.string().or(z.array(z.string())).optional(),
+    licenseFile: z.string().optional(),
+    noticeFile: z.string().optional(),
     types: z.boolean().optional(),
     sourceMaps: z.boolean().optional(),
     strict: z.boolean().optional(),
