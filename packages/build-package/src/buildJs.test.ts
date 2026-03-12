@@ -121,6 +121,28 @@ it("transpiles a project with source-info imports", async function () {
     `);
 });
 
+it("transpiles a project with open-pioneer:deployment import", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-deployment-import");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-deployment-import");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+    await buildJs({
+        ...testDefaults(),
+        packageDirectory,
+        outputDirectory,
+        entryPoints
+    });
+
+    // The import is left as-is
+    expect(readText(resolve(outputDirectory, "./index.js"))).toMatchInlineSnapshot(`
+      "import { baseUrl } from 'open-pioneer:deployment';
+
+      console.log(baseUrl);
+      "
+    `);
+});
+
 it("generates source maps when enabled", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
     const outputDirectory = resolve(TEMP_DATA_DIR, "simple-js-sourcemaps");

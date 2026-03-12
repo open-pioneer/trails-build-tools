@@ -105,43 +105,43 @@ describe(
             // Package.json was generated
             const packageJson = resolve(distDirectory, "package.json");
             expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
-          {
-            "dependencies": {
-              "@open-pioneer/runtime": "*",
-              "@scope/somewhere-external": "*",
-              "foo": "^1.2.3",
-              "somewhere-external": "*",
-            },
-            "exports": {
-              "./entryPointA": {
-                "import": "./entryPointA.js",
-                "types": "./entryPointA.d.ts",
-              },
-              "./entryPointB": {
-                "import": "./entryPointB.js",
-                "types": "./entryPointB.d.ts",
-              },
-              "./my-styles.css": "./my-styles.css",
-              "./package.json": "./package.json",
-            },
-            "license": "MIT",
-            "name": "simple-js-project",
-            "openPioneerFramework": {
-              "i18n": {
-                "languages": [],
-              },
-              "packageFormatVersion": "1.0.0",
-              "properties": [],
-              "services": [],
-              "styles": "./my-styles.css",
-              "ui": {
-                "references": [],
-              },
-            },
-            "type": "module",
-            "version": "0.0.1",
-          }
-        `);
+              {
+                "dependencies": {
+                  "@open-pioneer/runtime": "*",
+                  "@scope/somewhere-external": "*",
+                  "foo": "^1.2.3",
+                  "somewhere-external": "*",
+                },
+                "exports": {
+                  "./entryPointA": {
+                    "import": "./entryPointA.js",
+                    "types": "./entryPointA.d.ts",
+                  },
+                  "./entryPointB": {
+                    "import": "./entryPointB.js",
+                    "types": "./entryPointB.d.ts",
+                  },
+                  "./my-styles.css": "./my-styles.css",
+                  "./package.json": "./package.json",
+                },
+                "license": "MIT",
+                "name": "simple-js-project",
+                "openPioneerFramework": {
+                  "i18n": {
+                    "languages": [],
+                  },
+                  "packageFormatVersion": "1.1.0",
+                  "properties": [],
+                  "services": [],
+                  "styles": "./my-styles.css",
+                  "ui": {
+                    "references": [],
+                  },
+                },
+                "type": "module",
+                "version": "0.0.1",
+              }
+            `);
 
             // License, changelog and readme were copied
             const readme = resolve(distDirectory, "README.md");

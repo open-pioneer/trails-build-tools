@@ -30,6 +30,16 @@
  * - Backwards: The reader for metadata version 1.x.\_ must be able to read metadata version 1.y.\_ if x >= y.
  * - Forwards: The reader for metadata version 1.x.y must also be able to read metadata version 1.x.z if z >= y.
  *
+ * ## Version history
+ *
+ * ### 1.1.0
+ *
+ * - Packages may now use the `open-pioneer:deployment` module.
+ *   This import is passed through during package compilation and must be handled by the vite plugin at runtime.
+ *
+ * ### 1.0.0
+ *
+ * Initial release
  *
  * @module
  */
@@ -37,7 +47,7 @@ import type { PackageMetadataV1 as V1 } from "../../types";
 import { canParse } from "./versionUtils";
 import { z } from "zod";
 
-export const CURRENT_VERSION = "1.0.0";
+export const CURRENT_VERSION = "1.1.0";
 
 /* NOTE: do not use .strict() for objects here to allow future additions of optional properties */
 
