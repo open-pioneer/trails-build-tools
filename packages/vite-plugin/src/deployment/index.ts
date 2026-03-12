@@ -51,12 +51,11 @@ export class DeploymentModule {
             if (!baseUrl || baseUrl === "./") {
                 baseUrl = "/";
             }
-            return `export default new URL(${JSON.stringify(baseUrl)}, window.origin).href;`;
+            return `export const baseUrl = new URL(${JSON.stringify(baseUrl)}, window.origin).href;`;
         }
         return `
             const assetUrl = "__VITE_ASSET__${this.#assetId}__";
-            const baseUrl = new URL("./", assetUrl).href;
-            export { baseUrl };
+            export const baseUrl = new URL("./", assetUrl).href;
         `;
     }
 }
