@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { RuntimeSupport } from "@open-pioneer/build-common";
+import type { Plugin as EsbuildPlugin } from "esbuild";
 import { readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { cwd } from "node:process";
@@ -36,7 +37,7 @@ export function codegenPlugin(): VitePlugin {
             repository = new MetadataRepository(rootDir);
 
             if (isDev) {
-                await optimizeTrailsPackages(userConfig, rootDir);
+                await configureDevOptimizer(userConfig, rootDir);
             }
         },
 
@@ -199,6 +200,22 @@ async function resolvePackageJson(
     }
     return path;
 }
+
+async function configureDevOptimizer(userConfig: UserConfig, rootDir: string) {
+    const optimizeDeps = (userConfig.optimizeDeps ??= {});
+
+    // Include trails modules in deps optimizer settings
+    const includes = (optimizeDeps.include ??= []);
+    const trailsModules = await getOptimizeDepsIncludes(rootDir);
+    includes.push(...trailsModules);
+
+    // Mark trails modules in node dependencies as `external` from esbuild's POV
+    // so they can be handled by our vite plugin.
+    const esbuildOptions = (optimizeDeps.esbuildOptions ??= {});
+    const plugins = (esbuildOptions.plugins ??= []);
+    plugins.push(createOptimizeDepsEsbuildPlugin());
+}
+
 /**
  * Find external trails packages and add their services modules (if any)
  * to vite's `optimizeDeps.include`.
@@ -211,7 +228,7 @@ async function resolvePackageJson(
  * I couldn't get the esbuild plugin working, however.
  * This could be reattempted when vite has migrated to rolldown.
  */
-async function optimizeTrailsPackages(userConfig: UserConfig, rootDir: string) {
+async function getOptimizeDepsIncludes(rootDir: string) {
     const trailsPackages = await findTrailsPackages(rootDir);
     const trailsModules = trailsPackages.flatMap((pkg) => {
         if (!/[/\\]node_modules[/\\]/.test(pkg.directory)) {
@@ -224,9 +241,23 @@ async function optimizeTrailsPackages(userConfig: UserConfig, rootDir: string) {
     trailsModules.push(`${RuntimeSupport.RUNTIME_PACKAGE_NAME}/**`);
 
     isDebug && debug("Optimizing additional modules %O", trailsModules);
-    const optimizeDeps = (userConfig.optimizeDeps ??= {});
-    const includes = (optimizeDeps.include ??= []);
-    includes.push(...trailsModules);
+    return trailsModules;
+}
+
+/**
+ * Creates an esbuild plugin for use during Vite's dependency optimization phase.
+ * It marks all `open-pioneer:*` virtual module imports as external so that they
+ * are left untouched by esbuild and can later be handled by the normal Vite plugin.
+ */
+function createOptimizeDepsEsbuildPlugin(): EsbuildPlugin {
+    return {
+        name: "pioneer:optimize-deps",
+        setup(build) {
+            build.onResolve({ filter: /^open-pioneer:/ }, (args) => {
+                return { external: true, path: args.path };
+            });
+        }
+    };
 }
 
 function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
