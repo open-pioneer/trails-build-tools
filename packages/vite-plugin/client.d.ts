@@ -113,7 +113,7 @@ declare module "open-pioneer:deployment" {
     /**
      * Returns the base URL of the deployed application.
      *
-     * This returns an absolute URL to the root of the deployment application, for example:
+     * This returns an absolute URL to the root of the deployed application, for example:
      *
      * - http://localhost:5173/ or http://localhost:5173/optional/path/ (during development)
      * - https://example.com/path/to/root/ (during production)
