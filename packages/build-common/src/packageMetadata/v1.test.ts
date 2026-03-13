@@ -65,7 +65,7 @@ describe("packageMetadata v1", function () {
           {
             "type": "success",
             "value": {
-              "packageFormatVersion": "1.0.0",
+              "packageFormatVersion": "1.1.0",
               "properties": [],
               "services": [],
               "styles": "./foo.css",

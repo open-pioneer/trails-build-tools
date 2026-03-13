@@ -4,7 +4,7 @@ export { BuildConfig } from "@open-pioneer/build-support";
 import { BuildConfig } from "@open-pioneer/build-support";
 
 export namespace RuntimeSupport {
-    export type VirtualModuleType = "app" | "react-hooks" | "source-info";
+    export type VirtualModuleType = "app" | "react-hooks" | "source-info" | "deployment";
 
     /** Package name of the Open Pioneer Trails runtime library. */
     export const RUNTIME_PACKAGE_NAME: string;

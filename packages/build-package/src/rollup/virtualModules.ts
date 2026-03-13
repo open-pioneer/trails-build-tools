@@ -47,9 +47,11 @@ export function virtualModulesPlugin({
             switch (virtualModuleType) {
                 case "react-hooks":
                     return REACT_HOOKS_ID;
-                case "source-info": {
+                case "source-info":
                     return createSourceInfoId(packageDirectory, importer);
-                }
+                case "deployment":
+                    // Leave this as-is: the vite plugin needs to handle it.
+                    return { id: source, external: true };
                 default:
                     this.error({
                         id: importer,

@@ -33,7 +33,7 @@ describe("generatePackageJson", function () {
               "i18n": {
                 "languages": [],
               },
-              "packageFormatVersion": "1.0.0",
+              "packageFormatVersion": "1.1.0",
               "properties": [],
               "services": [],
               "ui": {
@@ -273,7 +273,7 @@ describe("generatePackageJson", function () {
                 "de",
               ],
             },
-            "packageFormatVersion": "1.0.0",
+            "packageFormatVersion": "1.1.0",
             "properties": [
               {
                 "defaultValue": 1,

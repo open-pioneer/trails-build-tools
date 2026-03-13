@@ -121,6 +121,34 @@ it("transpiles a project with source-info imports", async function () {
     `);
 });
 
+it("transpiles a project with open-pioneer:deployment import", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-deployment-import");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-deployment-import");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+
+    const logger = createMemoryLogger();
+    await buildJs({
+        ...testDefaults(),
+        packageDirectory,
+        outputDirectory,
+        entryPoints,
+        logger
+    });
+
+    // No warnings
+    expect(logger.messages).toEqual([]);
+
+    // The import is left as-is
+    expect(readText(resolve(outputDirectory, "./index.js"))).toMatchInlineSnapshot(`
+      "import { baseUrl } from 'open-pioneer:deployment';
+
+      console.log(baseUrl);
+      "
+    `);
+});
+
 it("generates source maps when enabled", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
     const outputDirectory = resolve(TEMP_DATA_DIR, "simple-js-sourcemaps");
@@ -224,13 +252,7 @@ it("emits no warnings when compiling 'use client' files", async function () {
         outputDirectory,
         entryPoints,
         sourceMap: true,
-        logger,
-        packageJson: {
-            dependencies: {
-                ...DEFAULT_DEPS,
-                react: "*"
-            }
-        }
+        logger
     });
 
     // Expect no warnings for 'use client'
@@ -695,7 +717,10 @@ it("emits errors when trails packages import internal modules from other trails 
 });
 
 const DEFAULT_DEPS = {
-    [RuntimeSupport.RUNTIME_PACKAGE_NAME]: "*"
+    [RuntimeSupport.RUNTIME_PACKAGE_NAME]: "*",
+    "react": "*",
+    "somewhere-external": "*",
+    "@scope/somewhere-external": "*"
 };
 
 function testDefaults() {
