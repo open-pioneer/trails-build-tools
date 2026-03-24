@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.1.1
+
+### Patch Changes
+
+- fa84b0e: Bump dependencies
+- 093ae42: Prevent detection of duplicated packages on windows
+- Updated dependencies [fa84b0e]
+    - @open-pioneer/build-common@3.2.1
+
 ## 5.1.0
 
 ### Minor Changes

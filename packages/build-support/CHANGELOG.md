@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-support
 
+## 3.0.6
+
+### Patch Changes
+
+- fa84b0e: Bump dependencies
+
 ## 3.0.5
 
 ### Patch Changes
