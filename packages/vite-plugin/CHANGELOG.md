@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.1.2
+
+### Patch Changes
+
+- 50ddcbd: Fix default package property values not being applied correctly when using a trails package from node modules.
+- Updated dependencies [50ddcbd]
+    - @open-pioneer/build-common@3.2.2
+
 ## 5.1.1
 
 ### Patch Changes
