@@ -123,12 +123,12 @@ describe("packageMetadata v1", function () {
             },
             properties: [
                 {
-                    value: 123,
+                    defaultValue: 123,
                     propertyName: "x",
                     required: true
                 },
                 {
-                    value: null,
+                    defaultValue: null,
                     propertyName: "y",
                     required: false
                 }
@@ -154,4 +154,188 @@ describe("packageMetadata v1", function () {
             `[Error: Invalid package metadata version '1.0.9999999': version should either be omitted or be equal to the current version.]`
         );
     });
+
+    it("parses real world metadata from package.json", function () {
+        const packageJsonData = JSON.parse(REAL_PACKAGE_METADATA);
+        const frameworkMetadata = packageJsonData[PackageMetadataV1.PACKAGE_JSON_KEY];
+        const parsedMetadata = parsePackageMetadata(frameworkMetadata);
+        if (parsedMetadata.type === "error") {
+            throw Error("Unexpected parse error: " + parsedMetadata.message);
+        }
+
+        const data = parsedMetadata.value;
+        expect(data).toMatchInlineSnapshot(`
+          {
+            "i18n": {
+              "languages": [
+                "en",
+                "de",
+              ],
+            },
+            "packageFormatVersion": "1.0.0",
+            "properties": [
+              {
+                "defaultValue": {
+                  "circle-fill-color": "red",
+                  "circle-radius": 3,
+                  "circle-stroke-color": "red",
+                  "circle-stroke-width": 1.25,
+                  "fill-color": "rgba(255,255,255,0.4)",
+                  "stroke-color": "red",
+                  "stroke-width": 1.25,
+                },
+                "propertyName": "polygonStyle",
+                "required": false,
+              },
+              {
+                "defaultValue": {
+                  "circle-fill-color": "red",
+                  "circle-radius": 3,
+                  "circle-stroke-color": "red",
+                  "circle-stroke-width": 1.25,
+                },
+                "propertyName": "vertexStyle",
+                "required": false,
+              },
+            ],
+            "services": [
+              {
+                "provides": [
+                  {
+                    "interfaceName": "editing.EditingService",
+                  },
+                ],
+                "references": [
+                  {
+                    "interfaceName": "map.MapRegistry",
+                    "referenceName": "mapRegistry",
+                    "type": "unique",
+                  },
+                  {
+                    "interfaceName": "map.LayerFactory",
+                    "referenceName": "layerFactory",
+                    "type": "unique",
+                  },
+                  {
+                    "interfaceName": "http.HttpService",
+                    "referenceName": "httpService",
+                    "type": "unique",
+                  },
+                ],
+                "serviceName": "EditingServiceImpl",
+              },
+            ],
+            "servicesModule": "./services",
+            "styles": "./editing.css",
+            "ui": {
+              "references": [],
+            },
+          }
+        `);
+    });
 });
+
+const REAL_PACKAGE_METADATA = `
+{
+  "type": "module",
+  "name": "@open-pioneer/editing",
+  "version": "1.2.0",
+  "description": "This package provides an editing service that allows to start and handle geometry editing workflows.",
+  "keywords": [
+    "open-pioneer-trails"
+  ],
+  "homepage": "https://github.com/open-pioneer",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-pioneer/trails-openlayers-base-packages",
+    "directory": "src/packages/editing"
+  },
+  "dependencies": {
+    "@open-pioneer/core": "^4.4.0",
+    "@open-pioneer/http": "^4.4.0",
+    "@open-pioneer/runtime": "^4.4.0",
+    "ol": "^10.7.0",
+    "@conterra/reactivity-core": "^0.8.1",
+    "@open-pioneer/map": "1.2.0"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    },
+    "./services": {
+      "import": "./services.js",
+      "types": "./services.d.ts"
+    },
+    "./editing.css": "./editing.css"
+  },
+  "openPioneerFramework": {
+    "styles": "./editing.css",
+    "services": [
+      {
+        "serviceName": "EditingServiceImpl",
+        "provides": [
+          {
+            "interfaceName": "editing.EditingService"
+          }
+        ],
+        "references": [
+          {
+            "referenceName": "mapRegistry",
+            "type": "unique",
+            "interfaceName": "map.MapRegistry"
+          },
+          {
+            "referenceName": "layerFactory",
+            "type": "unique",
+            "interfaceName": "map.LayerFactory"
+          },
+          {
+            "referenceName": "httpService",
+            "type": "unique",
+            "interfaceName": "http.HttpService"
+          }
+        ]
+      }
+    ],
+    "servicesModule": "./services",
+    "i18n": {
+      "languages": [
+        "en",
+        "de"
+      ]
+    },
+    "ui": {
+      "references": []
+    },
+    "properties": [
+      {
+        "propertyName": "polygonStyle",
+        "defaultValue": {
+          "fill-color": "rgba(255,255,255,0.4)",
+          "stroke-color": "red",
+          "stroke-width": 1.25,
+          "circle-radius": 3,
+          "circle-fill-color": "red",
+          "circle-stroke-width": 1.25,
+          "circle-stroke-color": "red"
+        },
+        "required": false
+      },
+      {
+        "propertyName": "vertexStyle",
+        "defaultValue": {
+          "circle-radius": 3,
+          "circle-fill-color": "red",
+          "circle-stroke-width": 1.25,
+          "circle-stroke-color": "red"
+        },
+        "required": false
+      }
+    ],
+    "packageFormatVersion": "1.0.0"
+  }
+}
+`;
