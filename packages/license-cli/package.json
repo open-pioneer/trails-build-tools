@@ -1,0 +1,46 @@
+{
+    "name": "@open-pioneer/license-cli",
+    "description": "Provides a CLI tool to create a license report for open-pioneer",
+    "version": "3.0.8",
+    "type": "module",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-pioneer/trails-build-tools.git",
+        "directory": "packages/license-cli"
+    },
+    "homepage": "https://github.com/open-pioneer",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "bin": {
+        "create-pioneer-license": "./dist/index.js"
+    },
+    "scripts": {
+        "clean": "rimraf dist",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch"
+    },
+    "files": [
+        "dist/**/*.js",
+        "dist/**/*.js.map",
+        "licenses/*",
+        "src/license-config.yaml",
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
+    "dependencies": {
+        "@open-pioneer/build-package": "workspace:^",
+        "chalk": "catalog:",
+        "commander": "catalog:",
+        "handlebars": "catalog:"
+    },
+    "devDependencies": {
+        "build-tools": "workspace:*"
+    },
+    "engines": {
+        "node": ">= 20"
+    }
+}
