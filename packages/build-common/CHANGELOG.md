@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 3.2.1
+
+### Patch Changes
+
+- fa84b0e: Bump dependencies
+
 ## 3.2.0
 
 ### Minor Changes
