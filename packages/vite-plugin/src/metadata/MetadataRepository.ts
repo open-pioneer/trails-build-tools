@@ -355,6 +355,11 @@ function detectRuntimeMetadataVersion(
                 );
         }
     }
+    isDebug &&
+    debug(
+        "Detected runtime version %s",
+        versionResult
+    );
     return versionResult as RuntimeSupport.RuntimeMetadataVersion;
 }
 

@@ -136,7 +136,7 @@ export function codegenPlugin(): VitePlugin {
                     const runtimeVersion = appMetadata.runtimeMetadataVersion;
                     isDebug &&
                         debug(
-                            "ARTUR Generating app metadata for runtime version %s",
+                            "Generating app metadata for runtime version %s",
                             runtimeVersion
                         );
                     return generateAppMetadata(
