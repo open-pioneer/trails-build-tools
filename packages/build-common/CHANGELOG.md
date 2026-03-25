@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 3.2.2
+
+### Patch Changes
+
+- 50ddcbd: Fix default package property values not being applied correctly when using a trails package from node modules.
+
 ## 3.2.1
 
 ### Patch Changes
