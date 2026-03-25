@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 import { execSync } from "child_process";
 import glob from "fast-glob";
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import Handlebars from "handlebars";
 import { load as loadYaml } from "js-yaml";
 import { basename, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { LicenseOptions } from "../types";
-import { SILENT_LOGGER, createConsoleLogger, getChalk } from "@open-pioneer/build-common";
+import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/build-common";
 
 /**
  * Generates a license report from the dependencies of this repository.
@@ -19,19 +19,28 @@ import { SILENT_LOGGER, createConsoleLogger, getChalk } from "@open-pioneer/buil
  * Outputs an html file to `dist/license-report.html`.
  */
 const THIS_DIR = resolve(dirname(fileURLToPath(import.meta.url)));
-const CONFIG_PATH = resolve(THIS_DIR, "license-config.yaml");
-
 const PACKAGE_DIR = resolve(THIS_DIR, "..");
 const PACKAGE_JSON_PATH = resolve(PACKAGE_DIR, "package.json");
+const CONFIG_PATH = resolve(THIS_DIR, "license-config.yaml");
 const OUTPUT_HTML_PATH = resolve(PACKAGE_DIR, "dist/license-report.html");
 
 export async function createLicenseFile(options: LicenseOptions) {
     const logger = options.log ? await createConsoleLogger(console) : SILENT_LOGGER;
     const chalk = await getChalk();
-
     logger.info(chalk.gray("Start creating license"));
-    const config = readLicenseConfig(CONFIG_PATH);
-    const projectName = getProjectName();
+
+    const packageJsonPath = options.packageJsonPath ?? PACKAGE_JSON_PATH;
+    //TODO remove fallback config_path
+    const configPath = options.configPath ?? CONFIG_PATH;
+    const outputHtmlPath = options.outputHtmlPath ?? OUTPUT_HTML_PATH;
+    logger.info(
+        chalk.gray(
+            `Using config from ${configPath}, output into ${outputHtmlPath}, from ${packageJsonPath}`
+        )
+    );
+
+    const config = readLicenseConfig(configPath);
+    const projectName = getProjectName(packageJsonPath);
 
     // Invoke pnpm to gather dependency information.
     const reportJson = getPnpmLicenseReport();
@@ -49,11 +58,11 @@ export async function createLicenseFile(options: LicenseOptions) {
     });
 
     // Ensure directory exists, then write the report
-    mkdirSync(dirname(OUTPUT_HTML_PATH), {
+    mkdirSync(dirname(outputHtmlPath), {
         recursive: true
     });
     const reportHtml = generateReportHtml(projectName, allItems);
-    writeFileSync(OUTPUT_HTML_PATH, reportHtml, "utf-8");
+    writeFileSync(outputHtmlPath, reportHtml, "utf-8");
 
     // Signal error if anything went wrong
     process.exit(allError ? 1 : 0);
@@ -529,78 +538,76 @@ interface FileSpec {
     path: string;
 }
 
+interface RawLicenseConfig {
+    allowedLicenses: string[];
+    overrideLicenses?: RawOverrideEntry[];
+    additionalLicenses?: RawAdditionalEntry[];
+}
+
+interface RawOverrideEntry {
+    name: string;
+    version: string;
+    license?: string;
+    licenseFiles?: unknown[];
+    noticeFiles?: unknown[];
+}
+
+interface RawAdditionalEntry {
+    name: string;
+    version?: string;
+    license: string;
+    licenseFiles: Array<{ custom: string }>;
+}
+
 /**
  * Reads the license config yaml file.
  */
 function readLicenseConfig(path: string): LicenseConfig {
     try {
         const content = readFileSync(path, "utf-8");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rawConfig = loadYaml(content) as any;
+        const rawConfig = loadYaml(content) as unknown as RawLicenseConfig; // einmaliger Cast
 
-        const config: LicenseConfig = {
+        return {
             allowedLicenses: rawConfig.allowedLicenses,
             overrideLicenses: rawConfig.overrideLicenses?.map(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (rawEntry: any): OverrideLicenseEntry => {
-                    const entry: OverrideLicenseEntry = {
-                        name: rawEntry.name,
-                        version: rawEntry.version,
-                        license: rawEntry.license,
-                        licenseFiles: readFileSpecs(rawEntry.licenseFiles),
-                        noticeFiles: readFileSpecs(rawEntry.noticeFiles)
-                    };
-                    return entry;
-                }
+                (rawEntry): OverrideLicenseEntry => ({
+                    name: rawEntry.name,
+                    version: rawEntry.version,
+                    license: rawEntry.license,
+                    licenseFiles: readFileSpecs(rawEntry.licenseFiles),
+                    noticeFiles: readFileSpecs(rawEntry.noticeFiles)
+                })
             ),
             additionalLicenses: rawConfig.additionalLicenses?.map(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (rawEntry: any): AdditionalLicensesEntry => {
-                    const entry: AdditionalLicensesEntry = {
-                        name: rawEntry.name,
-                        version: rawEntry.version,
-                        license: rawEntry.license,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        licenseFiles: rawEntry.licenseFiles.map((file: any) => {
-                            return {
-                                type: "custom",
-                                path: file.custom
-                            };
-                        })
-                    };
-                    return entry;
-                }
+                (rawEntry): AdditionalLicensesEntry => ({
+                    name: rawEntry.name,
+                    version: rawEntry.version,
+                    license: rawEntry.license,
+                    licenseFiles: rawEntry.licenseFiles.map((file) => ({
+                        type: "custom",
+                        path: file.custom
+                    }))
+                })
             )
         };
-        return config;
     } catch (e) {
         throw new Error(`Failed to read license config from ${path}: ${e}`);
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function readFileSpecs(rawSpecs: any): FileSpec[] | undefined {
-    if (!rawSpecs) {
-        return undefined;
-    }
+function readFileSpecs(rawSpecs: unknown[] | undefined): FileSpec[] | undefined {
+    if (!rawSpecs) return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const readRawSpec = (rawSpec: any): FileSpec => {
-        // Default is "package" when using a raw string
-        if (typeof rawSpec === "string") {
-            return { type: "package", path: rawSpec };
+    const readRawSpec = (rawSpec: unknown): FileSpec => {
+        if (typeof rawSpec === "string") return { type: "package", path: rawSpec };
+        if (typeof rawSpec === "object" && rawSpec !== null) {
+            const r = rawSpec as Record<string, unknown>;
+            if (typeof r["package"] === "string") return { type: "package", path: r["package"] };
+            if (typeof r["custom"] === "string") return { type: "custom", path: r["custom"] };
         }
-        if (typeof rawSpec.package === "string") {
-            return { type: "package", path: rawSpec.package };
-        }
-        if (typeof rawSpec.custom === "string") {
-            return { type: "custom", path: rawSpec.custom };
-        }
-
-        throw new Error(
-            `Invalid file spec in license config: ${JSON.stringify(rawSpec, undefined, 4)}`
-        );
+        throw new Error(`Invalid file spec: ${JSON.stringify(rawSpec, undefined, 4)}`);
     };
+
     return rawSpecs.map(readRawSpec);
 }
 
@@ -657,11 +664,10 @@ function findFirstMatch(directory: string, candidates: string[]): string[] {
 /**
  * Returns the project's name from the package.json file in the repository root.
  */
-function getProjectName(): string {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let data: any;
+function getProjectName(path: string): string {
+    let data: Record<string, unknown>;
     try {
-        data = JSON.parse(readFileSync(PACKAGE_JSON_PATH, "utf-8"));
+        data = JSON.parse(readFileSync(path, "utf-8"));
     } catch (e) {
         throw new Error(`Failed to read package.json: ${e}`);
     }
@@ -670,13 +676,4 @@ function getProjectName(): string {
         return name;
     }
     throw new Error(`Failed to retrieve 'name' from package.json: it must be a string.`);
-}
-
-try {
-    // TODO
-    // createLicense();
-    console.log("");
-} catch (e) {
-    console.error("Fatal error", e);
-    process.exit(1);
 }
