@@ -1,18 +1,17 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { Command } from "commander";
-import { cwd, exit } from "node:process";
+import { exit } from "node:process";
 import { version } from "../package.json";
-import { createLicense } from "./create-license-report";
+import { createLicense } from "@open-pioneer/build-license";
 
 const program = new Command();
 program
-    .name("build-pioneer-package")
+    .name("create-pioneer-license")
     .description("Create a license file for Open Pioneer Trails ")
-    .option("-p, --package <path>", "package directory (defaults to current directory)")
-    .option("-r, --root <path>", "the root directory (optional, defaults to the workspace root)")
+    .option("-d, --dev", "(optional, defaults is no dev dependency)")
     .option("-q, --silent", "disable logging")
-    .option("-d, --debug", "show exception stack traces")
+    .option("-x, --debug", "show exception stack traces")
     .version(version);
 program.parse();
 
@@ -21,10 +20,12 @@ async function main() {
     const opts = program.opts();
     const debug = opts.debug ?? false;
     const silent = opts.silent ?? false;
-    const packagePath = opts.package ?? cwd();
-    const rootDirectory = opts.root;
+    const dev = opts.dev ?? false;
     try {
-        createLicense();
+        await createLicense({
+            dev,
+            log: !silent
+        });
         exit(0);
     } catch (e) {
         if (debug) {

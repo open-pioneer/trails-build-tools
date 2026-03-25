@@ -326,3 +326,15 @@ export function verifyBuildConfig(value: unknown): BuildConfig;
  * not export a valid build configuration object.
  */
 export function loadBuildConfig(path: string): Promise<BuildConfig>;
+
+export interface Logger {
+    info(...args: unknown[]): void;
+    warn(...args: unknown[]): void;
+    error(...args: unknown[]): void;
+}
+
+export const SILENT_LOGGER: Logger;
+export function createConsoleLogger(
+    console: Pick<Console, "info" | "warn" | "error">
+): Promise<Logger>;
+export async function getChalk();

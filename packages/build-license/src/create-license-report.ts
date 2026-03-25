@@ -7,6 +7,8 @@ import Handlebars from "handlebars";
 import { load as loadYaml } from "js-yaml";
 import { basename, dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import { LicenseOptions } from "../types";
+import { SILENT_LOGGER, createConsoleLogger, getChalk } from "@open-pioneer/build-common";
 
 /**
  * Generates a license report from the dependencies of this repository.
@@ -23,7 +25,11 @@ const PACKAGE_DIR = resolve(THIS_DIR, "..");
 const PACKAGE_JSON_PATH = resolve(PACKAGE_DIR, "package.json");
 const OUTPUT_HTML_PATH = resolve(PACKAGE_DIR, "dist/license-report.html");
 
-export function createLicense() {
+export async function createLicenseFile(options: LicenseOptions) {
+    const logger = options.log ? await createConsoleLogger(console) : SILENT_LOGGER;
+    const chalk = await getChalk();
+
+    logger.info(chalk.gray("Start creating license"));
     const config = readLicenseConfig(CONFIG_PATH);
     const projectName = getProjectName();
 
@@ -667,7 +673,9 @@ function getProjectName(): string {
 }
 
 try {
-    createLicense();
+    // TODO
+    // createLicense();
+    console.log("");
 } catch (e) {
     console.error("Fatal error", e);
     process.exit(1);

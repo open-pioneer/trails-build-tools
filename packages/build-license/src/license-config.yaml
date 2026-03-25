@@ -1,0 +1,122 @@
+# List of allowed dependency licenses.
+allowedLicenses:
+  - "Apache-2.0"
+  - "MIT"
+  - "ISC"
+  - "BSD-3-Clause"
+  - "BSD-2-Clause"
+  - "0BSD"
+  - "CC0-1.0"
+  - "WTFPL"
+  - "Unlicense"
+  # zstddec
+  - MIT AND BSD-3-Clause
+
+  # Dependencies of jsPdf use this
+  - "(MIT OR Apache-2.0)"
+  - "(MPL-2.0 OR Apache-2.0)"
+
+# Some licenses are detected incorrectly.
+# Their information can be overwritten here.
+# Paths are relative to the project's directory on disk by default (somewhere in node_modules).
+# Version and name must match exactly, otherwise entries here are not applied:
+#
+# To overwrite licenses with a custom file that is not part of the original package,
+# configure the license like this:
+#
+#   - name: "some-package"
+#     version: "1.0.6"
+#     license: "MIT"
+#     licenseFiles:
+#      - custom: "./licenses/some-package-license.txt"
+#
+# `custom` makes the path relative to this directory instead of the package's directory.
+overrideLicenses:
+  # 'license' missing in package.json but LICENSE file exists:
+  - name: "react-universal-interface"
+    version: "0.6.2"
+    license: "Unlicense"
+  - name: "fast-shallow-equal"
+    version: "1.0.0"
+    license: "Unlicense"
+
+  # Different parts of this package are under different licenses
+  - name: "pako"
+    version: "2.1.0"
+    license: "MIT and Zlib"
+    licenseFiles:
+      - "./LICENSE"
+      - "./lib/zlib/README"
+
+  # readme contains license text
+  - name: "lerc"
+    version: "3.0.0"
+    licenseFiles:
+      - "./README.md"
+
+  # Declares 'license': 'MIT' in package.json but contains no license file.
+  # License file was added to the GitHub repository after the 1.0.6 release:
+  # https://github.com/sudodoki/toggle-selection/blob/538dc4e9de40b8aee41f1e9066a4c5de3f4adc0a/LICENSE
+  #
+  # Author confirmed via email that license applies to older releases as well (no new release yet).
+  - name: "toggle-selection"
+    version: "1.0.6"
+    licenseFiles:
+      - custom: "./licenses/toggle_selection_mit"
+
+  # Readme contains original MIT license which got lost during fork / development at some point
+  # Retrieved on 2023-09-27 from https://github.com/mapbox/jsonlint
+  # See also commit: https://github.com/mapbox/jsonlint/commit/21c821af6c176bc0b8d240d715d416223d1deb7b
+  - name: "@mapbox/jsonlint-lines-primitives"
+    version: "2.0.2"
+    license: "MIT"
+    licenseFiles:
+      - custom: "./licenses/mapbox_jsonlint_readme_mit.md"
+
+  # License md present but package.json license field invalid.
+  - name: "rgbcolor"
+    version: "1.0.1"
+    license: "MIT"
+
+# List of additional licenses that are used by the project but are not dependencies itself.
+# E.g. licenses of projects used by react-icons.
+# To specify licenses with a custom file that is not part of the original package,
+# configure the license like this:
+#
+#   - name: "some-package"
+#     version: "1.0.6"
+#     license: "MIT"
+#     licenseFiles:
+#      - custom: "./licenses/some-package-license.txt"
+#
+# `name`can be chosen freely, it does not have to match a package name.
+# `custom` makes the path relative to this directory instead of the package's directory and is required here.
+# `version`is optional.
+additionalLicenses:
+  # Lucide icons are used in the project and loaded by `react-icons`.
+  # License file retrieved on 2025-07-07 from https://github.com/lucide-icons/lucide/blob/main/LICENSE
+  - name: "Lucide"
+    license: "ISC"
+    licenseFiles:
+      - custom: "./licenses/lucide_isc"
+
+  # Feather is used by Tabler Icons (see below).
+  # License file retrieved on 2025-07-07 from https://github.com/feathericons/feather/blob/main/LICENSE
+  - name: "Feather"
+    license: "MIT"
+    licenseFiles:
+      - custom: "./licenses/feather_mit"
+
+  # Tabler Icons is used in the project and loaded by `react-icons`.
+  # License file retrieved on 2025-07-07 from https://github.com/tabler/tabler-icons/blob/main/LICENSE
+  - name: "Tabler Icons"
+    license: "MIT"
+    licenseFiles:
+      - custom: "./licenses/tabler_icons_mit"
+
+  # Heroicons (currently only used by Chakra UI snippets)
+  # License file retrieved on 2025-07-07 from https://github.com/tailwindlabs/heroicons/blob/master/LICENSE
+  - name: "Heroicons"
+    license: "MIT"
+    licenseFiles:
+      - custom: "./licenses/heroicons_mit"

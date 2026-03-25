@@ -4,3 +4,4 @@ export * from "./buildConfig";
 export * from "./packageMetadata";
 export * from "./packageConfig";
 export * from "./runtimeSupport";
+export * from "./utils/Logger";

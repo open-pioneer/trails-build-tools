@@ -420,6 +420,98 @@ importers:
         specifier: workspace:*
         version: link:../..
 
+  packages/build-license:
+    dependencies:
+      '@open-pioneer/build-common':
+        specifier: workspace:^
+        version: link:../build-common
+      '@open-pioneer/build-support':
+        specifier: workspace:^
+        version: link:../build-support
+      '@rollup/plugin-node-resolve':
+        specifier: 'catalog:'
+        version: 16.0.3(rollup@4.59.0)
+      chalk:
+        specifier: 'catalog:'
+        version: 5.6.2
+      debug:
+        specifier: 'catalog:'
+        version: 4.4.3
+      esbuild:
+        specifier: 'catalog:'
+        version: 0.27.4
+      find-git-root:
+        specifier: 'catalog:'
+        version: 1.1.0
+      find-workspaces:
+        specifier: 'catalog:'
+        version: 0.3.1
+      fs-extra:
+        specifier: 'catalog:'
+        version: 11.3.4
+      handlebars:
+        specifier: 'catalog:'
+        version: 4.7.8
+      import-meta-resolve:
+        specifier: 'catalog:'
+        version: 4.2.0
+      postcss:
+        specifier: 'catalog:'
+        version: 8.5.8
+      postcss-import:
+        specifier: 'catalog:'
+        version: 16.1.1(postcss@8.5.8)
+      rollup:
+        specifier: 'catalog:'
+        version: 4.59.0
+      rollup-plugin-esbuild:
+        specifier: 'catalog:'
+        version: 6.2.1(esbuild@0.27.4)(rollup@4.59.0)
+      tinyglobby:
+        specifier: 'catalog:'
+        version: 0.2.15
+    devDependencies:
+      '@rollup/pluginutils':
+        specifier: 'catalog:'
+        version: 5.3.0(rollup@4.59.0)
+      '@types/debug':
+        specifier: 'catalog:'
+        version: 4.1.13
+      '@types/fs-extra':
+        specifier: 'catalog:'
+        version: 11.0.4
+      '@types/postcss-import':
+        specifier: 'catalog:'
+        version: 14.0.3
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.14
+      build-tools:
+        specifier: workspace:*
+        version: link:../..
+      sass:
+        specifier: 'catalog:'
+        version: 1.98.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/build-license-cli:
+    dependencies:
+      '@open-pioneer/build-license':
+        specifier: workspace:^
+        version: link:../build-license
+      chalk:
+        specifier: 'catalog:'
+        version: 5.6.2
+      commander:
+        specifier: 'catalog:'
+        version: 14.0.3
+    devDependencies:
+      build-tools:
+        specifier: workspace:*
+        version: link:../..
+
   packages/build-package:
     dependencies:
       '@open-pioneer/build-common':
@@ -546,25 +638,6 @@ importers:
       js-yaml:
         specifier: 'catalog:'
         version: 4.1.1
-    devDependencies:
-      build-tools:
-        specifier: workspace:*
-        version: link:../..
-
-  packages/license-cli:
-    dependencies:
-      '@open-pioneer/build-package':
-        specifier: workspace:^
-        version: link:../build-package
-      chalk:
-        specifier: 'catalog:'
-        version: 5.6.2
-      commander:
-        specifier: 'catalog:'
-        version: 14.0.3
-      handlebars:
-        specifier: 'catalog:'
-        version: 4.7.8
     devDependencies:
       build-tools:
         specifier: workspace:*
