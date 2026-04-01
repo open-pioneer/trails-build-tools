@@ -105,3 +105,20 @@ declare module "open-pioneer:react-hooks" {
      */
     export function useIntl(): PackageIntl;
 }
+
+/**
+ * Provides metadata about the current deployment.
+ */
+declare module "open-pioneer:deployment" {
+    /**
+     * Returns the base URL of the deployed application.
+     *
+     * This returns an absolute URL to the root of the deployed application, for example:
+     *
+     * - http://localhost:5173/ or http://localhost:5173/optional/path/ (during development)
+     * - https://example.com/path/to/root/ (during production)
+     *
+     * You can use this string to compute the addresses of resources that are deployed together with your app.
+     */
+    export const baseUrl: string;
+}

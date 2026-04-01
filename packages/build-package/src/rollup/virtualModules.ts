@@ -1,14 +1,15 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { RuntimeSupport } from "@open-pioneer/build-common";
-import { Plugin } from "rollup";
-import { isInDirectory } from "../utils/pathUtils";
+import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
 import { normalizePath } from "@rollup/pluginutils";
 import { posix } from "node:path";
+import { Plugin } from "rollup";
+import { isInDirectory } from "../utils/pathUtils";
 
 export interface VirtualModulesPluginOptions {
     packageName: string;
     packageDirectory: string;
+    packageFormatTarget: PackageMetadataV1.MinorVersion;
 }
 
 export const REACT_HOOKS_ID = "\0virtual-pioneer-module:react-hooks";
@@ -21,7 +22,8 @@ export const SOURCE_INFO_ID = "\0virtual-pioneer-module:source-info";
  */
 export function virtualModulesPlugin({
     packageName,
-    packageDirectory
+    packageDirectory,
+    packageFormatTarget
 }: VirtualModulesPluginOptions): Plugin {
     return {
         name: "virtual-modules",
@@ -47,8 +49,22 @@ export function virtualModulesPlugin({
             switch (virtualModuleType) {
                 case "react-hooks":
                     return REACT_HOOKS_ID;
-                case "source-info": {
+                case "source-info":
                     return createSourceInfoId(packageDirectory, importer);
+                case "deployment": {
+                    const supportInfo = PackageMetadataV1.supportsFeature(
+                        packageFormatTarget,
+                        "app-deployment-module"
+                    );
+                    if (!supportInfo.supports) {
+                        this.error({
+                            id: importer,
+                            message: `Importing '${source}' requires package format target '${supportInfo.needed}' or later.`
+                        });
+                    }
+
+                    // Leave this as-is: the vite plugin needs to handle it.
+                    return { id: source, external: true };
                 }
                 default:
                     this.error({

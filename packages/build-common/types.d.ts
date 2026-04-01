@@ -4,7 +4,7 @@ export { BuildConfig } from "@open-pioneer/build-support";
 import { BuildConfig } from "@open-pioneer/build-support";
 
 export namespace RuntimeSupport {
-    export type VirtualModuleType = "app" | "react-hooks" | "source-info";
+    export type VirtualModuleType = "app" | "react-hooks" | "source-info" | "deployment";
 
     /** Package name of the Open Pioneer Trails runtime library. */
     export const RUNTIME_PACKAGE_NAME: string;
@@ -51,10 +51,16 @@ export namespace PackageMetadataV1 {
     export type ExtensibleUnion<Values extends string> = Values | (string & {});
 
     /**
-     * The currently supported metadata version (a semver).
+     * The latest supported metadata version (a semver).
      * Guaranteed to start with `"1."`.
      */
-    export const CURRENT_VERSION: string;
+    export const LATEST_VERSION: string;
+
+    /**
+     * Minor versions, e.g. `1.0`, `1.1`.
+     * These versions do _not_ include the patch version (not needed: patch versions are compatible with each other).
+     */
+    export const MINOR_VERSIONS: readonly MinorVersion[];
 
     /**
      * The key under which the package metadata is added to the `package.json` of an npm package.
@@ -181,7 +187,17 @@ export namespace PackageMetadataV1 {
         cause?: unknown;
     }
 
+    export type MinorVersion = string & { __brand: "package-format-minor-version" };
+
     export type ParseMetadataResult = ParseMetadataSuccess | ParseMetadataError;
+
+    /**
+     * Checks whether the chosen package format compilation target supports the given feature.
+     */
+    export function supportsFeature(
+        target: MinorVersion,
+        feature: "app-deployment-module"
+    ): { supports: true } | { supports: false; needed: MinorVersion };
 
     /**
      * Attempts to parse the given `jsonValue` object into a validated metadata object.
@@ -192,8 +208,14 @@ export namespace PackageMetadataV1 {
      * Serializes the given metadata object into its raw json object representation.
      *
      * Note: the framework metadata version will be included automatically.
+     *
+     * NOTE: This will probably have to be multiple signatures in the future, when additional metadata fields are added.
+     * At this time (version 1.1), only new _source code_ features have been added.
      */
-    export function serializePackageMetadata(metadata: OutputPackageMetadata): unknown;
+    export function serializePackageMetadata(
+        metadata: OutputPackageMetadata,
+        target: MinorVersion
+    ): unknown;
 }
 
 /** Internal representation of a package. */
@@ -310,6 +332,11 @@ export function createPackageConfigFromPackageMetadata(
  * This is currently always `build.config.mjs`.
  */
 export const BUILD_CONFIG_NAME: string;
+
+/**
+ * The default package format target used when compiling trails packages.
+ */
+export const DEFAULT_PACKAGE_TARGET: PackageMetadataV1.MinorVersion;
 
 /**
  * Ensures that `value` conforms to the {@link BuildConfig} interface.

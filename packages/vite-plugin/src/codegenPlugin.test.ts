@@ -180,6 +180,52 @@ describe("codegen support", function () {
         assert.match(error.message, /Failed to find package.json for package/);
     });
 
+    it("generates code for the application's base url", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-application-base-url");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-application-base-url");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: {
+                    "sub/dir/app": "apps/test-app/app.js"
+                }
+            }
+        });
+
+        const appJs = readFileSync(join(outDir, "sub/dir/app.js"), "utf-8");
+        onTestFailed(() => {
+            console.log(`Generated app JS:\n${appJs}`);
+        });
+
+        // Must go two levels up to reach the base url because the app is in sub/dir/app.js
+        expect(appJs).toContain("../../__base_url_sentinel__");
+    });
+
+    it("generates code for the application's base url with explicit base", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-application-base-url");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-application-base-url-explicit");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: {
+                    "sub/dir/app": "apps/test-app/app.js"
+                }
+            },
+            baseUrl: "/my/deployment/"
+        });
+
+        const appJs = readFileSync(join(outDir, "sub/dir/app.js"), "utf-8");
+        onTestFailed(() => {
+            console.log(`Generated app JS:\n${appJs}`);
+        });
+
+        expect(appJs).toContain("/my/deployment/__base_url_sentinel__");
+    });
+
     it("fails if build config is missing", async function () {
         const rootDir = resolve(TEST_DATA_DIR, "codegen-build-config-required");
         const outDir = resolve(TEMP_DATA_DIR, "codegen-build-config-required");
@@ -406,6 +452,22 @@ describe("codegen support", function () {
         const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
         assert.include(appJs, `console.info("Service A");`);
         assert.include(appJs, `console.info("Service B");`);
+    });
+
+    it("generates an error if the plugin encounterers an unsupported package metadata format version", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-unsupported-package-format-version/src");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-unsupported-package-format-version");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+        expect(error.message).toMatch(/uses an unsupported package metadata version/);
     });
 });
 
