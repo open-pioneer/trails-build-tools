@@ -187,7 +187,6 @@ it("should support changing the package format target to '1.1'", async () => {
 it("should reject invalid package format targets", async () => {
     const srcPackage = resolve(TEST_DATA_DIR, "project-with-invalid-target");
     const tempPackage = resolve(TEMP_DATA_DIR, "project-with-invalid-target");
-    const distDirectory = resolve(tempPackage, "dist");
     const logger = createMemoryLogger();
 
     await cleanDir(tempPackage);
@@ -197,9 +196,7 @@ it("should reject invalid package format targets", async () => {
     });
 
     const error = await expectError(() => build({ packageDirectory: tempPackage, logger }));
-    expect(error.message).toMatchInlineSnapshot(
-        `"Validation error in configuration file at /home/mbeckemeyer/projects/trails/trails-build-tools.worktrees/feature-app-root-url/packages/build-package/temp/project-with-invalid-target/build.config.mjs"`
-    );
+    expect(error.message).toMatch(/Validation error in configuration file at (.*)build.config.mjs/);
 });
 
 // Cannot use raw source mapping urls in snapshot strings because vitest runs a regex against them.

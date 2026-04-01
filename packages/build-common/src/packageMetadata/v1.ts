@@ -131,7 +131,7 @@ export const supportsFeature: typeof V1.supportsFeature = (compileTarget, featur
     }
 };
 
-const MINOR_VERSION_RE = /\d+\.\d+/;
+const MINOR_VERSION_RE = /^\d+\.\d+$/;
 
 function toSemver(target: V1.MinorVersion): SemVer {
     if (!target.match(MINOR_VERSION_RE)) {
