@@ -59,7 +59,7 @@ const VERSION_SCHEMA = z.object({
 
 const PROPERTY_CONFIG_SCHEMA: z.ZodType<V1.PropertyConfig> = z.object({
     propertyName: z.string(),
-    value: z.any().nullish().optional(),
+    defaultValue: z.any().nullish().optional(),
     required: z.boolean().nullish().optional()
 });
 

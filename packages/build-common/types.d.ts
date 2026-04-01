@@ -161,7 +161,7 @@ export namespace PackageMetadataV1 {
         propertyName: string;
 
         /** Initial value of the property. */
-        value?: unknown;
+        defaultValue?: unknown;
 
         /** True if a non-null value is required at runtime. */
         required?: Nullish<boolean>;

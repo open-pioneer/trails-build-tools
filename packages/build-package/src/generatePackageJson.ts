@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { Service, PackageMetadataV1 as V1 } from "@open-pioneer/build-common";
+import {
+    Property,
+    Service,
+    UiReference,
+    PackageMetadataV1 as V1
+} from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
 import nativePath from "node:path";
 import { PackageModel } from "./model/PackageModel";
@@ -169,9 +174,9 @@ function generateMetadata(model: SimplePackageModel): unknown {
             languages: Array.from(pkgConfig.languages)
         },
         ui: {
-            references: Array.from(pkgConfig.uiReferences)
+            references: writeUiReferences(pkgConfig.uiReferences)
         },
-        properties: Array.from(pkgConfig.properties.values())
+        properties: writeProperties(Array.from(pkgConfig.properties.values()))
     };
     return V1.serializePackageMetadata(metadata);
 }
@@ -183,5 +188,25 @@ function writeServices(services: Service[]): V1.ServiceConfig[] {
             provides,
             references: Array.from(references.values())
         };
+    });
+}
+
+function writeUiReferences(uiReferences: UiReference[]): V1.UiReferenceConfig[] {
+    return uiReferences.map(({ type, interfaceName, qualifier }) => {
+        return {
+            type,
+            interfaceName,
+            qualifier
+        } satisfies V1.UiReferenceConfig;
+    });
+}
+
+function writeProperties(properties: Property[]): V1.PropertyConfig[] {
+    return properties.map(({ propertyName, defaultValue, required }) => {
+        return {
+            propertyName,
+            defaultValue,
+            required
+        } satisfies V1.PropertyConfig;
     });
 }

@@ -1,21 +1,19 @@
 {
-    "name": "@open-pioneer/build-package-cli",
-    "description": "Provides a CLI tool to compile Open Pioneer Trails packages.",
-    "version": "3.0.9",
+    "name": "@open-pioneer/changesets-release-line",
+    "description": "This package provides a custom release line for @changesets/cli to be used in official Open Pioneer Trails repositories.",
+    "version": "0.1.0",
+    "main": "dist/index.js",
     "type": "module",
-    "license": "Apache-2.0",
+    "license": "MIT",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
-        "directory": "packages/build-package-cli"
+        "directory": "packages/changesets-release-line"
     },
     "homepage": "https://github.com/open-pioneer",
     "keywords": [
         "open-pioneer-trails"
     ],
-    "bin": {
-        "build-pioneer-package": "./dist/index.js"
-    },
     "scripts": {
         "clean": "rimraf dist",
         "build": "node build.mjs build",
@@ -29,13 +27,9 @@
         "README.md",
         "LICENSE"
     ],
-    "dependencies": {
-        "@open-pioneer/build-package": "workspace:^",
-        "chalk": "catalog:",
-        "commander": "catalog:"
-    },
     "devDependencies": {
-        "build-tools": "workspace:*"
+        "build-tools": "workspace:*",
+        "@changesets/cli": "catalog:"
     },
     "engines": {
         "node": ">= 20"

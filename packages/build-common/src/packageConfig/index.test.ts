@@ -190,12 +190,12 @@ describe("packageConfig", function () {
             },
             properties: [
                 {
-                    value: 123,
+                    defaultValue: 123,
                     propertyName: "x",
                     required: true
                 },
                 {
-                    value: null,
+                    defaultValue: null,
                     propertyName: "y",
                     required: false
                 }
