@@ -21,6 +21,7 @@ type SimplePackageModel = Pick<
 
 export interface GeneratePackageJsonOptions {
     model: SimplePackageModel;
+    packageFormatTarget: V1.MinorVersion;
     validation: ResolvedValidationOptions;
     reporter: ValidationReporter;
     logger: Logger;
@@ -60,6 +61,7 @@ const COPY_FIELDS = [
  */
 export async function generatePackageJson({
     model,
+    packageFormatTarget,
     validation,
     reporter
 }: GeneratePackageJsonOptions): Promise<Record<string, unknown>> {
@@ -79,7 +81,7 @@ export async function generatePackageJson({
         }
     }
     packageJson.exports = generateExports(model, reporter);
-    packageJson.openPioneerFramework = generateMetadata(model);
+    packageJson.openPioneerFramework = generateMetadata(model, packageFormatTarget);
 
     // Clone (for safety) and also strip 'undefined' values.
     return JSON.parse(JSON.stringify(packageJson));
@@ -162,7 +164,7 @@ function getPackageExportsKey(moduleId: string) {
     return `./${name}`;
 }
 
-function generateMetadata(model: SimplePackageModel): unknown {
+function generateMetadata(model: SimplePackageModel, target: V1.MinorVersion): unknown {
     const pkgConfig = model.input.packageConfig;
     const metadata: V1.OutputPackageMetadata = {
         styles: model.cssEntryPoint ? `./${model.cssEntryPoint.outputModuleId}.css` : undefined,
@@ -178,7 +180,7 @@ function generateMetadata(model: SimplePackageModel): unknown {
         },
         properties: writeProperties(Array.from(pkgConfig.properties.values()))
     };
-    return V1.serializePackageMetadata(metadata);
+    return V1.serializePackageMetadata(metadata, target);
 }
 
 function writeServices(services: Service[]): V1.ServiceConfig[] {

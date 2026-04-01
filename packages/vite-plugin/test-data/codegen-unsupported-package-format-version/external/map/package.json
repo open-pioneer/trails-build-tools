@@ -1,0 +1,16 @@
+{
+    "type": "module",
+    "name": "map",
+    "version": "0.0.1",
+    "license": "Apache-2.0",
+    "dependencies": {},
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": "./index.js"
+        }
+    },
+    "openPioneerFramework": {
+        "packageFormatVersion": "1.99.99"
+    }
+}

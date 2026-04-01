@@ -453,6 +453,22 @@ describe("codegen support", function () {
         assert.include(appJs, `console.info("Service A");`);
         assert.include(appJs, `console.info("Service B");`);
     });
+
+    it("generates an error if the plugin encounterers an unsupported package metadata format version", async function () {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-unsupported-package-format-version/src");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-unsupported-package-format-version");
+
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                }
+            })
+        );
+        expect(error.message).toMatch(/uses an unsupported package metadata version/);
+    });
 });
 
 function findModuleContaining(dir: string, needle: string) {

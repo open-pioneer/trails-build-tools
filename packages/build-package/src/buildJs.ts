@@ -1,19 +1,20 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { LogLevel, RollupLog, rollup } from "rollup";
-import esbuild from "rollup-plugin-esbuild";
-import { resolvePlugin } from "./rollup/resolve";
-import nativePath, { posix } from "node:path";
-import { Logger } from "./utils/Logger";
-import { cwd } from "node:process";
-import { NormalizedEntryPoint } from "./utils/entryPoints";
-import { isInDirectory } from "./utils/pathUtils";
-import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
-import { REACT_HOOKS_ID, SOURCE_INFO_ID, virtualModulesPlugin } from "./rollup/virtualModules";
-import { checkImportsPlugin } from "./rollup/checkImports";
-import { rebaseSourcemapPath } from "./utils/sourceMaps";
+import { PackageMetadataV1 } from "@open-pioneer/build-common";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { normalizePath } from "@rollup/pluginutils";
+import nativePath, { posix } from "node:path";
+import { cwd } from "node:process";
+import { LogLevel, RollupLog, rollup } from "rollup";
+import esbuild from "rollup-plugin-esbuild";
+import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
+import { checkImportsPlugin } from "./rollup/checkImports";
+import { resolvePlugin } from "./rollup/resolve";
+import { REACT_HOOKS_ID, SOURCE_INFO_ID, virtualModulesPlugin } from "./rollup/virtualModules";
+import { NormalizedEntryPoint } from "./utils/entryPoints";
+import { Logger } from "./utils/Logger";
+import { isInDirectory } from "./utils/pathUtils";
+import { rebaseSourcemapPath } from "./utils/sourceMaps";
 
 export interface BuildJsOptions {
     /** Package name from package.json */
@@ -27,6 +28,9 @@ export interface BuildJsOptions {
 
     /** Package json of the package. */
     packageJson: Record<string, unknown>;
+
+    /** Compilation level for trails features. */
+    packageFormatTarget: PackageMetadataV1.MinorVersion;
 
     /** Workspace root. Needed to detect which packages are local. */
     rootDirectory: string;
@@ -49,6 +53,7 @@ export async function buildJs({
     packageDirectory,
     packageJson,
     packageJsonPath,
+    packageFormatTarget,
     rootDirectory,
     outputDirectory,
     entryPoints,
@@ -68,7 +73,8 @@ export async function buildJs({
             }),
             virtualModulesPlugin({
                 packageName,
-                packageDirectory
+                packageDirectory,
+                packageFormatTarget
             }),
             resolvePlugin({
                 packageDirectory,

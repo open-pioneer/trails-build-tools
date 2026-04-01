@@ -43,11 +43,20 @@
  *
  * @module
  */
+import { SemVer } from "semver";
 import type { PackageMetadataV1 as V1 } from "../../types";
 import { canParse } from "./versionUtils";
 import { z } from "zod";
 
-export const CURRENT_VERSION = "1.1.0";
+export const LATEST_VERSION = "1.1.0";
+
+// Target (minor version) to semver with patch version (if any).
+const LATEST_VERSION_FOR_TARGET: Record<V1.MinorVersion, string> = {
+    ["1.0" as V1.MinorVersion]: "1.0.0",
+    ["1.1" as V1.MinorVersion]: "1.1.0"
+};
+
+export const MINOR_VERSIONS = ["1.0" as V1.MinorVersion, "1.1" as V1.MinorVersion] as const;
 
 /* NOTE: do not use .strict() for objects here to allow future additions of optional properties */
 
@@ -98,6 +107,39 @@ const PACKAGE_METADATA_SCHEMA: z.ZodType<V1.PackageMetadata> = VERSION_SCHEMA.ex
     properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional()
 });
 
+const featuresSince: Record<"app-deployment-module", V1.MinorVersion> = {
+    "app-deployment-module": "1.1" as V1.MinorVersion
+};
+
+export const supportsFeature: typeof V1.supportsFeature = (compileTarget, feature) => {
+    const featureTarget = featuresSince[feature];
+    if (!featureTarget) {
+        throw new Error(`Unknown feature: '${feature}'`);
+    }
+
+    const featureSemver = toSemver(featureTarget);
+    const compileSemver = toSemver(compileTarget);
+    if (compileSemver.compare(featureSemver) >= 0) {
+        return {
+            supports: true
+        };
+    } else {
+        return {
+            supports: false,
+            needed: featureTarget
+        };
+    }
+};
+
+const MINOR_VERSION_RE = /\d+\.\d+/;
+
+function toSemver(target: V1.MinorVersion): SemVer {
+    if (!target.match(MINOR_VERSION_RE)) {
+        throw new Error(`Target '${target}' is not a valid target version.`);
+    }
+    return new SemVer(target + ".0");
+}
+
 export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) => {
     // Require that at least the version field is present.
     const versionResult = VERSION_SCHEMA.safeParse(jsonValue);
@@ -113,7 +155,7 @@ export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) 
     // Check whether the version is supported.
     const serializedVersion = versionResult.data[VERSION_FIELD];
     try {
-        if (!canParse(CURRENT_VERSION, serializedVersion)) {
+        if (!canParse(LATEST_VERSION, serializedVersion)) {
             return {
                 type: "error",
                 code: "unsupported-version",
@@ -148,18 +190,22 @@ export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) 
 };
 
 export const serializePackageMetadata: typeof V1.serializePackageMetadata = (
-    metadata: V1.OutputPackageMetadata & Partial<Pick<V1.PackageMetadata, typeof VERSION_FIELD>>
+    metadata: V1.OutputPackageMetadata,
+    target: V1.MinorVersion
 ) => {
-    if (metadata[VERSION_FIELD] != null && metadata[VERSION_FIELD] !== CURRENT_VERSION) {
-        throw new Error(
-            `Invalid package metadata version '${metadata[VERSION_FIELD]}': ` +
-                `version should either be omitted or be equal to the current version.`
-        );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((metadata as any)[VERSION_FIELD]) {
+        throw new Error(`The package metadata version should not be specified directly.`);
+    }
+
+    const latestVersion = LATEST_VERSION_FOR_TARGET[target];
+    if (!latestVersion) {
+        throw new Error(`Unknown target version: '${target}'.`);
     }
 
     const augmentedMetadata: V1.PackageMetadata = {
         ...metadata,
-        [VERSION_FIELD]: CURRENT_VERSION
+        [VERSION_FIELD]: latestVersion
     };
 
     // Sanity check: pass our own validation.

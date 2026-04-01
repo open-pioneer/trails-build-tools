@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { RuntimeSupport } from "@open-pioneer/build-common";
+import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
 import { glob } from "tinyglobby";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -121,6 +121,29 @@ it("transpiles a project with source-info imports", async function () {
     `);
 });
 
+it("transpiling open-pioneer:deployment fails without recent compilation target", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-deployment-import");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-deployment-import");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+
+    const logger = createMemoryLogger();
+    const error = await expectError(() =>
+        buildJs({
+            ...testDefaults(),
+            packageDirectory,
+            outputDirectory,
+            entryPoints,
+            logger
+        })
+    );
+
+    expect(error).toMatchInlineSnapshot(
+        `[RollupError: [plugin virtual-modules] packages/build-package/test-data/project-with-deployment-import/index.js: Importing 'open-pioneer:deployment' requires package format target '1.1' or later.]`
+    );
+});
+
 it("transpiles a project with open-pioneer:deployment import", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "project-with-deployment-import");
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-deployment-import");
@@ -134,7 +157,8 @@ it("transpiles a project with open-pioneer:deployment import", async function ()
         packageDirectory,
         outputDirectory,
         entryPoints,
-        logger
+        logger,
+        packageFormatTarget: "1.1" as PackageMetadataV1.MinorVersion
     });
 
     // No warnings
@@ -733,7 +757,8 @@ function testDefaults() {
         packageJson: {
             dependencies: DEFAULT_DEPS
         },
-        packageJsonPath: "test/package.json"
+        packageJsonPath: "test/package.json",
+        packageFormatTarget: "1.0" as PackageMetadataV1.MinorVersion
     } satisfies Partial<BuildJsOptions>;
 }
 

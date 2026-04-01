@@ -1,0 +1,7 @@
+{
+    "name": "test-app",
+    "private": true,
+    "dependencies": {
+        "map": "0.0.1"
+    }
+}

@@ -1,41 +1,41 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { describe, expect, it } from "vitest";
-import { CURRENT_VERSION, parsePackageMetadata, serializePackageMetadata } from "./v1";
+import { expect, it } from "vitest";
+import { LATEST_VERSION, parsePackageMetadata, serializePackageMetadata } from "./v1";
 import { PackageMetadataV1 } from "../..";
+import { DEFAULT_PACKAGE_TARGET } from "../buildConfig";
 
-describe("packageMetadata v1", function () {
-    it("fails to parse an object without a version", function () {
-        const result = parsePackageMetadata({});
-        delete (result as any).cause;
-        expect(result).toMatchInlineSnapshot(`
+it("fails to parse an object without a version", function () {
+    const result = parsePackageMetadata({});
+    delete (result as any).cause;
+    expect(result).toMatchInlineSnapshot(`
           {
             "code": "validation-error",
             "message": "Expected a json object with a valid value for 'packageFormatVersion'.",
             "type": "error",
           }
         `);
-    });
+});
 
-    it("fails to parse when version is not supported", function () {
-        const result = parsePackageMetadata({
-            packageFormatVersion: "999.999.999"
-        });
-        expect(result).toMatchInlineSnapshot(`
+it("fails to parse when version is not supported", function () {
+    const result = parsePackageMetadata({
+        packageFormatVersion: "999.999.999"
+    });
+    expect(result).toMatchInlineSnapshot(`
           {
             "code": "unsupported-version",
             "message": "The version of this package cannot read framework metadata of version 999.999.999.",
             "type": "error",
           }
         `);
-    });
+});
 
-    it("fails to parse when schema is violated", function () {
-        const result = parsePackageMetadata({
-            packageFormatVersion: CURRENT_VERSION,
-            services: 123
-        });
-        expect(result).toMatchInlineSnapshot(`
+it("fails to parse when schema is violated", function () {
+    const result = parsePackageMetadata({
+        packageFormatVersion: LATEST_VERSION,
+        services: 123
+    });
+    expect(result).toMatchInlineSnapshot(`
           {
             "cause": [ZodError: [
             {
@@ -52,16 +52,16 @@ describe("packageMetadata v1", function () {
             "type": "error",
           }
         `);
-    });
+});
 
-    it("succeeds to parse simple metadata", function () {
-        const result = parsePackageMetadata({
-            packageFormatVersion: CURRENT_VERSION,
-            services: [],
-            properties: [],
-            styles: "./foo.css"
-        });
-        expect(result).toMatchInlineSnapshot(`
+it("succeeds to parse simple metadata", function () {
+    const result = parsePackageMetadata({
+        packageFormatVersion: LATEST_VERSION,
+        services: [],
+        properties: [],
+        styles: "./foo.css"
+    });
+    expect(result).toMatchInlineSnapshot(`
           {
             "type": "success",
             "value": {
@@ -72,99 +72,114 @@ describe("packageMetadata v1", function () {
             },
           }
         `);
-    });
+});
 
-    it("serializes and parses valid metadata objects", function () {
-        const metadata: PackageMetadataV1.OutputPackageMetadata = {
-            services: [
-                {
-                    serviceName: "A",
-                    provides: [
-                        {
-                            interfaceName: "foo"
-                        },
-                        {
-                            interfaceName: "bar",
-                            qualifier: "baz"
-                        }
-                    ],
-                    references: [
-                        {
-                            interfaceName: "i1",
-                            referenceName: "r1",
-                            type: "unique"
-                        },
-                        {
-                            interfaceName: "i2",
-                            qualifier: "q",
-                            referenceName: "r2",
-                            type: "all"
-                        }
-                    ]
-                }
-            ],
-            ui: {
+it("serializes and parses valid metadata objects", function () {
+    const metadata: PackageMetadataV1.OutputPackageMetadata = {
+        services: [
+            {
+                serviceName: "A",
+                provides: [
+                    {
+                        interfaceName: "foo"
+                    },
+                    {
+                        interfaceName: "bar",
+                        qualifier: "baz"
+                    }
+                ],
                 references: [
                     {
                         interfaceName: "i1",
+                        referenceName: "r1",
                         type: "unique"
                     },
                     {
                         interfaceName: "i2",
                         qualifier: "q",
+                        referenceName: "r2",
                         type: "all"
                     }
                 ]
-            },
-            servicesModule: "./my-services",
-            styles: "./my-styles.scss",
-            i18n: {
-                languages: ["x", "y"]
-            },
-            properties: [
+            }
+        ],
+        ui: {
+            references: [
                 {
-                    defaultValue: 123,
-                    propertyName: "x",
-                    required: true
+                    interfaceName: "i1",
+                    type: "unique"
                 },
                 {
-                    defaultValue: null,
-                    propertyName: "y",
-                    required: false
+                    interfaceName: "i2",
+                    qualifier: "q",
+                    type: "all"
                 }
             ]
-        };
-        const serialized = serializePackageMetadata(metadata);
-        const parseResult = parsePackageMetadata(serialized);
-        expect(parseResult.type).toBe("success");
+        },
+        servicesModule: "./my-services",
+        styles: "./my-styles.scss",
+        i18n: {
+            languages: ["x", "y"]
+        },
+        properties: [
+            {
+                defaultValue: 123,
+                propertyName: "x",
+                required: true
+            },
+            {
+                defaultValue: null,
+                propertyName: "y",
+                required: false
+            }
+        ]
+    };
+    const serialized = serializePackageMetadata(metadata, DEFAULT_PACKAGE_TARGET);
+    const parseResult = parsePackageMetadata(serialized);
+    expect(parseResult.type).toBe("success");
 
-        const value = (parseResult as any).value;
-        const expectedValue = {
-            ...metadata,
-            packageFormatVersion: CURRENT_VERSION // filled in during serialize
-        };
-        expect(value).toMatchObject(expectedValue);
-    });
+    const value = (parseResult as any).value;
+    const expectedValue = {
+        ...metadata,
+        packageFormatVersion: "1.0.0" // filled in during serialize
+    };
+    expect(value).toMatchObject(expectedValue);
+});
 
-    it("serializes and parses valid metadata objects", function () {
-        const metadata: PackageMetadataV1.PackageMetadata = {
-            packageFormatVersion: "1.0.9999999"
-        };
-        expect(() => serializePackageMetadata(metadata)).toThrowErrorMatchingInlineSnapshot(
-            `[Error: Invalid package metadata version '1.0.9999999': version should either be omitted or be equal to the current version.]`
-        );
-    });
+it("produces a newer format version for newer targets", () => {
+    const serialized = serializePackageMetadata(
+        { styles: "foo.css" },
+        "1.1" as PackageMetadataV1.MinorVersion
+    );
+    expect(serialized).toMatchInlineSnapshot(`
+      {
+        "packageFormatVersion": "1.1.0",
+        "styles": "foo.css",
+      }
+    `);
+});
 
-    it("parses real world metadata from package.json", function () {
-        const packageJsonData = JSON.parse(REAL_PACKAGE_METADATA);
-        const frameworkMetadata = packageJsonData[PackageMetadataV1.PACKAGE_JSON_KEY];
-        const parsedMetadata = parsePackageMetadata(frameworkMetadata);
-        if (parsedMetadata.type === "error") {
-            throw Error("Unexpected parse error: " + parsedMetadata.message);
-        }
+it("throws an error when the version is explicitly defined during serialization", function () {
+    const metadata: PackageMetadataV1.PackageMetadata = {
+        packageFormatVersion: "1.0.9999999"
+    };
+    expect(() =>
+        serializePackageMetadata(metadata, DEFAULT_PACKAGE_TARGET)
+    ).toThrowErrorMatchingInlineSnapshot(
+        `[Error: The package metadata version should not be specified directly.]`
+    );
+});
 
-        const data = parsedMetadata.value;
-        expect(data).toMatchInlineSnapshot(`
+it("parses real world metadata from package.json", function () {
+    const packageJsonData = JSON.parse(REAL_PACKAGE_METADATA);
+    const frameworkMetadata = packageJsonData[PackageMetadataV1.PACKAGE_JSON_KEY];
+    const parsedMetadata = parsePackageMetadata(frameworkMetadata);
+    if (parsedMetadata.type === "error") {
+        throw Error("Unexpected parse error: " + parsedMetadata.message);
+    }
+
+    const data = parsedMetadata.value;
+    expect(data).toMatchInlineSnapshot(`
           {
             "i18n": {
               "languages": [
@@ -232,7 +247,6 @@ describe("packageMetadata v1", function () {
             },
           }
         `);
-    });
 });
 
 const REAL_PACKAGE_METADATA = `
