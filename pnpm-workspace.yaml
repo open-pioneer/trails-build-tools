@@ -101,6 +101,8 @@ minimumReleaseAgeExclude:
   - "@open-pioneer/*"
   - "@conterra/*"
   - "picomatch" # See overrides
+  # Renovate security update: vite@7.3.2
+  - vite@7.3.2
 
 overrides:
   # https://github.com/advisories/GHSA-7h2j-956f-4vf2
@@ -143,7 +145,7 @@ auditConfig:
     - CVE-2025-69873
 
     # https://github.com/advisories/GHSA-f886-m6hf-6m8v
-    - CVE-2026-33750 
+    - CVE-2026-33750
 
 allowUnusedPatches: true
 ignorePatchFailures: false
