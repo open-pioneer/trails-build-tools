@@ -29,6 +29,9 @@ export async function createLicenseFile(options: LicenseOptions) {
     const chalk = await getChalk();
     logger.info(chalk.gray("Start creating license"));
 
+    //TODO
+    console.log("commit test");
+
     const packageJsonPath = options.packageJsonPath ?? PACKAGE_JSON_PATH;
     //TODO remove fallback config_path
     const configPath = options.configPath ?? CONFIG_PATH;
@@ -49,7 +52,11 @@ export async function createLicenseFile(options: LicenseOptions) {
     const { error, items } = analyzeLicenses(reportJson, config, THIS_DIR);
 
     // Add `additionalLicenses`
-    const { additionalError, additionalItems } = getAdditionalLicenses(config, items.length, THIS_DIR);
+    const { additionalError, additionalItems } = getAdditionalLicenses(
+        config,
+        items.length,
+        THIS_DIR
+    );
     const allItems = items.concat(additionalItems);
     const allError = error || additionalError;
 
