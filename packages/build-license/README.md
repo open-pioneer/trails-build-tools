@@ -1,15 +1,16 @@
-# @open-pioneer/build-package
+# @open-pioneer/build-license
 
-Implements partial compilation for Open Pioneer Trails packages.
-Compiled packages can be uploaded to the npm package registry.
+Implements the creation of the license file for a given packages json.
+Configuration is done via a license config file.
+For more details on the configuration, see the `@open-pioneer/build-license-cli` package.
 
 ## Usage
 
-```bash
-pnpm create-pioneer-license [options]
-```
+Use it with `@open-pioneer/build-license-cli` to generate a license file for your project.
 
-//TODO: add options and usage instructions
+```bash
+pnpm create-pioneer-license
+```
 
 ## License
 

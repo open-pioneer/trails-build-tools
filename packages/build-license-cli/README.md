@@ -1,44 +1,68 @@
-# @open-pioneer/build-package-cli
+# @open-pioneer/build-pioneer-license
 
-Provides the `build-pioneer-package` command line tool which compiles Open Pioneer Trails packages into a 'publishable' form.
+Provides the `build-pioneer-license` command line tool which creates a license report html file.
 
-Installation:
+## Installation
 
 ```bash
-$ pnpm add -D @open-pioneer/build-package-cli
+$ pnpm add -D @open-pioneer/build-pioneer-license
 ```
 
 ```text
-$ pnpm build-pioneer-package --help
-Usage: build-pioneer-package [options]
+$ pnpm build-pioneer-license --help
+Usage: build-pioneer-license [options]
 
-Builds an Open Pioneer Trails package for publishing.
+Create a license file for Open Pioneer Trails
 
 Options:
-  -p, --package <path>  package directory (defaults to current directory)
-  -r, --root <path>     the root directory (optional, defaults to the workspace root)
-  -q, --silent          disable logging
-  -d, --debug           show exception stack traces
-  -V, --version         output the version number
-  -h, --help            display help for command
+  -c, --config <path>       path to the license config file (default: "support/license-config.yaml")
+  -p, --packageJson <path>  path to the package.json (default: "package.json")
+  -o, --output <path>       path to the result file (default: "dist/license-report.html")
+  -d, --dev                 include dev dependencies (default: false)
+  -q, --silent              disable logging (default: false)
+  -x, --debug               show exception stack traces (default: false)
+  -V, --version             output the version number
+  -h, --help                display help for command
 ```
 
-`build-pioneer-package` should be invoked from the package's source directory.
-The package will then be built according to the instructions in the package's `build.config.mjs`.
-The output will be written to the package's `dist` directory.
+## Usage
+
+`build-pioneer-license` should be invoked from the package's source directory.
+The license report will be built, based on the packages of `package.json` and the configuration set in `license-config.yaml`.
+The default output will be written to the package's `dist` directory.
 
 ```text
-$ build-pioneer-package
-Building package at <...>
-Building JavaScript...
-Generating TypeScript declaration files...
-Copying assets...
-Writing package metadata...
-Copying auxiliary files...
-Success
+> pnpm build-pioneer-license
+Start creating license report
+Using license config from .\support\license-config.yaml , packagejson from .\package.json and write the result into .\dist\license-report.html
+License report finished successfully. Report written to .\dist\license-report.html
 ```
 
-To configure the build process, use the `publishConfig` section in your `build.config.mjs`.
+## Configuration
+
+The license report can be configured via a yaml file. The default path for this file is `support/license-config.yaml`.
+Here is an example of the configuration file:
+
+```yaml
+allowedLicenses:
+    - "Apache-2.0"
+    - "MIT"
+
+overrideLicenses:
+    - name: "rgbcolor"
+      version: "1.0.1"
+      license: "MIT"
+
+additionalLicenses:
+    - name: "Lucide"
+      license: "ISC"
+      licenseFiles:
+          - custom: "./licenses/lucide_isc"
+```
+
+The allowed licenses are the licenses that are allowed for the dependencies. If a dependency has a license that is not in the allowed licenses, it will be reported
+and the build will fail. The override licenses can be used to override the license of a dependency. This is useful if the license cannot be automatically detected.
+The additional licenses can be used to add additional licenses that are not automatically detected. This is useful for packages that do not have a license file or a license field in their package.json.
 
 ## License
 
