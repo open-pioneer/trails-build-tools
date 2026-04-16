@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { BUILD_CONFIG_NAME, loadBuildConfig } from "@open-pioneer/build-common";
+import { BUILD_CONFIG_NAME, loadBuildConfig, RuntimeSupport } from "@open-pioneer/build-common";
 import { existsSync, realpathSync } from "fs";
 import { ErrnoException, resolve as importMetaResolve } from "import-meta-resolve";
 import { dirname, isAbsolute, join } from "path";
@@ -214,6 +214,10 @@ class CheckImportsState {
         resolveResult: ResolvedId | null
     ): Promise<string | undefined> {
         isDebug && debug("Visiting module %s from %s", moduleId, parentId);
+
+        if (RuntimeSupport.parseVirtualModule(moduleId)) {
+            return undefined;
+        }
 
         let newModuleId: string | undefined = undefined;
         let packageName;

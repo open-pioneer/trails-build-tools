@@ -213,6 +213,9 @@ export interface PropertyMetaConfig {
     required?: boolean;
 }
 
+/** Compilation target for build time trails features. */
+export type PackageFormatTarget = "1.0" | "1.1";
+
 /**
  * Contains options interpreted when building a package for publishing with the `@open-pioneer/build-package` tool.
  */
@@ -282,7 +285,17 @@ export interface PublishConfig {
      *
      * Validation problems result in warnings (or errors, if {@link strict}) during the build.
      */
-    validation?: ValidationOptions;
+    validation?: ValidationOptions | false;
+
+    /**
+     * Compilation target for build time trails features.
+     *
+     * Use a newer value to enable additional features (such as new `open-pioneer:*` modules).
+     * Raising this value might require an updated trails vite plugin on the consumer side.
+     *
+     * Defaults to `"1.0"`.
+     */
+    packageFormatTarget?: PackageFormatTarget;
 }
 
 /**

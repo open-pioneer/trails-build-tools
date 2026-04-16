@@ -29,6 +29,8 @@ function parseVirtualModule(moduleId: string): API.RuntimeSupport.VirtualModuleT
             return "react-hooks";
         case "open-pioneer:source-info":
             return "source-info";
+        case "open-pioneer:deployment":
+            return "deployment";
     }
     throw new Error(`Unsupported module id '${moduleId}'.`);
 }
