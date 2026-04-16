@@ -5,11 +5,21 @@ import { exit } from "node:process";
 import { version } from "../package.json";
 import { createLicense } from "@open-pioneer/build-license";
 
+const LICENSE_CONFIG = "support/license-config.yaml";
+const PACKAGE_JSON = "package.json";
+const OUTPUT_HTML = "dist/license-report.html";
+
 const program = new Command();
 program
     .name("create-pioneer-license")
     .description("Create a license file for Open Pioneer Trails ")
-    .option("-d, --dev", "(optional, defaults is no dev dependency)")
+    .option(
+        "-c, --config",
+        "(optional) path to the license config file, defaults to ./support/license-config.yaml"
+    )
+    .option("-p, --packageJson", "(optional) defaults to package.json in current directory")
+    .option("-o, --output", "(optional) defaults to dist/license-report.html")
+    .option("-d, --dev", "(optional) defaults is no dev dependency")
     .option("-q, --silent", "disable logging")
     .option("-x, --debug", "show exception stack traces")
     .version(version);
@@ -18,11 +28,17 @@ program.parse();
 async function main() {
     const chalk = (await import("chalk")).default;
     const opts = program.opts();
+    const config = opts.config ?? LICENSE_CONFIG;
+    const packageJson = opts.packageJson ?? PACKAGE_JSON;
+    const output = opts.output ?? OUTPUT_HTML;
     const debug = opts.debug ?? false;
     const silent = opts.silent ?? false;
     const dev = opts.dev ?? false;
     try {
         await createLicense({
+            configPath: config,
+            packageJsonPath: packageJson,
+            outputHtmlPath: output,
             dev,
             log: !silent
         });

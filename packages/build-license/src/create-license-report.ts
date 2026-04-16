@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { LicenseOptions } from "../types";
@@ -18,27 +18,28 @@ import { analyzeLicenses, getAdditionalLicenses } from "./analyze-licenses";
  *
  * Outputs an html file to `dist/license-report.html`.
  */
-const THIS_DIR = resolve(dirname(fileURLToPath(import.meta.url)));
-const PACKAGE_DIR = resolve(THIS_DIR, "..");
-const PACKAGE_JSON_PATH = resolve(PACKAGE_DIR, "package.json");
-const CONFIG_PATH = resolve(THIS_DIR, "license-config.yaml");
-const OUTPUT_HTML_PATH = resolve(PACKAGE_DIR, "dist/license-report.html");
 
 export async function createLicenseFile(options: LicenseOptions) {
     const logger = options.log ? await createConsoleLogger(console) : SILENT_LOGGER;
     const chalk = await getChalk();
-    logger.info(chalk.gray("Start creating license"));
+    logger.info(chalk.gray("Start creating license report"));
 
-    //TODO
-    console.log("commit test");
+    const callerDir = process.cwd();
 
-    const packageJsonPath = options.packageJsonPath ?? PACKAGE_JSON_PATH;
-    //TODO remove fallback config_path
-    const configPath = options.configPath ?? CONFIG_PATH;
-    const outputHtmlPath = options.outputHtmlPath ?? OUTPUT_HTML_PATH;
+    const packageJsonPath = resolve(callerDir, options.packageJsonPath);
+    if (!existsSync(packageJsonPath)) {
+        throw new Error(`package.json not found at: ${packageJsonPath}`);
+    }
+    const configPath = resolve(callerDir, options.configPath);
+    if (!existsSync(configPath)) {
+        throw new Error(`License config not found at: ${configPath}`);
+    }
+    const configPathFolder = dirname(configPath);
+    const outputHtmlPath = resolve(callerDir, options.outputHtmlPath);
+
     logger.info(
         chalk.gray(
-            `Using config from ${configPath}, output into ${outputHtmlPath}, from ${packageJsonPath}`
+            `Using license config from ${configPath} , packagejson from ${packageJsonPath} and write the result into ${outputHtmlPath}`
         )
     );
 
@@ -46,16 +47,22 @@ export async function createLicenseFile(options: LicenseOptions) {
     const projectName = getProjectName(packageJsonPath);
 
     // Invoke pnpm to gather dependency information.
-    const reportJson = getPnpmLicenseReport();
+    const reportJson = await getPnpmLicenseReport();
 
     // Analyze licenses: find license information, handle configured overrides and print errors.
-    const { error, items } = analyzeLicenses(reportJson, config, THIS_DIR);
+    const { error, items } = await analyzeLicenses(
+        reportJson,
+        config,
+        configPathFolder,
+        options.log
+    );
 
     // Add `additionalLicenses`
-    const { additionalError, additionalItems } = getAdditionalLicenses(
+    const { additionalError, additionalItems } = await getAdditionalLicenses(
         config,
         items.length,
-        THIS_DIR
+        configPathFolder,
+        options.log
     );
     const allItems = items.concat(additionalItems);
     const allError = error || additionalError;
@@ -71,23 +78,28 @@ export async function createLicenseFile(options: LicenseOptions) {
     const reportHtml = generateReportHtml(projectName, allItems);
     writeFileSync(outputHtmlPath, reportHtml, "utf-8");
 
-    // Signal error if anything went wrong
-    process.exit(allError ? 1 : 0);
+    if (allError) {
+        logger.error(chalk.red(`License report finished with errors.`));
+        process.exit(1);
+    }
+    logger.info(
+        chalk.gray(`License report finished successfully. Report written to ${outputHtmlPath}`)
+    );
+    process.exit(0);
 }
 
 /**
  * Returns the project's name from the package.json file in the repository root.
  */
 function getProjectName(path: string): string {
-    let data: Record<string, unknown>;
     try {
-        data = JSON.parse(readFileSync(path, "utf-8"));
-    } catch (e) {
-        throw new Error(`Failed to read package.json: ${e}`);
-    }
-    const name = data?.name;
-    if (typeof name === "string") {
+        const data: Record<string, unknown> = JSON.parse(readFileSync(path, "utf-8"));
+        const name = data?.name;
+        if (typeof name !== "string") {
+            throw new Error(`'name' must be a string.`);
+        }
         return name;
+    } catch (e) {
+        throw new Error(`Failed to read project name from package.json at ${path}: ${e}`);
     }
-    throw new Error(`Failed to retrieve 'name' from package.json: it must be a string.`);
 }

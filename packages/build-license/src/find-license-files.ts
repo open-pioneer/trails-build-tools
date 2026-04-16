@@ -44,13 +44,10 @@ function findFirstMatch(directory: string, candidates: string[]): string[] {
     });
 
     for (const candidateName of candidates) {
-        for (const matchPath of matches) {
-            const matchFileName = basename(matchPath);
-            if (matchFileName.toLowerCase().includes(candidateName.toLowerCase())) {
-                return [matchPath];
-            }
-        }
+        const match = matches.find((matchPath) =>
+            basename(matchPath).toLowerCase().includes(candidateName.toLowerCase())
+        );
+        if (match) return [match];
     }
     return [];
 }
-

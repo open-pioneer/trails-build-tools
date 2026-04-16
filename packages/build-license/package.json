@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/build-license",
     "description": "Implements creation of Open Pioneer Trails license file.",
-    "version": "0.0.1",
+    "version": "0.0.6",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "module",
@@ -49,16 +49,17 @@
         "chalk": "catalog:",
         "debug": "catalog:",
         "esbuild": "catalog:",
-        "tinyglobby": "catalog:",
         "find-git-root": "catalog:",
         "find-workspaces": "catalog:",
         "fs-extra": "catalog:",
+        "handlebars": "catalog:",
         "import-meta-resolve": "catalog:",
         "postcss": "catalog:",
         "postcss-import": "catalog:",
         "rollup": "catalog:",
         "rollup-plugin-esbuild": "catalog:",
-        "handlebars": "catalog:"
+        "tinyglobby": "catalog:",
+        "zx": "catalog:"
     },
     "devDependencies": {
         "@rollup/pluginutils": "catalog:",

@@ -6,6 +6,7 @@ import { FileSpec, LicenseConfig, OverrideLicenseEntry } from "./license-config"
 import { findLicenseFiles, findNoticeFiles } from "./find-license-files";
 import { LicenseItem } from "./license-report-template";
 import { PnpmLicensesReport, walkProjectLocations } from "./pnpm-license-report";
+import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/build-common";
 
 /**
  * Iterates over the results of the given license report.
@@ -18,14 +19,18 @@ import { PnpmLicensesReport, walkProjectLocations } from "./pnpm-license-report"
  *
  * `thisDir` is the directory of the calling script, used to resolve "custom" file paths.
  */
-export function analyzeLicenses(
+export async function analyzeLicenses(
     reportJson: PnpmLicensesReport,
     config: LicenseConfig,
-    thisDir: string
-): {
+    thisDir: string,
+    log: boolean
+): Promise<{
     error: boolean;
     items: LicenseItem[];
-} {
+}> {
+    const logger = log ? await createConsoleLogger(console) : SILENT_LOGGER;
+    const chalk = await getChalk();
+
     let unknownLicenses = false;
     let disallowedLicenses = false;
     let missingLicenseText = false;
@@ -56,13 +61,17 @@ export function analyzeLicenses(
             if (!overrideEntry?.license) {
                 if (!licenses || licenses === "Unknown") {
                     unknownLicenses = true;
-                    console.warn(
-                        `Failed to detect licenses of dependency ${dependencyInfo} at ${path}`
+                    logger.warn(
+                        chalk.gray(
+                            `Failed to detect licenses of dependency ${dependencyInfo} at ${path}`
+                        )
                     );
                 } else if (!config.allowedLicenses.includes(licenses)) {
                     disallowedLicenses = true;
-                    console.warn(
-                        `License '${licenses}' of dependency ${dependencyInfo} is not allowed by configuration.`
+                    logger.warn(
+                        chalk.gray(
+                            `License '${licenses}' of dependency ${dependencyInfo} is not allowed by configuration.`
+                        )
                     );
                 }
             }
@@ -88,8 +97,10 @@ export function analyzeLicenses(
 
             const licenseTexts = licenseFiles.map(readProjectFile);
             if (licenseTexts.length === 0) {
-                console.warn(
-                    `Failed to detect license text of dependency ${dependencyInfo} in ${path}`
+                logger.warn(
+                    chalk.gray(
+                        `Failed to detect license text of dependency ${dependencyInfo} in ${path}`
+                    )
                 );
                 missingLicenseText = true;
             }
@@ -110,8 +121,10 @@ export function analyzeLicenses(
     if (config.overrideLicenses) {
         for (const overrideEntry of config.overrideLicenses) {
             if (!usedOverrides.has(overrideEntry)) {
-                console.warn(
-                    `License override for dependency '${overrideEntry.name}' (version(s): ${overrideEntry.version}) was not used, it should either be updated or removed.`
+                logger.warn(
+                    chalk.gray(
+                        `License override for dependency '${overrideEntry.name}' (version(s): ${overrideEntry.version}) was not used, it should either be updated or removed.`
+                    )
                 );
             }
         }
@@ -124,14 +137,17 @@ export function analyzeLicenses(
 /**
  * `thisDir` is the directory of the calling script, used to resolve "custom" file paths.
  */
-export function getAdditionalLicenses(
+export async function getAdditionalLicenses(
     config: LicenseConfig,
     itemCount: number,
-    thisDir: string
-): {
+    thisDir: string,
+    log: boolean
+): Promise<{
     additionalError: boolean;
     additionalItems: LicenseItem[];
-} {
+}> {
+    const logger = log ? await createConsoleLogger(console) : SILENT_LOGGER;
+    const chalk = await getChalk();
     if (!config.additionalLicenses)
         return {
             additionalError: false,
@@ -150,13 +166,17 @@ export function getAdditionalLicenses(
 
         if (!licenseSpec || licenseSpec === "Unknown") {
             unknownLicenses = true;
-            console.warn(
-                `Failed to detect licenses of dependency ${name} at "additionalLicenses" configuration`
+            logger.warn(
+                chalk.yellow(
+                    `Failed to detect licenses of dependency ${name} at "additionalLicenses" configuration`
+                )
             );
         } else if (!config.allowedLicenses.includes(licenseSpec)) {
             disallowedLicenses = true;
-            console.warn(
-                `License '${licenseSpec}' of dependency ${name} is not allowed by configuration.`
+            logger.warn(
+                chalk.yellow(
+                    `License '${licenseSpec}' of dependency ${name} is not allowed by configuration.`
+                )
             );
         }
 
@@ -171,8 +191,10 @@ export function getAdditionalLicenses(
                         );
                     }
                 } else {
-                    console.warn(
-                        `Failed to detect license text of dependency ${name} in at "additionalLicenses" configuration`
+                    logger.warn(
+                        chalk.yellow(
+                            `Failed to detect license text of dependency ${name} in at "additionalLicenses" configuration`
+                        )
                     );
                     missingLicenseText = true;
                 }
@@ -196,4 +218,3 @@ export function getAdditionalLicenses(
         additionalItems: items
     };
 }
-

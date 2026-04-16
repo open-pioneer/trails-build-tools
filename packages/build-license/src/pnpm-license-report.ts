@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { execSync } from "child_process";
+import { $ } from "zx";
 
 export interface PnpmLicensesReport {
     [license: string]: PnpmLicenseProject[];
@@ -23,9 +23,9 @@ export interface PnpmLicenseProject {
 /**
  * Invokes pnpm to list the licenses of all third party (production) dependencies used by this repository.
  */
-export function getPnpmLicenseReport(): PnpmLicensesReport {
-    const reportJsonText = execSync("pnpm licenses list --json --long -P", { encoding: "utf-8" });
-    return JSON.parse(reportJsonText);
+export async function getPnpmLicenseReport(): Promise<PnpmLicensesReport> {
+    const processOutputLicense = await $`pnpm licenses list --json --long -P`;
+    return processOutputLicense.json();
 }
 
 /**
@@ -54,4 +54,3 @@ export function* walkProjectLocations(
         yield { path, version };
     }
 }
-

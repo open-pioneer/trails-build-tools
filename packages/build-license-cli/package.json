@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/build-license-cli",
     "description": "Provides a CLI tool to create a license report for open-pioneer",
-    "version": "3.0.8",
+    "version": "0.0.6",
     "type": "module",
     "license": "Apache-2.0",
     "repository": {
