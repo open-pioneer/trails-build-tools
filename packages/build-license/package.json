@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/build-license",
     "description": "Implements creation of Open Pioneer Trails license file.",
-    "version": "0.0.6",
+    "version": "0.0.8",
     "main": "dist/index.js",
     "types": "types.d.ts",
     "type": "module",

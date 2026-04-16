@@ -14,37 +14,36 @@ program
     .name("create-pioneer-license")
     .description("Create a license file for Open Pioneer Trails ")
     .option(
-        "-c, --config",
-        "(optional) path to the license config file, defaults to ./support/license-config.yaml"
+        "-c, --config <path>",
+        "(optional) path to the license config file, defaults to ./support/license-config.yaml",
+        LICENSE_CONFIG
     )
-    .option("-p, --packageJson", "(optional) defaults to package.json in current directory")
-    .option("-o, --output", "(optional) defaults to dist/license-report.html")
-    .option("-d, --dev", "(optional) defaults is no dev dependency")
-    .option("-q, --silent", "disable logging")
-    .option("-x, --debug", "show exception stack traces")
+    .option(
+        "-p, --packageJson <path>",
+        "(optional) defaults to package.json in current directory",
+        PACKAGE_JSON
+    )
+    .option("-o, --output <path>", "(optional) defaults to dist/license-report.html", OUTPUT_HTML)
+    .option("-d, --dev", "(optional) defaults is no dev dependency", false)
+    .option("-q, --silent", "disable logging", false)
+    .option("-x, --debug", "show exception stack traces", false)
     .version(version);
 program.parse();
 
 async function main() {
     const chalk = (await import("chalk")).default;
     const opts = program.opts();
-    const config = opts.config ?? LICENSE_CONFIG;
-    const packageJson = opts.packageJson ?? PACKAGE_JSON;
-    const output = opts.output ?? OUTPUT_HTML;
-    const debug = opts.debug ?? false;
-    const silent = opts.silent ?? false;
-    const dev = opts.dev ?? false;
     try {
         await createLicense({
-            configPath: config,
-            packageJsonPath: packageJson,
-            outputHtmlPath: output,
-            dev,
-            log: !silent
+            configPath: opts.config,
+            packageJsonPath: opts.packageJson,
+            outputHtmlPath: opts.output,
+            dev: opts.dev,
+            log: !opts.silent
         });
         exit(0);
     } catch (e) {
-        if (debug) {
+        if (opts.debug) {
             console.error(e);
         } else {
             console.error(chalk.red((e as Error).message ?? String(e)));
