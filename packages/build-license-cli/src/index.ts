@@ -11,20 +11,12 @@ const OUTPUT_HTML = "dist/license-report.html";
 
 const program = new Command();
 program
-    .name("create-pioneer-license")
+    .name("build-pioneer-license")
     .description("Create a license file for Open Pioneer Trails ")
-    .option(
-        "-c, --config <path>",
-        "(optional) path to the license config file, defaults to ./support/license-config.yaml",
-        LICENSE_CONFIG
-    )
-    .option(
-        "-p, --packageJson <path>",
-        "(optional) defaults to package.json in current directory",
-        PACKAGE_JSON
-    )
-    .option("-o, --output <path>", "(optional) defaults to dist/license-report.html", OUTPUT_HTML)
-    .option("-d, --dev", "(optional) defaults is no dev dependency", false)
+    .option("-c, --config <path>", "path to the license config file", LICENSE_CONFIG)
+    .option("-p, --packageJson <path>", "path to the package.json", PACKAGE_JSON)
+    .option("-o, --output <path>", "path to the result file", OUTPUT_HTML)
+    .option("-d, --dev", "include dev dependencies", false)
     .option("-q, --silent", "disable logging", false)
     .option("-x, --debug", "show exception stack traces", false)
     .version(version);

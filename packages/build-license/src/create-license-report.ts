@@ -47,7 +47,7 @@ export async function createLicenseFile(options: LicenseOptions) {
     const projectName = getProjectName(packageJsonPath);
 
     // Invoke pnpm to gather dependency information.
-    const reportJson = await getPnpmLicenseReport();
+    const reportJson = await getPnpmLicenseReport(options.dev);
 
     // Analyze licenses: find license information, handle configured overrides and print errors.
     const { error, items } = await analyzeLicenses(

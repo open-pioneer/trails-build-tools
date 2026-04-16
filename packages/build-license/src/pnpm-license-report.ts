@@ -23,8 +23,10 @@ export interface PnpmLicenseProject {
 /**
  * Invokes pnpm to list the licenses of all third party (production) dependencies used by this repository.
  */
-export async function getPnpmLicenseReport(): Promise<PnpmLicensesReport> {
-    const processOutputLicense = await $`pnpm licenses list --json --long -P`;
+export async function getPnpmLicenseReport(dev: boolean): Promise<PnpmLicensesReport> {
+    const processOutputLicense = dev
+        ? await $`pnpm licenses list --json --long`
+        : await $`pnpm licenses list --json --long -P`;
     return processOutputLicense.json();
 }
 

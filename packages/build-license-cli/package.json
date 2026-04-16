@@ -1,7 +1,7 @@
 {
     "name": "@open-pioneer/build-license-cli",
     "description": "Provides a CLI tool to create a license report for open-pioneer",
-    "version": "0.0.8",
+    "version": "0.0.1",
     "type": "module",
     "license": "Apache-2.0",
     "repository": {
@@ -14,7 +14,7 @@
         "open-pioneer-trails"
     ],
     "bin": {
-        "create-pioneer-license": "./dist/index.js"
+        "build-pioneer-license": "./dist/index.js"
     },
     "scripts": {
         "clean": "rimraf dist",
