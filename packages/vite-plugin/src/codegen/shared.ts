@@ -5,6 +5,25 @@ import { basename, dirname, posix } from "node:path/posix";
 import { join } from "path/posix";
 import { normalizePath } from "vite";
 
+/**
+ * MODULE ID ENCODING
+ * ==================
+ *
+ * There are two encoding schemes for virtual modules in this file:
+ *
+ * 1. Leading null byte, e.g. `\0open-pioneer:deployment`.
+ *    This is used for "global" modules that are not scoped to a specific file, app or package.
+ *    This encoding is the usual practice in the rollup / vite ecosystem, making it very reliable.
+ *    It has the disadvantage that the generated files show up "somewhere" in the browser debugger.
+ * 2. Magic filenames, e.g. /path/to/app/@@open-pioneer-app.
+ *    These use a different prefix ("@@") for file names so they show up next to the relevant location,
+ *    for example as if they were developed in a specific package.
+ *    This was needed for both better debugging experience and to make some imports work well.
+ */
+
+const VIRTUAL_PREFIX = "\0open-pioneer:";
+const VIRTUAL_PREFIX_RE = /\0open-pioneer:(?<suffix>.*)/;
+
 const APP_MODULE = "@@open-pioneer-app";
 
 const APP_META_QUERY = "open-pioneer-app";
@@ -34,7 +53,8 @@ export type VirtualModule =
     | VirtualAppModule
     | VirtualI18nMessages
     | VirtualPackageModule
-    | VirtualSourceInfoModule;
+    | VirtualSourceInfoModule
+    | VirtualDeploymentModule;
 
 export interface VirtualAppModule {
     type: "app-meta" | "app-packages" | "app-css" | "app-i18n-index";
@@ -58,6 +78,10 @@ export interface VirtualSourceInfoModule {
     packageDirectory: string;
 }
 
+export interface VirtualDeploymentModule {
+    type: "deployment";
+}
+
 /**
  * Takes a module id as input and parses it.
  * If this plugin is not responsible to load the module id, this function returns `undefined`.
@@ -66,10 +90,24 @@ export interface VirtualSourceInfoModule {
  */
 export function parseVirtualModuleId(inputModuleId: string): VirtualModule | undefined {
     const moduleId = normalizePath(inputModuleId);
-    if (!moduleId || moduleId.includes("\\0")) {
+    if (!moduleId) {
         return undefined;
     }
 
+    // Module ids encoded with leading \0
+    if (moduleId.startsWith("\0")) {
+        const virtualPrefixMatch = inputModuleId.match(VIRTUAL_PREFIX_RE);
+        if (virtualPrefixMatch) {
+            const suffix = virtualPrefixMatch.groups?.["suffix"];
+            if (suffix === "deployment") {
+                return { type: "deployment" };
+            }
+        }
+        return undefined;
+    }
+
+    // Module ids that are located next to source files, in packages, etc.
+    // These look like ordinary files, but don't exist on disk.
     const sourceFile = getSourceFile(moduleId); // module id without query
     if (!sourceFile) {
         return undefined;
@@ -165,6 +203,8 @@ export function serializeModuleId(mod: VirtualModule): string {
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_INDEX_QUERY}`;
         case "app-i18n":
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_QUERY}&locale=${mod.locale}`;
+        case "deployment":
+            return `${VIRTUAL_PREFIX}deployment`;
     }
 }
 

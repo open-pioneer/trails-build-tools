@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { DEFAULT_PACKAGE_TARGET, PackageMetadataV1 } from "@open-pioneer/build-common";
 import { PublishConfig, ValidationOptions } from "@open-pioneer/build-support";
 import findGitRoot from "find-git-root";
 import findWorkspaces from "find-workspaces";
@@ -36,6 +37,9 @@ export interface ResolvedOptions {
 
     /** Validation options during the build. */
     validation: Required<ValidationOptions>;
+
+    /** Compilation level for trails features. */
+    packageFormatTarget: PackageMetadataV1.MinorVersion;
 }
 
 export type ResolvedValidationOptions = Required<ValidationOptions>;
@@ -74,12 +78,34 @@ export async function resolveOptions(
     const strict = opts?.strict ?? true;
     const sourceMaps = opts?.sourceMaps ?? true;
     const types = await shouldGenerateTypes(packageDirectory, opts?.types);
+
+    const allEnabled = opts?.validation !== false;
     const validation: ResolvedValidationOptions = {
-        requireReadme: true,
-        requireLicense: true,
-        requireChangelog: true,
-        ...opts?.validation
+        requireChangelog: allEnabled,
+        requireLicense: allEnabled,
+        requireReadme: allEnabled,
+        ...(allEnabled ? opts?.validation : undefined)
     };
+
+    let packageFormatTarget: PackageMetadataV1.MinorVersion;
+    if (opts?.packageFormatTarget != null) {
+        const configuredTarget = opts.packageFormatTarget;
+        if (
+            !PackageMetadataV1.MINOR_VERSIONS.includes(
+                configuredTarget as PackageMetadataV1.MinorVersion
+            )
+        ) {
+            const supportedTargets = PackageMetadataV1.MINOR_VERSIONS.join(", ");
+            throw new Error(
+                `Configured package format target '${configuredTarget}' is not supported. Supported values are ${supportedTargets}.`
+            );
+        }
+
+        packageFormatTarget = configuredTarget as PackageMetadataV1.MinorVersion;
+    } else {
+        packageFormatTarget = DEFAULT_PACKAGE_TARGET;
+    }
+
     return {
         packageDirectory,
         rootDirectory,
@@ -88,7 +114,8 @@ export async function resolveOptions(
         strict,
         sourceMaps,
         types,
-        validation
+        validation,
+        packageFormatTarget
     };
 }
 

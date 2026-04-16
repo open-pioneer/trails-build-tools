@@ -175,7 +175,7 @@ class PackageMetadataReader {
             /** External packages must have framework metadata in their package.json (or they are not considered Open Pioneer Trails packages at all). */
             case "external": {
                 if (!frameworkMetadata) {
-                   return undefined;
+                    return undefined;
                 }
                 return this.parsePackageConfigFromMetadata(packageName, frameworkMetadata);
             }
@@ -247,6 +247,7 @@ class PackageMetadataReader {
             if (metadataResult.code === "unsupported-version") {
                 throw new ReportableError(
                     `Package '${packageName}' in ${packageDir} uses an unsupported package metadata version.` +
+                        ` The latest version supported by this plugin is ${PackageMetadataV1.LATEST_VERSION}.` +
                         ` Try updating ${PACKAGE_NAME}.\n\n` +
                         metadataResult.message,
                     { cause: metadataResult.cause }

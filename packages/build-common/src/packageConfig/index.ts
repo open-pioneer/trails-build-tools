@@ -299,7 +299,7 @@ function readUiReferences(
 function readProperty(property: API.PackageMetadataV1.PropertyConfig): API.Property {
     return {
         propertyName: property.propertyName,
-        defaultValue: property.value,
+        defaultValue: property.defaultValue,
         required: property.required ?? false
     };
 }

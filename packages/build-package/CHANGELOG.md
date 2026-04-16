@@ -1,5 +1,22 @@
 # Changelog @open-pioneer/build-package
 
+## 4.1.2
+
+### Patch Changes
+
+- 50ddcbd: Ensure trails package metadata are written using the correct types.
+- Updated dependencies [50ddcbd]
+    - @open-pioneer/build-common@3.2.2
+
+## 4.1.1
+
+### Patch Changes
+
+- fa84b0e: Bump dependencies
+- Updated dependencies [fa84b0e]
+    - @open-pioneer/build-common@3.2.1
+    - @open-pioneer/build-support@3.0.6
+
 ## 4.1.0
 
 ### Minor Changes

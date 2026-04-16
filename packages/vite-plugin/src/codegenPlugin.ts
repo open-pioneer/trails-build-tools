@@ -1,30 +1,25 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { RuntimeSupport } from "@open-pioneer/build-common";
+import type { Plugin as EsbuildPlugin } from "esbuild";
 import { readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { cwd } from "node:process";
-import { normalizePath, Rollup, UserConfig, Plugin as VitePlugin } from "vite";
+import { PluginContext } from "rollup";
+import { normalizePath, UserConfig, Plugin as VitePlugin } from "vite";
 import { ReportableError } from "./ReportableError";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
-import {
-    findPackageJson,
-    parseVirtualModuleId,
-    serializeModuleId,
-    VirtualPackageModule,
-    VirtualSourceInfoModule
-} from "./codegen/shared";
+import { findPackageJson, parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
+import { DeploymentModule } from "./deployment";
 import { createMetadataContextFromRollup } from "./metadata/Context";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
 import { createDebugger } from "./utils/debug";
 import { fileExists } from "./utils/fileUtils";
-
-type PluginContext = Rollup.PluginContext;
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
@@ -33,13 +28,10 @@ export function codegenPlugin(): VitePlugin {
     let isDev!: boolean;
     let rootDir!: string;
     let repository!: MetadataRepository;
+    let deploymentModule!: DeploymentModule;
 
     return {
         name: "pioneer:codegen",
-
-        async buildStart(this: PluginContext) {
-            repository?.reset();
-        },
 
         async config(userConfig, env) {
             isDev = env.command === "serve";
@@ -47,8 +39,17 @@ export function codegenPlugin(): VitePlugin {
             repository = new MetadataRepository(rootDir);
 
             if (isDev) {
-                await optimizeTrailsPackages(userConfig, rootDir);
+                await configureDevOptimizer(userConfig, rootDir);
             }
+        },
+
+        configResolved(config) {
+            deploymentModule = new DeploymentModule(isDev, config.base);
+        },
+
+        async buildStart(this: PluginContext) {
+            repository?.reset();
+            deploymentModule.onStart(this);
         },
 
         async resolveId(this: PluginContext, moduleId, importer) {
@@ -89,6 +90,10 @@ export function codegenPlugin(): VitePlugin {
                             modulePath: importer,
                             packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
                         });
+                    case "deployment":
+                        return serializeModuleId({
+                            type: "deployment"
+                        });
                 }
             } catch (e) {
                 reportError(this, e, isDev);
@@ -104,19 +109,13 @@ export function codegenPlugin(): VitePlugin {
 
                 isDebug && debug("Loading virtual module %O", mod);
 
-                // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
-                // This uses the dev server to attempt to resolve the directory back to a complete path.
-                // Hit me up if you know a better way to do this.
-                const packageJsonPath = (await this.resolve(mod.packageDirectory + "/package.json"))
-                    ?.id;
-                if (!packageJsonPath) {
-                    throw new ReportableError(
-                        `Failed to resolve package.json in ${mod.packageDirectory}`
-                    );
+                if (mod.type === "deployment") {
+                    return deploymentModule.onLoadModule();
                 }
 
+                const packageJsonPath = await resolvePackageJson(this, mod);
                 if (mod.type === "package-hooks") {
-                    const packageName = await resolvePackageName(this, mod);
+                    const packageName = await getPackageName(this, packageJsonPath);
                     const generatedSourceCode = RuntimeSupport.generateReactHooks(
                         packageName,
                         RuntimeSupport.REACT_INTEGRATION_MODULE_ID
@@ -126,7 +125,7 @@ export function codegenPlugin(): VitePlugin {
                 }
 
                 if (mod.type === "source-info") {
-                    const packageName = await resolvePackageName(this, mod);
+                    const packageName = await getPackageName(this, packageJsonPath);
                     return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
                 }
 
@@ -135,10 +134,7 @@ export function codegenPlugin(): VitePlugin {
                 if (mod.type === "app-meta") {
                     const runtimeVersion = appMetadata.runtimeMetadataVersion;
                     isDebug &&
-                        debug(
-                            "Generating app metadata for runtime version %s",
-                            runtimeVersion
-                        );
+                        debug("Generating app metadata for runtime version %s", runtimeVersion);
                     return generateAppMetadata(
                         mod.packageDirectory,
                         RuntimeSupport.METADATA_MODULE_ID,
@@ -194,22 +190,41 @@ export function codegenPlugin(): VitePlugin {
         watchChange(id, _change) {
             isDebug && debug("File %s changed", id);
             repository.onFileChanged(id);
+        },
+
+        generateBundle(_options, bundle) {
+            deploymentModule.onGenerateBundle(bundle);
         }
     };
 }
 
-async function resolvePackageName(
+async function resolvePackageJson(
     ctx: PluginContext,
-    mod: VirtualSourceInfoModule | VirtualPackageModule
-) {
-    const directory = mod.packageDirectory;
-    // use forward slashes instead of platform separator
-    const packageJsonPath = (await ctx.resolve(directory + "/package.json"))?.id;
-    if (!packageJsonPath) {
-        throw new ReportableError(`Failed to resolve package.json in ${directory}`);
+    mod: { packageDirectory: string }
+): Promise<string> {
+    // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
+    // This uses the dev server to attempt to resolve the directory back to a complete path.
+    // Hit me up if you know a better way to do this.
+    const path = (await ctx.resolve(mod.packageDirectory + "/package.json"))?.id;
+    if (!path) {
+        throw new ReportableError(`Failed to resolve package.json in ${mod.packageDirectory}`);
     }
+    return path;
+}
 
-    return await getPackageName(ctx, packageJsonPath);
+async function configureDevOptimizer(userConfig: UserConfig, rootDir: string) {
+    const optimizeDeps = (userConfig.optimizeDeps ??= {});
+
+    // Include trails modules in deps optimizer settings
+    const includes = (optimizeDeps.include ??= []);
+    const trailsModules = await getOptimizeDepsIncludes(rootDir);
+    includes.push(...trailsModules);
+
+    // Mark trails modules in node dependencies as `external` from esbuild's POV
+    // so they can be handled by our vite plugin.
+    const esbuildOptions = (optimizeDeps.esbuildOptions ??= {});
+    const plugins = (esbuildOptions.plugins ??= []);
+    plugins.push(createOptimizeDepsEsbuildPlugin());
 }
 
 /**
@@ -224,7 +239,7 @@ async function resolvePackageName(
  * I couldn't get the esbuild plugin working, however.
  * This could be reattempted when vite has migrated to rolldown.
  */
-async function optimizeTrailsPackages(userConfig: UserConfig, rootDir: string) {
+async function getOptimizeDepsIncludes(rootDir: string) {
     const trailsPackages = await findTrailsPackages(rootDir);
     const trailsModules = trailsPackages.flatMap((pkg) => {
         if (!/[/\\]node_modules[/\\]/.test(pkg.directory)) {
@@ -237,9 +252,23 @@ async function optimizeTrailsPackages(userConfig: UserConfig, rootDir: string) {
     trailsModules.push(`${RuntimeSupport.RUNTIME_PACKAGE_NAME}/**`);
 
     isDebug && debug("Optimizing additional modules %O", trailsModules);
-    const optimizeDeps = (userConfig.optimizeDeps ??= {});
-    const includes = (optimizeDeps.include ??= []);
-    includes.push(...trailsModules);
+    return trailsModules;
+}
+
+/**
+ * Creates an esbuild plugin for use during Vite's dependency optimization phase.
+ * It marks all `open-pioneer:*` virtual module imports as external so that they
+ * are left untouched by esbuild and can later be handled by the normal Vite plugin.
+ */
+function createOptimizeDepsEsbuildPlugin(): EsbuildPlugin {
+    return {
+        name: "pioneer:optimize-deps",
+        setup(build) {
+            build.onResolve({ filter: /^open-pioneer:/ }, (args) => {
+                return { external: true, path: args.path };
+            });
+        }
+    };
 }
 
 function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {

@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { Service, PackageMetadataV1 as V1 } from "@open-pioneer/build-common";
+import {
+    Property,
+    Service,
+    UiReference,
+    PackageMetadataV1 as V1
+} from "@open-pioneer/build-common";
 import { existsSync } from "node:fs";
 import nativePath from "node:path";
 import { PackageModel } from "./model/PackageModel";
@@ -16,6 +21,7 @@ type SimplePackageModel = Pick<
 
 export interface GeneratePackageJsonOptions {
     model: SimplePackageModel;
+    packageFormatTarget: V1.MinorVersion;
     validation: ResolvedValidationOptions;
     reporter: ValidationReporter;
     logger: Logger;
@@ -55,6 +61,7 @@ const COPY_FIELDS = [
  */
 export async function generatePackageJson({
     model,
+    packageFormatTarget,
     validation,
     reporter
 }: GeneratePackageJsonOptions): Promise<Record<string, unknown>> {
@@ -74,7 +81,7 @@ export async function generatePackageJson({
         }
     }
     packageJson.exports = generateExports(model, reporter);
-    packageJson.openPioneerFramework = generateMetadata(model);
+    packageJson.openPioneerFramework = generateMetadata(model, packageFormatTarget);
 
     // Clone (for safety) and also strip 'undefined' values.
     return JSON.parse(JSON.stringify(packageJson));
@@ -157,7 +164,7 @@ function getPackageExportsKey(moduleId: string) {
     return `./${name}`;
 }
 
-function generateMetadata(model: SimplePackageModel): unknown {
+function generateMetadata(model: SimplePackageModel, target: V1.MinorVersion): unknown {
     const pkgConfig = model.input.packageConfig;
     const metadata: V1.OutputPackageMetadata = {
         styles: model.cssEntryPoint ? `./${model.cssEntryPoint.outputModuleId}.css` : undefined,
@@ -169,9 +176,9 @@ function generateMetadata(model: SimplePackageModel): unknown {
             languages: Array.from(pkgConfig.languages)
         },
         ui: {
-            references: Array.from(pkgConfig.uiReferences)
+            references: writeUiReferences(pkgConfig.uiReferences)
         },
-        properties: Array.from(pkgConfig.properties.values())
+        properties: writeProperties(Array.from(pkgConfig.properties.values()))
     };
 
     if (pkgConfig.runtimeMeta) {
@@ -181,7 +188,7 @@ function generateMetadata(model: SimplePackageModel): unknown {
         };
     }
 
-    return V1.serializePackageMetadata(metadata);
+    return V1.serializePackageMetadata(metadata, target);
 }
 
 function writeServices(services: Service[]): V1.ServiceConfig[] {
@@ -191,5 +198,25 @@ function writeServices(services: Service[]): V1.ServiceConfig[] {
             provides,
             references: Array.from(references.values())
         };
+    });
+}
+
+function writeUiReferences(uiReferences: UiReference[]): V1.UiReferenceConfig[] {
+    return uiReferences.map(({ type, interfaceName, qualifier }) => {
+        return {
+            type,
+            interfaceName,
+            qualifier
+        } satisfies V1.UiReferenceConfig;
+    });
+}
+
+function writeProperties(properties: Property[]): V1.PropertyConfig[] {
+    return properties.map(({ propertyName, defaultValue, required }) => {
+        return {
+            propertyName,
+            defaultValue,
+            required
+        } satisfies V1.PropertyConfig;
     });
 }

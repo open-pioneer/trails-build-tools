@@ -1,13 +1,15 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { cp, mkdir } from "fs/promises";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { beforeAll, expect, it, vi } from "vitest";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { existsSync } from "fs";
 import { build } from ".";
 import { createMemoryLogger } from "./utils/Logger";
+import { readFileSync } from "node:fs";
+import { expectError } from "./testing/helpers";
 
 vi.setConfig({
     testTimeout: 20_000
@@ -125,7 +127,7 @@ it("should build package to `dist`", async function () {
           "i18n": {
             "languages": [],
           },
-          "packageFormatVersion": "1.1.0",
+          "packageFormatVersion": "1.0.1",
           "properties": [],
           "services": [],
           "styles": "./my-styles.css",
@@ -156,6 +158,45 @@ it("should build package to `dist`", async function () {
           "LICENSE
           "
         `);
+});
+
+it("should support changing the package format target to '1.1'", async () => {
+    const srcPackage = resolve(TEST_DATA_DIR, "project-with-target-1.1");
+    const tempPackage = resolve(TEMP_DATA_DIR, "project-with-target-1.1");
+    const distDirectory = resolve(tempPackage, "dist");
+    const logger = createMemoryLogger();
+
+    await cleanDir(tempPackage);
+    await cp(srcPackage, tempPackage, {
+        recursive: true,
+        force: true
+    });
+
+    try {
+        await build({ packageDirectory: tempPackage, logger });
+    } catch (e) {
+        console.error(logger.messages);
+        throw e;
+    }
+
+    const packageJsonContent = readFileSync(join(distDirectory, "package.json"), "utf-8");
+    const packageJson = JSON.parse(packageJsonContent);
+    expect(packageJson.openPioneerFramework.packageFormatVersion).toBe("1.1.0");
+});
+
+it("should reject invalid package format targets", async () => {
+    const srcPackage = resolve(TEST_DATA_DIR, "project-with-invalid-target");
+    const tempPackage = resolve(TEMP_DATA_DIR, "project-with-invalid-target");
+    const logger = createMemoryLogger();
+
+    await cleanDir(tempPackage);
+    await cp(srcPackage, tempPackage, {
+        recursive: true,
+        force: true
+    });
+
+    const error = await expectError(() => build({ packageDirectory: tempPackage, logger }));
+    expect(error.message).toMatch(/Validation error in configuration file at (.*)build.config.mjs/);
 });
 
 it("should build package to `dist` with runtime version", async function () {
@@ -205,7 +246,7 @@ it("should build package to `dist` with runtime version", async function () {
           "i18n": {
             "languages": [],
           },
-          "packageFormatVersion": "1.1.0",
+          "packageFormatVersion": "1.0.1",
           "properties": [],
           "services": [],
           "styles": "./my-styles.css",

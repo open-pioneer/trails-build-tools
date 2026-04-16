@@ -9,7 +9,7 @@ import { createMemoryLogger } from "./utils/Logger";
 import { createInputModel } from "./model/InputModel";
 import { resolveOptions } from "./model/Options";
 
-it("copies i18n files if configured in build.config.js", async function () {
+it("copies i18n files if configured in build.config.js", async () => {
     const packageDirectory = resolve(TEST_DATA_DIR, "project-with-i18n");
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-i18n");
     await cleanDir(outputDirectory);
@@ -48,7 +48,7 @@ it("copies i18n files if configured in build.config.js", async function () {
     `);
 });
 
-it("throws if i18n files are missing", async function () {
+it("throws if i18n files are missing", async () => {
     const packageDirectory = resolve(TEST_DATA_DIR, "project-with-missing-i18n-files");
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-missing-i18n-files");
     await cleanDir(outputDirectory);
@@ -70,5 +70,5 @@ it("throws if i18n files are missing", async function () {
             options: { ...resolvedOptions, outputDirectory },
             logger
         })
-    ).rejects.toThrowError(/I18n file does not exist/);
+    ).rejects.toThrow(/I18n file does not exist/);
 });

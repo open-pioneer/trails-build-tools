@@ -19,9 +19,13 @@ export async function runViteBuild(options: {
     outDir: string;
     rootDir: string;
     pluginOptions: PioneerPluginOptions;
+    baseUrl?: string;
 }) {
     await build({
         root: options.rootDir,
+
+        // generate relative URLs by default
+        base: options.baseUrl ?? "./",
 
         build: {
             minify: false,
@@ -59,15 +63,11 @@ export async function runViteBuild(options: {
             pioneer(options.pluginOptions),
             {
                 name: "force-chunk-names",
-                config(config, _env) {
+                config(_config, _env) {
                     return {
-                        ...config,
                         build: {
-                            ...config.build,
                             rollupOptions: {
-                                ...config.build?.rollupOptions,
                                 output: {
-                                    ...config.build?.rollupOptions?.output,
                                     chunkFileNames(_info) {
                                         // Reliable filenames for tests
                                         return "assets/chunk.js";

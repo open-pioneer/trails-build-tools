@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import {
     BuildConfig,
+    PackageFormatTarget,
     PackageOverridesConfig,
     PropertyMetaConfig,
     ProvidesConfig,
@@ -15,6 +16,7 @@ import {
 import { z } from "zod";
 import { createErrorMap, fromZodError } from "zod-validation-error";
 import type * as API from "../../types";
+import { MINOR_VERSIONS } from "../packageMetadata/v1";
 
 type VerifyBuildConfig = typeof API.verifyBuildConfig;
 
@@ -69,12 +71,15 @@ const VALIDATION_OPTIONS_SCHEMA: z.ZodType<ValidationOptions> = z.strictObject({
     requireChangelog: z.boolean().optional()
 });
 
+const PACKAGE_FORMAT_TARGETS_SCHEMA = z.enum([...MINOR_VERSIONS]) as z.ZodType<PackageFormatTarget>;
+
 const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
     assets: z.string().or(z.array(z.string())).optional(),
     types: z.boolean().optional(),
     sourceMaps: z.boolean().optional(),
     strict: z.boolean().optional(),
-    validation: VALIDATION_OPTIONS_SCHEMA.optional()
+    validation: VALIDATION_OPTIONS_SCHEMA.or(z.literal(false)).optional(),
+    packageFormatTarget: PACKAGE_FORMAT_TARGETS_SCHEMA.optional()
 });
 
 const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<BuildConfig["runtimeMeta"]> = z.object({

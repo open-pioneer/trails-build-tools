@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { expect, it } from "vitest";
 import { verifyBuildConfig } from "./verifyBuildConfig";
+import { PackageMetadataV1 } from "../packageMetadata";
 
 it("allows valid values", () => {
     verifyBuildConfig({ styles: "foo" });
@@ -21,10 +22,28 @@ it("throws for invalid parameter names", () => {
     );
 });
 
+it.each(PackageMetadataV1.MINOR_VERSIONS)("supports target version '%s'", (minor) => {
+    verifyBuildConfig({
+        publishConfig: {
+            packageFormatTarget: minor
+        }
+    });
+});
+
+it("rejects invalid target version", () => {
+    expect(() =>
+        verifyBuildConfig({
+            publishConfig: {
+                packageFormatTarget: "99.99"
+            }
+        })
+    ).toThrow(/publishConfig.packageFormatTarget/);
+});
+
 it("allow runtimeMeta", () => {
-    const metaRuntimeConfig = { 
+    const metaRuntimeConfig = {
         runtimeMeta: {
-            version: "1.0.0",
+            version: "1.0.0"
         }
     };
     verifyBuildConfig(metaRuntimeConfig);

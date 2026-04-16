@@ -146,7 +146,7 @@ it("maps build.config.mjs contents to internal representation", function () {
 
 it("maps package metadata to internal representation", function () {
     const metadata: V1.PackageMetadata = {
-        packageFormatVersion: V1.CURRENT_VERSION,
+        packageFormatVersion: "1.0.0",
         services: [
             {
                 serviceName: "A",
@@ -195,12 +195,12 @@ it("maps package metadata to internal representation", function () {
         },
         properties: [
             {
-                value: 123,
+                defaultValue: 123,
                 propertyName: "x",
                 required: true
             },
             {
-                value: null,
+                defaultValue: null,
                 propertyName: "y",
                 required: false
             }
