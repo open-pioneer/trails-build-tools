@@ -3,7 +3,7 @@
 import { Command } from "commander";
 import { exit } from "node:process";
 import { version } from "../package.json";
-import { createLicense } from "@open-pioneer/build-license";
+import { createLicenseFile } from "./create-license-report";
 
 const LICENSE_CONFIG = "support/license-config.yaml";
 const PACKAGE_JSON = "package.json";
@@ -26,7 +26,7 @@ async function main() {
     const chalk = (await import("chalk")).default;
     const opts = program.opts();
     try {
-        await createLicense({
+        await createLicenseFile({
             configPath: opts.config,
             packageJsonPath: opts.packageJson,
             outputHtmlPath: opts.output,

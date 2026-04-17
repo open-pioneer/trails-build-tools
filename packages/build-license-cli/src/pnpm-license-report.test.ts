@@ -1,13 +1,20 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, it, onTestFailed, vi } from "vitest";
+import { beforeAll, expect, it, onTestFailed, vi } from "vitest";
 import { resolve } from "node:path";
 import { TEST_DATA_DIR } from "./testing/paths";
 import { getPnpmLicenseReport } from "./pnpm-license-report";
+import { cpSync } from "node:fs";
 
 vi.setConfig({
     testTimeout: 20000
+});
+
+beforeAll(() => {
+    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
+    const sourceLockfile = resolve(packageDirectory, "_pnpm-lock.yaml");
+    cpSync(sourceLockfile, resolve(packageDirectory, "pnpm-lock.yaml"), { recursive: true });
 });
 
 it("expect pnpm license to show right license", async () => {
