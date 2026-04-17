@@ -62,14 +62,14 @@ export async function analyzeLicenses(
                 if (!licenses || licenses === "Unknown") {
                     unknownLicenses = true;
                     logger.warn(
-                        chalk.gray(
+                        chalk.yellow(
                             `Failed to detect licenses of dependency ${dependencyInfo} at ${path}`
                         )
                     );
                 } else if (!config.allowedLicenses.includes(licenses)) {
                     disallowedLicenses = true;
                     logger.warn(
-                        chalk.gray(
+                        chalk.yellow(
                             `License '${licenses}' of dependency ${dependencyInfo} is not allowed by configuration.`
                         )
                     );
@@ -98,7 +98,7 @@ export async function analyzeLicenses(
             const licenseTexts = licenseFiles.map(readProjectFile);
             if (licenseTexts.length === 0) {
                 logger.warn(
-                    chalk.gray(
+                    chalk.yellow(
                         `Failed to detect license text of dependency ${dependencyInfo} in ${path}`
                     )
                 );
@@ -122,7 +122,7 @@ export async function analyzeLicenses(
         for (const overrideEntry of config.overrideLicenses) {
             if (!usedOverrides.has(overrideEntry)) {
                 logger.warn(
-                    chalk.gray(
+                    chalk.yellow(
                         `License override for dependency '${overrideEntry.name}' (version(s): ${overrideEntry.version}) was not used, it should either be updated or removed.`
                     )
                 );

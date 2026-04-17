@@ -3,9 +3,9 @@
     "version": "0.0.1",
     "license": "Apache-2.0",
     "dependencies": {
-        "typescript": "6.0.3"
+        "package-a": "file:./package-a"
     },
     "devDependencies": {
-        "@types/react": "19.2.14"
+        "package-b": "file:./package-b"
     }
 }

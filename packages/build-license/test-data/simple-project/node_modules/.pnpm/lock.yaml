@@ -10,22 +10,22 @@ importers:
     dependencies:
       package-a:
         specifier: file:./package-a
-        version: 0.0.1
+        version: file:package-a
     devDependencies:
       package-b:
         specifier: file:./package-b
-        version: 0.0.1
+        version: file:package-b
 
 packages:
 
-  package-a@0.0.1:
+  package-a@file:package-a:
     resolution: {directory: package-a, type: directory}
 
-  package-b@0.0.1:
+  package-b@file:package-b:
     resolution: {directory: package-b, type: directory}
 
 snapshots:
 
-  package-a@0.0.1: {}
+  package-a@file:package-a: {}
 
-  package-b@0.0.1: {}
+  package-b@file:package-b: {}

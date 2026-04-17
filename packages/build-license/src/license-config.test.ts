@@ -17,13 +17,6 @@ it("expect to read license config", async () => {
         "allowedLicenses": [
           "Apache-2.0",
           "MIT",
-          "ISC",
-          "BSD-3-Clause",
-          "BSD-2-Clause",
-          "0BSD",
-          "CC0-1.0",
-          "WTFPL",
-          "Unlicense",
         ],
         "overrideLicenses": undefined,
       }
@@ -42,32 +35,26 @@ it("expect to read license config with all attributes", async () => {
             "license": "MIT",
             "licenseFiles": [
               {
-                "path": "./licenses/feather_mit",
+                "path": "./licenses/package-c",
                 "type": "custom",
               },
             ],
-            "name": "Feather",
+            "name": "package-c",
             "version": undefined,
           },
         ],
         "allowedLicenses": [
           "Apache-2.0",
           "MIT",
-          "ISC",
-          "BSD-3-Clause",
-          "BSD-2-Clause",
-          "0BSD",
-          "CC0-1.0",
-          "WTFPL",
           "Unlicense",
         ],
         "overrideLicenses": [
           {
             "license": "Unlicense",
             "licenseFiles": undefined,
-            "name": "fast-shallow-equal",
+            "name": "package-b",
             "noticeFiles": undefined,
-            "version": "1.0.0",
+            "version": "0.0.1",
           },
         ],
       }

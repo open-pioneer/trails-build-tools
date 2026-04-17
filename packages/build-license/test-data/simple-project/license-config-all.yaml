@@ -2,21 +2,15 @@
 allowedLicenses:
   - "Apache-2.0"
   - "MIT"
-  - "ISC"
-  - "BSD-3-Clause"
-  - "BSD-2-Clause"
-  - "0BSD"
-  - "CC0-1.0"
-  - "WTFPL"
   - "Unlicense"
 
 overrideLicenses:
-  - name: "fast-shallow-equal"
-    version: "1.0.0"
+  - name: "package-b"
+    version: "0.0.1"
     license: "Unlicense"
 
 additionalLicenses:
-  - name: "Feather"
+  - name: "package-c"
     license: "MIT"
     licenseFiles:
-      - custom: "./licenses/feather_mit"
+      - custom: "./licenses/package-c"

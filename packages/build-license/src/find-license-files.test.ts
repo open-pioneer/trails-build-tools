@@ -6,7 +6,7 @@ import { resolve } from "node:path";
 import { TEST_DATA_DIR } from "./testing/paths";
 import { findFirstLicenseFile } from "./find-license-files";
 
-it("expect pnpm license to show right license", async () => {
+it("expect to  find a license config file", async () => {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
 
     const fileSpec = findFirstLicenseFile(packageDirectory);
