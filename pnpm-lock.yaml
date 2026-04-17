@@ -246,6 +246,7 @@ overrides:
   picomatch@>=4.0.0 <4.0.4: ^4.0.4
   yaml@>=1.0.0 <1.10.3: ^1.10.3
   yaml@>=2.0.0 <2.8.3: ^2.8.3
+  protocol-buffers-schema@<3.6.1: ^3.6.1
   '@open-pioneer/runtime': '>= 2.2.0'
 
 importers:
@@ -3583,8 +3584,8 @@ packages:
   prop-types@15.8.1:
     resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
 
-  protocol-buffers-schema@3.6.0:
-    resolution: {integrity: sha512-TdDRD+/QNdrCGCE7v8340QyuXd4kIWIgapsE2+n/SaGiSSbomYl4TjHlvIoCWRpE7wFt02EpB35VVA2ImcBVqw==}
+  protocol-buffers-schema@3.6.1:
+    resolution: {integrity: sha512-VG2K63Igkiv9p76tk1lilczEK1cT+kCjKtkdhw1dQZV3k3IXJbd3o6Ho8b9zJZaHSnT2hKe4I+ObmX9w6m5SmQ==}
 
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
@@ -7499,7 +7500,7 @@ snapshots:
       object-assign: 4.1.1
       react-is: 16.13.1
 
-  protocol-buffers-schema@3.6.0: {}
+  protocol-buffers-schema@3.6.1: {}
 
   punycode@2.3.1: {}
 
@@ -7719,7 +7720,7 @@ snapshots:
 
   resolve-protobuf-schema@2.1.0:
     dependencies:
-      protocol-buffers-schema: 3.6.0
+      protocol-buffers-schema: 3.6.1
 
   resolve@1.22.10:
     dependencies:
