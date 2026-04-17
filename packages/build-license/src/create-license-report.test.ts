@@ -3,9 +3,8 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { afterEach, expect, it, vi } from "vitest";
+import { expect, it } from "vitest";
 import { TEST_DATA_DIR } from "./testing/paths";
-import * as pnpmLicenseReport from "./pnpm-license-report";
 import { createLicenseFile } from "./create-license-report";
 
 // vi.mock("./pnpm-license-report", async () => {
@@ -32,13 +31,6 @@ it("expect pnpm license to show right license", async () => {
     const config = resolve(packageDirectory, "license-config.yaml");
     const htmlOutput = resolve(packageDirectory, "test.html");
 
-    // We need to mock getPnpmLicenseReport currently, becaue shell calls inside createLicenseFile
-    // seem not to work. Strangely if you call getPnpmLicenseReport directly it works fine
-    // const { getPnpmLicenseReport } =
-    //     await vi.importActual<typeof import("./pnpm-license-report")>("./pnpm-license-report");
-    // const pnpmList = await getPnpmLicenseReport(packageDirectory, true, true);
-    // vi.mocked(pnpmLicenseReport.getPnpmLicenseReport).mockResolvedValue(pnpmList);
-
     await createLicenseFile({
         dev: false,
         ignoreWorkspace: true,
@@ -48,7 +40,6 @@ it("expect pnpm license to show right license", async () => {
         configPath: config
     });
 
-    expect(pnpmLicenseReport.getPnpmLicenseReport).toHaveBeenCalledWith(packageJSON, false, true);
     expect(existsSync(htmlOutput)).toBe(true);
     expect(readFileSync(htmlOutput, "utf-8")).toContain("simple-project");
     expect(readFileSync(htmlOutput, "utf-8")).toContain("typescript");

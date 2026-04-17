@@ -1,14 +1,13 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/build-common";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
 import { LicenseOptions } from "../types";
-import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/build-common";
-import { generateReportHtml } from "./license-report-template";
-import { readLicenseConfig } from "./license-config";
-import { getPnpmLicenseReport } from "./pnpm-license-report";
 import { analyzeLicenses, getAdditionalLicenses } from "./analyze-licenses";
+import { readLicenseConfig } from "./license-config";
+import { generateReportHtml } from "./license-report-template";
+import { getPnpmLicenseReport } from "./pnpm-license-report";
 
 /**
  * Generates a license report from the dependencies of this repository.
@@ -47,8 +46,9 @@ export async function createLicenseFile(options: LicenseOptions) {
     const projectName = getProjectName(packageJsonPath);
 
     // Invoke pnpm to gather dependency information.
+    const workspaceDirectory = dirname(packageJsonPath);
     const reportJson = await getPnpmLicenseReport(
-        packageJsonPath,
+        workspaceDirectory,
         options.dev,
         options.ignoreWorkspace
     );

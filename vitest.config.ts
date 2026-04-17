@@ -6,7 +6,8 @@ const IGNORED_FILES = ["**/dist/**", "**/test-data/**", "**/temp/**", "**/node_m
 
 export default defineConfig({
     test: {
-        exclude: IGNORED_FILES
+        exclude: IGNORED_FILES,
+        silent: "passed-only"
     },
     server: {
         watch: {
