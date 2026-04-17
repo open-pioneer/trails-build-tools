@@ -31,7 +31,8 @@ async function main() {
             packageJsonPath: opts.packageJson,
             outputHtmlPath: opts.output,
             dev: opts.dev,
-            log: !opts.silent
+            log: !opts.silent,
+            ignoreWorkspace: false
         });
         exit(0);
     } catch (e) {

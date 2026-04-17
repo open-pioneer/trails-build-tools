@@ -121,4 +121,3 @@ function readFileSpecs(rawSpecs: unknown[] | undefined): FileSpec[] | undefined 
 
     return rawSpecs.map(readRawSpec);
 }
-

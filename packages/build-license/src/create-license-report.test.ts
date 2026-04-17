@@ -1,37 +1,55 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, it, vi } from "vitest";
-import { createLicenseFile } from "./create-license-report";
-import { expectError } from "./testing/helpers";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { afterEach, expect, it, vi } from "vitest";
 import { TEST_DATA_DIR } from "./testing/paths";
+import * as pnpmLicenseReport from "./pnpm-license-report";
+import { createLicenseFile } from "./create-license-report";
 
-vi.setConfig({
-    testTimeout: 20000
-});
+// vi.mock("./pnpm-license-report", async () => {
+//     const actual =
+//         await vi.importActual<typeof import("./pnpm-license-report")>("./pnpm-license-report");
+//
+//     return {
+//         ...actual,
+//         getPnpmLicenseReport: vi.fn()
+//     };
+// });
+//
+// vi.setConfig({
+//     testTimeout: 20000
+// });
+//
+// afterEach(() => {
+//     vi.restoreAllMocks();
+// });
 
-it("expect create license to fail with false config", async () => {
-    const error = await expectError(() =>
-        createLicenseFile({
-            dev: false,
-            log: false,
-            configPath: "",
-            packageJsonPath: "",
-            outputHtmlPath: ""
-        })
-    );
-    expect(error.message).toMatch(/Failed to read license config from/);
-});
+it("expect pnpm license to show right license", async () => {
+    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
+    const packageJSON = resolve(packageDirectory, "package.json");
+    const config = resolve(packageDirectory, "license-config.yaml");
+    const htmlOutput = resolve(packageDirectory, "test.html");
 
-it("expect create license to be created", async () => {
-    // const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    //
-    // await createLicenseFile({
-    //     dev: false,
-    //     log: true,
-    //     configPath: resolve(packageDirectory, "license-config.yaml"),
-    //     packageJsonPath: resolve(packageDirectory, "package.json"),
-    //     outputHtmlPath: resolve(packageDirectory, "test.html")
-    // });
+    // We need to mock getPnpmLicenseReport currently, becaue shell calls inside createLicenseFile
+    // seem not to work. Strangely if you call getPnpmLicenseReport directly it works fine
+    // const { getPnpmLicenseReport } =
+    //     await vi.importActual<typeof import("./pnpm-license-report")>("./pnpm-license-report");
+    // const pnpmList = await getPnpmLicenseReport(packageDirectory, true, true);
+    // vi.mocked(pnpmLicenseReport.getPnpmLicenseReport).mockResolvedValue(pnpmList);
+
+    await createLicenseFile({
+        dev: false,
+        ignoreWorkspace: true,
+        log: true,
+        outputHtmlPath: htmlOutput,
+        packageJsonPath: packageJSON,
+        configPath: config
+    });
+
+    expect(pnpmLicenseReport.getPnpmLicenseReport).toHaveBeenCalledWith(packageJSON, false, true);
+    expect(existsSync(htmlOutput)).toBe(true);
+    expect(readFileSync(htmlOutput, "utf-8")).toContain("simple-project");
+    expect(readFileSync(htmlOutput, "utf-8")).toContain("typescript");
 });

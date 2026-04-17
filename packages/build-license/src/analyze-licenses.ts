@@ -3,7 +3,7 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { FileSpec, LicenseConfig, OverrideLicenseEntry } from "./license-config";
-import { findLicenseFiles, findNoticeFiles } from "./find-license-files";
+import { findFirstLicenseFile, findFirstNoticeFile } from "./find-license-files";
 import { LicenseItem } from "./license-report-template";
 import { PnpmLicensesReport, walkProjectLocations } from "./pnpm-license-report";
 import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/build-common";
@@ -55,8 +55,8 @@ export async function analyzeLicenses(
             const overrideEntry = getOverrideEntry(name, version);
             const dependencyInfo = `'${name}' (version: ${version})`;
             const licenses = overrideEntry?.license ?? project.license;
-            const licenseFiles = overrideEntry?.licenseFiles ?? findLicenseFiles(path);
-            const noticeFiles = overrideEntry?.noticeFiles ?? findNoticeFiles(path);
+            const licenseFiles = overrideEntry?.licenseFiles ?? findFirstLicenseFile(path);
+            const noticeFiles = overrideEntry?.noticeFiles ?? findFirstNoticeFile(path);
 
             if (!overrideEntry?.license) {
                 if (!licenses || licenses === "Unknown") {

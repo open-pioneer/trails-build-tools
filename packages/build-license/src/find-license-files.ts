@@ -16,14 +16,14 @@ const NOTICE_FILES = "NOTICE".split(" ");
  *
  * The license output must be checked manually!
  */
-export function findLicenseFiles(directory: string): FileSpec[] {
+export function findFirstLicenseFile(directory: string): FileSpec[] {
     return toPackageFiles(findFirstMatch(directory, LICENSE_FILES));
 }
 
 /**
  * Like findLicenseFiles(), but for copyright NOTICE files.
  */
-export function findNoticeFiles(directory: string): FileSpec[] {
+export function findFirstNoticeFile(directory: string): FileSpec[] {
     return toPackageFiles(findFirstMatch(directory, NOTICE_FILES));
 }
 

@@ -12,6 +12,9 @@ export interface LicenseOptions {
 
     /** Output path for the generated HTML report. Defaults to `dist/license-report.html`. */
     outputHtmlPath: string;
+
+    /** Ignore workspace for pnpm licenses, currently just for testing */
+    ignoreWorkspace?: boolean;
 }
 
 export function createLicense(options: LicenseOptions): Promise<void>;
