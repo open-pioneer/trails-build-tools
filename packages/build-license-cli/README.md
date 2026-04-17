@@ -49,15 +49,15 @@ allowedLicenses:
     - "MIT"
 
 overrideLicenses:
-    - name: "rgbcolor"
-      version: "1.0.1"
+    - name: "package-a"
+      version: "1.0.0"
       license: "MIT"
 
 additionalLicenses:
-    - name: "Lucide"
+    - name: "package-b"
       license: "ISC"
       licenseFiles:
-          - custom: "./licenses/lucide_isc"
+          - custom: "./licenses/pacakge-b_isc"
 ```
 
 The allowed licenses are the licenses that are allowed for the dependencies. If a dependency has a license that is not in the allowed licenses, it will be reported

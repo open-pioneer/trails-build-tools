@@ -425,7 +425,7 @@ importers:
         specifier: workspace:*
         version: link:../..
 
-  packages/build-license:
+  packages/build-license-cli:
     dependencies:
       '@open-pioneer/build-common':
         specifier: workspace:^
@@ -444,7 +444,7 @@ importers:
         version: 4.4.3
       esbuild:
         specifier: 'catalog:'
-        version: 0.27.4
+        version: 0.28.0
       find-git-root:
         specifier: 'catalog:'
         version: 1.1.0
@@ -471,7 +471,7 @@ importers:
         version: 4.59.0
       rollup-plugin-esbuild:
         specifier: 'catalog:'
-        version: 6.2.1(esbuild@0.27.4)(rollup@4.59.0)
+        version: 6.2.1(esbuild@0.28.0)(rollup@4.59.0)
       tinyglobby:
         specifier: 'catalog:'
         version: 0.2.15
@@ -503,22 +503,6 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
-
-  packages/build-license-cli:
-    dependencies:
-      '@open-pioneer/build-license':
-        specifier: workspace:^
-        version: link:../build-license
-      chalk:
-        specifier: 'catalog:'
-        version: 5.6.2
-      commander:
-        specifier: 'catalog:'
-        version: 14.0.3
-    devDependencies:
-      build-tools:
-        specifier: workspace:*
-        version: link:../..
 
   packages/build-package:
     dependencies:
@@ -7865,17 +7849,6 @@ snapshots:
     dependencies:
       glob: 13.0.6
       package-json-from-dist: 1.0.1
-
-  rollup-plugin-esbuild@6.2.1(esbuild@0.27.4)(rollup@4.59.0):
-    dependencies:
-      debug: 4.4.3
-      es-module-lexer: 1.7.0
-      esbuild: 0.27.4
-      get-tsconfig: 4.10.1
-      rollup: 4.59.0
-      unplugin-utils: 0.2.4
-    transitivePeerDependencies:
-      - supports-color
 
   rollup-plugin-esbuild@6.2.1(esbuild@0.28.0)(rollup@4.59.0):
     dependencies:

@@ -1,13 +1,15 @@
 {
     "name": "@open-pioneer/build-license-cli",
-    "description": "Provides a CLI tool to create a license report for open-pioneer",
+    "description": "Implements creation of Open Pioneer Trails license file.",
     "version": "0.0.1",
+    "main": "dist/index.js",
+    "types": "types.d.ts",
     "type": "module",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
-        "directory": "packages/build-license-cli"
+        "directory": "packages/build-license"
     },
     "homepage": "https://github.com/open-pioneer",
     "keywords": [
@@ -17,25 +19,60 @@
         "build-pioneer-license": "./dist/index.js"
     },
     "scripts": {
-        "clean": "rimraf dist",
+        "clean": "rimraf dist temp",
         "build": "node build.mjs build",
         "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch"
+        "dev": "node build.mjs watch",
+        "test": "vitest"
     },
     "files": [
         "dist/**/*.js",
         "dist/**/*.js.map",
+        "types.d.ts",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
+    "peerDependencies": {
+        "sass": "*",
+        "typescript": "*"
+    },
+    "peerDependenciesMeta": {
+        "typescript": {
+            "optional": true
+        },
+        "sass": {
+            "optional": true
+        }
+    },
     "dependencies": {
-        "@open-pioneer/build-license": "workspace:^",
+        "@open-pioneer/build-common": "workspace:^",
+        "@open-pioneer/build-support": "workspace:^",
+        "@rollup/plugin-node-resolve": "catalog:",
         "chalk": "catalog:",
-        "commander": "catalog:"
+        "debug": "catalog:",
+        "esbuild": "catalog:",
+        "find-git-root": "catalog:",
+        "find-workspaces": "catalog:",
+        "fs-extra": "catalog:",
+        "handlebars": "catalog:",
+        "import-meta-resolve": "catalog:",
+        "postcss": "catalog:",
+        "postcss-import": "catalog:",
+        "rollup": "catalog:",
+        "rollup-plugin-esbuild": "catalog:",
+        "tinyglobby": "catalog:",
+        "zx": "catalog:"
     },
     "devDependencies": {
-        "build-tools": "workspace:*"
+        "@rollup/pluginutils": "catalog:",
+        "@types/debug": "catalog:",
+        "@types/fs-extra": "catalog:",
+        "@types/postcss-import": "catalog:",
+        "@types/react": "catalog:",
+        "build-tools": "workspace:*",
+        "sass": "catalog:",
+        "typescript": "catalog:"
     },
     "engines": {
         "node": ">= 20"
