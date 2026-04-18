@@ -6,7 +6,7 @@ import { version } from "../package.json";
 import { createLicenseFile } from "./create-license-report";
 
 const LICENSE_CONFIG = "support/license-config.yaml";
-const PACKAGE_JSON = "package.json";
+const WORKING_DIR = process.cwd();
 const OUTPUT_HTML = "dist/license-report.html";
 
 const program = new Command();
@@ -14,7 +14,7 @@ program
     .name("build-pioneer-license")
     .description("Create a license file for Open Pioneer Trails ")
     .option("-c, --config <path>", "path to the license config file", LICENSE_CONFIG)
-    .option("-p, --packageJson <path>", "path to the package.json", PACKAGE_JSON)
+    .option("-w, --workingDir <path>", "path to the working directory (default: current directory)")
     .option("-o, --output <path>", "path to the result file", OUTPUT_HTML)
     .option("-d, --dev", "include dev dependencies", false)
     .option("-q, --silent", "disable logging", false)
@@ -25,10 +25,11 @@ program.parse();
 async function main() {
     const chalk = (await import("chalk")).default;
     const opts = program.opts();
+    const workingDir = opts.workingDir ?? WORKING_DIR;
     try {
         await createLicenseFile({
             configPath: opts.config,
-            packageJsonPath: opts.packageJson,
+            workingDir: workingDir,
             outputHtmlPath: opts.output,
             dev: opts.dev,
             log: !opts.silent,

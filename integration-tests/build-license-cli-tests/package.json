@@ -1,0 +1,11 @@
+{
+    "name": "build-license-cli-tests",
+    "private": true,
+    "scripts": {
+        "test": "vitest"
+    },
+    "devDependencies": {
+        "@open-pioneer/build-license-cli": "workspace:^",
+        "zx": "catalog:"
+    }
+}

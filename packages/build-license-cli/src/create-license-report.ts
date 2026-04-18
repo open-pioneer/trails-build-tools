@@ -25,7 +25,8 @@ export async function createLicenseFile(options: LicenseOptions) {
 
     const callerDir = process.cwd();
 
-    const packageJsonPath = resolve(callerDir, options.packageJsonPath);
+    const packageJsonPath = resolve(options.workingDir, "package.json");
+
     if (!existsSync(packageJsonPath)) {
         throw new Error(`package.json not found at: ${packageJsonPath}`);
     }
@@ -46,9 +47,8 @@ export async function createLicenseFile(options: LicenseOptions) {
     const projectName = getProjectName(packageJsonPath);
 
     // Invoke pnpm to gather dependency information.
-    const workspaceDirectory = dirname(packageJsonPath);
     const reportJson = await getPnpmLicenseReport(
-        workspaceDirectory,
+        options.workingDir,
         options.dev,
         options.ignoreWorkspace
     );

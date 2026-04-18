@@ -19,7 +19,6 @@ beforeAll(() => {
 
 it("expect to create a license html", async () => {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const packageJSON = resolve(packageDirectory, "package.json");
     const config = resolve(packageDirectory, "license-config.yaml");
     const htmlOutput = resolve(packageDirectory, "test-a.html");
 
@@ -28,7 +27,7 @@ it("expect to create a license html", async () => {
         ignoreWorkspace: true,
         log: false,
         outputHtmlPath: htmlOutput,
-        packageJsonPath: packageJSON,
+        workingDir: packageDirectory,
         configPath: config
     });
 
@@ -42,7 +41,6 @@ it("expect to create a license html", async () => {
 
 it("expect to create a license html with dev dependencies", async () => {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const packageJSON = resolve(packageDirectory, "package.json");
     const config = resolve(packageDirectory, "license-config-all.yaml");
     const htmlOutput = resolve(packageDirectory, "test-abc.html");
 
@@ -51,7 +49,7 @@ it("expect to create a license html with dev dependencies", async () => {
         ignoreWorkspace: true,
         log: false,
         outputHtmlPath: htmlOutput,
-        packageJsonPath: packageJSON,
+        workingDir: packageDirectory,
         configPath: config
     });
 

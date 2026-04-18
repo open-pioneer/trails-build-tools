@@ -7,8 +7,8 @@ export interface LicenseOptions {
     /** Path to the `license-config.yaml` file. */
     configPath: string;
 
-    /** Path to the `package.json` of the project. Defaults to the package root's `package.json`. */
-    packageJsonPath: string;
+    /** Path to the working directory of the project. Defaults to the package root. */
+    workingDir: string;
 
     /** Output path for the generated HTML report. Defaults to `dist/license-report.html`. */
     outputHtmlPath: string;
