@@ -314,6 +314,15 @@ importers:
         specifier: 'catalog:'
         version: 4.1.0(@types/node@20.19.37)(vite@7.3.2(@types/node@20.19.37)(sass@1.98.0)(yaml@2.8.3))
 
+  integration-tests/build-license-cli-tests:
+    devDependencies:
+      '@open-pioneer/build-license-cli':
+        specifier: workspace:^
+        version: link:../../packages/build-license-cli
+      zx:
+        specifier: 'catalog:'
+        version: 8.8.5
+
   integration-tests/build-package-cli-tests:
     devDependencies:
       '@chakra-ui/icons':
