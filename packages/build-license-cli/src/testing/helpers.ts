@@ -1,15 +1,20 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-export function expectError(fn: () => Promise<void>): Promise<Error> {
-    return fn().then(
-        () => {
-            throw new Error("Expected an error but none was thrown.");
-        },
-        (err) => {
-            if (!(err instanceof Error)) {
-                throw new Error(`Expected an error but got: ${err}`);
-            }
-            return err;
+import { afterAll, beforeAll } from "vitest";
+import { resolve } from "node:path";
+import { cpSync, existsSync, rmSync } from "node:fs";
+
+export function useTemporaryPnpmLockfile(projectDir: string): void {
+    beforeAll(() => {
+        const sourceLockfile = resolve(projectDir, "_pnpm-lock.yaml");
+        const targetLockfile = resolve(projectDir, "pnpm-lock.yaml");
+        cpSync(sourceLockfile, targetLockfile, { recursive: true });
+    });
+
+    afterAll(() => {
+        const targetLockfile = resolve(projectDir, "pnpm-lock.yaml");
+        if (existsSync(targetLockfile)) {
+            rmSync(targetLockfile);
         }
-    );
+    });
 }

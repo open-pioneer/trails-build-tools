@@ -1,29 +1,20 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-
-import { beforeAll, expect, it, onTestFailed, vi } from "vitest";
+import { expect, it, onTestFailed, vi } from "vitest";
 import { resolve } from "node:path";
-import { TEST_DATA_DIR } from "./testing/paths";
+import { PROJECT_DIR } from "./testing/paths";
 import { getPnpmLicenseReport } from "./pnpm-license-report";
 import { readLicenseConfig } from "./license-config";
 import { analyzeLicenses } from "./analyze-licenses";
-import { cpSync } from "node:fs";
+import { useTemporaryPnpmLockfile } from "./testing/helpers";
 
-vi.setConfig({
-    testTimeout: 20000
-});
-beforeAll(() => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const sourceLockfile = resolve(packageDirectory, "_pnpm-lock.yaml");
-    cpSync(sourceLockfile, resolve(packageDirectory, "pnpm-lock.yaml"), { recursive: true });
-});
+useTemporaryPnpmLockfile(PROJECT_DIR);
 
 it("expect to analyze the dependencies", async () => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const configPath = resolve(packageDirectory, "license-config.yaml");
-    const pnpmList = await getPnpmLicenseReport(packageDirectory, false, true);
+    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
+    const pnpmList = await getPnpmLicenseReport(PROJECT_DIR, false, true);
     const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await analyzeLicenses(pnpmList, config, packageDirectory, true);
+    const analyzedLicenses = await analyzeLicenses(pnpmList, config, PROJECT_DIR, true);
     onTestFailed(() => console.log(analyzedLicenses.items));
     expect(analyzedLicenses.error).toBe(false);
     expect(analyzedLicenses.items).toMatchInlineSnapshot(`
@@ -45,11 +36,10 @@ it("expect to analyze the dependencies", async () => {
 it("expect to find unallowed licenses", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const configPath = resolve(packageDirectory, "license-config-missing.yaml");
-    const pnpmList = await getPnpmLicenseReport(packageDirectory, false, true);
+    const configPath = resolve(PROJECT_DIR, "license-config-missing.yaml");
+    const pnpmList = await getPnpmLicenseReport(PROJECT_DIR, false, true);
     const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await analyzeLicenses(pnpmList, config, packageDirectory, true);
+    const analyzedLicenses = await analyzeLicenses(pnpmList, config, PROJECT_DIR, true);
 
     expect(analyzedLicenses.error).toBe(true);
 

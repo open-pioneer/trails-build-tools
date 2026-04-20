@@ -1,21 +1,15 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-
-import { beforeAll, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import { resolve } from "node:path";
-import { TEST_DATA_DIR } from "./testing/paths";
+import { PROJECT_DIR } from "./testing/paths";
 import { readLicenseConfig } from "./license-config";
-import { cpSync } from "node:fs";
+import { useTemporaryPnpmLockfile } from "./testing/helpers";
 
-beforeAll(() => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const sourceLockfile = resolve(packageDirectory, "_pnpm-lock.yaml");
-    cpSync(sourceLockfile, resolve(packageDirectory, "pnpm-lock.yaml"), { recursive: true });
-});
+useTemporaryPnpmLockfile(PROJECT_DIR);
 
 it("expect to read license config", async () => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const pathToConfig = resolve(packageDirectory, "license-config.yaml");
+    const pathToConfig = resolve(PROJECT_DIR, "license-config.yaml");
     const config = readLicenseConfig(pathToConfig);
 
     expect(config).toMatchInlineSnapshot(`
@@ -31,8 +25,7 @@ it("expect to read license config", async () => {
 });
 
 it("expect to read license config with all attributes", async () => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const pathToConfig = resolve(packageDirectory, "license-config-all.yaml");
+    const pathToConfig = resolve(PROJECT_DIR, "license-config-all.yaml");
     const config = readLicenseConfig(pathToConfig);
 
     expect(config).toMatchInlineSnapshot(`

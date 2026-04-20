@@ -1,33 +1,27 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-
-import { cpSync, existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { beforeAll, expect, it, vi } from "vitest";
-import { TEST_DATA_DIR } from "./testing/paths";
+import { expect, it, vi } from "vitest";
+import { PROJECT_DIR } from "./testing/paths";
 import { createLicenseFile } from "./create-license-report";
+import { useTemporaryPnpmLockfile } from "./testing/helpers";
 
 vi.setConfig({
-    testTimeout: 20000
+    testTimeout: 10000
 });
-
-beforeAll(() => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const sourceLockfile = resolve(packageDirectory, "_pnpm-lock.yaml");
-    cpSync(sourceLockfile, resolve(packageDirectory, "pnpm-lock.yaml"), { recursive: true });
-});
+useTemporaryPnpmLockfile(PROJECT_DIR);
 
 it("expect to create a license html", async () => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const config = resolve(packageDirectory, "license-config.yaml");
-    const htmlOutput = resolve(packageDirectory, "test-a.html");
+    const config = resolve(PROJECT_DIR, "license-config.yaml");
+    const htmlOutput = resolve(PROJECT_DIR, "test-a.html");
 
     await createLicenseFile({
         dev: false,
         ignoreWorkspace: true,
         log: false,
         outputHtmlPath: htmlOutput,
-        workingDir: packageDirectory,
+        workingDir: PROJECT_DIR,
         configPath: config
     });
 
@@ -40,16 +34,15 @@ it("expect to create a license html", async () => {
 });
 
 it("expect to create a license html with dev dependencies", async () => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const config = resolve(packageDirectory, "license-config-all.yaml");
-    const htmlOutput = resolve(packageDirectory, "test-abc.html");
+    const config = resolve(PROJECT_DIR, "license-config-all.yaml");
+    const htmlOutput = resolve(PROJECT_DIR, "test-abc.html");
 
     await createLicenseFile({
         dev: true,
         ignoreWorkspace: true,
         log: false,
         outputHtmlPath: htmlOutput,
-        workingDir: packageDirectory,
+        workingDir: PROJECT_DIR,
         configPath: config
     });
 

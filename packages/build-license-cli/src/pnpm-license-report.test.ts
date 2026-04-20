@@ -1,25 +1,14 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-
-import { beforeAll, expect, it, onTestFailed, vi } from "vitest";
-import { resolve } from "node:path";
-import { TEST_DATA_DIR } from "./testing/paths";
+import { expect, it, onTestFailed, vi } from "vitest";
+import { PROJECT_DIR } from "./testing/paths";
 import { getPnpmLicenseReport } from "./pnpm-license-report";
-import { cpSync } from "node:fs";
+import { useTemporaryPnpmLockfile } from "./testing/helpers";
 
-vi.setConfig({
-    testTimeout: 20000
-});
-
-beforeAll(() => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const sourceLockfile = resolve(packageDirectory, "_pnpm-lock.yaml");
-    cpSync(sourceLockfile, resolve(packageDirectory, "pnpm-lock.yaml"), { recursive: true });
-});
+useTemporaryPnpmLockfile(PROJECT_DIR);
 
 it("expect pnpm license to show right license", async () => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const pnpmList = await getPnpmLicenseReport(packageDirectory, false, true);
+    const pnpmList = await getPnpmLicenseReport(PROJECT_DIR, false, true);
     const pnpmArray = Object.values(pnpmList).flat();
     onTestFailed(() => console.log(pnpmArray));
     expect(pnpmArray).toContainEqual(
@@ -33,8 +22,7 @@ it("expect pnpm license to show right license", async () => {
 });
 
 it("expect pnpm license to show right license with devDependencies", async () => {
-    const packageDirectory = resolve(TEST_DATA_DIR, "simple-project");
-    const pnpmList = await getPnpmLicenseReport(packageDirectory, true, true);
+    const pnpmList = await getPnpmLicenseReport(PROJECT_DIR, true, true);
     const pnpmArray = Object.values(pnpmList).flat();
     onTestFailed(() => console.log(pnpmArray));
 
