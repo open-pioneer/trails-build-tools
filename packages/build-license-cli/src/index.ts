@@ -13,10 +13,14 @@ const program = new Command();
 program
     .name("build-pioneer-license")
     .description("Create a license file for Open Pioneer Trails ")
+    .option(
+        "-w, --working-dir <path>",
+        "path to the working directory (default: current directory)"
+    )
     .option("-c, --config <path>", "path to the license config file", LICENSE_CONFIG)
-    .option("-w, --workingDir <path>", "path to the working directory (default: current directory)")
     .option("-o, --output <path>", "path to the result file", OUTPUT_HTML)
     .option("-d, --dev", "include dev dependencies", false)
+    .option("-i, --ignore-workspace", "ignore the workspace, only look at the lock file", false)
     .option("-q, --silent", "disable logging", false)
     .option("-x, --debug", "show exception stack traces", false)
     .version(version);
@@ -33,7 +37,7 @@ async function main() {
             outputHtmlPath: opts.output,
             dev: opts.dev,
             log: !opts.silent,
-            ignoreWorkspace: false
+            ignoreWorkspace: opts.ignoreWorkspace
         });
         exit(0);
     } catch (e) {

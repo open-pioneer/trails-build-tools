@@ -6,16 +6,18 @@ exports[`check help message 1`] = `
 Create a license file for Open Pioneer Trails
 
 Options:
-  -c, --config <path>      path to the license config file (default:
-                           "support/license-config.yaml")
-  -w, --workingDir <path>  path to the working directory (default: current
-                           directory)
-  -o, --output <path>      path to the result file (default:
-                           "dist/license-report.html")
-  -d, --dev                include dev dependencies (default: false)
-  -q, --silent             disable logging (default: false)
-  -x, --debug              show exception stack traces (default: false)
-  -V, --version            output the version number
-  -h, --help               display help for command
+  -w, --working-dir <path>  path to the working directory (default: current
+                            directory)
+  -c, --config <path>       path to the license config file (default:
+                            "support/license-config.yaml")
+  -o, --output <path>       path to the result file (default:
+                            "dist/license-report.html")
+  -d, --dev                 include dev dependencies (default: false)
+  -i, --ignore-workspace    ignore the workspace, only look at the lock file
+                            (default: false)
+  -q, --silent              disable logging (default: false)
+  -x, --debug               show exception stack traces (default: false)
+  -V, --version             output the version number
+  -h, --help                display help for command
 "
 `;

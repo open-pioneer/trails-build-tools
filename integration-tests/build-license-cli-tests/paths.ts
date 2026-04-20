@@ -5,8 +5,9 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const PACKAGE_DIR = resolve(fileURLToPath(import.meta.url), "..");
-export const TEMP_DATA_DIR = resolve(PACKAGE_DIR, "temp");
 export const TEST_DATA_DIR = resolve(PACKAGE_DIR, "test-data");
+export const PROJECT_DIR = resolve(TEST_DATA_DIR, "simple-project");
+export const TEMP_PATH = resolve(PACKAGE_DIR, "temp");
 
 const PACKAGE_JSON_FILE = resolve(PACKAGE_DIR, "package.json");
 if (!existsSync(PACKAGE_JSON_FILE)) {

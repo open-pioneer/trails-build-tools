@@ -4,9 +4,6 @@ import { expect, it } from "vitest";
 import { resolve } from "node:path";
 import { PROJECT_DIR } from "./testing/paths";
 import { readLicenseConfig } from "./license-config";
-import { useTemporaryPnpmLockfile } from "./testing/helpers";
-
-useTemporaryPnpmLockfile(PROJECT_DIR);
 
 it("expect to read license config", async () => {
     const pathToConfig = resolve(PROJECT_DIR, "license-config.yaml");

@@ -1,0 +1,31 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      package-a:
+        specifier: file:./package-a
+        version: 0.0.1
+    devDependencies:
+      package-b:
+        specifier: file:./package-b
+        version: 0.0.1
+
+packages:
+
+  package-a@0.0.1:
+    resolution: {directory: package-a, type: directory}
+
+  package-b@0.0.1:
+    resolution: {directory: package-b, type: directory}
+
+snapshots:
+
+  package-a@0.0.1: {}
+
+  package-b@0.0.1: {}

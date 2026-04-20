@@ -23,19 +23,17 @@ export async function createLicenseFile(options: LicenseOptions) {
     const chalk = await getChalk();
     logger.info(chalk.gray("Start creating license report"));
 
-    const callerDir = process.cwd();
-
     const packageJsonPath = resolve(options.workingDir, "package.json");
 
     if (!existsSync(packageJsonPath)) {
         throw new Error(`package.json not found at: ${packageJsonPath}`);
     }
-    const configPath = resolve(callerDir, options.configPath);
+    const configPath = resolve(options.workingDir, options.configPath);
     if (!existsSync(configPath)) {
         throw new Error(`License config not found at: ${configPath}`);
     }
     const configPathFolder = dirname(configPath);
-    const outputHtmlPath = resolve(callerDir, options.outputHtmlPath);
+    const outputHtmlPath = resolve(options.workingDir, options.outputHtmlPath);
 
     logger.info(
         chalk.gray(

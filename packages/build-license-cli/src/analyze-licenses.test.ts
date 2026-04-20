@@ -3,16 +3,13 @@
 import { expect, it, onTestFailed, vi } from "vitest";
 import { resolve } from "node:path";
 import { PROJECT_DIR } from "./testing/paths";
-import { getPnpmLicenseReport } from "./pnpm-license-report";
+import { PnpmLicensesReport } from "./pnpm-license-report";
 import { readLicenseConfig } from "./license-config";
 import { analyzeLicenses } from "./analyze-licenses";
-import { useTemporaryPnpmLockfile } from "./testing/helpers";
-
-useTemporaryPnpmLockfile(PROJECT_DIR);
 
 it("expect to analyze the dependencies", async () => {
     const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const pnpmList = await getPnpmLicenseReport(PROJECT_DIR, false, true);
+    const pnpmList = mockPnpmLicenseReport();
     const config = readLicenseConfig(configPath);
     const analyzedLicenses = await analyzeLicenses(pnpmList, config, PROJECT_DIR, true);
     onTestFailed(() => console.log(analyzedLicenses.items));
@@ -37,14 +34,14 @@ it("expect to find unallowed licenses", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const configPath = resolve(PROJECT_DIR, "license-config-missing.yaml");
-    const pnpmList = await getPnpmLicenseReport(PROJECT_DIR, false, true);
+    const pnpmList = mockPnpmLicenseReport();
     const config = readLicenseConfig(configPath);
     const analyzedLicenses = await analyzeLicenses(pnpmList, config, PROJECT_DIR, true);
 
     expect(analyzedLicenses.error).toBe(true);
 
     expect(warnSpy).toHaveBeenCalled();
-    console.log(warnSpy.mock.calls);
+    onTestFailed(() => console.log(warnSpy.mock.calls));
     expect(
         warnSpy.mock.calls
             .flat()
@@ -55,3 +52,20 @@ it("expect to find unallowed licenses", async () => {
             )
     ).toBe(true);
 });
+
+function mockPnpmLicenseReport(): PnpmLicensesReport {
+    const licensePath = resolve(
+        PROJECT_DIR,
+        `node_modules/.pnpm/package-a@0.0.1/node_modules/package-a`
+    );
+    return {
+        MIT: [
+            {
+                name: "package-a",
+                versions: ["0.0.1"],
+                paths: [licensePath],
+                license: "MIT"
+            }
+        ]
+    };
+}
