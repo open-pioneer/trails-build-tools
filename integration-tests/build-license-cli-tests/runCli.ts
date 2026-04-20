@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { resolve } from "node:path";
 import { $, ProcessOutput, usePowerShell } from "zx";
-import { PACKAGE_DIR, PROJECT_DIR, TEMP_PATH, TEST_DATA_DIR } from "./paths";
-import { LicenseOptions } from "@open-pioneer/build-license-cli";
+import { PACKAGE_DIR, TEMP_PATH } from "./paths";
 
 const PATH_TO_DIST = "node_modules/@open-pioneer/build-license-cli/dist/index.js";
 

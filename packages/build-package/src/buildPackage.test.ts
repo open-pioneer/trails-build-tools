@@ -5,9 +5,9 @@ import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { resolve } from "node:path";
 import { cleanDir, readText } from "./testing/io";
 import { buildPackage } from "./buildPackage";
-import { createMemoryLogger } from "./utils/Logger";
 import { createInputModel } from "./model/InputModel";
 import { resolveOptions } from "./model/Options";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 
 it("copies i18n files if configured in build.config.js", async () => {
     const packageDirectory = resolve(TEST_DATA_DIR, "project-with-i18n");

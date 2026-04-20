@@ -7,9 +7,9 @@ import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { existsSync } from "fs";
 import { build } from ".";
-import { createMemoryLogger } from "./utils/Logger";
 import { readFileSync } from "node:fs";
 import { expectError } from "./testing/helpers";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 
 vi.setConfig({
     testTimeout: 20000

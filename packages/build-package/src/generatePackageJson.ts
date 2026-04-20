@@ -9,10 +9,10 @@ import {
 import { existsSync } from "node:fs";
 import nativePath from "node:path";
 import { PackageModel } from "./model/PackageModel";
-import { Logger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
 import { ResolvedValidationOptions } from "./model/Options";
 import { getExportedName } from "./utils/entryPoints";
+import type { Logger } from "@open-pioneer/build-common";
 
 type SimplePackageModel = Pick<
     PackageModel,

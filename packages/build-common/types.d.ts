@@ -365,3 +365,10 @@ export function createConsoleLogger(
     console: Pick<Console, "info" | "warn" | "error">
 ): Promise<Logger>;
 export async function getChalk();
+
+export interface MemoryLogMessage {
+    type: "info" | "warn" | "error";
+    args: unknown[];
+}
+
+export function createMemoryLogger(): Logger & { messages: MemoryLogMessage[] };

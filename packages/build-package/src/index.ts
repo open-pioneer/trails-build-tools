@@ -3,8 +3,8 @@
 import type * as API from "..";
 import { createInputModel } from "./model/InputModel";
 import { buildPackage } from "./buildPackage";
-import { SILENT_LOGGER, createConsoleLogger } from "./utils/Logger";
 import { resolveOptions } from "./model/Options";
+import { createConsoleLogger, SILENT_LOGGER } from "@open-pioneer/build-common";
 
 type Build = typeof API.build;
 

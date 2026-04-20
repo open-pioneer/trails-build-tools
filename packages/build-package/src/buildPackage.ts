@@ -6,7 +6,6 @@ import { copyAssets } from "./copyAssets";
 import { createDebugger } from "./utils/debug";
 import { buildCss } from "./buildCss";
 import { generatePackageJson } from "./generatePackageJson";
-import { Logger, getChalk } from "./utils/Logger";
 import { resolve } from "path";
 import { InputModel } from "./model/InputModel";
 import { createPackageModel } from "./model/PackageModel";
@@ -15,6 +14,7 @@ import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { copyI18nFiles } from "./copyI18nFiles";
 import { buildDts } from "./buildDts";
 import { ResolvedOptions } from "./model/Options";
+import { getChalk, type Logger } from "@open-pioneer/build-common";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:build-package");

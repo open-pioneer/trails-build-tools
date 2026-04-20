@@ -5,9 +5,9 @@ import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { resolve } from "node:path";
 import { cleanDir, readText } from "./testing/io";
 import { buildDts, shouldGenerateTypes } from "./buildDts";
-import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 
 describe(
     "buildDts",
