@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 import { describe, expect, it } from "vitest";
 import { CopyAuxiliaryFilesOptions, copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
-import { createMemoryLogger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { resolve } from "node:path";
 import { cleanDir, readText } from "./testing/io";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 
 describe("copyAuxiliaryFiles", function () {
     it("copies all supported auxiliary files", async function () {

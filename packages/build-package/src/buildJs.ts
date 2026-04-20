@@ -12,9 +12,9 @@ import { checkImportsPlugin } from "./rollup/checkImports";
 import { resolvePlugin } from "./rollup/resolve";
 import { REACT_HOOKS_ID, SOURCE_INFO_ID, virtualModulesPlugin } from "./rollup/virtualModules";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
-import { Logger } from "./utils/Logger";
 import { isInDirectory } from "./utils/pathUtils";
 import { rebaseSourcemapPath } from "./utils/sourceMaps";
+import type { Logger } from "@open-pioneer/build-common";
 
 export interface BuildJsOptions {
     /** Package name from package.json */

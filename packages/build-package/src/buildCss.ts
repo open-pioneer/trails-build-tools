@@ -7,11 +7,11 @@ import path, { extname, resolve } from "node:path";
 import type * as PostCss from "postcss";
 import { fileURLToPath, pathToFileURL } from "url";
 import type * as Sass from "sass";
-import { Logger } from "./utils/Logger";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { indent } from "./utils/indent";
 import { isInDirectory } from "./utils/pathUtils";
 import nativePath from "node:path";
+import type { Logger } from "@open-pioneer/build-common";
 
 export interface BuildCssOptions {
     /** Package name from package.json */

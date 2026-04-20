@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 import { resolve } from "node:path";
 import type * as Ts from "typescript";
-import { Logger } from "./utils/Logger";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { glob } from "tinyglobby";
 import { SUPPORTED_TS_EXTENSIONS } from "./model/PackageModel";
 import { createDebugger } from "./utils/debug";
 import { existsSync } from "node:fs";
+import type { Logger } from "@open-pioneer/build-common";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:buildDts");

@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createMemoryLogger } from "./utils/Logger";
 import { BuildCssOptions, buildCss } from "./buildCss";
 import { normalizeEntryPoint } from "./utils/entryPoints";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
 import { SUPPORTED_CSS_EXTENSIONS } from "./model/PackageModel";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 
 describe("buildCss", function () {
     it("bundles local css files", async function () {

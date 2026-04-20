@@ -1,0 +1,16 @@
+# List of allowed dependency licenses.
+allowedLicenses:
+  - "Apache-2.0"
+  - "MIT"
+  - "Unlicense"
+
+overrideLicenses:
+  - name: "package-b"
+    version: "0.0.1"
+    license: "Unlicense"
+
+additionalLicenses:
+  - name: "package-c"
+    license: "Apache-2.0"
+    licenseFiles:
+      - custom: "./licenses/package-c"
