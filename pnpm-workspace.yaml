@@ -132,6 +132,9 @@ overrides:
   "yaml@>=1.0.0 <1.10.3": "^1.10.3"
   "yaml@>=2.0.0 <2.8.3": "^2.8.3"
 
+  # https://github.com/advisories/GHSA-j452-xhg8-qg39
+  "protocol-buffers-schema@<3.6.1": "^3.6.1"
+
   # Version doesn't really matter, this is used as a dep in integration tests
   "@open-pioneer/runtime": ">= 2.2.0"
 
