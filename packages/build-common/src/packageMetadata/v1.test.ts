@@ -141,7 +141,7 @@ it("serializes and parses valid metadata objects", function () {
     const value = (parseResult as any).value;
     const expectedValue = {
         ...metadata,
-        packageFormatVersion: "1.0.0" // filled in during serialize
+        packageFormatVersion: "1.0.1" // filled in during serialize
     };
     expect(value).toMatchObject(expectedValue);
 });

@@ -69,6 +69,11 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
         }
     }
 
+    let runtimeMeta;
+    if (rawConfig.runtimeMeta) {
+        runtimeMeta = rawConfig.runtimeMeta;
+    }
+
     return {
         services,
         servicesModule,
@@ -76,7 +81,8 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
         styles,
         languages,
         properties,
-        overrides
+        overrides,
+        runtimeMeta
     };
 }
 
@@ -226,6 +232,13 @@ function readConfig(metadata: API.PackageMetadataV1.PackageMetadata): API.Packag
         }
     }
 
+    let runtimeMeta: API.PackageConfig["runtimeMeta"];
+    if (metadata.runtimeMeta) {
+        runtimeMeta = {
+            metadataVersion: metadata.runtimeMeta.metadataVersion ?? undefined
+        };
+    }
+
     return {
         services,
         servicesModule: metadata.servicesModule ?? undefined,
@@ -233,7 +246,8 @@ function readConfig(metadata: API.PackageMetadataV1.PackageMetadata): API.Packag
         languages,
         uiReferences: readUiReferences(metadata.ui),
         properties,
-        overrides: undefined
+        overrides: undefined,
+        runtimeMeta
     };
 }
 

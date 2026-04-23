@@ -3,472 +3,486 @@
 import { globSync } from "tinyglobby";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { assert, describe, expect, it, onTestFailed } from "vitest";
+import { assert, expect, it, onTestFailed } from "vitest";
 import { TEMP_DATA_DIR, TEST_DATA_DIR, runViteBuild } from "./utils/testUtils";
 
-describe("codegen support", function () {
-    it("generates app packages content", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-packages");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-packages");
+it("generates app packages content", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-packages");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-packages");
 
-        await runViteBuild({
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
+    });
+
+    const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+    assert.include(testAppJs, "AppService");
+    assert.include(testAppJs, 'console.debug("App Service constructed");');
+    assert.include(testAppJs, "LogService");
+    assert.include(testAppJs, 'console.log("Hello from LogService!!");');
+});
+
+it("generates app when referencing external Open Pioneer Trails package", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-packages-external/src");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-external");
+
+    await runViteBuild({
+        outDir,
+        rootDir, // does not contain package ol-map
+        pluginOptions: {
+            apps: ["test-app"]
+        }
+    });
+
+    // metadata was read from package.json and contents were found
+    const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+    assert.include(testAppJs, 'console.log("in MapContainer");');
+    assert.include(testAppJs, 'import { OlMapRegistry } from "ol-map/my-services";');
+    assert.include(testAppJs, 'console.log("in useMap");');
+    assert.include(testAppJs, '".map {\\n    color: black;\\n}"');
+});
+
+it("generates app packages content when using dev-, peer- and optional dependencies", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-complex-dependencies");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-complex-dependencies");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
+    });
+
+    /*
+     * Normal deps,required peer dependencies and installed optional dependencies
+     * are discovered. Non-existing optional peer dependencies and non existing
+     * optional dependencies are not an error.
+     *
+     * Code from dev dependencies not is not automatically included.
+     */
+    const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+    assert.include(testAppJs, `console.log("from normal dep");`);
+    assert.notInclude(testAppJs, `console.log("from dev dep");`);
+    assert.include(testAppJs, `console.log("from peer dep");`);
+    assert.include(testAppJs, `console.log("from optional dep");`);
+});
+
+it("generates an error if a required peer's metadata cannot be read", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-missing-peer-dependency");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-missing-peer-dependency");
+
+    const error = await expectAsyncError(() =>
+        runViteBuild({
             outDir,
             rootDir,
             pluginOptions: {
                 apps: ["test-app"]
             }
-        });
+        })
+    );
 
-        const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-        assert.include(testAppJs, "AppService");
-        assert.include(testAppJs, 'console.debug("App Service constructed");');
-        assert.include(testAppJs, "LogService");
-        assert.include(testAppJs, 'console.log("Hello from LogService!!");');
+    assert.match(error.message, /Failed to find package 'peer-required'/);
+});
+
+it("generates app css content", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-css");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-css");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
     });
 
-    it("generates app when referencing external Open Pioneer Trails package", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-packages-external/src");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-external");
+    const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+    assert.include(testAppJs, ".class-from-app");
 
-        await runViteBuild({
-            outDir,
-            rootDir, // does not contain package ol-map
-            pluginOptions: {
-                apps: ["test-app"]
-            }
-        });
+    // SCSS
+    assert.include(testAppJs, ".class-from-style1");
+    assert.include(testAppJs, ".class-from-style1 nested {");
+    assert.include(testAppJs, ".class-from-style1-suffix {");
+    assert.notInclude(testAppJs, "&-suffix"); // SCSS resolves & to parent selector
 
-        // metadata was read from package.json and contents were found
-        const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-        assert.include(testAppJs, 'console.log("in MapContainer");');
-        assert.include(testAppJs, 'import { OlMapRegistry } from "ol-map/my-services";');
-        assert.include(testAppJs, 'console.log("in useMap");');
-        assert.include(testAppJs, '".map {\\n    color: black;\\n}"');
+    // Normal css
+    assert.include(testAppJs, ".class-from-style2");
+});
+
+it("generates react hooks module for packages and apps", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-react-hooks");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-react-hooks");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
     });
 
-    it("generates app packages content when using dev-, peer- and optional dependencies", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-complex-dependencies");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-complex-dependencies");
+    const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+    assert.include(appJs, '"import.from.app"');
+    assert.include(appJs, '"import.from.package1"');
+    assert.include(appJs, '"import.from.package2"');
+    assert.include(appJs, "useServiceInternal");
+    assert.include(appJs, "usePropertiesInternal");
+    assert.include(appJs, "useIntlInternal");
+});
 
-        await runViteBuild({
-            outDir,
-            rootDir,
-            pluginOptions: {
-                apps: ["test-app"]
-            }
-        });
+it("generates sourceId constants", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-source-info");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-source-info");
 
-        /*
-         * Normal deps,required peer dependencies and installed optional dependencies
-         * are discovered. Non-existing optional peer dependencies and non existing
-         * optional dependencies are not an error.
-         *
-         * Code from dev dependencies not is not automatically included.
-         */
-        const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-        assert.include(testAppJs, `console.log("from normal dep");`);
-        assert.notInclude(testAppJs, `console.log("from dev dep");`);
-        assert.include(testAppJs, `console.log("from peer dep");`);
-        assert.include(testAppJs, `console.log("from optional dep");`);
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
     });
 
-    it("generates an error if a required peer's metadata cannot be read", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-missing-peer-dependency");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-missing-peer-dependency");
+    const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
 
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-
-        assert.match(error.message, /Failed to find package 'peer-required'/);
+    onTestFailed(() => {
+        console.log(`Generated app JS:\n${appJs}`);
     });
 
-    it("generates app css content", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-css");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-css");
+    assert.match(appJs, /const sourceId\$?\d? = "package1\/Component";/);
+    assert.match(appJs, /const sourceId\$?\d? = "package1\/log";/);
+    assert.match(appJs, /const sourceId\$?\d? = "package1\/dir\/log";/);
+    assert.match(appJs, /const sourceId\$?\d? = "test-app\/Component";/);
+});
 
-        await runViteBuild({
-            outDir,
-            rootDir,
-            pluginOptions: {
-                apps: ["test-app"]
-            }
-        });
+it("throws if sourceId is used outside a package", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-source-info-edge-cases");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-source-info-edge-cases");
 
-        const testAppJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-        assert.include(testAppJs, ".class-from-app");
-
-        // SCSS
-        assert.include(testAppJs, ".class-from-style1");
-        assert.include(testAppJs, ".class-from-style1 nested {");
-        assert.include(testAppJs, ".class-from-style1-suffix {");
-        assert.notInclude(testAppJs, "&-suffix"); // SCSS resolves & to parent selector
-
-        // Normal css
-        assert.include(testAppJs, ".class-from-style2");
-    });
-
-    it("generates react hooks module for packages and apps", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-react-hooks");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-react-hooks");
-
-        await runViteBuild({
+    const error = await expectAsyncError(() =>
+        runViteBuild({
             outDir,
             rootDir,
             pluginOptions: {
                 apps: ["test-app"]
             }
-        });
+        })
+    );
 
-        const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-        assert.include(appJs, '"import.from.app"');
-        assert.include(appJs, '"import.from.package1"');
-        assert.include(appJs, '"import.from.package2"');
-        assert.include(appJs, "useServiceInternal");
-        assert.include(appJs, "usePropertiesInternal");
-        assert.include(appJs, "useIntlInternal");
+    onTestFailed(() => {
+        console.log(`Error message:\n${error.message}`);
     });
 
-    it("generates sourceId constants", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-source-info");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-source-info");
+    assert.match(error.message, /Failed to find package.json for package/);
+});
 
-        await runViteBuild({
+it("generates code for the application's base url", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-application-base-url");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-application-base-url");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: {
+                "sub/dir/app": "apps/test-app/app.js"
+            }
+        }
+    });
+
+    const appJs = readFileSync(join(outDir, "sub/dir/app.js"), "utf-8");
+    onTestFailed(() => {
+        console.log(`Generated app JS:\n${appJs}`);
+    });
+
+    // Must go two levels up to reach the base url because the app is in sub/dir/app.js
+    expect(appJs).toContain("../../__base_url_sentinel__");
+});
+
+it("generates code for the application's base url with explicit base", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-application-base-url");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-application-base-url-explicit");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: {
+                "sub/dir/app": "apps/test-app/app.js"
+            }
+        },
+        baseUrl: "/my/deployment/"
+    });
+
+    const appJs = readFileSync(join(outDir, "sub/dir/app.js"), "utf-8");
+    onTestFailed(() => {
+        console.log(`Generated app JS:\n${appJs}`);
+    });
+
+    expect(appJs).toContain("/my/deployment/__base_url_sentinel__");
+});
+
+it("fails if build config is missing", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-build-config-required");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-build-config-required");
+
+    const error = await expectAsyncError(() =>
+        runViteBuild({
             outDir,
             rootDir,
             pluginOptions: {
                 apps: ["test-app"]
             }
-        });
+        })
+    );
+    assert.include(error.message, "Expected a build.config.mjs", "test-app");
+    assert.include(error.message, "test-package", "test-app");
 
-        const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-
-        onTestFailed(() => {
-            console.log(`Generated app JS:\n${appJs}`);
-        });
-
-        assert.match(appJs, /const sourceId\$?\d? = "package1\/Component";/);
-        assert.match(appJs, /const sourceId\$?\d? = "package1\/log";/);
-        assert.match(appJs, /const sourceId\$?\d? = "package1\/dir\/log";/);
-        assert.match(appJs, /const sourceId\$?\d? = "test-app\/Component";/);
-    });
-
-    it("throws if sourceId is used outside a package", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-source-info-edge-cases");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-source-info-edge-cases");
-
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-
-        onTestFailed(() => {
-            console.log(`Error message:\n${error.message}`);
-        });
-
-        assert.match(error.message, /Failed to find package.json for package/);
-    });
-
-    it("generates code for the application's base url", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-application-base-url");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-application-base-url");
-
-        await runViteBuild({
+    const error2 = await expectAsyncError(() =>
+        runViteBuild({
             outDir,
             rootDir,
             pluginOptions: {
-                apps: {
-                    "sub/dir/app": "apps/test-app/app.js"
-                }
+                apps: ["test-app2"]
             }
-        });
+        })
+    );
+    assert.include(error2.message, "Expected a build.config.mjs", "test-app2");
+    assert.include(error2.message, "test-app2", "test-app2");
+});
 
-        const appJs = readFileSync(join(outDir, "sub/dir/app.js"), "utf-8");
-        onTestFailed(() => {
-            console.log(`Generated app JS:\n${appJs}`);
-        });
+it("generates an app with multiple languages", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n");
 
-        // Must go two levels up to reach the base url because the app is in sub/dir/app.js
-        expect(appJs).toContain("../../__base_url_sentinel__");
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
     });
 
-    it("generates code for the application's base url with explicit base", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-application-base-url");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-application-base-url-explicit");
+    const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+    assert.include(appJs, '["de", "en"]');
 
-        await runViteBuild({
-            outDir,
-            rootDir,
-            pluginOptions: {
-                apps: {
-                    "sub/dir/app": "apps/test-app/app.js"
-                }
-            },
-            baseUrl: "/my/deployment/"
-        });
+    const assetsDir = resolve(outDir, "assets");
 
-        const appJs = readFileSync(join(outDir, "sub/dir/app.js"), "utf-8");
-        onTestFailed(() => {
-            console.log(`Generated app JS:\n${appJs}`);
-        });
+    const deModule = findModuleContaining(assetsDir, '"Hallo Welt"');
+    assert.include(deModule, '"test-app"');
+    assert.include(deModule, '"i18n1"');
+    assert.include(deModule, '"hallo von i18n1"');
+    assert.include(deModule, '"i18n2"');
+    assert.include(deModule, '"hallo von i18n2"');
 
-        expect(appJs).toContain("/my/deployment/__base_url_sentinel__");
-    });
+    const enModule = findModuleContaining(assetsDir, '"Hello world"');
+    assert.include(enModule, '"test-app"');
+    assert.include(enModule, '"i18n1"');
+    assert.include(enModule, '"hello from i18n1"');
+    assert.include(enModule, '"i18n2"');
+    assert.include(enModule, '"hello from i18n1"');
+});
 
-    it("fails if build config is missing", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-build-config-required");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-build-config-required");
+it("generates an error if an unsupported locale is requested", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-unsupported-locale");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-unsupported-locale");
 
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-        assert.include(error.message, "Expected a build.config.mjs", "test-app");
-        assert.include(error.message, "test-package", "test-app");
-
-        const error2 = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app2"]
-                }
-            })
-        );
-        assert.include(error2.message, "Expected a build.config.mjs", "test-app2");
-        assert.include(error2.message, "test-app2", "test-app2");
-    });
-
-    it("generates an app with multiple languages", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n");
-
-        await runViteBuild({
+    const error = await expectAsyncError(() =>
+        runViteBuild({
             outDir,
             rootDir,
             pluginOptions: {
                 apps: ["test-app"]
             }
-        });
+        })
+    );
 
-        const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-        assert.include(appJs, '["de", "en"]');
+    assert.match(error.message, /does not support locale 'de-simple'/);
+});
 
-        const assetsDir = resolve(outDir, "assets");
+it("generates an error if packages require i18n but the app does not list any supported locales", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-forgotten");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-forgotten");
 
-        const deModule = findModuleContaining(assetsDir, '"Hallo Welt"');
-        assert.include(deModule, '"test-app"');
-        assert.include(deModule, '"i18n1"');
-        assert.include(deModule, '"hallo von i18n1"');
-        assert.include(deModule, '"i18n2"');
-        assert.include(deModule, '"hallo von i18n2"');
-
-        const enModule = findModuleContaining(assetsDir, '"Hello world"');
-        assert.include(enModule, '"test-app"');
-        assert.include(enModule, '"i18n1"');
-        assert.include(enModule, '"hello from i18n1"');
-        assert.include(enModule, '"i18n2"');
-        assert.include(enModule, '"hello from i18n1"');
-    });
-
-    it("generates an error if an unsupported locale is requested", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-unsupported-locale");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-unsupported-locale");
-
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-
-        assert.match(error.message, /does not support locale 'de-simple'/);
-    });
-
-    it("generates an error if packages require i18n but the app does not list any supported locales", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-forgotten");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-forgotten");
-
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-
-        expect(error.message).toMatch(
-            "There is no match between the locales supported by the application (none) and the locales supported by the packages 'i18n1' (de, en), 'i18n2' (de, en)."
-        );
-    });
-
-    it("generates an error if there is no overlap between app locales and package locales", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-no-overlap");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-no-overlap");
-
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-
-        expect(error.message).toMatch(
-            "There is no match between the locales supported by the application (de-simple) and the locales supported by the packages 'i18n1' (de, en), 'i18n2' (de, en)."
-        );
-    });
-
-    it("supports defining new locales for packages via 'overrides' in an app", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-new-locale");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-new-locale");
-
-        await runViteBuild({
+    const error = await expectAsyncError(() =>
+        runViteBuild({
             outDir,
             rootDir,
             pluginOptions: {
                 apps: ["test-app"]
             }
-        });
+        })
+    );
 
-        const messages = readFileSync(join(outDir, "assets/chunk.js"), "utf-8");
-        expect(messages).includes("hello from i18n1 (override)");
-    });
+    expect(error.message).toMatch(
+        "There is no match between the locales supported by the application (none) and the locales supported by the packages 'i18n1' (de, en), 'i18n2' (de, en)."
+    );
+});
 
-    it("generates an error if 'overrides' is used from a package's i18n file", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-illegal-overrides");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-illegal-overrides");
+it("generates an error if there is no overlap between app locales and package locales", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-no-overlap");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-no-overlap");
 
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-        assert.match(error.message, /Overrides are only supported in the app/);
-    });
-
-    it("excludes a service from the generated code if it's disabled by the app", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-disabled-service");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-disabled-service");
-
-        await runViteBuild({
+    const error = await expectAsyncError(() =>
+        runViteBuild({
             outDir,
             rootDir,
             pluginOptions: {
                 apps: ["test-app"]
             }
-        });
+        })
+    );
 
-        const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-        assert.include(appJs, `console.log("from A");`);
-        assert.notInclude(appJs, `console.log("from B");`); // excluded because disabled and therefore never imported
+    expect(error.message).toMatch(
+        "There is no match between the locales supported by the application (de-simple) and the locales supported by the packages 'i18n1' (de, en), 'i18n2' (de, en)."
+    );
+});
+
+it("supports defining new locales for packages via 'overrides' in an app", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-new-locale");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-new-locale");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
     });
 
-    it("generates an error if 'overrides' is used in the build.config.mjs of a package", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-illegal-overrides-in-package");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-illegal-overrides-in-package");
+    const messages = readFileSync(join(outDir, "assets/chunk.js"), "utf-8");
+    expect(messages).includes("hello from i18n1 (override)");
+});
 
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-        assert.match(error.message, /Overrides are only supported in the app/);
-    });
+it("generates an error if 'overrides' is used from a package's i18n file", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-illegal-overrides");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-illegal-overrides");
 
-    it("generates an error if a package uses two versions of the same Trails package", async function () {
-        // Dependencies:
-        // test-app -> dup (v2)
-        // test-app -> x -> dup (v1)
-        //
-        // "dup" cannot be part of the application twice! (this would be allowed for "plain" packages without Open Pioneer Trails extensions)
-
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-duplicate-pioneer-deps");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-duplicate-pioneer-deps");
-
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-
-        expect(error.message).toMatch(
-            /Encountered the package 'dup' at two different locations\.\nTrails packages cannot be used more than once in the same application\.\nAll packages must use a common version of 'dup'\./
-        );
-        expect(error.message).toMatch(/dup@2.3.4 at/);
-        expect(error.message).toMatch(/dup@1.0.0 at/);
-    });
-
-    it("supports dependency cycles", async function () {
-        // The important thing about this test is that it terminates!
-        // Dependency cycle:
-        //      test-app --> a --> b --> a
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-packages-cycle");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-cycle");
-
-        await runViteBuild({
+    const error = await expectAsyncError(() =>
+        runViteBuild({
             outDir,
             rootDir,
             pluginOptions: {
                 apps: ["test-app"]
             }
-        });
+        })
+    );
+    assert.match(error.message, /Overrides are only supported in the app/);
+});
 
-        const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
-        assert.include(appJs, `console.info("Service A");`);
-        assert.include(appJs, `console.info("Service B");`);
+it("generates an error if the i18n file for a locale is missing from a package", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-i18n-missing-yaml");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-i18n-missing-yaml");
+
+    const error = await expectAsyncError(() =>
+        runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        })
+    );
+    expect(error.message).toMatch(/I18n file in package 'i18n1' for locale 'en' does not exist/);
+});
+
+it("excludes a service from the generated code if it's disabled by the app", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-disabled-service");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-disabled-service");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
     });
 
-    it("generates an error if the plugin encounterers an unsupported package metadata format version", async function () {
-        const rootDir = resolve(TEST_DATA_DIR, "codegen-unsupported-package-format-version/src");
-        const outDir = resolve(TEMP_DATA_DIR, "codegen-unsupported-package-format-version");
+    const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+    assert.include(appJs, `console.log("from A");`);
+    assert.notInclude(appJs, `console.log("from B");`); // excluded because disabled and therefore never imported
+});
 
-        const error = await expectAsyncError(() =>
-            runViteBuild({
-                outDir,
-                rootDir,
-                pluginOptions: {
-                    apps: ["test-app"]
-                }
-            })
-        );
-        expect(error.message).toMatch(/uses an unsupported package metadata version/);
+it("generates an error if 'overrides' is used in the build.config.mjs of a package", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-illegal-overrides-in-package");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-illegal-overrides-in-package");
+
+    const error = await expectAsyncError(() =>
+        runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        })
+    );
+    assert.match(error.message, /Overrides are only supported in the app/);
+});
+
+it("generates an error if a package uses two versions of the same Trails package", async function () {
+    // Dependencies:
+    // test-app -> dup (v2)
+    // test-app -> x -> dup (v1)
+    //
+    // "dup" cannot be part of the application twice! (this would be allowed for "plain" packages without Open Pioneer Trails extensions)
+
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-duplicate-pioneer-deps");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-duplicate-pioneer-deps");
+
+    const error = await expectAsyncError(() =>
+        runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        })
+    );
+
+    expect(error.message).toMatch(
+        /Encountered the package 'dup' at two different locations\.\nTrails packages cannot be used more than once in the same application\.\nAll packages must use a common version of 'dup'\./
+    );
+    expect(error.message).toMatch(/dup@2.3.4 at/);
+    expect(error.message).toMatch(/dup@1.0.0 at/);
+});
+
+it("supports dependency cycles", async function () {
+    // The important thing about this test is that it terminates!
+    // Dependency cycle:
+    //      test-app --> a --> b --> a
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-packages-cycle");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-cycle");
+
+    await runViteBuild({
+        outDir,
+        rootDir,
+        pluginOptions: {
+            apps: ["test-app"]
+        }
     });
+
+    const appJs = readFileSync(join(outDir, "test-app.js"), "utf-8");
+    assert.include(appJs, `console.info("Service A");`);
+    assert.include(appJs, `console.info("Service B");`);
+});
+
+it("generates an error if the plugin encounterers an unsupported package metadata format version", async function () {
+    const rootDir = resolve(TEST_DATA_DIR, "codegen-unsupported-package-format-version/src");
+    const outDir = resolve(TEMP_DATA_DIR, "codegen-unsupported-package-format-version");
+
+    const error = await expectAsyncError(() =>
+        runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        })
+    );
+    expect(error.message).toMatch(/uses an unsupported package metadata version/);
 });
 
 function findModuleContaining(dir: string, needle: string) {
