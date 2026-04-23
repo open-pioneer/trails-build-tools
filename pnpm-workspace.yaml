@@ -147,6 +147,9 @@ auditConfig:
 
     # https://github.com/advisories/GHSA-f886-m6hf-6m8v
     - CVE-2026-33750
+  ignoreGhsas:
+    # Affects uuid, which is only a dependency of our integration test setup.
+    - GHSA-w5hq-g745-h8pq
 
 allowUnusedPatches: true
 ignorePatchFailures: false
