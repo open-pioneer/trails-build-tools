@@ -1,5 +1,30 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.2.0
+
+### Minor Changes
+
+- 9dda91c: Support a new virtual module to get the current deployment's base URL both during development and production:
+
+    ```ts
+    import { baseUrl } from "open-pioneer:deployment";
+
+    // Base URL of the deployed application, for example:
+    // - http://localhost:5173/ or http://localhost:5173/optional/path/ (during development)
+    // - https://example.com/path/to/root/ (during production)
+    console.log(baseUrl);
+    ```
+
+- 9dda91c: Support for package metadata version `1.1.0`.
+
+### Patch Changes
+
+- 9dda91c: Improve error message when the plugin encounters an unsupported package metadata version.
+- Updated dependencies [9dda91c]
+- Updated dependencies [9dda91c]
+- Updated dependencies [9dda91c]
+    - @open-pioneer/build-common@4.0.0
+
 ## 5.1.2
 
 ### Patch Changes

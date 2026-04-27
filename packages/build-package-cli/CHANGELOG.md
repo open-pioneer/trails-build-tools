@@ -1,5 +1,21 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 3.1.0
+
+### Minor Changes
+
+- 9dda91c: Support `publishConfig.validation: false` to disable validation entirely.
+- 9dda91c: Add support for the new `open-pioneer:deployment` import when building packages.
+
+    When compiling packages that make use of this new module, you must set the package format target (`--target` via CLI) to `1.1` or later.
+    Trails projects that consume such a package need an updated versions of the Open Pioneer Trails Vite plugin that supports the new target version.
+
+### Patch Changes
+
+- Updated dependencies [9dda91c]
+- Updated dependencies [9dda91c]
+    - @open-pioneer/build-package@4.2.0
+
 ## 3.0.9
 
 ### Patch Changes

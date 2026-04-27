@@ -1,5 +1,16 @@
 # Changelog @open-pioneer/build-common
 
+## 4.0.0
+
+### Major Changes
+
+- 9dda91c: Add support for multiple package format targets (currently 1.0 and 1.1) at the same time.
+
+### Minor Changes
+
+- 9dda91c: Add support for `open-pioneer:deployment`.
+- 9dda91c: Support `publishConfig.validation: false` to disable validation entirely.
+
 ## 3.2.2
 
 ### Patch Changes

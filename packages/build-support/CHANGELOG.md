@@ -1,5 +1,12 @@
 # Changelog @open-pioneer/build-support
 
+## 3.1.0
+
+### Minor Changes
+
+- 9dda91c: Support `publishConfig.validation: false` to disable validation entirely.
+- 9dda91c: Add the `publishConfig.packageFormatTarget` to customize the target (trails-) package version. Raising this value enables new features but also needs an updating vite plugin on the package consumer's side.
+
 ## 3.0.6
 
 ### Patch Changes
