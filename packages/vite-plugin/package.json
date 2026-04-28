@@ -34,7 +34,7 @@
     "peerDependencies": {
         "@open-pioneer/runtime": "*",
         "sass": "^1.77.6",
-        "vite": "^7.0.0"
+        "vite": "^8.0.0-beta.7"
     },
     "dependencies": {
         "@babel/generator": "catalog:",
@@ -57,10 +57,9 @@
         "@types/debug": "catalog:",
         "@types/js-yaml": "catalog:",
         "build-tools": "workspace:*",
-        "esbuild": "catalog:",
         "tinyglobby": "catalog:",
         "rimraf": "catalog:",
-        "rollup": "catalog:",
+        "rolldown": "catalog:",
         "sass": "catalog:",
         "vite": "catalog:"
     },

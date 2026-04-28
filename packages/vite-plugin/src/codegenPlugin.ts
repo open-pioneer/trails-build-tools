@@ -1,23 +1,28 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { RuntimeSupport } from "@open-pioneer/build-common";
-import type { Plugin as EsbuildPlugin } from "esbuild";
 import { readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { cwd } from "node:process";
-import { PluginContext } from "rollup";
-import { normalizePath, UserConfig, Plugin as VitePlugin } from "vite";
+import { normalizePath, Rolldown, UserConfig, Plugin as VitePlugin } from "vite";
 import { ReportableError } from "./ReportableError";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
-import { findPackageJson, parseVirtualModuleId, serializeModuleId } from "./codegen/shared";
+import {
+    findPackageJson,
+    parseVirtualModuleId,
+    serializeModuleId,
+    VIRTUAL_ID_FILTER
+} from "./codegen/shared";
 import { DeploymentModule } from "./deployment";
-import { createMetadataContextFromRollup } from "./metadata/Context";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { createDebugger } from "./utils/debug";
+import { createMetadataContextFromRolldown } from "./metadata/Context";
+
+type PluginContext = Rolldown.PluginContext;
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
@@ -37,7 +42,7 @@ export function codegenPlugin(): VitePlugin {
             repository = new MetadataRepository(rootDir);
 
             if (isDev) {
-                await configureDevOptimizer(userConfig, rootDir);
+                return await configureDevOptimizer(userConfig, rootDir);
             }
         },
 
@@ -50,129 +55,165 @@ export function codegenPlugin(): VitePlugin {
             deploymentModule.onStart(this);
         },
 
-        async resolveId(this: PluginContext, moduleId, importer) {
-            try {
-                if (!importer) {
-                    return undefined;
-                }
-
-                if (parseVirtualModuleId(moduleId)) {
-                    return moduleId;
-                }
-
-                let virtualModule;
+        resolveId: {
+            filter: {
+                id: VIRTUAL_ID_FILTER
+            },
+            async handler(this: PluginContext, moduleId, importer) {
                 try {
-                    virtualModule = RuntimeSupport.parseVirtualModule(moduleId);
-                } catch (e) {
-                    this.error({
-                        id: moduleId,
-                        message: "Invalid virtual module id",
-                        cause: e
-                    });
-                }
+                    if (!importer) {
+                        return undefined;
+                    }
 
-                switch (virtualModule) {
-                    case "app":
-                        return serializeModuleId({
-                            type: "app-meta",
-                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                    if (parseVirtualModuleId(moduleId)) {
+                        return moduleId;
+                    }
+
+                    let virtualModule;
+                    try {
+                        virtualModule = RuntimeSupport.parseVirtualModule(moduleId);
+                    } catch (e) {
+                        this.error({
+                            id: moduleId,
+                            message: "Invalid virtual module id",
+                            cause: e
                         });
-                    case "react-hooks":
-                        return serializeModuleId({
-                            type: "package-hooks",
-                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
-                        });
-                    case "source-info":
-                        return serializeModuleId({
-                            type: "source-info",
-                            modulePath: importer,
-                            packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
-                        });
-                    case "deployment":
-                        return serializeModuleId({
-                            type: "deployment"
-                        });
+                    }
+
+                    switch (virtualModule) {
+                        case "app":
+                            return serializeModuleId({
+                                type: "app-meta",
+                                packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                            });
+                        case "react-hooks":
+                            return serializeModuleId({
+                                type: "package-hooks",
+                                packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                            });
+                        case "source-info":
+                            return serializeModuleId({
+                                type: "source-info",
+                                modulePath: importer,
+                                packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                            });
+                        case "deployment": {
+                            return serializeModuleId({
+                                type: "deployment"
+                            });
+                        }
+                    }
+                } catch (e) {
+                    reportError(this, e, isDev);
                 }
-            } catch (e) {
-                reportError(this, e, isDev);
             }
         },
 
-        async load(this: PluginContext, moduleId) {
-            try {
-                const mod = parseVirtualModuleId(moduleId);
-                if (!mod) {
-                    return undefined;
-                }
-
-                isDebug && debug("Loading virtual module %O", mod);
-
-                if (mod.type === "deployment") {
-                    return deploymentModule.onLoadModule();
-                }
-
-                const packageJsonPath = await resolvePackageJson(this, mod);
-                if (mod.type === "package-hooks") {
-                    const packageName = await getPackageName(this, packageJsonPath);
-                    const generatedSourceCode = RuntimeSupport.generateReactHooks(
-                        packageName,
-                        RuntimeSupport.REACT_INTEGRATION_MODULE_ID
-                    );
-                    isDebug && debug("Generated hooks code: %O", generatedSourceCode);
-                    return generatedSourceCode;
-                }
-
-                if (mod.type === "source-info") {
-                    const packageName = await getPackageName(this, packageJsonPath);
-                    return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
-                }
-
-                if (mod.type === "app-meta") {
-                    return generateAppMetadata(
-                        mod.packageDirectory,
-                        RuntimeSupport.METADATA_MODULE_ID
-                    );
-                }
-
-                const ctx = createMetadataContextFromRollup(this);
-                const appMetadata = await repository.getAppMetadata(ctx, dirname(packageJsonPath));
-                switch (mod.type) {
-                    case "app-packages": {
-                        const generatedSourceCode = generatePackagesMetadata({
-                            appName: appMetadata.name,
-                            packages: appMetadata.packages
-                        });
-                        isDebug && debug("Generated app metadata: %O", generatedSourceCode);
-                        return generatedSourceCode;
+        load: {
+            filter: {
+                id: VIRTUAL_ID_FILTER
+            },
+            async handler(this: PluginContext, moduleId) {
+                try {
+                    const mod = parseVirtualModuleId(moduleId);
+                    if (!mod) {
+                        return undefined;
                     }
-                    case "app-css": {
-                        const generatedSourceCode = generateCombinedCss(appMetadata.packages);
-                        isDebug && debug("Generated app css: %O", generatedSourceCode);
-                        return generatedSourceCode;
+
+                    isDebug && debug("Loading virtual module %O", mod);
+
+                    if (mod.type === "deployment") {
+                        return deploymentModule.onLoadModule();
                     }
-                    case "app-i18n-index": {
-                        const generatedSourceCode = generateI18nIndex(
-                            mod.packageDirectory,
-                            appMetadata.locales
+
+                    // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
+                    // This uses the dev server to attempt to resolve the directory back to a complete path.
+                    // Hit me up if you know a better way to do this.
+                    const packageJsonPath = (
+                        await this.resolve(mod.packageDirectory + "/package.json")
+                    )?.id;
+                    if (!packageJsonPath) {
+                        throw new ReportableError(
+                            `Failed to resolve package.json in ${mod.packageDirectory}`
                         );
-                        isDebug && debug("Generated i18n lookup: %O", generatedSourceCode);
+                    }
+
+                    if (mod.type === "source-info") {
+                        const packageName = await getPackageName(this, packageJsonPath);
+                        return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
+                    }
+                    if (mod.type === "package-hooks") {
+                        const directory = mod.packageDirectory;
+                        // use forward slashes instead of platform separator
+                        const packageJsonPath = (await this.resolve(directory + "/package.json"))
+                            ?.id;
+                        if (!packageJsonPath) {
+                            throw new ReportableError(
+                                `Failed to resolve package.json in ${directory}`
+                            );
+                        }
+
+                        const packageName = await getPackageName(this, packageJsonPath);
+                        const generatedSourceCode = RuntimeSupport.generateReactHooks(
+                            packageName,
+                            RuntimeSupport.REACT_INTEGRATION_MODULE_ID
+                        );
+                        isDebug && debug("Generated hooks code: %O", generatedSourceCode);
                         return generatedSourceCode;
                     }
-                    case "app-i18n": {
-                        const generatedSourceCode = await generateI18nMessages({
-                            locale: mod.locale,
-                            appName: appMetadata.name,
-                            packages: appMetadata.packages,
-                            loadI18n: (path) => {
-                                return repository.getI18nFile(ctx, path);
-                            }
-                        });
-                        isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
-                        return generatedSourceCode;
+
+                    if (mod.type === "app-meta") {
+                        return generateAppMetadata(
+                            mod.packageDirectory,
+                            RuntimeSupport.METADATA_MODULE_ID
+                        );
                     }
+
+                    const ctx = createMetadataContextFromRolldown(this);
+                    const appMetadata = await repository.getAppMetadata(
+                        ctx,
+                        dirname(packageJsonPath)
+                    );
+                    switch (mod.type) {
+                        case "app-packages": {
+                            const generatedSourceCode = generatePackagesMetadata({
+                                appName: appMetadata.name,
+                                packages: appMetadata.packages
+                            });
+                            isDebug && debug("Generated app metadata: %O", generatedSourceCode);
+                            return generatedSourceCode;
+                        }
+                        case "app-css": {
+                            const generatedSourceCode = generateCombinedCss(appMetadata.packages);
+                            isDebug && debug("Generated app css: %O", generatedSourceCode);
+                            return generatedSourceCode;
+                        }
+                        case "app-i18n-index": {
+                            const generatedSourceCode = generateI18nIndex(
+                                mod.packageDirectory,
+                                appMetadata.locales
+                            );
+                            isDebug && debug("Generated i18n lookup: %O", generatedSourceCode);
+                            return generatedSourceCode;
+                        }
+                        case "app-i18n": {
+                            const generatedSourceCode = await generateI18nMessages({
+                                locale: mod.locale,
+                                appName: appMetadata.name,
+                                packages: appMetadata.packages,
+                                loadI18n: (path) => {
+                                    return repository.getI18nFile(ctx, path);
+                                }
+                            });
+                            isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
+                            return generatedSourceCode;
+                        }
+                        default:
+                            assertNever(mod.type);
+                    }
+                } catch (e) {
+                    reportError(this, e, isDev);
                 }
-            } catch (e) {
-                reportError(this, e, isDev);
             }
         },
 
@@ -187,33 +228,19 @@ export function codegenPlugin(): VitePlugin {
     };
 }
 
-async function resolvePackageJson(
-    ctx: PluginContext,
-    mod: { packageDirectory: string }
-): Promise<string> {
-    // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
-    // This uses the dev server to attempt to resolve the directory back to a complete path.
-    // Hit me up if you know a better way to do this.
-    const path = (await ctx.resolve(mod.packageDirectory + "/package.json"))?.id;
-    if (!path) {
-        throw new ReportableError(`Failed to resolve package.json in ${mod.packageDirectory}`);
-    }
-    return path;
-}
-
-async function configureDevOptimizer(userConfig: UserConfig, rootDir: string) {
-    const optimizeDeps = (userConfig.optimizeDeps ??= {});
-
-    // Include trails modules in deps optimizer settings
-    const includes = (optimizeDeps.include ??= []);
+async function configureDevOptimizer(
+    userConfig: UserConfig,
+    rootDir: string
+): Promise<Omit<UserConfig, "plugins">> {
     const trailsModules = await getOptimizeDepsIncludes(rootDir);
-    includes.push(...trailsModules);
-
-    // Mark trails modules in node dependencies as `external` from esbuild's POV
-    // so they can be handled by our vite plugin.
-    const esbuildOptions = (optimizeDeps.esbuildOptions ??= {});
-    const plugins = (esbuildOptions.plugins ??= []);
-    plugins.push(createOptimizeDepsEsbuildPlugin());
+    return {
+        optimizeDeps: {
+            include: trailsModules,
+            rolldownOptions: {
+                plugins: [createOptimizeDepsRolldownPlugin()]
+            }
+        }
+    };
 }
 
 /**
@@ -245,17 +272,17 @@ async function getOptimizeDepsIncludes(rootDir: string) {
 }
 
 /**
- * Creates an esbuild plugin for use during Vite's dependency optimization phase.
+ * Creates a rolldown plugin for use during Vite's dependency optimization phase.
  * It marks all `open-pioneer:*` virtual module imports as external so that they
- * are left untouched by esbuild and can later be handled by the normal Vite plugin.
+ * are left untouched by rolldown and can later be handled by the normal Vite plugin.
  */
-function createOptimizeDepsEsbuildPlugin(): EsbuildPlugin {
+function createOptimizeDepsRolldownPlugin(): Rolldown.Plugin {
     return {
         name: "pioneer:optimize-deps",
-        setup(build) {
-            build.onResolve({ filter: /^open-pioneer:/ }, (args) => {
-                return { external: true, path: args.path };
-            });
+        resolveId(id) {
+            if (/^open-pioneer:/.test(id)) {
+                return { id, external: true };
+            }
         }
     };
 }
@@ -332,4 +359,8 @@ function getCauseMessages(error: unknown): string[] {
         error = cause;
     }
     return causes;
+}
+
+function assertNever(x: never): never {
+    throw new Error("Should not be reached: " + x);
 }

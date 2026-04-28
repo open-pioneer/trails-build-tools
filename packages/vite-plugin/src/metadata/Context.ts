@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { PluginContext } from "rollup";
+import { PluginContext } from "rolldown";
 
 /**
  * Needs to be passed to functions that load package / app metadata.
- * This is a simplified version of Rollup's context.
+ * This is a simplified version of Rolldown's context.
  */
 export interface MetadataContext {
     addWatchFile(file: string): void;
@@ -16,7 +16,7 @@ export interface MetadataContext {
     warn(message: string): void;
 }
 
-export function createMetadataContextFromRollup(ctx: PluginContext): MetadataContext {
+export function createMetadataContextFromRolldown(ctx: PluginContext): MetadataContext {
     return {
         addWatchFile: (id) => {
             ctx.addWatchFile(id);
