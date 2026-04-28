@@ -1,15 +1,19 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
+import { normalizePath } from "@rollup/pluginutils";
+import { posix } from "node:path";
 import { Plugin } from "rollup";
 import { isInDirectory } from "../utils/pathUtils";
-import { RuntimeSupport } from "@open-pioneer/build-common";
 
 export interface VirtualModulesPluginOptions {
     packageName: string;
     packageDirectory: string;
+    packageFormatTarget: PackageMetadataV1.MinorVersion;
 }
 
-const REACT_HOOKS_ID = "\0virtual-pioneer-module:react-hooks";
+export const REACT_HOOKS_ID = "\0virtual-pioneer-module:react-hooks";
+export const SOURCE_INFO_ID = "\0virtual-pioneer-module:source-info";
 
 /**
  * Generates the virtual module `open-pioneer:react-hooks` at compile time.
@@ -18,7 +22,8 @@ const REACT_HOOKS_ID = "\0virtual-pioneer-module:react-hooks";
  */
 export function virtualModulesPlugin({
     packageName,
-    packageDirectory
+    packageDirectory,
+    packageFormatTarget
 }: VirtualModulesPluginOptions): Plugin {
     return {
         name: "virtual-modules",
@@ -39,9 +44,28 @@ export function virtualModulesPlugin({
                 });
             }
 
+            importer = assertDefined(importer);
+
             switch (virtualModuleType) {
                 case "react-hooks":
                     return REACT_HOOKS_ID;
+                case "source-info":
+                    return createSourceInfoId(packageDirectory, importer);
+                case "deployment": {
+                    const supportInfo = PackageMetadataV1.supportsFeature(
+                        packageFormatTarget,
+                        "app-deployment-module"
+                    );
+                    if (!supportInfo.supports) {
+                        this.error({
+                            id: importer,
+                            message: `Importing '${source}' requires package format target '${supportInfo.needed}' or later.`
+                        });
+                    }
+
+                    // Leave this as-is: the vite plugin needs to handle it.
+                    return { id: source, external: true };
+                }
                 default:
                     this.error({
                         id: importer,
@@ -50,10 +74,34 @@ export function virtualModulesPlugin({
             }
         },
         load(id) {
-            if (id !== REACT_HOOKS_ID) {
-                return undefined;
+            if (id === REACT_HOOKS_ID) {
+                return RuntimeSupport.generateReactHooks(packageName);
             }
-            return RuntimeSupport.generateReactHooks(packageName);
+            if (id.startsWith(SOURCE_INFO_ID)) {
+                const encodedModulePath = id.split(`${SOURCE_INFO_ID}/`)[1] || "";
+                const modulePath = decodeURIComponent(encodedModulePath).replace(/[?#].*$/, "");
+                return RuntimeSupport.generateSourceInfo(packageName, modulePath);
+            }
+            return undefined;
         }
     };
+}
+
+function createSourceInfoId(packageDirectory: string, importer: string) {
+    packageDirectory = normalizePath(packageDirectory);
+    importer = normalizePath(importer);
+
+    const relativePath = posix.relative(packageDirectory, importer);
+    if (relativePath.match(/^\.\.?[\\/]/)) {
+        // must not start with ./ or ../
+        throw new Error("Internal error: unexpected relative path");
+    }
+    return `${SOURCE_INFO_ID}/${encodeURIComponent(relativePath)}`;
+}
+
+function assertDefined<T>(value: T | undefined | null): T {
+    if (value == null) {
+        throw new Error("Value is required but was undefined or null.");
+    }
+    return value;
 }

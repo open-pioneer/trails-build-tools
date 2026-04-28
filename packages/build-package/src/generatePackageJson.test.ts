@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { BuildConfig, DEFAULT_PACKAGE_TARGET } from "@open-pioneer/build-common";
 import { describe, expect, it } from "vitest";
 import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePackageJson";
-import { createMemoryLogger } from "./utils/Logger";
 import { createInputModelFromData } from "./model/InputModel";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
-import { BuildConfig } from "@open-pioneer/build-common";
+import { createMemoryLogger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
 
 describe("generatePackageJson", function () {
@@ -354,6 +354,7 @@ function testDefaults(options?: {
             requireReadme: true
         },
         logger,
+        packageFormatTarget: DEFAULT_PACKAGE_TARGET,
         reporter: new ValidationReporter(logger, options?.strict ?? true)
     } satisfies GeneratePackageJsonOptions;
 }

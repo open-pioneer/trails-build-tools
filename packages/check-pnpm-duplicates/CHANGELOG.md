@@ -1,5 +1,19 @@
 # Changelog @open-pioneer/check-pnpm-duplicates
 
+## 0.3.1
+
+### Patch Changes
+
+- fa84b0e: Bump dependencies
+
+## 0.3.0
+
+### Minor Changes
+
+- 4037d14: Add `--update` flag to automatically update the config file's `allowed` list with current duplicates.
+
+    Usage: `check-pnpm-duplicates -c path/to/config.yaml --update`
+
 ## 0.2.6
 
 ### Patch Changes

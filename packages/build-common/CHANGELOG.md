@@ -1,5 +1,30 @@
 # Changelog @open-pioneer/build-common
 
+## 3.2.2
+
+### Patch Changes
+
+- 50ddcbd: Fix default package property values not being applied correctly when using a trails package from node modules.
+
+## 3.2.1
+
+### Patch Changes
+
+- fa84b0e: Bump dependencies
+
+## 3.2.0
+
+### Minor Changes
+
+- 19aa36f: Implement sourceId helper which provides an easy way to obtain an id for the current source file:
+
+    ```ts
+    import { sourceId } from "open-pioneer:source-info";
+
+    // If imported from foo/bar/baz.ts in package my-package: my-package/foo/bar/baz
+    console.log(sourceId);
+    ```
+
 ## 3.1.2
 
 ### Patch Changes

@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { build } from "@open-pioneer/build-package";
 import { Command } from "commander";
 import { cwd, exit } from "node:process";
 import { version } from "../package.json";
-import { build } from "@open-pioneer/build-package";
 
 const program = new Command();
 program
@@ -34,7 +34,15 @@ async function main() {
         if (debug) {
             console.error(e);
         } else {
-            console.error(chalk.red((e as Error).message ?? String(e)));
+            let current: unknown = e;
+            let prefix = "";
+            while (current != null) {
+                console.error(
+                    chalk.red(`${prefix}${(current as Error).message ?? String(current)}`)
+                );
+                current = (current as Error).cause;
+                prefix = "Caused by: ";
+            }
         }
         exit(1);
     }

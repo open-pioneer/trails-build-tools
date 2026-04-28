@@ -19,6 +19,7 @@ export async function runViteBuild(options: {
     outDir: string;
     rootDir: string;
     pluginOptions: PioneerPluginOptions;
+    baseUrl?: string;
 }) {
     const messages: string[] = [];
     const logger: Logger = {
@@ -44,6 +45,9 @@ export async function runViteBuild(options: {
     await build({
         root: options.rootDir,
 
+        // generate relative URLs by default
+        base: options.baseUrl ?? "./",
+
         build: {
             minify: false,
             outDir: options.outDir,
@@ -60,6 +64,10 @@ export async function runViteBuild(options: {
                     if (/^@open-pioneer\/runtime\//.test(id)) {
                         return true;
                     }
+                },
+                experimental: {
+                    // hide region comments like "//#region ./path/to/file"
+                    attachDebugInfo: "none"
                 }
             }
         },

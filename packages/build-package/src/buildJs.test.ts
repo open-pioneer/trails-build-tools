@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { RuntimeSupport } from "@open-pioneer/build-common";
+import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
 import { glob } from "tinyglobby";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -33,19 +33,19 @@ it("transpiles a simple javascript project", async function () {
         External imports must be left as-is.
     */
     expect(readText(resolve(outputDirectory, "entryPointA.js"))).toMatchInlineSnapshot(`
-          "import { log } from './dir/log.js';
-          import something from 'somewhere-external';
-          import somethingElse from '@scope/somewhere-external';
-          import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
+      "import { log } from './dir/log.js';
+      import something from 'somewhere-external';
+      import somethingElse from '@scope/somewhere-external';
+      import { useService } from './_virtual/hooks.js';
 
-          console.log(something, somethingElse, useService);
-          function helloA() {
-            log("hello from entry point A");
-          }
+      console.log(something, somethingElse, useService);
+      function helloA() {
+        log("hello from entry point A");
+      }
 
-          export { helloA };
-          "
-        `);
+      export { helloA };
+      "
+    `);
     expect(readText(resolve(outputDirectory, "entryPointB.js"))).toMatchInlineSnapshot(`
           "import { log } from './dir/log.js';
 
@@ -66,8 +66,7 @@ it("transpiles a simple javascript project", async function () {
         `);
 
     // React hooks are transpiled
-    expect(readText(resolve(outputDirectory, "./_virtual/_virtual-pioneer-module_react-hooks.js")))
-        .toMatchInlineSnapshot(`
+    expect(readText(resolve(outputDirectory, "./_virtual/hooks.js"))).toMatchInlineSnapshot(`
           "import { useServiceInternal } from '@open-pioneer/runtime/react-integration';
 
           const PACKAGE_NAME = "test";
@@ -79,6 +78,99 @@ it("transpiles a simple javascript project", async function () {
 
     // Not included because never referenced:
     expect(existsSync(resolve(outputDirectory, "dir/hiddenFile.js"))).toBe(false);
+});
+
+it("transpiles a project with source-info imports", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-source-info");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-source-info-transpile");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+    await buildJs({
+        ...testDefaults(),
+        packageDirectory,
+        outputDirectory,
+        entryPoints
+    });
+
+    expect(readText(resolve(outputDirectory, "index.js"))).toMatchInlineSnapshot(`
+      "import { sourceId$1 as sourceId } from './_virtual/source-info.js';
+      import { logSourceId } from './dir/log.js';
+
+      console.log(\`Hello from \${sourceId}\`);
+      logSourceId();
+      "
+    `);
+    expect(readText(resolve(outputDirectory, "dir/log.js"))).toMatchInlineSnapshot(`
+      "import { sourceId } from '../_virtual/source-info.js';
+
+      function logSourceId() {
+        console.log(\`Hello from \${sourceId}\`);
+      }
+
+      export { logSourceId };
+      "
+    `);
+    expect(readText(resolve(outputDirectory, "./_virtual/source-info.js"))).toMatchInlineSnapshot(`
+      "const sourceId$1 = "test/index";
+
+      const sourceId = "test/dir/log";
+
+      export { sourceId, sourceId$1 };
+      "
+    `);
+});
+
+it("transpiling open-pioneer:deployment fails without recent compilation target", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-deployment-import");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-deployment-import");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+
+    const logger = createMemoryLogger();
+    const error = await expectError(() =>
+        buildJs({
+            ...testDefaults(),
+            packageDirectory,
+            outputDirectory,
+            entryPoints,
+            logger
+        })
+    );
+
+    expect(error).toMatchInlineSnapshot(
+        `[RollupError: [plugin virtual-modules] packages/build-package/test-data/project-with-deployment-import/index.js: Importing 'open-pioneer:deployment' requires package format target '1.1' or later.]`
+    );
+});
+
+it("transpiles a project with open-pioneer:deployment import", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-deployment-import");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-deployment-import");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+
+    const logger = createMemoryLogger();
+    await buildJs({
+        ...testDefaults(),
+        packageDirectory,
+        outputDirectory,
+        entryPoints,
+        logger,
+        packageFormatTarget: "1.1" as PackageMetadataV1.MinorVersion
+    });
+
+    // No warnings
+    expect(logger.messages).toEqual([]);
+
+    // The import is left as-is
+    expect(readText(resolve(outputDirectory, "./index.js"))).toMatchInlineSnapshot(`
+      "import { baseUrl } from 'open-pioneer:deployment';
+
+      console.log(baseUrl);
+      "
+    `);
 });
 
 it("generates source maps when enabled", async function () {
@@ -102,7 +194,7 @@ it("generates source maps when enabled", async function () {
           "import { log } from './dir/log.js';
           import something from 'somewhere-external';
           import somethingElse from '@scope/somewhere-external';
-          import { useService } from './_virtual/_virtual-pioneer-module_react-hooks.js';
+          import { useService } from './_virtual/hooks.js';
 
           console.log(something, somethingElse, useService);
           function helloA() {
@@ -184,13 +276,7 @@ it("emits no warnings when compiling 'use client' files", async function () {
         outputDirectory,
         entryPoints,
         sourceMap: true,
-        logger,
-        packageJson: {
-            dependencies: {
-                ...DEFAULT_DEPS,
-                react: "*"
-            }
-        }
+        logger
     });
 
     // Expect no warnings for 'use client'
@@ -655,7 +741,10 @@ it("emits errors when trails packages import internal modules from other trails 
 });
 
 const DEFAULT_DEPS = {
-    [RuntimeSupport.RUNTIME_PACKAGE_NAME]: "*"
+    [RuntimeSupport.RUNTIME_PACKAGE_NAME]: "*",
+    "react": "*",
+    "somewhere-external": "*",
+    "@scope/somewhere-external": "*"
 };
 
 function testDefaults() {
@@ -668,7 +757,8 @@ function testDefaults() {
         packageJson: {
             dependencies: DEFAULT_DEPS
         },
-        packageJsonPath: "test/package.json"
+        packageJsonPath: "test/package.json",
+        packageFormatTarget: "1.0" as PackageMetadataV1.MinorVersion
     } satisfies Partial<BuildJsOptions>;
 }
 

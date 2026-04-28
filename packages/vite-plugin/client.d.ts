@@ -8,6 +8,28 @@ declare module "open-pioneer:app" {
 }
 
 /**
+ * Provides source information for a module.
+ */
+declare module "open-pioneer:source-info" {
+    /**
+     * The unique source id of the module.
+     *
+     * @example
+     * // current file is 'Component.ts' in package 'my-package'
+     * import { sourceId } from "open-pioneer:source-info";
+     * // prints 'my-package/Component'
+     * console.log(`${sourceId}`);
+     *
+     * @example
+     * // Create a logger using the source id.
+     * import { createLogger } from '@open-pioneer/core';
+     * import { sourceId } from "open-pioneer:source-info";
+     * const LOG = createLogger(sourceId);
+     */
+    export const sourceId: string;
+}
+
+/**
  * Provides react hooks to a module.
  * The module must be inside a valid Open Pioneer Trails package (or app).
  *
@@ -82,4 +104,21 @@ declare module "open-pioneer:react-hooks" {
      * Returns the i18n object for the calling component's package.
      */
     export function useIntl(): PackageIntl;
+}
+
+/**
+ * Provides metadata about the current deployment.
+ */
+declare module "open-pioneer:deployment" {
+    /**
+     * Returns the base URL of the deployed application.
+     *
+     * This returns an absolute URL to the root of the deployed application, for example:
+     *
+     * - http://localhost:5173/ or http://localhost:5173/optional/path/ (during development)
+     * - https://example.com/path/to/root/ (during production)
+     *
+     * You can use this string to compute the addresses of resources that are deployed together with your app.
+     */
+    export const baseUrl: string;
 }

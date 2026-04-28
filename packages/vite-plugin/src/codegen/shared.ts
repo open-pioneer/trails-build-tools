@@ -1,7 +1,28 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { dirname, basename } from "node:path/posix";
+import { existsSync } from "fs";
+import { basename, dirname, posix } from "node:path/posix";
+import { join } from "path/posix";
 import { normalizePath } from "vite";
+
+/**
+ * MODULE ID ENCODING
+ * ==================
+ *
+ * There are two encoding schemes for virtual modules in this file:
+ *
+ * 1. Leading null byte, e.g. `\0open-pioneer:deployment`.
+ *    This is used for "global" modules that are not scoped to a specific file, app or package.
+ *    This encoding is the usual practice in the rollup / vite ecosystem, making it very reliable.
+ *    It has the disadvantage that the generated files show up "somewhere" in the browser debugger.
+ * 2. Magic filenames, e.g. /path/to/app/@@open-pioneer-app.
+ *    These use a different prefix ("@@") for file names so they show up next to the relevant location,
+ *    for example as if they were developed in a specific package.
+ *    This was needed for both better debugging experience and to make some imports work well.
+ */
+
+const VIRTUAL_PREFIX = "\0open-pioneer:";
+const VIRTUAL_PREFIX_RE = /\0open-pioneer:(?<suffix>.*)/;
 
 const APP_MODULE = "@@open-pioneer-app";
 
@@ -23,9 +44,17 @@ const APP_I18N_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
 
 const PACKAGE_HOOKS_MODULE = "@@open-pioneer-react-hooks";
 
+const SOURCE_INFO_MODULE = "@@open-pioneer-source-info";
+const SOURCE_INFO_MODULE_MODULE_PATH_RE = /@@open-pioneer-source-info\/(?<module_path>.*)&lang=js$/;
+
 const SOURCE_FILE_RE = /^(.*?)(?:\?|$)/;
 
-export type VirtualModule = VirtualAppModule | VirtualI18nMessages | VirtualPackageModule;
+export type VirtualModule =
+    | VirtualAppModule
+    | VirtualI18nMessages
+    | VirtualPackageModule
+    | VirtualSourceInfoModule
+    | VirtualDeploymentModule;
 
 export interface VirtualAppModule {
     type: "app-meta" | "app-packages" | "app-css" | "app-i18n-index";
@@ -43,13 +72,23 @@ export interface VirtualPackageModule {
     packageDirectory: string;
 }
 
+export interface VirtualSourceInfoModule {
+    type: "source-info";
+    modulePath: string;
+    packageDirectory: string;
+}
+
+export interface VirtualDeploymentModule {
+    type: "deployment";
+}
+
 /**
  * Filter for rolldown.
  *
  * These regular expressions should match against our virtual modules (see above)
  * but should filter out as many unrelated module ids as possible for performance.
  */
-export const VIRTUAL_ID_FILTER = [/^open-pioneer:/, /[?&]open-pioneer/, /@@open-pioneer/];
+export const VIRTUAL_ID_FILTER = [/^\0?open-pioneer:/, /[?&]open-pioneer/, /@@open-pioneer/];
 
 /**
  * Takes a module id as input and parses it.
@@ -59,10 +98,24 @@ export const VIRTUAL_ID_FILTER = [/^open-pioneer:/, /[?&]open-pioneer/, /@@open-
  */
 export function parseVirtualModuleId(inputModuleId: string): VirtualModule | undefined {
     const moduleId = normalizePath(inputModuleId);
-    if (!moduleId || moduleId.includes("\\0")) {
+    if (!moduleId) {
         return undefined;
     }
 
+    // Module ids encoded with leading \0
+    if (moduleId.startsWith("\0")) {
+        const virtualPrefixMatch = inputModuleId.match(VIRTUAL_PREFIX_RE);
+        if (virtualPrefixMatch) {
+            const suffix = virtualPrefixMatch.groups?.["suffix"];
+            if (suffix === "deployment") {
+                return { type: "deployment" };
+            }
+        }
+        return undefined;
+    }
+
+    // Module ids that are located next to source files, in packages, etc.
+    // These look like ordinary files, but don't exist on disk.
     const sourceFile = getSourceFile(moduleId); // module id without query
     if (!sourceFile) {
         return undefined;
@@ -75,10 +128,37 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
             packageDirectory: dirname(sourceFile)
         };
     }
+
+    const sourceInfoMatch = moduleId.match(SOURCE_INFO_MODULE_MODULE_PATH_RE);
+    if (sourceInfoMatch) {
+        return parseSourceInfoModule(moduleId, sourceInfoMatch);
+    }
+
     if (base === APP_MODULE) {
         return parseAppModuleId(sourceFile, moduleId);
     }
     return undefined;
+}
+
+function parseSourceInfoModule(moduleId: string, sourceInfoMatch: RegExpMatchArray): VirtualModule {
+    const encodedModulePath = sourceInfoMatch?.groups?.["module_path"];
+    if (!encodedModulePath) {
+        throw new Error(`Missing module path in source info module id: ${moduleId}`);
+    }
+    const relativeModulePath = decodeURIComponent(encodedModulePath);
+    const moduleRoot = moduleId.substring(0, moduleId.indexOf(`${SOURCE_INFO_MODULE}`));
+    if (!moduleRoot) {
+        throw new Error(
+            `Cannot determine module root directory for source info module id: ${moduleId}`
+        );
+    }
+    const fullModulePath = join(moduleRoot, relativeModulePath);
+    const packageJsonPath = findPackageJson(dirname(fullModulePath), moduleRoot);
+    if (!packageJsonPath) {
+        throw new Error(`Cannot determine package.json for source info module id: ${moduleId}`);
+    }
+    const packageDirectory = dirname(packageJsonPath);
+    return { type: "source-info", modulePath: relativeModulePath, packageDirectory };
 }
 
 function parseAppModuleId(sourceFile: string, moduleId: string): VirtualModule | undefined {
@@ -119,6 +199,8 @@ export function serializeModuleId(mod: VirtualModule): string {
     switch (mod.type) {
         case "package-hooks":
             return `${mod.packageDirectory}/${PACKAGE_HOOKS_MODULE}`;
+        case "source-info":
+            return serializeSourceInfoModule(mod);
         case "app-meta":
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_META_QUERY}`;
         case "app-packages":
@@ -129,7 +211,22 @@ export function serializeModuleId(mod: VirtualModule): string {
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_INDEX_QUERY}`;
         case "app-i18n":
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_QUERY}&locale=${mod.locale}`;
+        case "deployment":
+            return `${VIRTUAL_PREFIX}deployment`;
     }
+}
+
+function serializeSourceInfoModule(mod: VirtualSourceInfoModule): string {
+    const packageDirectory = mod.packageDirectory;
+    const modulePath = mod.modulePath;
+    const normalizedModulePath = normalizePath(modulePath);
+
+    const relativeModulePath = posix.relative(packageDirectory, normalizedModulePath);
+    if (relativeModulePath.match(/^\.\.?[\\/]/)) {
+        // must not start with ./ or ../
+        throw new Error("Internal error: unexpected relative path");
+    }
+    return `${mod.packageDirectory}/${SOURCE_INFO_MODULE}/${encodeURIComponent(relativeModulePath)}&lang=js`;
 }
 
 function getSourceFile(moduleId: string) {
@@ -138,4 +235,22 @@ function getSourceFile(moduleId: string) {
         return undefined;
     }
     return sourceFile;
+}
+
+export function findPackageJson(startDir: string, rootDir: string) {
+    let dir = startDir;
+    while (dir) {
+        const candidate = join(dir, "package.json");
+        if (existsSync(candidate)) {
+            return candidate;
+        }
+
+        if (normalizePath(dir) == normalizePath(rootDir)) {
+            return undefined;
+        }
+
+        const parent = dirname(dir);
+        dir = parent === dir || parent === "." ? "" : parent;
+    }
+    return undefined;
 }

@@ -253,6 +253,7 @@ class PackageMetadataReader {
             if (metadataResult.code === "unsupported-version") {
                 throw new ReportableError(
                     `Package '${packageName}' in ${packageDir} uses an unsupported package metadata version.` +
+                        ` The latest version supported by this plugin is ${PackageMetadataV1.LATEST_VERSION}.` +
                         ` Try updating ${PACKAGE_NAME}.\n\n` +
                         metadataResult.message,
                     { cause: metadataResult.cause }

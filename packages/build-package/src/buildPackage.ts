@@ -50,6 +50,7 @@ export async function buildPackage({ input, options, logger }: BuildPackageOptio
             packageName: model.packageName,
             packageJson: model.input.packageJson,
             packageJsonPath: model.input.packageJsonPath,
+            packageFormatTarget: options.packageFormatTarget,
             sourceMap: options.sourceMaps,
             strict: options.strict,
             logger
@@ -105,6 +106,7 @@ export async function buildPackage({ input, options, logger }: BuildPackageOptio
     logger.info(chalk.gray("Writing package metadata..."));
     const packageJsonContent = await generatePackageJson({
         model,
+        packageFormatTarget: options.packageFormatTarget,
         validation: options.validation,
         logger,
         reporter

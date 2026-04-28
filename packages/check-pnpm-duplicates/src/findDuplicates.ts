@@ -10,6 +10,24 @@ export interface PackageEntry {
 }
 
 /**
+ * Formats package entries as YAML list items with version comments, one per line.
+ *
+ * Example output:
+ * ```
+ *   - "@scope/pkg" # (versions 1.0.0, 2.0.0)
+ *   - "other-pkg" # (versions 3.0.0, 4.0.0)
+ * ```
+ */
+export function formatPackageEntries(entries: PackageEntry[]): string {
+    return entries
+        .map((entry) => {
+            const versions = entry.versions.join(", ");
+            return `  - ${JSON.stringify(entry.name)} # (versions ${versions})`;
+        })
+        .join("\n");
+}
+
+/**
  * Returns duplicate package names and their versions.
  */
 export async function findDuplicatePackages(

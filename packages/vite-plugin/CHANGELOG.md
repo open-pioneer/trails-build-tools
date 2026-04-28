@@ -1,5 +1,50 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 5.1.2
+
+### Patch Changes
+
+- 50ddcbd: Fix default package property values not being applied correctly when using a trails package from node modules.
+- Updated dependencies [50ddcbd]
+    - @open-pioneer/build-common@3.2.2
+
+## 5.1.1
+
+### Patch Changes
+
+- fa84b0e: Bump dependencies
+- 093ae42: Prevent detection of duplicated packages on windows
+- Updated dependencies [fa84b0e]
+    - @open-pioneer/build-common@3.2.1
+
+## 5.1.0
+
+### Minor Changes
+
+- eac3ef4: Add service modules of trails packages from `node_modules` to the modules optimized by vite's deps optimizer.
+
+    This can reduce the number of events like this:
+
+    ```
+    5:14:21 PM [vite] (client) ✨ new dependencies optimized: <...>
+    5:14:21 PM [vite] (client) ✨ optimized dependencies changed. reloading
+    ```
+
+- 19aa36f: Implement sourceId helper which provides an easy way to obtain an id for the current source file:
+
+    ```ts
+    import { sourceId } from "open-pioneer:source-info";
+
+    // If imported from foo/bar/baz.ts in package my-package: my-package/foo/bar/baz
+    console.log(sourceId);
+    ```
+
+### Patch Changes
+
+- eac3ef4: Switch from fast-glob to tinyglobby (it has fewer dependencies).
+- Updated dependencies [19aa36f]
+    - @open-pioneer/build-common@3.2.0
+
 ## 5.0.3
 
 ### Patch Changes

@@ -1,5 +1,28 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 3.0.9
+
+### Patch Changes
+
+- Updated dependencies [50ddcbd]
+    - @open-pioneer/build-package@4.1.2
+
+## 3.0.8
+
+### Patch Changes
+
+- fa84b0e: Bump dependencies
+- Updated dependencies [fa84b0e]
+    - @open-pioneer/build-package@4.1.1
+
+## 3.0.7
+
+### Patch Changes
+
+- Updated dependencies [eac3ef4]
+- Updated dependencies [19aa36f]
+    - @open-pioneer/build-package@4.1.0
+
 ## 3.0.6
 
 ### Patch Changes
