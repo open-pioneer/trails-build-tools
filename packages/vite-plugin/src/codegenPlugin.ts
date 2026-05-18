@@ -19,7 +19,9 @@ import {
 import { DeploymentModule } from "./deployment";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
+import { validateI18nConfig } from "./metadata/validateI18nConfig";
 import { createDebugger } from "./utils/debug";
+import { fileExists } from "./utils/fileUtils";
 import { createMetadataContextFromRolldown } from "./metadata/Context";
 
 type PluginContext = Rolldown.PluginContext;
@@ -126,22 +128,7 @@ export function codegenPlugin(): VitePlugin {
                         return deploymentModule.onLoadModule();
                     }
 
-                    // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
-                    // This uses the dev server to attempt to resolve the directory back to a complete path.
-                    // Hit me up if you know a better way to do this.
-                    const packageJsonPath = (
-                        await this.resolve(mod.packageDirectory + "/package.json")
-                    )?.id;
-                    if (!packageJsonPath) {
-                        throw new ReportableError(
-                            `Failed to resolve package.json in ${mod.packageDirectory}`
-                        );
-                    }
-
-                    if (mod.type === "source-info") {
-                        const packageName = await getPackageName(this, packageJsonPath);
-                        return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
-                    }
+                    const packageJsonPath = await resolvePackageJson(this, mod);
                     if (mod.type === "package-hooks") {
                         const directory = mod.packageDirectory;
                         // use forward slashes instead of platform separator
@@ -161,12 +148,9 @@ export function codegenPlugin(): VitePlugin {
                         isDebug && debug("Generated hooks code: %O", generatedSourceCode);
                         return generatedSourceCode;
                     }
-
-                    if (mod.type === "app-meta") {
-                        return generateAppMetadata(
-                            mod.packageDirectory,
-                            RuntimeSupport.METADATA_MODULE_ID
-                        );
+                    if (mod.type === "source-info") {
+                        const packageName = await getPackageName(this, packageJsonPath);
+                        return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
                     }
 
                     const ctx = createMetadataContextFromRolldown(this);
@@ -174,6 +158,17 @@ export function codegenPlugin(): VitePlugin {
                         ctx,
                         dirname(packageJsonPath)
                     );
+                    if (mod.type === "app-meta") {
+                        const runtimeVersion = appMetadata.runtimeMetadataVersion;
+                        isDebug &&
+                            debug("Generating app metadata for runtime version %s", runtimeVersion);
+                        return generateAppMetadata(
+                            mod.packageDirectory,
+                            RuntimeSupport.METADATA_MODULE_ID,
+                            runtimeVersion
+                        );
+                    }
+
                     switch (mod.type) {
                         case "app-packages": {
                             const generatedSourceCode = generatePackagesMetadata({
@@ -189,6 +184,7 @@ export function codegenPlugin(): VitePlugin {
                             return generatedSourceCode;
                         }
                         case "app-i18n-index": {
+                            await validateI18nConfig(ctx, repository, appMetadata);
                             const generatedSourceCode = generateI18nIndex(
                                 mod.packageDirectory,
                                 appMetadata.locales
@@ -201,8 +197,14 @@ export function codegenPlugin(): VitePlugin {
                                 locale: mod.locale,
                                 appName: appMetadata.name,
                                 packages: appMetadata.packages,
-                                loadI18n: (path) => {
-                                    return repository.getI18nFile(ctx, path);
+                                loadI18n: async (pkg, filePath) => {
+                                    ctx.addWatchFile(filePath);
+                                    if (!(await fileExists(filePath))) {
+                                        throw new ReportableError(
+                                            `I18n file at ${filePath} does not exist.`
+                                        );
+                                    }
+                                    return repository.getI18nFile(ctx, filePath);
                                 }
                             });
                             isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
@@ -226,6 +228,20 @@ export function codegenPlugin(): VitePlugin {
             deploymentModule.onGenerateBundle(bundle);
         }
     };
+}
+
+async function resolvePackageJson(
+    ctx: PluginContext,
+    mod: { packageDirectory: string }
+): Promise<string> {
+    // During development we will observe directories like "/packages/foo" (i.e. not fully resolved).
+    // This uses the dev server to attempt to resolve the directory back to a complete path.
+    // Hit me up if you know a better way to do this.
+    const path = (await ctx.resolve(mod.packageDirectory + "/package.json"))?.id;
+    if (!path) {
+        throw new ReportableError(`Failed to resolve package.json in ${mod.packageDirectory}`);
+    }
+    return path;
 }
 
 async function configureDevOptimizer(

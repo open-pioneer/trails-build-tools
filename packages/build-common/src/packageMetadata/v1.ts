@@ -37,6 +37,12 @@
  * - Packages may now use the `open-pioneer:deployment` module.
  *   This import is passed through during package compilation and must be handled by the vite plugin at runtime.
  *
+ * ### 1.0.1
+ *
+ * - New optional `runtimeMeta` field.
+ *   This is used by `@open-pioneer/runtime` to indicate which version of app metadata it supports.
+ *   It should not be used by other packages.
+ *
  * ### 1.0.0
  *
  * Initial release
@@ -45,14 +51,14 @@
  */
 import { SemVer } from "semver";
 import type { PackageMetadataV1 as V1 } from "../../types";
-import { canParse } from "./versionUtils";
+import { canParse } from "../versionUtils";
 import { z } from "zod";
 
 export const LATEST_VERSION = "1.1.0";
 
 // Target (minor version) to semver with patch version (if any).
 const LATEST_VERSION_FOR_TARGET: Record<V1.MinorVersion, string> = {
-    ["1.0" as V1.MinorVersion]: "1.0.0",
+    ["1.0" as V1.MinorVersion]: "1.0.1",
     ["1.1" as V1.MinorVersion]: "1.1.0"
 };
 
@@ -98,13 +104,18 @@ const SERVICE_CONFIG_SCHEMA: z.ZodType<V1.ServiceConfig> = z.object({
     references: REFERENCE_CONFIG_SCHEMA.array().nullish().optional()
 });
 
+const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<V1.RuntimeMeta> = z.object({
+    metadataVersion: z.string().nullish().optional()
+});
+
 const PACKAGE_METADATA_SCHEMA: z.ZodType<V1.PackageMetadata> = VERSION_SCHEMA.extend({
     services: SERVICE_CONFIG_SCHEMA.array().nullish().optional(),
     servicesModule: z.string().nullish().optional(),
     styles: z.string().nullish().optional(),
     i18n: I18N_CONFIG_SCHEMA.nullish().optional(),
     ui: UI_CONFIG_SCHEMA.nullish().optional(),
-    properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional()
+    properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional(),
+    runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.nullish().optional()
 });
 
 const featuresSince: Record<"app-deployment-module", V1.MinorVersion> = {

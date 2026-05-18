@@ -39,3 +39,12 @@ it("rejects invalid target version", () => {
         })
     ).toThrow(/publishConfig.packageFormatTarget/);
 });
+
+it("allow runtimeMeta", () => {
+    const metaRuntimeConfig = {
+        runtimeMeta: {
+            metadataVersion: "1.0.0"
+        }
+    };
+    verifyBuildConfig(metaRuntimeConfig);
+});

@@ -53,6 +53,8 @@ export function generateI18nIndex(packageDirectory: string, locales: string[]): 
     return generate(program).code;
 }
 
+export type I18nPackageMetadata = Pick<PackageMetadata, "name" | "i18nPaths">;
+
 export interface I18nMessageOptions {
     /** The locale to generate. */
     locale: string;
@@ -67,7 +69,7 @@ export interface I18nMessageOptions {
     packages: Pick<PackageMetadata, "name" | "i18nPaths">[];
 
     /** Called by the function when the contents of an i18n file (in i18nPaths) is required. */
-    loadI18n: (path: string) => Promise<I18nFile>;
+    loadI18n: (pkg: I18nPackageMetadata, filePath: string) => Promise<I18nFile>;
 }
 
 /**
@@ -92,7 +94,7 @@ export async function generateI18nMessages(options: I18nMessageOptions): Promise
             continue;
         }
 
-        const { messages, overrides } = await loadI18n(filePath);
+        const { messages, overrides } = await loadI18n(pkg, filePath);
         if (pkg.name === appName) {
             packageOverrides = overrides;
         } else if (overrides) {

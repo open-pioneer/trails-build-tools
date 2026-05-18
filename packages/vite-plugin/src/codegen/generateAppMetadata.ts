@@ -1,12 +1,17 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { serializeModuleId } from "./shared";
+import { RuntimeSupport } from "@open-pioneer/build-common";
 
 /**
  * Generates the main app metadata module.
  * It delegates the actual metadata generation to auxiliary modules.
  */
-export function generateAppMetadata(packageDirectory: string, metadataModuleId: string) {
+export function generateAppMetadata(
+    packageDirectory: string,
+    metadataModuleId: string,
+    runtimeMetadataVersion: RuntimeSupport.RuntimeMetadataVersion
+) {
     /*
         CSS loading: 
         - 'inline' loads the (s)css as a string literal.
@@ -28,23 +33,49 @@ export function generateAppMetadata(packageDirectory: string, metadataModuleId: 
     const cssModule =
         serializeModuleId({ type: "app-css", packageDirectory }) + "&inline&lang.scss";
     const i18nModule = serializeModuleId({ type: "app-i18n-index", packageDirectory });
+
+    const features = RuntimeSupport.getRuntimeFeatures(runtimeMetadataVersion);
+    const boxMessages = features.supportsMessageBox;
     return `
 import { createBox } from ${JSON.stringify(metadataModuleId)};
 import packages from ${JSON.stringify(packagesModule)};
 import stylesString from ${JSON.stringify(cssModule)};
-import { locales, loadMessages } from ${JSON.stringify(i18nModule)};
+import { locales, loadMessages as loadMessagesFn } from ${JSON.stringify(i18nModule)};
 
 const styles = createBox(stylesString);
+const loadMessages = ${JSON.stringify(boxMessages)} ? createBox(loadMessagesFn) : loadMessagesFn ;
+
 if (import.meta.hot) {
     import.meta.hot.data.styles ??= styles;
+    import.meta.hot.data.loadMessages ??= loadMessages;
+    
     import.meta.hot.accept((mod) => {
-        if (mod && mod.packages === packages && mod.locales === locales && mod.loadMessages === loadMessages) {
-            import.meta.hot.data.styles.setValue(mod.styles.value);
+        function arrayEq(a, b) {
+            if (a === b) {
+                return true;
+            }
+            if (!a || !b) {
+                return false;
+            }
+            return a.length === b.length && a.every((v, i) => v === b[i]);
+        }
+
+        // Update if
+        // - packages changed (no HMR)
+        // - locales changed (no HMR)
+        // - message boxing is not supported (runtime metadata version 1.0, no HMR)
+        if (!mod || mod.packages !== packages || !arrayEq(mod.locales, locales) || (${JSON.stringify(!boxMessages)} && mod.loadMessages !== loadMessagesFn)) {
+            // Cannot handle these changes, trigger reload:
+            import.meta.hot.invalidate();
             return;
         }
-        
-        // Cannot handle all other changes the moment; trigger reload.
-        import.meta.hot.invalidate();
+
+        if (mod.styles.value !== styles.value) {
+            import.meta.hot.data.styles.setValue(mod.styles.value);
+        }
+        if (${JSON.stringify(boxMessages)} && mod.loadMessages.value !== loadMessages.value) {
+            import.meta.hot.data.loadMessages.setValue(mod.loadMessages.value);
+        }
     });
 }
 
@@ -52,7 +83,7 @@ export {
     packages,
     styles,
     locales,
-    loadMessages
+    loadMessages,
 };
 `.trim();
 }

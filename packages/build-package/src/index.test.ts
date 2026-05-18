@@ -12,7 +12,7 @@ import { readFileSync } from "node:fs";
 import { expectError } from "./testing/helpers";
 
 vi.setConfig({
-    testTimeout: 20000
+    testTimeout: 20_000
 });
 
 beforeAll(async () => {
@@ -102,43 +102,43 @@ it("should build package to `dist`", async function () {
     // Package.json was generated
     const packageJson = resolve(distDirectory, "package.json");
     expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
-              {
-                "dependencies": {
-                  "@open-pioneer/runtime": "*",
-                  "@scope/somewhere-external": "*",
-                  "foo": "^1.2.3",
-                  "somewhere-external": "*",
-                },
-                "exports": {
-                  "./entryPointA": {
-                    "import": "./entryPointA.js",
-                    "types": "./entryPointA.d.ts",
-                  },
-                  "./entryPointB": {
-                    "import": "./entryPointB.js",
-                    "types": "./entryPointB.d.ts",
-                  },
-                  "./my-styles.css": "./my-styles.css",
-                  "./package.json": "./package.json",
-                },
-                "license": "MIT",
-                "name": "simple-js-project",
-                "openPioneerFramework": {
-                  "i18n": {
-                    "languages": [],
-                  },
-                  "packageFormatVersion": "1.0.0",
-                  "properties": [],
-                  "services": [],
-                  "styles": "./my-styles.css",
-                  "ui": {
-                    "references": [],
-                  },
-                },
-                "type": "module",
-                "version": "0.0.1",
-              }
-            `);
+      {
+        "dependencies": {
+          "@open-pioneer/runtime": "*",
+          "@scope/somewhere-external": "*",
+          "foo": "^1.2.3",
+          "somewhere-external": "*",
+        },
+        "exports": {
+          "./entryPointA": {
+            "import": "./entryPointA.js",
+            "types": "./entryPointA.d.ts",
+          },
+          "./entryPointB": {
+            "import": "./entryPointB.js",
+            "types": "./entryPointB.d.ts",
+          },
+          "./my-styles.css": "./my-styles.css",
+          "./package.json": "./package.json",
+        },
+        "license": "MIT",
+        "name": "simple-js-project",
+        "openPioneerFramework": {
+          "i18n": {
+            "languages": [],
+          },
+          "packageFormatVersion": "1.0.1",
+          "properties": [],
+          "services": [],
+          "styles": "./my-styles.css",
+          "ui": {
+            "references": [],
+          },
+        },
+        "type": "module",
+        "version": "0.0.1",
+      }
+    `);
 
     // License, changelog and readme were copied
     const readme = resolve(distDirectory, "README.md");
@@ -197,6 +197,67 @@ it("should reject invalid package format targets", async () => {
 
     const error = await expectError(() => build({ packageDirectory: tempPackage, logger }));
     expect(error.message).toMatch(/Validation error in configuration file at (.*)build.config.mjs/);
+});
+
+it("should build package to `dist` with runtime version", async function () {
+    const srcPackage = resolve(TEST_DATA_DIR, "simple-js-project-with-runtime");
+    const tempPackage = resolve(TEMP_DATA_DIR, "simple-js-project-with-runtime");
+    const distDirectory = resolve(tempPackage, "dist");
+    const logger = createMemoryLogger();
+
+    await cleanDir(tempPackage);
+    await cp(srcPackage, tempPackage, {
+        recursive: true,
+        force: true
+    });
+
+    try {
+        await build({ packageDirectory: tempPackage, logger });
+    } catch (e) {
+        console.error(logger.messages);
+        throw e;
+    }
+
+    // Package.json was generated
+    const packageJson = resolve(distDirectory, "package.json");
+    expect(JSON.parse(readText(packageJson))).toMatchInlineSnapshot(`
+      {
+        "dependencies": {
+          "@open-pioneer/runtime": "*",
+          "@scope/somewhere-external": "*",
+          "foo": "^1.2.3",
+          "somewhere-external": "*",
+        },
+        "exports": {
+          "./entryPointA": {
+            "import": "./entryPointA.js",
+            "types": "./entryPointA.d.ts",
+          },
+          "./entryPointB": {
+            "import": "./entryPointB.js",
+            "types": "./entryPointB.d.ts",
+          },
+          "./my-styles.css": "./my-styles.css",
+          "./package.json": "./package.json",
+        },
+        "license": "MIT",
+        "name": "simple-js-project-with-runtime",
+        "openPioneerFramework": {
+          "i18n": {
+            "languages": [],
+          },
+          "packageFormatVersion": "1.0.1",
+          "properties": [],
+          "services": [],
+          "styles": "./my-styles.css",
+          "ui": {
+            "references": [],
+          },
+        },
+        "type": "module",
+        "version": "0.0.1",
+      }
+    `);
 });
 
 // Cannot use raw source mapping urls in snapshot strings because vitest runs a regex against them.
