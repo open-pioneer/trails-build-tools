@@ -25,6 +25,7 @@ import { fileExists } from "./utils/fileUtils";
 import { createMetadataContextFromRolldown } from "./metadata/Context";
 
 type PluginContext = Rolldown.PluginContext;
+type SourceDescription = Rolldown.SourceDescription;
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
@@ -115,7 +116,7 @@ export function codegenPlugin(): VitePlugin {
             filter: {
                 id: VIRTUAL_ID_FILTER
             },
-            async handler(this: PluginContext, moduleId) {
+            async handler(this: PluginContext, moduleId): Promise<SourceDescription | undefined> {
                 try {
                     const mod = parseVirtualModuleId(moduleId);
                     if (!mod) {
@@ -125,7 +126,7 @@ export function codegenPlugin(): VitePlugin {
                     isDebug && debug("Loading virtual module %O", mod);
 
                     if (mod.type === "deployment") {
-                        return deploymentModule.onLoadModule();
+                        return jsModule(deploymentModule.onLoadModule());
                     }
 
                     const packageJsonPath = await resolvePackageJson(this, mod);
@@ -146,11 +147,13 @@ export function codegenPlugin(): VitePlugin {
                             RuntimeSupport.REACT_INTEGRATION_MODULE_ID
                         );
                         isDebug && debug("Generated hooks code: %O", generatedSourceCode);
-                        return generatedSourceCode;
+                        return jsModule(generatedSourceCode);
                     }
                     if (mod.type === "source-info") {
                         const packageName = await getPackageName(this, packageJsonPath);
-                        return RuntimeSupport.generateSourceInfo(packageName, mod.modulePath);
+                        return jsModule(
+                            RuntimeSupport.generateSourceInfo(packageName, mod.modulePath)
+                        );
                     }
 
                     const ctx = createMetadataContextFromRolldown(this);
@@ -162,11 +165,12 @@ export function codegenPlugin(): VitePlugin {
                         const runtimeVersion = appMetadata.runtimeMetadataVersion;
                         isDebug &&
                             debug("Generating app metadata for runtime version %s", runtimeVersion);
-                        return generateAppMetadata(
+                        const generatedSourceCode = generateAppMetadata(
                             mod.packageDirectory,
                             RuntimeSupport.METADATA_MODULE_ID,
                             runtimeVersion
                         );
+                        return jsModule(generatedSourceCode);
                     }
 
                     switch (mod.type) {
@@ -176,12 +180,12 @@ export function codegenPlugin(): VitePlugin {
                                 packages: appMetadata.packages
                             });
                             isDebug && debug("Generated app metadata: %O", generatedSourceCode);
-                            return generatedSourceCode;
+                            return jsModule(generatedSourceCode);
                         }
                         case "app-css": {
                             const generatedSourceCode = generateCombinedCss(appMetadata.packages);
                             isDebug && debug("Generated app css: %O", generatedSourceCode);
-                            return generatedSourceCode;
+                            return jsModule(generatedSourceCode);
                         }
                         case "app-i18n-index": {
                             await validateI18nConfig(ctx, repository, appMetadata);
@@ -190,7 +194,7 @@ export function codegenPlugin(): VitePlugin {
                                 appMetadata.locales
                             );
                             isDebug && debug("Generated i18n lookup: %O", generatedSourceCode);
-                            return generatedSourceCode;
+                            return jsModule(generatedSourceCode);
                         }
                         case "app-i18n": {
                             const generatedSourceCode = await generateI18nMessages({
@@ -208,7 +212,7 @@ export function codegenPlugin(): VitePlugin {
                                 }
                             });
                             isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
-                            return generatedSourceCode;
+                            return jsModule(generatedSourceCode);
                         }
                         default:
                             assertNever(mod.type);
@@ -354,6 +358,13 @@ async function getPackageName(ctx: PluginContext, packageJsonPath: string) {
         throw new ReportableError(`Failed to read package name from ${packageJsonPath}.`);
     }
     return name;
+}
+
+function jsModule(code: string): SourceDescription {
+    return {
+        code,
+        moduleType: "js"
+    };
 }
 
 function getCauseMessages(error: unknown): string[] {
