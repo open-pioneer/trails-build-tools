@@ -82,7 +82,7 @@ const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
     packageFormatTarget: PACKAGE_FORMAT_TARGETS_SCHEMA.optional()
 });
 
-const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<BuildConfig["runtimeMeta"]> = z.object({
+const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<BuildConfig["runtimeMeta"]> = z.strictObject({
     metadataVersion: z.string().optional()
 });
 

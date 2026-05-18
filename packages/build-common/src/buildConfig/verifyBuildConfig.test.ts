@@ -43,7 +43,7 @@ it("rejects invalid target version", () => {
 it("allow runtimeMeta", () => {
     const metaRuntimeConfig = {
         runtimeMeta: {
-            version: "1.0.0"
+            metadataVersion: "1.0.0"
         }
     };
     verifyBuildConfig(metaRuntimeConfig);
