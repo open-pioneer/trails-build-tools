@@ -141,21 +141,13 @@ overrides:
   "@open-pioneer/runtime": ">= 2.2.0"
 
 auditConfig:
-  ignoreCves:
-    # This affects ajv, which is a transitive dependency of eslint.
-    # Eslint depends on ajv@v6, and an update to v8 might not be trivial.
-    # Only dev dependencies are (potentially) affected.
-    # https://github.com/advisories/GHSA-2g4f-4pwh-qvx6
-    - CVE-2025-69873
-
-    # https://github.com/advisories/GHSA-f886-m6hf-6m8v
-    - CVE-2026-33750
   ignoreGhsas:
-    # Affects uuid, which is only a dependency of our integration test setup.
+    # Affects uuid, which is only a dependency of our integration test setup. CVE-2026-41907
     - GHSA-w5hq-g745-h8pq
+    # https://github.com/advisories/GHSA-f886-m6hf-6m8v, CVE-2026-33750
+    - GHSA-f886-m6hf-6m8v
 
 allowUnusedPatches: true
-ignorePatchFailures: false
 patchedDependencies: {}
 
 peerDependencyRules:
@@ -170,13 +162,11 @@ peerDependencyRules:
     # See overrides
     "fdir>picomatch": "*"
 
-onlyBuiltDependencies:
-  - "@parcel/watcher"
-  - esbuild
-
-ignoredBuiltDependencies:
+allowBuilds:
+  "@parcel/watcher": true
+  esbuild: true
   # Seems to work fine without building
-  - unrs-resolver
+  unrs-resolver: false
 
 # Workaround for current problems regarding our vite plugin + vite's optimizeDeps feature
 shamefullyHoist: true
