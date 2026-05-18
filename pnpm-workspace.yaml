@@ -100,7 +100,6 @@ minimumReleaseAge: 4320 # 3 days in minutes
 minimumReleaseAgeExclude:
   - "@open-pioneer/*"
   - "@conterra/*"
-  - "vite@7.3.2"
 
 overrides:
   # https://github.com/advisories/GHSA-7h2j-956f-4vf2
@@ -142,8 +141,6 @@ overrides:
 
 auditConfig:
   ignoreGhsas:
-    # Affects uuid, which is only a dependency of our integration test setup. CVE-2026-41907
-    - GHSA-w5hq-g745-h8pq
     # https://github.com/advisories/GHSA-f886-m6hf-6m8v, CVE-2026-33750
     - GHSA-f886-m6hf-6m8v
 
@@ -167,6 +164,8 @@ allowBuilds:
   esbuild: true
   # Seems to work fine without building
   unrs-resolver: false
+
+trustPolicy: no-downgrade
 
 # Workaround for current problems regarding our vite plugin + vite's optimizeDeps feature
 shamefullyHoist: true
