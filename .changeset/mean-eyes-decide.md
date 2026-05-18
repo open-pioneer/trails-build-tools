@@ -2,4 +2,5 @@
 "@open-pioneer/vite-plugin-pioneer": minor
 ---
 
-Implement hot reloading for i18n messages (if used from react components).
+Add codegen support for hot reloading of i18n message during development.
+HMR of i18n messages requires the latest version of the runtime package.
