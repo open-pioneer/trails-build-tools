@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { resolve } from "node:path";
-import { build } from "vite";
-import { pioneer, PioneerPluginOptions } from "..";
 import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { build, Logger } from "vite";
+import { pioneer, PioneerPluginOptions } from "..";
 
 export const PACKAGE_DIR = resolve(fileURLToPath(import.meta.url), "../../..");
 export const TEST_DATA_DIR = resolve(PACKAGE_DIR, "test-data");
@@ -21,6 +21,27 @@ export async function runViteBuild(options: {
     pluginOptions: PioneerPluginOptions;
     baseUrl?: string;
 }) {
+    const messages: string[] = [];
+    const logger: Logger = {
+        info() {},
+        warn(msg: string) {
+            messages.push(msg);
+        },
+        error(msg: string) {
+            messages.push(msg);
+        },
+        clearScreen() {},
+        hasErrorLogged() {
+            return false;
+        },
+        warnOnce(msg: string) {
+            messages.push(msg);
+        },
+        get hasWarned() {
+            return messages.length > 0;
+        }
+    };
+
     await build({
         root: options.rootDir,
 
@@ -31,7 +52,7 @@ export async function runViteBuild(options: {
             minify: false,
             outDir: options.outDir,
             emptyOutDir: true,
-            rollupOptions: {
+            rolldownOptions: {
                 // Don't log warnings during tests
                 onwarn() {
                     void 0;
@@ -43,6 +64,10 @@ export async function runViteBuild(options: {
                     if (/^@open-pioneer\/runtime\//.test(id)) {
                         return true;
                     }
+                },
+                experimental: {
+                    // hide region comments like "//#region ./path/to/file"
+                    attachDebugInfo: "none"
                 }
             }
         },
@@ -50,11 +75,7 @@ export async function runViteBuild(options: {
         css: {
             preprocessorOptions: {
                 scss: {
-                    silenceDeprecations: [
-                        // https://github.com/vitejs/vite/issues/18164
-                        "legacy-js-api",
-                        "import"
-                    ]
+                    silenceDeprecations: ["import"]
                 }
             }
         },
@@ -66,7 +87,7 @@ export async function runViteBuild(options: {
                 config(_config, _env) {
                     return {
                         build: {
-                            rollupOptions: {
+                            rolldownOptions: {
                                 output: {
                                     chunkFileNames(_info) {
                                         // Reliable filenames for tests
@@ -80,6 +101,11 @@ export async function runViteBuild(options: {
             }
         ],
 
-        logLevel: "silent"
+        logLevel: "warn",
+        customLogger: logger
     });
+
+    if (messages.length > 0) {
+        throw new Error(`Unexpected warnings logged by vite:\n` + messages.join("\n"));
+    }
 }
