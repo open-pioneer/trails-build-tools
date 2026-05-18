@@ -173,7 +173,9 @@ export function codegenPlugin(): VitePlugin {
                             loadI18n: async (pkg, filePath) => {
                                 ctx.addWatchFile(filePath);
                                 if (!(await fileExists(filePath))) {
-                                    throw new ReportableError(`XXXX`);
+                                    throw new ReportableError(
+                                        `I18n file at ${filePath} does not exist.`
+                                    );
                                 }
                                 return repository.getI18nFile(ctx, filePath);
                             }
