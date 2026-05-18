@@ -1,5 +1,38 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 6.0.0
+
+### Major Changes
+
+- a13823e: Update to Vite 8 (support for Vite 7 is dropped).
+
+### Minor Changes
+
+- 9dda91c: Support a new virtual module to get the current deployment's base URL both during development and production:
+
+    ```ts
+    import { baseUrl } from "open-pioneer:deployment";
+
+    // Base URL of the deployed application, for example:
+    // - http://localhost:5173/ or http://localhost:5173/optional/path/ (during development)
+    // - https://example.com/path/to/root/ (during production)
+    console.log(baseUrl);
+    ```
+
+- 18c9d75: Add codegen support for hot reloading of i18n message during development.
+  HMR of i18n messages requires the latest version of the runtime package.
+- 9dda91c: Support for package metadata version `1.1.0`.
+
+### Patch Changes
+
+- b49be74: Bump dependencies
+- 9dda91c: Improve error message when the plugin encounters an unsupported package metadata version.
+- Updated dependencies [b49be74]
+- Updated dependencies [9dda91c]
+- Updated dependencies [9dda91c]
+- Updated dependencies [9dda91c]
+    - @open-pioneer/build-common@4.0.0
+
 ## 5.1.2
 
 ### Patch Changes
