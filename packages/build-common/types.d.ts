@@ -3,6 +3,9 @@
 export { BuildConfig } from "@open-pioneer/build-support";
 import { BuildConfig } from "@open-pioneer/build-support";
 
+// eslint-disable-next-line unused-imports/no-unused-vars
+declare const VALIDATED_RUNTIME_VERSION: unique symbol;
+
 export namespace RuntimeSupport {
     export type VirtualModuleType = "app" | "react-hooks" | "source-info" | "deployment";
 
@@ -35,6 +38,45 @@ export namespace RuntimeSupport {
      * `relativeModulePath` is the path of the module relative to the package root.
      */
     export function generateSourceInfo(packageName: string, relativeModulePath: string): string;
+
+    /**
+     * A runtime version that we know we can support.
+     */
+    export type RuntimeMetadataVersion = string & { __brand: typeof VALIDATED_RUNTIME_VERSION };
+
+    export type RuntimeValidationError = {
+        code: "invalid-version" | "unsupported-version";
+        error?: Error;
+    };
+
+    /**
+     * The default runtime version if none is specified.
+     * For backwards compatibility.
+     */
+    const DEFAULT_METADATA_VERSION: RuntimeMetadataVersion;
+
+    /**
+     * Current major version supported by this tool.
+     */
+    const CURRENT_METADATA_MAJOR: RuntimeMetadataVersion;
+
+    /**
+     * Returns the parsed runtime version if the code generation can support it, otherwise `undefined`.
+     */
+    export function getSupportedRuntimeMetadataVersion(
+        runtimeMetadataVersion: string
+    ): RuntimeMetadataVersion | RuntimeValidationError;
+
+    export interface RuntimePackageFeatures {
+        supportsMessageBox: boolean;
+    }
+
+    /**
+     * Returns features of the given runtime version that can be used by the code generator.
+     */
+    export function getRuntimeFeatures(
+        runtimeVersion: RuntimeMetadataVersion
+    ): RuntimePackageFeatures;
 }
 
 /**
@@ -67,6 +109,10 @@ export namespace PackageMetadataV1 {
      */
     export const PACKAGE_JSON_KEY: "openPioneerFramework";
 
+    export interface RuntimeMeta {
+        metadataVersion?: Nullish<string>;
+    }
+
     /**
      * Framework metadata for a package.
      */
@@ -91,6 +137,9 @@ export namespace PackageMetadataV1 {
 
         /** Properties defined by the package. */
         properties?: Nullish<PropertyConfig[]>;
+
+        /** Runtime package metadata. Only supported on the runtime package. */
+        runtimeMeta?: Nullish<RuntimeMeta>;
     }
 
     /**
@@ -243,6 +292,12 @@ export interface PackageConfig {
      * This is undefined if the package does not use the 'overrides' property.
      */
     overrides: Map<string, PackageOverrides> | undefined;
+
+    /** Optional runtime metadata set by the package. */
+    runtimeMeta?: {
+        /** The metadata version supported by the package. */
+        metadataVersion?: string;
+    };
 }
 
 /** Internal representation of a service. */

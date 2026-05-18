@@ -1,69 +1,71 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 import { BuildConfig } from "@open-pioneer/build-support";
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import {
     createPackageConfigFromBuildConfig,
     createPackageConfigFromPackageMetadata,
     PackageMetadataV1 as V1
 } from "../..";
 
-describe("packageConfig", function () {
-    it("maps build.config.mjs contents to internal representation", function () {
-        const buildConfig: BuildConfig = {
-            services: {
-                A: {
-                    provides: [
-                        "foo",
-                        {
-                            name: "bar",
-                            qualifier: "baz"
-                        }
-                    ],
-                    references: {
-                        r1: "i1",
-                        r2: {
-                            name: "i2",
-                            qualifier: "q",
-                            all: true
-                        }
-                    }
-                }
-            },
-            i18n: ["x", "y"],
-            styles: "./my-styles.scss",
-            servicesModule: "./my-services",
-            ui: {
-                references: [
-                    "i1",
+it("maps build.config.mjs contents to internal representation", function () {
+    const buildConfig: BuildConfig = {
+        services: {
+            A: {
+                provides: [
+                    "foo",
                     {
+                        name: "bar",
+                        qualifier: "baz"
+                    }
+                ],
+                references: {
+                    r1: "i1",
+                    r2: {
                         name: "i2",
                         qualifier: "q",
                         all: true
                     }
-                ]
-            },
-            properties: {
-                x: 123,
-                y: null
-            },
-            propertiesMeta: {
-                x: {
-                    required: true
                 }
-            },
-            overrides: {
-                otherPackage: {
-                    services: {
-                        otherService: {
-                            enabled: false
-                        }
+            }
+        },
+        i18n: ["x", "y"],
+        styles: "./my-styles.scss",
+        servicesModule: "./my-services",
+        ui: {
+            references: [
+                "i1",
+                {
+                    name: "i2",
+                    qualifier: "q",
+                    all: true
+                }
+            ]
+        },
+        properties: {
+            x: 123,
+            y: null
+        },
+        propertiesMeta: {
+            x: {
+                required: true
+            }
+        },
+        overrides: {
+            otherPackage: {
+                services: {
+                    otherService: {
+                        enabled: false
                     }
                 }
             }
-        };
-        const packageConfig = createPackageConfigFromBuildConfig(buildConfig);
-        expect(packageConfig).toMatchInlineSnapshot(`
+        },
+        runtimeMeta: {
+            metadataVersion: "1.1.1234"
+        }
+    };
+    const packageConfig = createPackageConfigFromBuildConfig(buildConfig);
+    expect(packageConfig).toMatchInlineSnapshot(`
           {
             "languages": Set {
               "x",
@@ -91,6 +93,9 @@ describe("packageConfig", function () {
                 "propertyName": "y",
                 "required": false,
               },
+            },
+            "runtimeMeta": {
+              "metadataVersion": "1.1.1234",
             },
             "services": Map {
               "A" => {
@@ -137,134 +142,139 @@ describe("packageConfig", function () {
             ],
           }
         `);
-    });
+});
 
-    it("maps package metadata to internal representation", function () {
-        const metadata: V1.PackageMetadata = {
-            packageFormatVersion: "1.0.0",
-            services: [
-                {
-                    serviceName: "A",
-                    provides: [
-                        {
-                            interfaceName: "foo",
-                            qualifier: undefined
-                        },
-                        {
-                            interfaceName: "bar",
-                            qualifier: "baz"
-                        }
-                    ],
-                    references: [
-                        {
-                            interfaceName: "i1",
-                            referenceName: "r1",
-                            type: "unique"
-                        },
-                        {
-                            interfaceName: "i2",
-                            qualifier: "q",
-                            referenceName: "r2",
-                            type: "all"
-                        }
-                    ]
-                }
-            ],
-            ui: {
+it("maps package metadata to internal representation", function () {
+    const metadata: V1.PackageMetadata = {
+        packageFormatVersion: "1.0.0",
+        services: [
+            {
+                serviceName: "A",
+                provides: [
+                    {
+                        interfaceName: "foo",
+                        qualifier: undefined
+                    },
+                    {
+                        interfaceName: "bar",
+                        qualifier: "baz"
+                    }
+                ],
                 references: [
                     {
                         interfaceName: "i1",
+                        referenceName: "r1",
                         type: "unique"
                     },
                     {
                         interfaceName: "i2",
                         qualifier: "q",
+                        referenceName: "r2",
                         type: "all"
                     }
                 ]
-            },
-            servicesModule: "./my-services",
-            styles: "./my-styles.scss",
-            i18n: {
-                languages: ["x", "y"]
-            },
-            properties: [
+            }
+        ],
+        ui: {
+            references: [
                 {
-                    defaultValue: 123,
-                    propertyName: "x",
-                    required: true
+                    interfaceName: "i1",
+                    type: "unique"
                 },
                 {
-                    defaultValue: null,
-                    propertyName: "y",
-                    required: false
+                    interfaceName: "i2",
+                    qualifier: "q",
+                    type: "all"
                 }
             ]
-        };
-        const packageConfig = createPackageConfigFromPackageMetadata(metadata);
-        expect(packageConfig).toMatchInlineSnapshot(`
-          {
-            "languages": Set {
-              "x",
-              "y",
+        },
+        servicesModule: "./my-services",
+        styles: "./my-styles.scss",
+        i18n: {
+            languages: ["x", "y"]
+        },
+        properties: [
+            {
+                defaultValue: 123,
+                propertyName: "x",
+                required: true
             },
-            "overrides": undefined,
-            "properties": Map {
-              "x" => {
-                "defaultValue": 123,
-                "propertyName": "x",
-                "required": true,
-              },
-              "y" => {
-                "defaultValue": null,
-                "propertyName": "y",
-                "required": false,
-              },
-            },
-            "services": Map {
-              "A" => {
-                "provides": [
-                  {
-                    "interfaceName": "foo",
-                    "qualifier": "foo",
-                  },
-                  {
-                    "interfaceName": "bar",
-                    "qualifier": "bar",
-                  },
-                ],
-                "references": Map {
-                  "r1" => {
-                    "interfaceName": "i1",
-                    "qualifier": undefined,
-                    "referenceName": "r1",
-                    "type": "unique",
-                  },
-                  "r2" => {
-                    "interfaceName": "i2",
-                    "qualifier": "q",
-                    "referenceName": "r2",
-                    "type": "all",
-                  },
-                },
-                "serviceName": "A",
-              },
-            },
-            "servicesModule": "./my-services",
-            "styles": "./my-styles.scss",
-            "uiReferences": [
+            {
+                defaultValue: null,
+                propertyName: "y",
+                required: false
+            }
+        ],
+        runtimeMeta: {
+            metadataVersion: "1.2.456"
+        }
+    };
+    const packageConfig = createPackageConfigFromPackageMetadata(metadata);
+    expect(packageConfig).toMatchInlineSnapshot(`
+      {
+        "languages": Set {
+          "x",
+          "y",
+        },
+        "overrides": undefined,
+        "properties": Map {
+          "x" => {
+            "defaultValue": 123,
+            "propertyName": "x",
+            "required": true,
+          },
+          "y" => {
+            "defaultValue": null,
+            "propertyName": "y",
+            "required": false,
+          },
+        },
+        "runtimeMeta": {
+          "metadataVersion": "1.2.456",
+        },
+        "services": Map {
+          "A" => {
+            "provides": [
               {
-                "interfaceName": "i1",
-                "qualifier": undefined,
-                "type": "unique",
+                "interfaceName": "foo",
+                "qualifier": "foo",
               },
               {
-                "interfaceName": "i2",
-                "qualifier": "q",
-                "type": "all",
+                "interfaceName": "bar",
+                "qualifier": "bar",
               },
             ],
-          }
-        `);
-    });
+            "references": Map {
+              "r1" => {
+                "interfaceName": "i1",
+                "qualifier": undefined,
+                "referenceName": "r1",
+                "type": "unique",
+              },
+              "r2" => {
+                "interfaceName": "i2",
+                "qualifier": "q",
+                "referenceName": "r2",
+                "type": "all",
+              },
+            },
+            "serviceName": "A",
+          },
+        },
+        "servicesModule": "./my-services",
+        "styles": "./my-styles.scss",
+        "uiReferences": [
+          {
+            "interfaceName": "i1",
+            "qualifier": undefined,
+            "type": "unique",
+          },
+          {
+            "interfaceName": "i2",
+            "qualifier": "q",
+            "type": "all",
+          },
+        ],
+      }
+    `);
 });

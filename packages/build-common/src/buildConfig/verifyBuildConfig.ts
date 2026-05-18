@@ -82,6 +82,10 @@ const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
     packageFormatTarget: PACKAGE_FORMAT_TARGETS_SCHEMA.optional()
 });
 
+const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<BuildConfig["runtimeMeta"]> = z.object({
+    metadataVersion: z.string().optional()
+});
+
 const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     entryPoints: z.string().or(z.string().array()).optional(),
     styles: z.string().optional(),
@@ -92,7 +96,8 @@ const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     properties: z.record(z.string(), JSON_SCHEMA).optional(),
     propertiesMeta: z.record(z.string(), PROPERTY_META_SCHEMA).optional(),
     overrides: z.record(z.string(), PACKAGE_OVERRIDES_SCHEMA).optional(),
-    publishConfig: PUBLISH_CONFIG_SCHEMA.optional()
+    publishConfig: PUBLISH_CONFIG_SCHEMA.optional(),
+    runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.optional()
 });
 
 const ERROR_MAP = createErrorMap();
@@ -108,5 +113,6 @@ export const verifyBuildConfig: VerifyBuildConfig = function verifyBuildConfig(v
     if (result.success) {
         return result.data;
     }
+
     throw fromZodError(result.error);
 };

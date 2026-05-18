@@ -1,0 +1,6 @@
+{
+    "name": "test-app",
+    "dependencies": {
+        "i18n1": "*"
+    }
+}
