@@ -146,6 +146,12 @@ auditConfig:
     # https://github.com/advisories/GHSA-f886-m6hf-6m8v, CVE-2026-33750
     - GHSA-f886-m6hf-6m8v
 
+    # https://github.com/advisories/GHSA-w5hq-g745-h8pq, CVE-2026-41907
+    - GHSA-w5hq-g745-h8pq
+
+    # https://github.com/advisories/GHSA-qjx8-664m-686j, CVE-2026-46625
+    - GHSA-qjx8-664m-686j
+
 allowUnusedPatches: true
 patchedDependencies: {}
 
