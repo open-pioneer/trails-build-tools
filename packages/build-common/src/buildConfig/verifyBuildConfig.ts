@@ -75,6 +75,8 @@ const PACKAGE_FORMAT_TARGETS_SCHEMA = z.enum([...MINOR_VERSIONS]) as z.ZodType<P
 
 const PUBLISH_CONFIG_SCHEMA: z.ZodType<PublishConfig> = z.strictObject({
     assets: z.string().or(z.array(z.string())).optional(),
+    licenseFile: z.string().optional(),
+    noticeFile: z.string().optional(),
     types: z.boolean().optional(),
     sourceMaps: z.boolean().optional(),
     strict: z.boolean().optional(),
