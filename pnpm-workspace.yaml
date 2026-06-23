@@ -108,7 +108,7 @@ overrides:
   "@formatjs/intl@2.10.15>typescript": "*"
 
   # https://github.com/advisories/GHSA-h67p-54hq-rp68, CVE-2026-53550
-  "js-yaml@<=4.1.1": "^4.1.2"
+  "js-yaml@>=4.0.0 <=4.1.1": "^4.1.2"
 
 auditConfig:
   ignoreGhsas:
@@ -117,6 +117,9 @@ auditConfig:
 
     # https://github.com/advisories/GHSA-qjx8-664m-686j, CVE-2026-46625
     - GHSA-qjx8-664m-686j
+
+    # https://github.com/advisories/GHSA-h67p-54hq-rp68, CVE-2026-53550
+    - GHSA-h67p-54hq-rp68
 
 allowUnusedPatches: true
 patchedDependencies: {}
