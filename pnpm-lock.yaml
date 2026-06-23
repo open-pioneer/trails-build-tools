@@ -76,8 +76,8 @@ catalogs:
       specifier: ^5.6.2
       version: 5.6.2
     commander:
-      specifier: ^14.0.3
-      version: 14.0.3
+      specifier: ^15.0.0
+      version: 15.0.0
     debug:
       specifier: ^4.4.3
       version: 4.4.3
@@ -497,7 +497,7 @@ importers:
         version: 5.6.2
       commander:
         specifier: 'catalog:'
-        version: 14.0.3
+        version: 15.0.0
     devDependencies:
       build-tools:
         specifier: workspace:*
@@ -536,7 +536,7 @@ importers:
         version: 5.6.2
       commander:
         specifier: 'catalog:'
-        version: 14.0.3
+        version: 15.0.0
       js-yaml:
         specifier: 'catalog:'
         version: 4.2.0
@@ -2562,9 +2562,9 @@ packages:
   color2k@2.0.3:
     resolution: {integrity: sha512-zW190nQTIoXcGCaU08DvVNFTmQhUpnJfVuAKfWqUQkflXKpaDdpaYoM0iluLS9lgJNHyBF58KKA2FBEwkD7wog==}
 
-  commander@14.0.3:
-    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
-    engines: {node: '>=20'}
+  commander@15.0.0:
+    resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
+    engines: {node: '>=22.12.0'}
 
   comver-to-semver@2.0.0:
     resolution: {integrity: sha512-4pxiLt2bXHe5BDrolTJs9wfwwT0pPQPQxeUj+X6SKTCkpi8VwvOvgMzohTVVDLXHmAjrZuKEq+tyb0C5zzTSxw==}
@@ -6518,7 +6518,7 @@ snapshots:
 
   color2k@2.0.3: {}
 
-  commander@14.0.3: {}
+  commander@15.0.0: {}
 
   comver-to-semver@2.0.0: {}
 
