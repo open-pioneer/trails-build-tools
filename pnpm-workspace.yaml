@@ -7,9 +7,9 @@ packages:
   - "!**/__snapshots/**"
 
 catalog:
-  "@babel/generator": ^7.29.7
-  "@babel/template": ^7.29.7
-  "@babel/types": ^7.29.7
+  "@babel/generator": ^8.0.0
+  "@babel/template": ^8.0.0
+  "@babel/types": ^8.0.0
   "@pnpm/lockfile.fs": ^1100.1.6
   "@pnpm/lockfile.utils": ^1100.0.13
   "@pnpm/lockfile.walker": ^1100.0.11
