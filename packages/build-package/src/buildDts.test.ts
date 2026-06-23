@@ -60,7 +60,7 @@ describe(
               "export interface GreetingProps {
                   message: string;
               }
-              export declare function Greeting({ message }: GreetingProps): import("react/jsx-runtime").JSX.Element;
+              export declare function Greeting({ message }: GreetingProps): import("react").JSX.Element;
               "
             `);
             expect(defaults.logger.messages).toHaveLength(0);

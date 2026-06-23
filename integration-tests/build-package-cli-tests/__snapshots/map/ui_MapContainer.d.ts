@@ -47,4 +47,4 @@ export interface MapContainerProps extends CommonComponentProps {
  *
  * There can only be at most one MapContainer for every map.
  */
-export declare function MapContainer(props: MapContainerProps): import("react/jsx-runtime").JSX.Element;
+export declare function MapContainer(props: MapContainerProps): import("react").JSX.Element;
