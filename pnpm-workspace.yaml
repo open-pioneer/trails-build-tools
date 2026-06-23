@@ -107,6 +107,9 @@ overrides:
   "@open-pioneer/runtime": "2.2.0"
   "@formatjs/intl@2.10.15>typescript": "*"
 
+  # https://github.com/advisories/GHSA-h67p-54hq-rp68, CVE-2026-53550
+  "js-yaml@<=4.1.1": "^4.1.2"
+
 auditConfig:
   ignoreGhsas:
     # https://github.com/advisories/GHSA-w5hq-g745-h8pq, CVE-2026-41907
