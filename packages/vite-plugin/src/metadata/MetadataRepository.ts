@@ -37,37 +37,40 @@ interface I18nEntry {
     watchFiles: ReadonlySet<string>;
 }
 
+// Key: package directory on disk, value: existing metadata
+type PackageMetadataCache = Cache<
+    string,
+    MetadataEntry,
+    [ctx: MetadataContext, importedFrom: string | undefined]
+>;
+
 /**
  * Provides metadata about apps and packages.
  * Metadata is read from disk on demand and will then be cached
  * until one of the file dependencies has changed.
  */
 export class MetadataRepository {
-    private sourceRoot: string;
+    #sourceRoot: string;
 
     // Key: package directory on disk, value: existing metadata
-    private packageMetadataCache: Cache<
-        string,
-        MetadataEntry,
-        [ctx: MetadataContext, importedFrom: string | undefined]
-    >;
+    #packageMetadataCache: PackageMetadataCache;
 
     // Cache for the contents of i18n files.
     // Key: path on disk.
-    private i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
+    #i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
 
     /**
      * @param sourceRoot Source folder on disk, needed to detect 'local' packages
      */
     constructor(sourceRoot: string) {
-        this.sourceRoot = sourceRoot;
-        this.packageMetadataCache = this.createPackageMetadataCache();
-        this.i18nCache = this.createI18nCache();
+        this.#sourceRoot = sourceRoot;
+        this.#packageMetadataCache = this.#createPackageMetadataCache();
+        this.#i18nCache = this.#createI18nCache();
     }
 
     reset() {
-        this.packageMetadataCache = this.createPackageMetadataCache();
-        this.i18nCache = this.createI18nCache();
+        this.#packageMetadataCache = this.#createPackageMetadataCache();
+        this.#i18nCache = this.#createI18nCache();
     }
 
     /**
@@ -76,9 +79,9 @@ export class MetadataRepository {
      */
     onFileChanged(path: string) {
         if (isPackageJson(path) || isBuildConfig(path)) {
-            this.packageMetadataCache.invalidate(dirname(path));
+            this.#packageMetadataCache.invalidate(dirname(path));
         }
-        this.i18nCache.invalidate(path);
+        this.#i18nCache.invalidate(path);
     }
 
     /**
@@ -91,7 +94,7 @@ export class MetadataRepository {
     async getAppMetadata(ctx: MetadataContext, appDirectory: string): Promise<AppMetadata> {
         isDebug && debug(`Request for app metadata of ${appDirectory}`);
 
-        const appPackageMetadata = await this.getPackageMetadata(ctx, {
+        const appPackageMetadata = await this.#getPackageMetadata(ctx, {
             type: "absolute",
             directory: appDirectory
         });
@@ -117,7 +120,7 @@ export class MetadataRepository {
             importedFrom: string
         ) => {
             const jobs = dependencies.map(async (dependency) => {
-                const packageMetadata = await this.getPackageMetadata(ctx, {
+                const packageMetadata = await this.#getPackageMetadata(ctx, {
                     type: "unresolved",
                     dependency,
                     importedFrom
@@ -167,20 +170,20 @@ export class MetadataRepository {
     /**
      * Returns package metadata associated with the given package.
      */
-    private async getPackageMetadata(
+    async #getPackageMetadata(
         ctx: MetadataContext,
         loc: PackageLocation
     ): Promise<PackageMetadata | undefined> {
         isDebug && debug(`Request for package metadata of ${formatPackageLocation(loc)}`);
 
-        const packageDir = await this.resolvePackageLocation(loc);
+        const packageDir = await this.#resolvePackageLocation(loc);
         if (!packageDir) {
             // Optional package does not exist
             return undefined;
         }
 
         const importedFrom = loc.type === "absolute" ? undefined : loc.importedFrom;
-        const entry = await this.packageMetadataCache.get(packageDir, ctx, importedFrom);
+        const entry = await this.#packageMetadataCache.get(packageDir, ctx, importedFrom);
         propagateWatchFiles(entry.watchFiles, ctx);
 
         if (entry.metadata.type === "plain") {
@@ -194,12 +197,12 @@ export class MetadataRepository {
      * Returns the parsed contents of the given i18n file.
      */
     async getI18nFile(ctx: MetadataContext, path: string): Promise<I18nFile> {
-        const { i18n, watchFiles } = await this.i18nCache.get(path, ctx);
+        const { i18n, watchFiles } = await this.#i18nCache.get(path, ctx);
         propagateWatchFiles(watchFiles, ctx);
         return i18n;
     }
 
-    private async resolvePackageLocation(loc: PackageLocation) {
+    async #resolvePackageLocation(loc: PackageLocation) {
         if (loc.type === "absolute") {
             return await realpath(loc.directory);
         }
@@ -223,7 +226,7 @@ export class MetadataRepository {
         return packageDir;
     }
 
-    private createI18nCache(): Cache<string, I18nEntry, [ctx: MetadataContext]> {
+    #createI18nCache(): Cache<string, I18nEntry, [ctx: MetadataContext]> {
         return new Cache({
             getId(path) {
                 return normalizePath(path);
@@ -251,8 +254,8 @@ export class MetadataRepository {
         });
     }
 
-    private createPackageMetadataCache(): typeof this.packageMetadataCache {
-        const sourceRoot = this.sourceRoot;
+    #createPackageMetadataCache(): PackageMetadataCache {
+        const sourceRoot = this.#sourceRoot;
         const provider = {
             _byName: new Map<string, PackageMetadata>(),
 

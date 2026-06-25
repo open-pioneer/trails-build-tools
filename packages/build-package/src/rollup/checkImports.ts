@@ -165,17 +165,17 @@ interface TrailsPackageInfo {
 }
 
 class CheckImportsState {
-    private rootDirectory: string;
-    private packageJson: Record<string, unknown>;
-    private packageJsonPath: string;
-    private strict: boolean;
-    private hasProblems = false;
+    #rootDirectory: string;
+    #packageJson: Record<string, unknown>;
+    #packageJsonPath: string;
+    #strict: boolean;
+    #hasProblems = false;
 
     // package name -> package is declared (or not)
-    private checkedDependencyDeclarations = new Map<string, boolean>();
+    #checkedDependencyDeclarations = new Map<string, boolean>();
 
     // package name -> trails info (or undefined, if no trails package)
-    private trailsInfoCache = new Map<
+    #trailsInfoCache = new Map<
         string,
         {
             result: TrailsPackageInfo | undefined;
@@ -184,7 +184,7 @@ class CheckImportsState {
     >();
 
     // module id -> file path and package metadata
-    private nodeModulesOnDisk = new Map<
+    #nodeModulesOnDisk = new Map<
         string,
         { path: string; packageInfo: NodeResolvePackageInfo | undefined }
     >();
@@ -195,10 +195,10 @@ class CheckImportsState {
         packageJsonPath: string,
         strict: boolean
     ) {
-        this.rootDirectory = rootDirectory;
-        this.packageJson = packageJson;
-        this.packageJsonPath = packageJsonPath;
-        this.strict = strict;
+        this.#rootDirectory = rootDirectory;
+        this.#packageJson = packageJson;
+        this.#packageJsonPath = packageJsonPath;
+        this.#strict = strict;
     }
 
     /**
@@ -238,7 +238,7 @@ class CheckImportsState {
             moduleId,
             parentId,
             warn: (warning: string) => {
-                this.hasProblems = true;
+                this.#hasProblems = true;
                 ctx.warn({ message: warning, id: parentId });
             },
             rewrite(id) {
@@ -246,17 +246,17 @@ class CheckImportsState {
             }
         };
 
-        if (!this.checkDependencyIsDeclared(packageName, importCtx)) {
+        if (!this.#checkDependencyIsDeclared(packageName, importCtx)) {
             return newModuleId;
         }
 
-        const trailsPackageInfo = await this.detectTrailsPackage(packageName);
+        const trailsPackageInfo = await this.#detectTrailsPackage(packageName);
         if (trailsPackageInfo) {
-            if (!this.checkTrailsPackageImport(importCtx, trailsPackageInfo, packageName)) {
+            if (!this.#checkTrailsPackageImport(importCtx, trailsPackageInfo, packageName)) {
                 return newModuleId;
             }
         } else {
-            if (!this.checkResolveResult(importCtx, resolveResult)) {
+            if (!this.#checkResolveResult(importCtx, resolveResult)) {
                 return newModuleId;
             }
         }
@@ -268,11 +268,11 @@ class CheckImportsState {
         path: string,
         packageInfo: NodeResolvePackageInfo | undefined
     ) {
-        this.nodeModulesOnDisk.set(id, { path, packageInfo });
+        this.#nodeModulesOnDisk.set(id, { path, packageInfo });
     }
 
     finish(ctx: PluginContext) {
-        if (this.strict && this.hasProblems) {
+        if (this.#strict && this.#hasProblems) {
             ctx.error({
                 message: "Aborting due to dependency problems (strict validation is enabled)."
             });
@@ -282,31 +282,28 @@ class CheckImportsState {
     /**
      * Emits an error if the given package is not listed as a dependency.
      */
-    private checkDependencyIsDeclared(packageName: string, importCtx: ImportContext): boolean {
-        const cachedValue = this.checkedDependencyDeclarations.get(packageName);
+    #checkDependencyIsDeclared(packageName: string, importCtx: ImportContext): boolean {
+        const cachedValue = this.#checkedDependencyDeclarations.get(packageName);
         if (cachedValue != null) {
             return cachedValue;
         }
 
-        const declared = isDeclaredDependency(packageName, this.packageJson);
+        const declared = isDeclaredDependency(packageName, this.#packageJson);
         isDebug && debug("Package %s is declared: %s", packageName, declared);
         if (!declared) {
             importCtx.warn(
                 `Failed to import '${importCtx.moduleId}', the package '${packageName}' must` +
-                    ` be configured either as a dependency or as a peerDependency in ${this.packageJsonPath}`
+                    ` be configured either as a dependency or as a peerDependency in ${this.#packageJsonPath}`
             );
         }
-        this.checkedDependencyDeclarations.set(packageName, declared);
+        this.#checkedDependencyDeclarations.set(packageName, declared);
         return declared;
     }
 
     /**
      * Checks the result of the node style resolution.
      */
-    private checkResolveResult(
-        importCtx: ImportContext,
-        resolveResult: ResolvedId | null
-    ): boolean {
+    #checkResolveResult(importCtx: ImportContext, resolveResult: ResolvedId | null): boolean {
         if (!resolveResult) {
             importCtx.warn(
                 `Failed to import '${importCtx.moduleId}'. If the module refers to a dependency, make sure that it is installed correctly in the node_modules directory.`
@@ -316,7 +313,7 @@ class CheckImportsState {
 
         // Check if the resolved module actually exists on disk.
         // If the module was resolved via nodeResolve, then the actual path is transported via meta attributes.
-        const { path: resolvedPath, packageInfo } = this.nodeModulesOnDisk.get(
+        const { path: resolvedPath, packageInfo } = this.#nodeModulesOnDisk.get(
             resolveResult.id
         ) ?? { path: resolveResult.id, packageInfo: undefined };
         if (resolvedPath.startsWith("\0") || !isAbsolute(resolvedPath)) {
@@ -369,7 +366,7 @@ class CheckImportsState {
      * We don't check that those files actually exist.
      * If they would not, _that_ package's build will fail.
      */
-    private checkTrailsPackageImport(
+    #checkTrailsPackageImport(
         importCtx: ImportContext,
         trailsInfo: TrailsPackageInfo,
         packageName: string
@@ -416,28 +413,26 @@ class CheckImportsState {
     /**
      * Checks whether the given package is a linked trails package during development.
      */
-    private async detectTrailsPackage(packageName: string): Promise<TrailsPackageInfo | undefined> {
-        let cacheEntry = this.trailsInfoCache.get(packageName);
+    async #detectTrailsPackage(packageName: string): Promise<TrailsPackageInfo | undefined> {
+        let cacheEntry = this.#trailsInfoCache.get(packageName);
         if (!cacheEntry) {
             cacheEntry = {
                 result: undefined,
-                promise: this.detectTrailsPackageImpl(packageName).then((result) => {
+                promise: this.#detectTrailsPackageImpl(packageName).then((result) => {
                     // We know this is initialized, see assignment above
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     cacheEntry!.result = result;
                 })
             };
-            this.trailsInfoCache.set(packageName, cacheEntry);
+            this.#trailsInfoCache.set(packageName, cacheEntry);
         }
 
         await cacheEntry.promise;
         return cacheEntry.result;
     }
 
-    private async detectTrailsPackageImpl(
-        packageName: string
-    ): Promise<TrailsPackageInfo | undefined> {
-        const thisPackageDir = dirname(this.packageJsonPath);
+    async #detectTrailsPackageImpl(packageName: string): Promise<TrailsPackageInfo | undefined> {
+        const thisPackageDir = dirname(this.#packageJsonPath);
         const importedPackageDir = join(thisPackageDir, "node_modules", packageName);
         if (!existsSync(importedPackageDir)) {
             isDebug && debug("Dependency %s does not exist in package's node_modules", packageName);
@@ -445,7 +440,7 @@ class CheckImportsState {
         }
 
         const realImportedPackageDir = realpathSync(importedPackageDir);
-        if (!isInDirectory(realImportedPackageDir, this.rootDirectory)) {
+        if (!isInDirectory(realImportedPackageDir, this.#rootDirectory)) {
             isDebug &&
                 debug(
                     "Skipping %s because is not in the root directory: %s",
