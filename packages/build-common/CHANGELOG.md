@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 4.0.1
+
+### Patch Changes
+
+- 78e38e2: Bump various dependencies
+
 ## 4.0.0
 
 ### Major Changes
