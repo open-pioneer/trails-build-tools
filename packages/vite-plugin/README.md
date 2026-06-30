@@ -2,8 +2,6 @@
 
 The vite plugin provided by this package is required by Open Pioneer Trails applications.
 
-This plugin supports vite `4.x` and `5.x`.
-
 Usage:
 
 ```js
