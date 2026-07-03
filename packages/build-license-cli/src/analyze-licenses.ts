@@ -17,12 +17,13 @@ import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/buil
  *
  * The `config` argument supports local overrides for packages that do not have their license detected properly.
  *
- * `thisDir` is the directory of the calling script, used to resolve "custom" file paths.
+ * `configDirectory` is the directory of the configuration file, used to resolve custom license files that are referenced
+ * in the YAML configuration.
  */
 export async function analyzeLicenses(
     reportJson: PnpmLicensesReport,
     config: LicenseConfig,
-    thisDir: string,
+    configDirectory: string,
     log: boolean
 ): Promise<{
     error: boolean;
@@ -80,7 +81,7 @@ export async function analyzeLicenses(
                 const basedir = ((file: FileSpec): string => {
                     switch (file.type) {
                         case "custom":
-                            return thisDir;
+                            return configDirectory;
                         case "package":
                             return path;
                     }
@@ -135,12 +136,12 @@ export async function analyzeLicenses(
 }
 
 /**
- * `thisDir` is the directory of the calling script, used to resolve "custom" file paths.
+ * `configDirectory` is the directory of the calling script, used to resolve "custom" file paths.
  */
 export async function getAdditionalLicenses(
     config: LicenseConfig,
     itemCount: number,
-    thisDir: string,
+    configDirectory: string,
     log: boolean
 ): Promise<{
     additionalError: boolean;
@@ -184,7 +185,7 @@ export async function getAdditionalLicenses(
             license.licenseFiles?.map((file) => {
                 if (file.type === "custom" && file.path) {
                     try {
-                        return readFileSync(resolve(thisDir, file.path), "utf-8");
+                        return readFileSync(resolve(configDirectory, file.path), "utf-8");
                     } catch (e) {
                         throw new Error(
                             `Failed to read license file for project ${name} at ${file.path}: ${e}`

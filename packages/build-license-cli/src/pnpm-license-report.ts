@@ -39,7 +39,7 @@ export async function getPnpmLicenseReport(
     }
 
     const processOutputLicense = await shell`pnpm ${args}`;
-    const result = await processOutputLicense.json();
+    const result = (await processOutputLicense.json()) as PnpmLicensesReport;
     return result;
 }
 

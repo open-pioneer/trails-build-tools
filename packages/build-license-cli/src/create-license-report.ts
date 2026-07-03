@@ -9,15 +9,6 @@ import { readLicenseConfig } from "./license-config";
 import { generateReportHtml } from "./license-report-template";
 import { getPnpmLicenseReport } from "./pnpm-license-report";
 
-/**
- * Generates a license report from the dependencies of this repository.
- * Should be invoked via `pnpm build-license-report` (or manually from the project root).
- *
- * The project name is read from the root `package.json` file.
- *
- * Outputs an html file to `dist/license-report.html`.
- */
-
 export async function createLicenseFile(options: LicenseOptions) {
     const logger = options.log ? await createConsoleLogger(console) : SILENT_LOGGER;
     const chalk = await getChalk();
@@ -32,7 +23,7 @@ export async function createLicenseFile(options: LicenseOptions) {
     if (!existsSync(configPath)) {
         throw new Error(`License config not found at: ${configPath}`);
     }
-    const configPathFolder = dirname(configPath);
+    const configPathDirectory = dirname(configPath);
     const outputHtmlPath = resolve(options.workingDir, options.outputHtmlPath);
 
     logger.info(
@@ -55,7 +46,7 @@ export async function createLicenseFile(options: LicenseOptions) {
     const { error, items } = await analyzeLicenses(
         reportJson,
         config,
-        configPathFolder,
+        configPathDirectory,
         options.log
     );
 
@@ -63,7 +54,7 @@ export async function createLicenseFile(options: LicenseOptions) {
     const { additionalError, additionalItems } = await getAdditionalLicenses(
         config,
         items.length,
-        configPathFolder,
+        configPathDirectory,
         options.log
     );
     const allItems = items.concat(additionalItems);
