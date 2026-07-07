@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`check help message 1`] = `
-"Usage: build-pioneer-license [options]
+"Usage: create-license-report [options]
 
 Create a license file for Open Pioneer Trails
 
