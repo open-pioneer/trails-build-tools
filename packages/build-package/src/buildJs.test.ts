@@ -667,6 +667,38 @@ it("checks that imports to other packages can be resolved at compile time", asyn
     );
 });
 
+it("checks that relative imports do not leave the package directory", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-illegal-relative-imports");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-illegal-relative-imports");
+    const entryPoints = normalize(["index"]);
+
+    const defaults = testDefaults();
+    const logger = defaults.logger;
+
+    await cleanDir(outputDirectory);
+    await expect(() =>
+        buildJs({
+            ...defaults,
+            packageDirectory,
+            outputDirectory,
+            entryPoints,
+            strict: true,
+            packageJson: {}
+        })
+    ).rejects.toMatchInlineSnapshot(
+        `[RollupError: [plugin check-imports] Aborting due to dependency problems (strict validation is enabled).]`
+    );
+
+    const messages = logger.messages.map((m) => m.args.join());
+    expect(messages).toHaveLength(2);
+    expect(messages).toEqual(
+        expect.arrayContaining([
+            expect.stringContaining("'../outside-package'"),
+            expect.stringContaining("'./../../outside-package-nested'")
+        ])
+    );
+});
+
 it("supports trails packages that import other linked trails packages (during development)", async function () {
     const rootDirectory = resolve(TEST_DATA_DIR, "project-with-valid-trails-neighbors");
     const packageDirectory = resolve(rootDirectory, "package");
