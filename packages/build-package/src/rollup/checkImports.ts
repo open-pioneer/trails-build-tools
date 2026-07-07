@@ -3,7 +3,7 @@
 import { BUILD_CONFIG_NAME, loadBuildConfig, RuntimeSupport } from "@open-pioneer/build-common";
 import { existsSync, realpathSync } from "fs";
 import { ErrnoException, resolve as importMetaResolve } from "import-meta-resolve";
-import { dirname, isAbsolute, join } from "path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { Plugin, PluginContext, ResolvedId } from "rollup";
 import { fileURLToPath, pathToFileURL } from "url";
 import { loadPackageJson } from "../model/InputModel";
@@ -15,6 +15,7 @@ import { getExportedName } from "../utils/entryPoints";
 export interface CheckImportsOptions {
     packageJson: Record<string, unknown>;
     packageJsonPath: string;
+    packageDirectory: string;
     rootDirectory: string;
     strict: boolean;
 }
@@ -53,6 +54,7 @@ interface NodeResolvePackageInfo {
 export function checkImportsPlugin({
     packageJson,
     packageJsonPath,
+    packageDirectory,
     rootDirectory,
     strict
 }: CheckImportsOptions): Plugin {
@@ -82,7 +84,13 @@ export function checkImportsPlugin({
                 );
             }
 
-            state = new CheckImportsState(rootDirectory, packageJson, packageJsonPath, strict);
+            state = new CheckImportsState(
+                rootDirectory,
+                packageJson,
+                packageJsonPath,
+                packageDirectory,
+                strict
+            );
         },
         buildEnd() {
             getState().finish(this);
@@ -90,7 +98,10 @@ export function checkImportsPlugin({
         },
         resolveId: {
             order: "pre",
+
             async handler(moduleId, parentId, options) {
+                const state = getState();
+
                 // Recursive invocation triggered by rollup's node resolve plugin.
                 // We allow the import but remap it to external, because node modules
                 // must not be bundled.
@@ -108,7 +119,7 @@ export function checkImportsPlugin({
                     // Cannot use rollup's meta mechanism because it is not propagated by the node-resolve plugin
                     // when making the module external.
                     const packageInfo = getPackageInfo(nodeResolveData.resolved.id);
-                    getState().registerNodeModuleLocation(
+                    state.registerNodeModuleLocation(
                         nodeResolveData.importee,
                         nodeResolveData.resolved.id,
                         packageInfo
@@ -119,14 +130,27 @@ export function checkImportsPlugin({
                     };
                 }
 
-                const result = await this.resolve(moduleId, parentId, options);
-                const importedPath = result?.id ?? moduleId;
-                if (!result || (result.external && !isAbsolute(result.id))) {
-                    const newModuleId = await getState().visitModuleId(
+                const moduleIdOkay = await state.visitUnresolvedModuleId(this, moduleId, parentId);
+                if (!moduleIdOkay) {
+                    // We reported a warning, but we act like we found the file to make sure that rollup
+                    // does not report any misleading follow-up errors for that file.
+                    return {
+                        id: moduleId,
+                        external: true
+                    };
+                }
+
+                const resolvedModule = await this.resolve(moduleId, parentId, options);
+                const importedPath = resolvedModule?.id ?? moduleId;
+                if (
+                    !resolvedModule ||
+                    (resolvedModule.external && !isAbsolute(resolvedModule.id))
+                ) {
+                    const newModuleId = await state.visitResolvedModuleId(
                         this,
                         importedPath,
                         parentId,
-                        result
+                        resolvedModule
                     );
                     if (newModuleId) {
                         isDebug && debug("Rewriting import %s to %s", importedPath, newModuleId);
@@ -136,7 +160,7 @@ export function checkImportsPlugin({
                         };
                     }
                 }
-                return result ?? false;
+                return resolvedModule ?? false;
             }
         }
     };
@@ -168,6 +192,7 @@ class CheckImportsState {
     #rootDirectory: string;
     #packageJson: Record<string, unknown>;
     #packageJsonPath: string;
+    #packageDirectory: string;
     #strict: boolean;
     #hasProblems = false;
 
@@ -193,12 +218,45 @@ class CheckImportsState {
         rootDirectory: string,
         packageJson: Record<string, unknown>,
         packageJsonPath: string,
+        packageDirectory: string,
         strict: boolean
     ) {
         this.#rootDirectory = rootDirectory;
         this.#packageJson = packageJson;
         this.#packageJsonPath = packageJsonPath;
+        this.#packageDirectory = packageDirectory;
         this.#strict = strict;
+    }
+
+    /**
+     * Called before a module has been resolved.
+     *
+     * - Relative imports must not escape the package directory
+     *
+     * Returns false if there was a problem with the imported module id.
+     */
+    async visitUnresolvedModuleId(
+        ctx: PluginContext,
+        moduleId: string,
+        parentId: string | undefined
+    ): Promise<boolean> {
+        if (/^\.?\.\//.test(moduleId)) {
+            if (!parentId) {
+                return true;
+            }
+
+            // Note: does not validate whether the file actually exists on disk (we don't care).
+            const resolvedPath = resolve(dirname(parentId), moduleId);
+            if (!isInDirectory(resolvedPath, this.#packageDirectory, true)) {
+                this.#emitWarning(
+                    ctx,
+                    `Relative import '${moduleId}' points outside the package`,
+                    parentId
+                );
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -207,7 +265,7 @@ class CheckImportsState {
      * - the package must be declared in the package.json as a dependency
      * - the module must actually exist on disk
      */
-    async visitModuleId(
+    async visitResolvedModuleId(
         ctx: PluginContext,
         moduleId: string,
         parentId: string | undefined,
@@ -238,8 +296,7 @@ class CheckImportsState {
             moduleId,
             parentId,
             warn: (warning: string) => {
-                this.#hasProblems = true;
-                ctx.warn({ message: warning, id: parentId });
+                this.#emitWarning(ctx, warning, parentId);
             },
             rewrite(id) {
                 newModuleId = id;
@@ -277,6 +334,11 @@ class CheckImportsState {
                 message: "Aborting due to dependency problems (strict validation is enabled)."
             });
         }
+    }
+
+    #emitWarning(ctx: PluginContext, message: string, parentId: string | undefined) {
+        this.#hasProblems = true;
+        ctx.warn({ message: message, id: parentId });
     }
 
     /**

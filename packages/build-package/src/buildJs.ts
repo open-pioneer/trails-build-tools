@@ -68,6 +68,7 @@ export async function buildJs({
             checkImportsPlugin({
                 packageJson,
                 packageJsonPath,
+                packageDirectory,
                 rootDirectory,
                 strict
             }),
