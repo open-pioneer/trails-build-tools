@@ -1,5 +1,19 @@
 # Changelog @open-pioneer/build-package
 
+## 4.3.0
+
+### Minor Changes
+
+- f7e6e6a: Implement strict validation for relative imports: imports that point outside the package directory are an error.
+
+### Patch Changes
+
+- 78e38e2: Bump various dependencies
+- 7d706a3: Refactor: use private javascript properties instead of typescript private keyword
+- Updated dependencies [78e38e2]
+    - @open-pioneer/build-common@4.0.1
+    - @open-pioneer/build-support@3.1.1
+
 ## 4.2.0
 
 ### Minor Changes
