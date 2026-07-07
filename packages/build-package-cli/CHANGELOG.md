@@ -1,5 +1,19 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 3.2.0
+
+### Minor Changes
+
+- f7e6e6a: Implement strict validation for relative imports: imports that point outside the package directory are an error.
+
+### Patch Changes
+
+- 78e38e2: Bump various dependencies
+- Updated dependencies [78e38e2]
+- Updated dependencies [f7e6e6a]
+- Updated dependencies [7d706a3]
+    - @open-pioneer/build-package@4.3.0
+
 ## 3.1.0
 
 ### Minor Changes

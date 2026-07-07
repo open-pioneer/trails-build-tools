@@ -106,8 +106,7 @@ export function checkImportsPlugin({
                 // We allow the import but remap it to external, because node modules
                 // must not be bundled.
                 const nodeResolveData = options?.custom?.["node-resolve"] as
-                    | NodeResolveData
-                    | undefined;
+                    NodeResolveData | undefined;
                 if (nodeResolveData) {
                     isDebug &&
                         debug(
