@@ -27,9 +27,9 @@ catalog:
   import-meta-resolve: ^4.2.0
   js-yaml: ^4.3.0
   oxc-resolver: ^11.23.0
+  oxfmt: ^0.57.0
   postcss-import: ^16.1.1
   postcss: ^8.5.16
-  prettier: ^3.9.4
   rollup-plugin-esbuild: ^6.2.1
   rollup: ^4.62.2
   rolldown: "^1.1.4"
