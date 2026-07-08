@@ -5,6 +5,13 @@ import { load as loadYaml } from "js-yaml";
 
 export interface LicenseConfig {
     allowedLicenses: string[];
+
+    /**
+     * Skip dev dependencies when creating the report.
+     * Defaults to `true` when not set in the config file (backwards compatible).
+     */
+    skipDevDependencies: boolean;
+
     overrideLicenses: OverrideLicenseEntry[] | undefined;
     additionalLicenses: AdditionalLicensesEntry[] | undefined;
 }
@@ -51,6 +58,7 @@ export interface FileSpec {
 
 interface RawLicenseConfig {
     allowedLicenses: string[];
+    skipDevDependencies?: boolean;
     overrideLicenses?: RawOverrideEntry[];
     additionalLicenses?: RawAdditionalEntry[];
 }
@@ -78,8 +86,15 @@ export function readLicenseConfig(path: string): LicenseConfig {
         const content = readFileSync(path, "utf-8");
         const rawConfig = loadYaml(content) as unknown as RawLicenseConfig;
 
+        const skipDevDependencies = rawConfig.skipDevDependencies;
+        if (skipDevDependencies !== undefined && typeof skipDevDependencies !== "boolean") {
+            throw new Error("Expected 'skipDevDependencies' to be a boolean");
+        }
+
         return {
             allowedLicenses: rawConfig.allowedLicenses,
+            // Default true for backwards compatibility with older license-config.yaml files.
+            skipDevDependencies: skipDevDependencies ?? true,
             overrideLicenses: rawConfig.overrideLicenses?.map(
                 (rawEntry): OverrideLicenseEntry => ({
                     name: rawEntry.name,

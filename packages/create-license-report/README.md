@@ -18,7 +18,6 @@ Options:
   -c, --config <path>       path to the license config file (default: "support/license-config.yaml")
   -p, --packageJson <path>  path to the package.json (default: "package.json")
   -o, --output <path>       path to the result file (default: "dist/license-report.html")
-  -d, --dev                 include dev dependencies (default: false)
   -q, --silent              disable logging (default: false)
   -x, --debug               show exception stack traces (default: false)
   -V, --version             output the version number
@@ -48,6 +47,9 @@ allowedLicenses:
     - "Apache-2.0"
     - "MIT"
 
+# Skip dev dependencies in the report. Optional, defaults to `true`.
+skipDevDependencies: true
+
 overrideLicenses:
     - name: "package-a"
       version: "1.0.0"
@@ -63,6 +65,8 @@ additionalLicenses:
 The allowed licenses are the licenses that are allowed for the dependencies. If a dependency has a license that is not in the allowed licenses, it will be reported
 and the build will fail. The override licenses can be used to override the license of a dependency. This is useful if the license cannot be automatically detected.
 The additional licenses can be used to add additional licenses that are not automatically detected. This is useful for packages that do not have a license file or a license field in their package.json.
+
+`skipDevDependencies` controls whether dev dependencies are excluded from the report. It defaults to `true` when omitted, so older `license-config.yaml` files keep their previous behavior.
 
 ## License
 

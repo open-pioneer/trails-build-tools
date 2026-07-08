@@ -17,7 +17,6 @@ it("expect to create a license html without dev and additional deps", async () =
     const htmlOutput = resolve(TEMP_PATH, "test-a.html");
 
     await createLicenseReport({
-        dev: false,
         ignoreWorkspace: true,
         log: false,
         outputHtmlPath: htmlOutput,
@@ -41,7 +40,6 @@ it("expect to fail with a missing license", async () => {
 
     try {
         await createLicenseReport({
-            dev: false,
             ignoreWorkspace: true,
             log: true,
             outputHtmlPath: htmlOutput,
@@ -65,11 +63,10 @@ it("expect to fail with a missing license", async () => {
 });
 
 it("expect to create a license html with dev but without additional dependencies", async () => {
-    const config = resolve(TEMP_PATH, "license-config.yaml");
+    const config = resolve(TEMP_PATH, "license-config-dev.yaml");
     const htmlOutput = resolve(TEMP_PATH, "test-abc.html");
 
     await createLicenseReport({
-        dev: true,
         ignoreWorkspace: true,
         log: false,
         outputHtmlPath: htmlOutput,
@@ -90,7 +87,6 @@ it("expect to create a license html with dev and additional dependencies", async
     const htmlOutput = resolve(TEMP_PATH, "test-abc.html");
 
     await createLicenseReport({
-        dev: true,
         ignoreWorkspace: true,
         log: false,
         outputHtmlPath: htmlOutput,

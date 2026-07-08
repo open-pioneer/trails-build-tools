@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export interface LicenseOptions {
-    dev: boolean;
     log: boolean;
     /** Path to the `license-config.yaml` file. */
     configPath: string;

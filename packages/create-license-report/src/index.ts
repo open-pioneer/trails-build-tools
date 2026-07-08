@@ -19,7 +19,6 @@ program
     )
     .option("-c, --config <path>", "path to the license config file", LICENSE_CONFIG)
     .option("-o, --output <path>", "path to the result file", OUTPUT_HTML)
-    .option("-d, --dev", "include dev dependencies", false)
     .option("-i, --ignore-workspace", "ignore the workspace, only look at the lock file", false)
     .option("-q, --silent", "disable logging", false)
     .option("-x, --debug", "show exception stack traces", false)
@@ -35,7 +34,6 @@ async function main() {
             configPath: opts.config,
             workingDir: workingDir,
             outputHtmlPath: opts.output,
-            dev: opts.dev,
             log: !opts.silent,
             ignoreWorkspace: opts.ignoreWorkspace
         });

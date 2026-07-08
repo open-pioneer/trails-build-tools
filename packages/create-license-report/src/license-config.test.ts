@@ -17,6 +17,7 @@ it("expect to read license config", async () => {
           "MIT",
         ],
         "overrideLicenses": undefined,
+        "skipDevDependencies": true,
       }
     `);
 });
@@ -54,6 +55,7 @@ it("expect to read license config with all attributes", async () => {
             "version": "0.0.1",
           },
         ],
+        "skipDevDependencies": false,
       }
     `);
 });

@@ -38,7 +38,7 @@ export async function createLicenseReport(options: LicenseOptions) {
     // Invoke pnpm to gather dependency information.
     const reportJson = await getPnpmLicenseReport(
         options.workingDir,
-        options.dev,
+        !config.skipDevDependencies,
         options.ignoreWorkspace
     );
 
