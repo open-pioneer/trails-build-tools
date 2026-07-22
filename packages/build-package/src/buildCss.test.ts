@@ -65,13 +65,16 @@ describe("buildCss", function () {
           @import "bar.css" (min-width: 25em);
           @import "baz.css" layer(baz-layer);
           /* This import must not be bundled because it points to an external dependency */
+
           .foo {
               color: white;
           }
+
           /* 
               From postcss-import examples.
               None of these should be bundled.
           */
+
           .main {
               padding: 1;
           }
@@ -173,6 +176,7 @@ describe("buildCss", function () {
           body {
             height: 100%;
           }
+
           .a .b-c {
             color: green;
           }"
@@ -209,15 +213,18 @@ describe("buildCss", function () {
           @import url(foo-1.css);
           @import url("foo-2.css");
           @import "bar.css" (min-width: 25em);
+
           .from-local-css-module {
               color: white;
           }
           .from-local-sass-module {
             color: white;
           }
+
           .from-external-sass-module {
             color: green;
           }
+
           .main {
             padding: 1;
           }"
@@ -248,6 +255,7 @@ describe("buildCss", function () {
           body {
             height: 100%;
           }
+
           .a .b-c {
             color: green;
           }
