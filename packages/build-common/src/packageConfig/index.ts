@@ -269,7 +269,7 @@ function readService(metadata: API.PackageMetadataV1.ServiceConfig): API.Service
 function readProvides(metadata: API.PackageMetadataV1.ProvidesConfig): API.ProvidedInterface {
     return {
         interfaceName: metadata.interfaceName,
-        qualifier: metadata.interfaceName ?? undefined
+        qualifier: metadata.qualifier ?? undefined
     };
 }
 

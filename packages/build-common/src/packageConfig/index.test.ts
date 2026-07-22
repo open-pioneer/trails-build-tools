@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 import { BuildConfig } from "@open-pioneer/build-support";
 import { expect, it } from "vitest";
-import {
-    createPackageConfigFromBuildConfig,
-    createPackageConfigFromPackageMetadata,
-    PackageMetadataV1 as V1
-} from "../..";
+import { createPackageConfigFromBuildConfig, createPackageConfigFromPackageMetadata } from ".";
+import type { PackageMetadataV1 as V1 } from "../..";
 
 it("maps build.config.mjs contents to internal representation", function () {
     const buildConfig: BuildConfig = {
@@ -237,11 +234,11 @@ it("maps package metadata to internal representation", function () {
             "provides": [
               {
                 "interfaceName": "foo",
-                "qualifier": "foo",
+                "qualifier": undefined,
               },
               {
                 "interfaceName": "bar",
-                "qualifier": "bar",
+                "qualifier": "baz",
               },
             ],
             "references": Map {
