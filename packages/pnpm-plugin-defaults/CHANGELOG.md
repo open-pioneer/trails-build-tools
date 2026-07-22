@@ -1,5 +1,11 @@
 # @open-pioneer/pnpm-plugin-defaults
 
+## 0.1.3
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+
 ## 0.1.2
 
 ### Patch Changes

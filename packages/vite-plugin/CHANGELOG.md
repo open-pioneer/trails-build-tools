@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 6.0.2
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+- 82b4559: Fix parsing of `qualifier` for services defined by dependencies in `node_modules`.
+- Updated dependencies [1a78924]
+- Updated dependencies [82b4559]
+    - @open-pioneer/build-common@4.0.2
+
 ## 6.0.1
 
 ### Patch Changes

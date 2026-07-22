@@ -1,5 +1,11 @@
 # @open-pioneer/changesets-release-line
 
+## 0.1.2
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+
 ## 0.1.1
 
 ### Patch Changes

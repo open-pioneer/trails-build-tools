@@ -1,5 +1,12 @@
 # Changelog @open-pioneer/build-common
 
+## 4.0.2
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+- 82b4559: Fix parsing of `qualifier` for services defined by dependencies in `node_modules`.
+
 ## 4.0.1
 
 ### Patch Changes
