@@ -73,7 +73,10 @@ export async function loadI18nFile(path: string): Promise<I18nFile> {
  * Parses an i18n yaml document.
  */
 export function parseI18nYaml(yaml: string): I18nFile {
-    const data = loadYaml(yaml);
+    let data = undefined;
+    if (yaml.trim()) {
+        data = loadYaml(yaml);
+    }
     return parseI18nFile(data);
 }
 
