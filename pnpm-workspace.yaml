@@ -7,9 +7,9 @@ packages:
   - "!**/__snapshots/**"
 
 catalog:
-  "@babel/generator": ^7.29.7
-  "@babel/template": ^7.29.7
-  "@babel/types": ^7.29.7
+  "@babel/generator": ^8.0.0
+  "@babel/template": ^8.0.0
+  "@babel/types": ^8.0.4
   # TODO: .12 is broken at this time, see https://github.com/pnpm/pnpm/issues/13179
   # Restore to version spec using "^" once a working release is available
   "@pnpm/lockfile.fs": 1100.1.11
