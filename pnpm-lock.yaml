@@ -22,7 +22,7 @@ catalogs:
       specifier: ^9.39.5
       version: 9.39.5
     '@pnpm/lockfile.fs':
-      specifier: 1100.1.14
+      specifier: ^1100.1.14
       version: 1100.1.14
     '@pnpm/lockfile.utils':
       specifier: ^1100.1.5
