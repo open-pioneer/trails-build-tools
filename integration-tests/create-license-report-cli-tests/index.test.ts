@@ -29,7 +29,7 @@ it("create license report with production deps only", async () => {
     expect(html).toContain("package-a");
     expect(html).not.toContain("package-b");
     expect(html).not.toContain("package-c");
-},1500000);
+});
 
 it("create license report with dev and additional dependencies", async () => {
     const outputPath = resolve(TEMP_PATH, "test-all.html");

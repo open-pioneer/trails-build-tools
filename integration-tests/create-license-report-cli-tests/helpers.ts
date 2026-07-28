@@ -3,10 +3,15 @@
 import { beforeAll } from "vitest";
 import { resolve } from "node:path";
 import { cpSync } from "node:fs";
+import { $, usePowerShell } from "zx";
 import { PROJECT_DIR, TEMP_PATH } from "./paths";
 
+if (process.platform === "win32") {
+    usePowerShell();
+}
+
 export function useTemporaryPnpmLockfile(): void {
-    beforeAll(() => {
+    beforeAll(async () => {
         cpSync(PROJECT_DIR, TEMP_PATH, { recursive: true, force: true });
 
         const packageJsonSrc = resolve(TEMP_PATH, "_package.json");
@@ -16,5 +21,11 @@ export function useTemporaryPnpmLockfile(): void {
         const lockFileSrc = resolve(TEMP_PATH, "_pnpm-lock.yaml");
         const lockFileDest = resolve(TEMP_PATH, "pnpm-lock.yaml");
         cpSync(lockFileSrc, lockFileDest, { recursive: true, force: true });
+
+        // Deps are all "file:" deps, so no network needed. This creates
+        // node_modules, which the CLI needs to read license info via
+        // `pnpm licenses list`.
+        const shell = $({ cwd: TEMP_PATH });
+        await shell`pnpm install --offline`;
     });
 }
