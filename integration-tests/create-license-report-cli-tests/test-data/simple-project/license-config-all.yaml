@@ -4,6 +4,8 @@ allowedLicenses:
   - "MIT"
   - "Unlicense"
 
+skipDevDependencies: false
+
 overrideLicenses:
   - name: "package-b"
     version: "0.0.1"

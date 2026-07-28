@@ -12,9 +12,6 @@ Options:
                             "support/license-config.yaml")
   -o, --output <path>       path to the result file (default:
                             "dist/license-report.html")
-  -d, --dev                 include dev dependencies (default: false)
-  -i, --ignore-workspace    ignore the workspace, only look at the lock file
-                            (default: false)
   -q, --silent              disable logging (default: false)
   -x, --debug               show exception stack traces (default: false)
   -V, --version             output the version number

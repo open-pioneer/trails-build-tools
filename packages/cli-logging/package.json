@@ -1,47 +1,38 @@
 {
-    "name": "@open-pioneer/create-license-cli",
-    "description": "Implements creation of Open Pioneer Trails license file.",
+    "name": "@open-pioneer/cli-logging",
+    "description": "Logging utilities for Open Pioneer Trails CLI tools.",
     "version": "0.0.1",
     "main": "dist/index.js",
+    "types": "types.d.ts",
     "type": "module",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
-        "directory": "packages/build-license"
+        "directory": "packages/cli-logging"
     },
     "homepage": "https://github.com/open-pioneer",
     "keywords": [
         "open-pioneer-trails"
     ],
-    "bin": {
-        "create-license-report": "./dist/index.js"
-    },
     "scripts": {
-        "clean": "rimraf dist temp",
+        "clean": "rimraf dist",
         "build": "node build.mjs build",
         "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
-        "test": "vitest"
+        "dev": "node build.mjs watch"
     },
     "files": [
         "dist/**/*.js",
         "dist/**/*.js.map",
+        "types.d.ts",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
     "dependencies": {
-        "@open-pioneer/cli-logging": "workspace:^",
-        "commander": "catalog:",
-        "handlebars": "catalog:",
-        "js-yaml": "catalog:",
-        "tinyglobby": "catalog:",
-        "zod": "catalog:",
-        "zx": "catalog:"
+        "chalk": "catalog:"
     },
     "devDependencies": {
-        "@types/js-yaml": "catalog:",
         "build-tools": "workspace:*"
     },
     "engines": {

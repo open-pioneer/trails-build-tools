@@ -2,10 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { $ } from "zx";
 
-export interface PnpmLicensesReport {
-    [license: string]: PnpmLicenseProject[];
-}
-
 export interface PnpmLicenseProject {
     /** Project name */
     name: string;
@@ -16,31 +12,32 @@ export interface PnpmLicenseProject {
     /** Location(s) on disk, same order as versions */
     paths: string[];
 
-    /** License (same as group key) in {@link PnpmLicensesReport} */
+    /** License (same as group key) in the original pnpm report */
     license: string;
 }
 
+interface PnpmLicensesReport {
+    [license: string]: PnpmLicenseProject[];
+}
+
 /**
- * Invokes pnpm to list the licenses of all third party (production) dependencies used by this repository.
+ * Invokes pnpm to list the licenses of all third party dependencies used by this repository.
+ * Returns a flat list of all projects with their license information.
  */
 export async function getPnpmLicenseReport(
     workspaceDirectory: string,
-    devDependencies: boolean,
-    ignoreWorkspace: boolean = false
-): Promise<PnpmLicensesReport> {
+    devDependencies: boolean
+): Promise<PnpmLicenseProject[]> {
     const shell = $({ cwd: workspaceDirectory });
 
     const args = ["licenses", "list", "--json", "--long"];
     if (!devDependencies) {
         args.push("-P");
     }
-    if (ignoreWorkspace) {
-        args.push("--ignore-workspace");
-    }
 
     const processOutputLicense = await shell`pnpm ${args}`;
-    const result = (await processOutputLicense.json()) as PnpmLicensesReport;
-    return result;
+    const report = (await processOutputLicense.json()) as PnpmLicensesReport;
+    return Object.values(report).flat();
 }
 
 /**
@@ -52,7 +49,6 @@ export function* walkProjectLocations(
     const versions = project.versions;
     const paths = project.paths;
     if (paths.length !== versions.length) {
-        //the indices of paths corresponds to that of versions (https://github.com/pnpm/pnpm/pull/7528)
         throw new Error(
             `Project paths and versions returned by PNPM do not have the same length for project ${project.name}), indices of paths must correspond to that of versions.`
         );

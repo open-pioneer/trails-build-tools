@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+import { getChalk } from "@open-pioneer/cli-logging";
 import { Command } from "commander";
 import { exit } from "node:process";
 import { version } from "../package.json";
@@ -19,14 +20,13 @@ program
     )
     .option("-c, --config <path>", "path to the license config file", LICENSE_CONFIG)
     .option("-o, --output <path>", "path to the result file", OUTPUT_HTML)
-    .option("-i, --ignore-workspace", "ignore the workspace, only look at the lock file", false)
     .option("-q, --silent", "disable logging", false)
     .option("-x, --debug", "show exception stack traces", false)
     .version(version);
 program.parse();
 
 async function main() {
-    const chalk = (await import("chalk")).default;
+    const chalk = await getChalk();
     const opts = program.opts();
     const workingDir = opts.workingDir ?? WORKING_DIR;
     try {
@@ -34,8 +34,7 @@ async function main() {
             configPath: opts.config,
             workingDir: workingDir,
             outputHtmlPath: opts.output,
-            log: !opts.silent,
-            ignoreWorkspace: opts.ignoreWorkspace
+            log: !opts.silent
         });
         exit(0);
     } catch (e) {

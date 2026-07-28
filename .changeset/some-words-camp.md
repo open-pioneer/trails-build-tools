@@ -1,5 +1,5 @@
 ---
-"@open-pioneer/build-license-cli": minor
+"@open-pioneer/create-license-cli": minor
 "@open-pioneer/build-common": minor
 "@open-pioneer/build-package": minor
 ---

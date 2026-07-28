@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/build-common";
+import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/cli-logging";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
-import { LicenseOptions } from "../types";
-import { analyzeLicenses, getAdditionalLicenses } from "./analyze-licenses";
+import { LicenseOptions } from "./types";
+import { analyzeLicenses } from "./analyze-licenses";
 import { readLicenseConfig } from "./license-config";
 import { generateReportHtml } from "./license-report-template";
 import { getPnpmLicenseReport } from "./pnpm-license-report";
@@ -15,7 +15,6 @@ export async function createLicenseReport(options: LicenseOptions) {
     logger.info(chalk.gray("Start creating license report"));
 
     const packageJsonPath = resolve(options.workingDir, "package.json");
-
     if (!existsSync(packageJsonPath)) {
         throw new Error(`package.json not found at: ${packageJsonPath}`);
     }
@@ -28,50 +27,29 @@ export async function createLicenseReport(options: LicenseOptions) {
 
     logger.info(
         chalk.gray(
-            `Using license config from ${configPath} , packagejson from ${packageJsonPath} and write the result into ${outputHtmlPath}`
+            `Using license config from ${configPath}, package.json from ${packageJsonPath} and writing result to ${outputHtmlPath}`
         )
     );
 
     const config = readLicenseConfig(configPath);
     const projectName = getProjectName(packageJsonPath);
 
-    // Invoke pnpm to gather dependency information.
-    const reportJson = await getPnpmLicenseReport(
-        options.workingDir,
-        !config.skipDevDependencies,
-        options.ignoreWorkspace
-    );
+    const projects = await getPnpmLicenseReport(options.workingDir, !config.skipDevDependencies);
 
-    // Analyze licenses: find license information, handle configured overrides and print errors.
     const { error, items } = await analyzeLicenses(
-        reportJson,
+        projects,
         config,
         configPathDirectory,
         options.log
     );
 
-    // Add `additionalLicenses`
-    const { additionalError, additionalItems } = await getAdditionalLicenses(
-        config,
-        items.length,
-        configPathDirectory,
-        options.log
-    );
-    const allItems = items.concat(additionalItems);
-    const allError = error || additionalError;
+    items.sort((a, b) => a.name.localeCompare(b.name));
 
-    allItems.sort((a, b) => {
-        return a.name.localeCompare(b.name, "en-US");
-    });
-
-    // Ensure directory exists, then write the report
-    mkdirSync(dirname(outputHtmlPath), {
-        recursive: true
-    });
-    const reportHtml = generateReportHtml(projectName, allItems);
+    mkdirSync(dirname(outputHtmlPath), { recursive: true });
+    const reportHtml = generateReportHtml(projectName, items);
     writeFileSync(outputHtmlPath, reportHtml, "utf-8");
 
-    if (allError) {
+    if (error) {
         logger.error(chalk.red(`License report finished with errors.`));
         process.exit(1);
     }

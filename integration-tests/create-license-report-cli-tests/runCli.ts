@@ -4,12 +4,13 @@ import { resolve } from "node:path";
 import { $, ProcessOutput, usePowerShell } from "zx";
 import { PACKAGE_DIR, TEMP_PATH } from "./paths";
 
-const PATH_TO_DIST = "node_modules/@open-pioneer/build-license-cli/dist/index.js";
+const PATH_TO_DIST = "node_modules/@open-pioneer/create-license-cli/dist/index.js";
 
 export interface RunResult {
     exitCode: number;
     output: string;
 }
+
 if (process.platform === "win32") {
     usePowerShell();
 }
@@ -21,19 +22,16 @@ export async function helpMessage(): Promise<string> {
     return processOutputLicense.toString();
 }
 
-export async function runCli(missingConfigTest: boolean = false): Promise<RunResult> {
+export async function runCli(
+    configFile: string = "license-config-all.yaml",
+    outputFile?: string
+): Promise<RunResult> {
     const cli = resolve(PACKAGE_DIR, PATH_TO_DIST);
     const shell = $({ cwd: TEMP_PATH });
-    const outputPath = resolve(TEMP_PATH, "test-abc.html");
+    const outputPath = outputFile ?? resolve(TEMP_PATH, "test-abc.html");
+    const configPath = resolve(TEMP_PATH, configFile);
 
-    const flags: string[] = [];
-    if (missingConfigTest) {
-        const missingConfig = resolve(TEMP_PATH, "license-config-missing.yaml");
-        flags.push("-c", missingConfig, "-w", TEMP_PATH, "-o", outputPath, "-i", "-d");
-    } else {
-        const configPath = resolve(TEMP_PATH, "license-config-all.yaml");
-        flags.push("-c", configPath, "-w", TEMP_PATH, "-o", outputPath, "-i", "-d");
-    }
+    const flags: string[] = ["-c", configPath, "-w", TEMP_PATH, "-o", outputPath];
 
     try {
         const result = await shell`node ${cli} ${flags}`.quiet();

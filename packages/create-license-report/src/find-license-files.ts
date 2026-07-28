@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import glob from "fast-glob";
+import { globSync } from "tinyglobby";
 import { basename } from "path";
 import { FileSpec } from "./license-config";
 
@@ -11,8 +11,6 @@ const NOTICE_FILES = "NOTICE".split(" ");
  * Attempts to find license files in the given directory.
  * Returns the first file matching one of the file patterns above,
  * without checking the content.
- *
- * For license files, this may currently fall back to the project's readme file.
  *
  * The license output must be checked manually!
  */
@@ -35,16 +33,13 @@ function toPackageFiles(files: string[]): FileSpec[] {
 }
 
 function findFirstMatch(directory: string, candidates: string[]): string[] {
-    // https://github.com/micromatch/micromatch#extended-globbing
-    const pattern = "(" + candidates.join("|") + ")";
-    const matches = glob.sync(`?(*)${pattern}*`, {
+    const allFiles = globSync("*", {
         followSymbolicLinks: false,
-        cwd: directory,
-        caseSensitiveMatch: false
+        cwd: directory
     });
 
     for (const candidateName of candidates) {
-        const match = matches.find((matchPath) =>
+        const match = allFiles.find((matchPath) =>
             basename(matchPath).toLowerCase().includes(candidateName.toLowerCase())
         );
         if (match) return [match];

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { readFileSync } from "fs";
 import { load as loadYaml } from "js-yaml";
+import { z } from "zod";
 
 export interface LicenseConfig {
     allowedLicenses: string[];
@@ -20,16 +21,16 @@ export interface OverrideLicenseEntry {
     /** Project name */
     name: string;
 
-    /** Exact project version(s) */
+    /** Exact project version */
     version: string;
 
     /** Manual license name */
     license?: string;
 
-    /** License files, relative to dependency dir */
+    /** License files, relative to dependency dir or config dir */
     licenseFiles?: FileSpec[];
 
-    /** Notice files, relative to dependency dir */
+    /** Notice files, relative to dependency dir or config dir */
     noticeFiles?: FileSpec[];
 }
 
@@ -49,34 +50,50 @@ export interface AdditionalLicensesEntry {
 
 export interface FileSpec {
     /**
-     * project: path is relative to the package's directory on disk.
-     * custom: path is relative to this script.
+     * package: path is relative to the package's directory on disk.
+     * custom: path is relative to the config file's directory.
      */
     type: "package" | "custom";
     path: string;
 }
 
-interface RawLicenseConfig {
-    allowedLicenses: string[];
-    skipDevDependencies?: boolean;
-    overrideLicenses?: RawOverrideEntry[];
-    additionalLicenses?: RawAdditionalEntry[];
+function nullish<T extends z.ZodTypeAny>(schema: T) {
+    return z.preprocess((v) => (v === null ? undefined : v), schema);
 }
 
-interface RawOverrideEntry {
-    name: string;
-    version: string;
-    license?: string;
-    licenseFiles?: unknown[];
-    noticeFiles?: unknown[];
-}
+const FileSpecSchema = z.union([
+    z.string().transform((s) => ({ type: "package" as const, path: s })),
+    z
+        .object({ package: z.string() })
+        .transform((o) => ({ type: "package" as const, path: o.package })),
+    z
+        .object({ custom: z.string() })
+        .transform((o) => ({ type: "custom" as const, path: o.custom }))
+]);
 
-interface RawAdditionalEntry {
-    name: string;
-    version?: string;
-    license: string;
-    licenseFiles: Array<{ custom: string }>;
-}
+const OverrideLicenseEntrySchema = z.object({
+    name: z.string(),
+    version: z.string(),
+    license: z.string().optional(),
+    licenseFiles: nullish(z.array(FileSpecSchema).optional()),
+    noticeFiles: nullish(z.array(FileSpecSchema).optional())
+});
+
+const AdditionalLicensesEntrySchema = z.object({
+    name: z.string(),
+    version: z.string().optional(),
+    license: z.string(),
+    licenseFiles: z
+        .array(z.object({ custom: z.string() }))
+        .transform((files) => files.map((f) => ({ type: "custom" as const, path: f.custom })))
+});
+
+const LicenseConfigSchema = z.object({
+    allowedLicenses: z.array(z.string()),
+    skipDevDependencies: nullish(z.boolean().optional().default(true)),
+    overrideLicenses: nullish(z.array(OverrideLicenseEntrySchema).optional()),
+    additionalLicenses: nullish(z.array(AdditionalLicensesEntrySchema).optional())
+});
 
 /**
  * Reads the license config yaml file.
@@ -84,55 +101,16 @@ interface RawAdditionalEntry {
 export function readLicenseConfig(path: string): LicenseConfig {
     try {
         const content = readFileSync(path, "utf-8");
-        const rawConfig = loadYaml(content) as unknown as RawLicenseConfig;
-
-        const skipDevDependencies = rawConfig.skipDevDependencies;
-        if (skipDevDependencies !== undefined && typeof skipDevDependencies !== "boolean") {
-            throw new Error("Expected 'skipDevDependencies' to be a boolean");
+        const rawConfig = loadYaml(content);
+        const result = LicenseConfigSchema.safeParse(rawConfig);
+        if (!result.success) {
+            const messages = result.error.issues
+                .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
+                .join("\n");
+            throw new Error(`Invalid license config:\n${messages}`);
         }
-
-        return {
-            allowedLicenses: rawConfig.allowedLicenses,
-            // Default true for backwards compatibility with older license-config.yaml files.
-            skipDevDependencies: skipDevDependencies ?? true,
-            overrideLicenses: rawConfig.overrideLicenses?.map(
-                (rawEntry): OverrideLicenseEntry => ({
-                    name: rawEntry.name,
-                    version: rawEntry.version,
-                    license: rawEntry.license,
-                    licenseFiles: readFileSpecs(rawEntry.licenseFiles),
-                    noticeFiles: readFileSpecs(rawEntry.noticeFiles)
-                })
-            ),
-            additionalLicenses: rawConfig.additionalLicenses?.map(
-                (rawEntry): AdditionalLicensesEntry => ({
-                    name: rawEntry.name,
-                    version: rawEntry.version,
-                    license: rawEntry.license,
-                    licenseFiles: rawEntry.licenseFiles.map((file) => ({
-                        type: "custom",
-                        path: file.custom
-                    }))
-                })
-            )
-        };
+        return result.data as LicenseConfig;
     } catch (e) {
         throw new Error(`Failed to read license config from ${path}: ${e}`);
     }
-}
-
-function readFileSpecs(rawSpecs: unknown[] | undefined): FileSpec[] | undefined {
-    if (!rawSpecs) return undefined;
-
-    const readRawSpec = (rawSpec: unknown): FileSpec => {
-        if (typeof rawSpec === "string") return { type: "package", path: rawSpec };
-        if (typeof rawSpec === "object" && rawSpec !== null) {
-            const r = rawSpec as Record<string, unknown>;
-            if (typeof r["package"] === "string") return { type: "package", path: r["package"] };
-            if (typeof r["custom"] === "string") return { type: "custom", path: r["custom"] };
-        }
-        throw new Error(`Invalid file spec: ${JSON.stringify(rawSpec, undefined, 4)}`);
-    };
-
-    return rawSpecs.map(readRawSpec);
 }

@@ -38,7 +38,6 @@ it("expect to read license config with all attributes", async () => {
               },
             ],
             "name": "package-c",
-            "version": undefined,
           },
         ],
         "allowedLicenses": [
@@ -49,9 +48,7 @@ it("expect to read license config with all attributes", async () => {
         "overrideLicenses": [
           {
             "license": "Unlicense",
-            "licenseFiles": undefined,
             "name": "package-b",
-            "noticeFiles": undefined,
             "version": "0.0.1",
           },
         ],

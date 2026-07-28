@@ -5,23 +5,33 @@ import { resolve } from "path";
 import { FileSpec, LicenseConfig, OverrideLicenseEntry } from "./license-config";
 import { findFirstLicenseFile, findFirstNoticeFile } from "./find-license-files";
 import { LicenseItem } from "./license-report-template";
-import { PnpmLicensesReport, walkProjectLocations } from "./pnpm-license-report";
-import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/build-common";
+import { PnpmLicenseProject, walkProjectLocations } from "./pnpm-license-report";
+import { createConsoleLogger, getChalk, Logger, SILENT_LOGGER } from "@open-pioneer/cli-logging";
+
+interface DependencyEntry {
+    id: string;
+    name: string;
+    version: string | undefined;
+    license: string | undefined;
+    /** Disk path of the package on disk; used to auto-detect license/notice files */
+    packagePath: string | undefined;
+    /** Explicit license files; if undefined and packagePath is set, files are auto-detected */
+    licenseFiles: FileSpec[] | undefined;
+    /** Explicit notice files; if undefined and packagePath is set, files are auto-detected */
+    noticeFiles: FileSpec[] | undefined;
+}
 
 /**
  * Iterates over the results of the given license report.
- * For valid projects, we read the license (and optionally notice) files and use them to build {@link LicenseItem} objects.
- * All license items are then returned as an array.
+ * For valid projects, we read the license (and optionally notice) files and build {@link LicenseItem} objects.
  *
- * When an invalid project (e.g. missing license) is encountered, we report an error to the console and return `error: true`.
+ * When an invalid project (e.g. missing license) is encountered, we report an error and return `error: true`.
  *
- * The `config` argument supports local overrides for packages that do not have their license detected properly.
- *
- * `configDirectory` is the directory of the configuration file, used to resolve custom license files that are referenced
- * in the YAML configuration.
+ * The `config` argument supports local overrides and additional licenses not detected by pnpm.
+ * `configDirectory` is the directory of the configuration file, used to resolve custom license files.
  */
 export async function analyzeLicenses(
-    reportJson: PnpmLicensesReport,
+    projects: PnpmLicenseProject[],
     config: LicenseConfig,
     configDirectory: string,
     log: boolean
@@ -32,11 +42,9 @@ export async function analyzeLicenses(
     const logger = log ? await createConsoleLogger(console) : SILENT_LOGGER;
     const chalk = await getChalk();
 
-    let unknownLicenses = false;
-    let disallowedLicenses = false;
-    let missingLicenseText = false;
-
+    let hasError = false;
     const usedOverrides = new Set<OverrideLicenseEntry>();
+
     const getOverrideEntry = (name: string, version: string) => {
         const entry = config.overrideLicenses?.find(
             (e) => e.name === name && e.version === version
@@ -47,77 +55,42 @@ export async function analyzeLicenses(
         return entry;
     };
 
-    const reportProjects = Object.values(reportJson).flat();
-    const items: LicenseItem[] = [];
-    reportProjects.forEach((project, index) => {
-        const name = project.name;
+    const entries: DependencyEntry[] = [];
+    let index = 0;
 
+    for (const project of projects) {
         for (const { path, version } of walkProjectLocations(project)) {
-            const overrideEntry = getOverrideEntry(name, version);
-            const dependencyInfo = `'${name}' (version: ${version})`;
-            const licenses = overrideEntry?.license ?? project.license;
-            const licenseFiles = overrideEntry?.licenseFiles ?? findFirstLicenseFile(path);
-            const noticeFiles = overrideEntry?.noticeFiles ?? findFirstNoticeFile(path);
-
-            if (!overrideEntry?.license) {
-                if (!licenses || licenses === "Unknown") {
-                    unknownLicenses = true;
-                    logger.warn(
-                        chalk.yellow(
-                            `Failed to detect licenses of dependency ${dependencyInfo} at ${path}`
-                        )
-                    );
-                } else if (!config.allowedLicenses.includes(licenses)) {
-                    disallowedLicenses = true;
-                    logger.warn(
-                        chalk.yellow(
-                            `License '${licenses}' of dependency ${dependencyInfo} is not allowed by configuration.`
-                        )
-                    );
-                }
-            }
-
-            const readProjectFile = (file: FileSpec) => {
-                const basedir = ((file: FileSpec): string => {
-                    switch (file.type) {
-                        case "custom":
-                            return configDirectory;
-                        case "package":
-                            return path;
-                    }
-                })(file);
-                const projectFilePath = resolve(basedir, file.path);
-                try {
-                    return readFileSync(projectFilePath, "utf-8");
-                } catch (e) {
-                    throw new Error(
-                        `Failed to read license file for project ${dependencyInfo} at ${projectFilePath}: ${e}`
-                    );
-                }
-            };
-
-            const licenseTexts = licenseFiles.map(readProjectFile);
-            if (licenseTexts.length === 0) {
-                logger.warn(
-                    chalk.yellow(
-                        `Failed to detect license text of dependency ${dependencyInfo} in ${path}`
-                    )
-                );
-                missingLicenseText = true;
-            }
-
-            const noticeTexts = noticeFiles.map(readProjectFile);
-            const item: LicenseItem = {
-                id: `dep-${index}-${version}`,
-                name: name,
-                license: licenses,
-                version: version,
-                licenseText: licenseTexts.join("\n\n"),
-                noticeText: noticeTexts.join("\n\n")
-            };
-            items.push(item);
+            const overrideEntry = getOverrideEntry(project.name, version);
+            entries.push({
+                id: `dep-${index++}`,
+                name: project.name,
+                version,
+                license: overrideEntry?.license ?? project.license,
+                packagePath: path,
+                licenseFiles: overrideEntry?.licenseFiles,
+                noticeFiles: overrideEntry?.noticeFiles
+            });
         }
-    });
+    }
+
+    for (const additional of config.additionalLicenses ?? []) {
+        entries.push({
+            id: `dep-${index++}`,
+            name: additional.name,
+            version: additional.version,
+            license: additional.license,
+            packagePath: undefined,
+            licenseFiles: additional.licenseFiles,
+            noticeFiles: undefined
+        });
+    }
+
+    const items: LicenseItem[] = [];
+    for (const entry of entries) {
+        const result = processEntry(entry, config, configDirectory, logger, chalk);
+        if (result.hasError) hasError = true;
+        items.push(result.item);
+    }
 
     if (config.overrideLicenses) {
         for (const overrideEntry of config.overrideLicenses) {
@@ -131,91 +104,73 @@ export async function analyzeLicenses(
         }
     }
 
-    const error = unknownLicenses || disallowedLicenses || missingLicenseText;
-    return { error, items };
+    return { error: hasError, items };
 }
 
-/**
- * `configDirectory` is the directory of the calling script, used to resolve "custom" file paths.
- */
-export async function getAdditionalLicenses(
+function processEntry(
+    entry: DependencyEntry,
     config: LicenseConfig,
-    itemCount: number,
     configDirectory: string,
-    log: boolean
-): Promise<{
-    additionalError: boolean;
-    additionalItems: LicenseItem[];
-}> {
-    const logger = log ? await createConsoleLogger(console) : SILENT_LOGGER;
-    const chalk = await getChalk();
-    if (!config.additionalLicenses)
-        return {
-            additionalError: false,
-            additionalItems: []
-        };
+    logger: Logger,
+    chalk: Awaited<ReturnType<typeof getChalk>>
+): { item: LicenseItem; hasError: boolean } {
+    const dependencyInfo = `'${entry.name}'${entry.version ? ` (version: ${entry.version})` : ""}`;
+    let hasError = false;
 
-    const items: LicenseItem[] = [];
-    let unknownLicenses = false;
-    let disallowedLicenses = false;
-    let missingLicenseText = false;
+    const license = entry.license;
+    if (!license || license === "Unknown") {
+        hasError = true;
+        logger.warn(
+            chalk.yellow(
+                `Failed to detect licenses of dependency ${dependencyInfo}${entry.packagePath ? ` at ${entry.packagePath}` : ""}`
+            )
+        );
+    } else if (!config.allowedLicenses.includes(license)) {
+        hasError = true;
+        logger.warn(
+            chalk.yellow(
+                `License '${license}' of dependency ${dependencyInfo} is not allowed by configuration.`
+            )
+        );
+    }
 
-    config.additionalLicenses.forEach((license) => {
-        const name = license.name;
-        const version = license.version;
-        const licenseSpec = license.license;
+    const resolvedLicenseFiles =
+        entry.licenseFiles ?? (entry.packagePath ? findFirstLicenseFile(entry.packagePath) : []);
+    const resolvedNoticeFiles =
+        entry.noticeFiles ?? (entry.packagePath ? findFirstNoticeFile(entry.packagePath) : []);
 
-        if (!licenseSpec || licenseSpec === "Unknown") {
-            unknownLicenses = true;
-            logger.warn(
-                chalk.yellow(
-                    `Failed to detect licenses of dependency ${name} at "additionalLicenses" configuration`
-                )
-            );
-        } else if (!config.allowedLicenses.includes(licenseSpec)) {
-            disallowedLicenses = true;
-            logger.warn(
-                chalk.yellow(
-                    `License '${licenseSpec}' of dependency ${name} is not allowed by configuration.`
-                )
+    const readFile = (file: FileSpec): string => {
+        const basedir = file.type === "custom" ? configDirectory : (entry.packagePath ?? "");
+        const filePath = resolve(basedir, file.path);
+        try {
+            return readFileSync(filePath, "utf-8");
+        } catch (e) {
+            throw new Error(
+                `Failed to read license file for project ${dependencyInfo} at ${filePath}: ${e}`
             );
         }
-
-        const licenseTexts =
-            license.licenseFiles?.map((file) => {
-                if (file.type === "custom" && file.path) {
-                    try {
-                        return readFileSync(resolve(configDirectory, file.path), "utf-8");
-                    } catch (e) {
-                        throw new Error(
-                            `Failed to read license file for project ${name} at ${file.path}: ${e}`
-                        );
-                    }
-                } else {
-                    logger.warn(
-                        chalk.yellow(
-                            `Failed to detect license text of dependency ${name} in at "additionalLicenses" configuration`
-                        )
-                    );
-                    missingLicenseText = true;
-                }
-            }) || [];
-
-        const item: LicenseItem = {
-            id: `dep-${itemCount}-${name}`,
-            name: name,
-            version: version,
-            license: licenseSpec,
-            licenseText: licenseTexts.join("\n\n"),
-            noticeText: ""
-        };
-        itemCount++;
-        items.push(item);
-    });
-
-    const error = unknownLicenses || disallowedLicenses || missingLicenseText;
-    return {
-        additionalError: error,
-        additionalItems: items
     };
+
+    const licenseTexts = resolvedLicenseFiles.map(readFile);
+    if (licenseTexts.length === 0) {
+        hasError = true;
+        logger.warn(
+            chalk.yellow(
+                `Failed to detect license text of dependency ${dependencyInfo}${entry.packagePath ? ` in ${entry.packagePath}` : ""}`
+            )
+        );
+    }
+
+    const noticeTexts = resolvedNoticeFiles.map(readFile);
+
+    const item: LicenseItem = {
+        id: `${entry.id}-${entry.version ?? entry.name}`,
+        name: entry.name,
+        version: entry.version,
+        license: license ?? "Unknown",
+        licenseText: licenseTexts.join("\n\n"),
+        noticeText: noticeTexts.join("\n\n")
+    };
+
+    return { item, hasError };
 }
