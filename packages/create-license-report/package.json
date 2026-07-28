@@ -37,6 +37,7 @@
         "js-yaml": "catalog:",
         "preact": "catalog:",
         "preact-render-to-string": "catalog:",
+        "spdx-expression-parse": "catalog:",
         "spdx-satisfies": "catalog:",
         "tinyglobby": "catalog:",
         "zod": "catalog:",
@@ -44,6 +45,7 @@
     },
     "devDependencies": {
         "@types/js-yaml": "catalog:",
+        "@types/spdx-expression-parse": "catalog:",
         "@types/spdx-satisfies": "catalog:",
         "build-tools": "workspace:*"
     },

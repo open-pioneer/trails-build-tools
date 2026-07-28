@@ -69,6 +69,9 @@ catalogs:
     '@types/semver':
       specifier: ^7.7.1
       version: 7.7.1
+    '@types/spdx-expression-parse':
+      specifier: ^4.0.0
+      version: 4.0.0
     '@types/spdx-satisfies':
       specifier: ^6.0.0
       version: 6.0.0
@@ -159,6 +162,9 @@ catalogs:
     semver:
       specifier: ^7.7.4
       version: 7.7.4
+    spdx-expression-parse:
+      specifier: ^4.0.0
+      version: 4.0.0
     spdx-satisfies:
       specifier: ^6.0.0
       version: 6.0.0
@@ -602,6 +608,9 @@ importers:
       preact-render-to-string:
         specifier: 'catalog:'
         version: 6.7.0(preact@10.29.7)
+      spdx-expression-parse:
+        specifier: 'catalog:'
+        version: 4.0.0
       spdx-satisfies:
         specifier: 'catalog:'
         version: 6.0.0
@@ -618,6 +627,9 @@ importers:
       '@types/js-yaml':
         specifier: 'catalog:'
         version: 4.0.9
+      '@types/spdx-expression-parse':
+        specifier: 'catalog:'
+        version: 4.0.0
       '@types/spdx-satisfies':
         specifier: 'catalog:'
         version: 6.0.0
@@ -2123,6 +2135,9 @@ packages:
 
   '@types/semver@7.7.1':
     resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
+
+  '@types/spdx-expression-parse@4.0.0':
+    resolution: {integrity: sha512-odQzy87phelGS4inXOzjmusx4hoCVD0IbxUANxHzVkmTzMRTNnUPoq1urIl7S1qf09KcDWKLFIftPmLtgbsAHA==}
 
   '@types/spdx-satisfies@6.0.0':
     resolution: {integrity: sha512-kOngOQzzhQrj4axuWWSWGzOO6MAe5eQ5qG3Zepe4LE/7lQJf7oYW8gAlNOywOhCpVY6oPs/YuJD463VdTk16ZQ==}
@@ -4000,6 +4015,9 @@ packages:
 
   spdx-expression-parse@3.0.1:
     resolution: {integrity: sha512-cbqHunsQWnJNE6KhVSMsMeH5H/L9EpymbzqTQ3uLwNCLZ1Q481oWaofqH7nO6V07xlXwY6PhQdQ2IedWx/ZK4Q==}
+
+  spdx-expression-parse@4.0.0:
+    resolution: {integrity: sha512-Clya5JIij/7C6bRR22+tnGXbc4VKlibKSVj2iHvVeX5iMW7s1SIQlqu699JkODJJIhh/pUu8L0/VLh8xflD+LQ==}
 
   spdx-license-ids@3.0.23:
     resolution: {integrity: sha512-CWLcCCH7VLu13TgOH+r8p1O/Znwhqv/dbb6lqWy67G+pT1kHmeD/+V36AVb/vq8QMIQwVShJ6Ssl5FPh0fuSdw==}
@@ -5921,6 +5939,8 @@ snapshots:
   '@types/resolve@1.20.2': {}
 
   '@types/semver@7.7.1': {}
+
+  '@types/spdx-expression-parse@4.0.0': {}
 
   '@types/spdx-satisfies@6.0.0': {}
 
@@ -8057,6 +8077,11 @@ snapshots:
   spdx-exceptions@2.5.0: {}
 
   spdx-expression-parse@3.0.1:
+    dependencies:
+      spdx-exceptions: 2.5.0
+      spdx-license-ids: 3.0.23
+
+  spdx-expression-parse@4.0.0:
     dependencies:
       spdx-exceptions: 2.5.0
       spdx-license-ids: 3.0.23

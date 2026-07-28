@@ -88,21 +88,11 @@ it("expect AND license expression to fail if one sub-license is not allowed", as
     ).toBe(true);
 });
 
-it("expect OR license expression to pass if any alternative is allowed", async () => {
-    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const projects = mockPnpmProjects("(GPL-3.0-only OR MIT)");
-    const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
-    onTestFailed(() => console.log(analyzedLicenses.items));
-    expect(analyzedLicenses.error).toBe(false);
-    expect(analyzedLicenses.items[0]?.license).toBe("(GPL-3.0-only OR MIT)");
-});
-
-it("expect OR license expression to fail if none of the alternatives are allowed", async () => {
+it("expect OR license expression to fail even if one alternative is allowed", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const projects = mockPnpmProjects("(GPL-3.0-only OR ISC)");
+    const projects = mockPnpmProjects("(GPL-3.0-only OR MIT)");
     const config = readLicenseConfig(configPath);
     const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
 
@@ -113,10 +103,22 @@ it("expect OR license expression to fail if none of the alternatives are allowed
             .flat()
             .some((arg) =>
                 String(arg).includes(
-                    "License '(GPL-3.0-only OR ISC)' of dependency 'package-a' (version: 0.0.1) is not allowed by configuration."
+                    "License '(GPL-3.0-only OR MIT)' of dependency 'package-a' (version: 0.0.1) combines multiple licenses with 'OR'."
                 )
             )
     ).toBe(true);
+});
+
+
+it("expect OR license expression to pass if added verbatim to allowedLicenses", async () => {
+    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
+    const projects = mockPnpmProjects("(GPL-3.0-only OR MIT)");
+    const config = readLicenseConfig(configPath);
+    config.allowedLicenses.push("(GPL-3.0-only OR MIT)");
+    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
+    onTestFailed(() => console.log(analyzedLicenses.items));
+    expect(analyzedLicenses.error).toBe(false);
+    expect(analyzedLicenses.items[0]?.license).toBe("(GPL-3.0-only OR MIT)");
 });
 
 it("expect overrideLicenses to bypass expression evaluation entirely", async () => {

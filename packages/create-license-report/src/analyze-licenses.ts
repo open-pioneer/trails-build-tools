@@ -7,6 +7,7 @@ import { findFirstLicenseFile, findFirstNoticeFile } from "./find-license-files"
 import { LicenseItem } from "./license-report-template";
 import { PnpmLicenseProject, walkProjectLocations } from "./pnpm-license-report";
 import { createConsoleLogger, getChalk, Logger, SILENT_LOGGER } from "@open-pioneer/cli-logging";
+import spdxExpressionParse from "spdx-expression-parse";
 import spdxSatisfies from "spdx-satisfies";
 
 interface DependencyEntry {
@@ -125,6 +126,25 @@ function isLicenseAllowed(license: string, allowedLicenses: string[]): boolean {
     }
 }
 
+function isOrExpression(license: string): boolean {
+    try {
+        return containsOrConjunction(spdxExpressionParse(license));
+    } catch {
+        return false;
+    }
+}
+
+function containsOrConjunction(info: ReturnType<typeof spdxExpressionParse>): boolean {
+    if (!("conjunction" in info)) {
+        return false;
+    }
+    return (
+        info.conjunction === "or" ||
+        containsOrConjunction(info.left) ||
+        containsOrConjunction(info.right)
+    );
+}
+
 function processEntry(
     entry: DependencyEntry,
     config: LicenseConfig,
@@ -141,6 +161,16 @@ function processEntry(
         logger.warn(
             chalk.yellow(
                 `Failed to detect licenses of dependency ${dependencyInfo}${entry.packagePath ? ` at ${entry.packagePath}` : ""}`
+            )
+        );
+    } else if (isOrExpression(license) && !config.allowedLicenses.includes(license)) {
+        hasError = true;
+        // "OR" expressions are ambiguous, they leave the actual license choice open
+        logger.warn(
+            chalk.yellow(
+                `License '${license}' of dependency ${dependencyInfo} combines multiple licenses with 'OR'. ` +
+                    `Please decide for one of the licenses, either by adding an override for this dependency ` +
+                    `to overrideLicenses, or by adding '${license}' to allowedLicenses.`
             )
         );
     } else if (!isLicenseAllowed(license, config.allowedLicenses)) {

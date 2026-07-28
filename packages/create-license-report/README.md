@@ -73,7 +73,7 @@ The additional licenses can be used to add additional licenses that are not auto
 A dependency's license may be a compound [SPDX license expression](https://spdx.org/licenses/), e.g. `"MIT AND BSD-3-Clause"` or `"(MPL-2.0 OR Apache-2.0)"`. These are evaluated with [`spdx-satisfies`](https://www.npmjs.com/package/spdx-satisfies):
 
 - `AND`: every license in the expression must be listed in `allowedLicenses`.
-- `OR`: allowed as soon as at least one of the alternatives is listed in `allowedLicenses`.
+- `OR`: always rejected, even if one of the alternatives is listed in `allowedLicenses`. The expression leaves the actual license open, so the choice must be made explicitly by the user, either by adding an `overrideLicenses` entry that replaces the expression with one concrete license, or by adding the exact expression text (e.g. `"(MPL-2.0 OR Apache-2.0)"`) to `allowedLicenses`.
 
 If a dependency's license expression cannot be satisfied this way (or a specific license should be forced regardless), add an explicit `overrideLicenses` entry for that dependency; its `license` value replaces the whole expression.
 
