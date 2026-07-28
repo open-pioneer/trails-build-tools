@@ -31,6 +31,15 @@ it("create license report with production deps only", async () => {
     expect(html).not.toContain("package-c");
 });
 
+it("generated html content matches snapshot", async () => {
+    const outputPath = resolve(TEMP_PATH, "test-snapshot.html");
+    const result = await runCli("license-config.yaml", outputPath);
+    expect(result.exitCode).toBe(0);
+    expect(existsSync(outputPath)).toBe(true);
+    const html = readFileSync(outputPath, "utf-8");
+    await expect(html).toMatchFileSnapshot("__snapshots__/license-report.snapshot.html");
+});
+
 it("create license report with dev and additional dependencies", async () => {
     const outputPath = resolve(TEMP_PATH, "test-all.html");
     const result = await runCli("license-config-all.yaml", outputPath);
