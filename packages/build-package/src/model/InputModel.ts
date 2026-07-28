@@ -1,5 +1,9 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import {
     BUILD_CONFIG_NAME,
     BuildConfig,
@@ -7,9 +11,6 @@ import {
     createPackageConfigFromBuildConfig,
     loadBuildConfig
 } from "@open-pioneer/build-common";
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
 
 export interface InputModel {
     /** Path to the package's source directory. */

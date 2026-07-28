@@ -1,18 +1,19 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
+import { existsSync } from "node:fs";
+import nativePath from "node:path";
 import {
     Property,
     Service,
     UiReference,
     PackageMetadataV1 as V1
 } from "@open-pioneer/build-common";
-import { existsSync } from "node:fs";
-import nativePath from "node:path";
+import { ResolvedValidationOptions } from "./model/Options";
 import { PackageModel } from "./model/PackageModel";
+import { getExportedName } from "./utils/entryPoints";
 import { Logger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
-import { ResolvedValidationOptions } from "./model/Options";
-import { getExportedName } from "./utils/entryPoints";
 
 type SimplePackageModel = Pick<
     PackageModel,
@@ -110,7 +111,7 @@ function validatePackageJson(
 
     if (
         !sourcePackageJson.publishConfig ||
-        (sourcePackageJson.publishConfig as any).directory !== "dist" // eslint-disable-line @typescript-eslint/no-explicit-any
+        (sourcePackageJson.publishConfig as any).directory !== "dist" // oxlint-disable-line @typescript-eslint/no-explicit-any
     ) {
         validationErrors.report(
             `${sourcePackageJsonPath} should define 'publishConfig.directory' to point to the 'dist' directory (see https://pnpm.io/package_json#publishconfigdirectory).`

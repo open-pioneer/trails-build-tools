@@ -22,6 +22,6 @@
         "skipLibCheck": true, // small issue within vite typings (FSWatcher)
         "skipDefaultLibCheck": true
     },
-    "include": ["packages", "integration-tests"],
+    "include": ["packages", "integration-tests", "oxlint.config.ts", "oxfmt.config.ts"],
     "exclude": ["**/dist/**", "**/test-data/**", "**/temp/**", "**/node_modules/**"]
 }

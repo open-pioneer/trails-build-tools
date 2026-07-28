@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { expect, it } from "vitest";
-import { LATEST_VERSION, parsePackageMetadata, serializePackageMetadata } from "./v1";
 import { PackageMetadataV1 } from "../..";
 import { DEFAULT_PACKAGE_TARGET } from "../buildConfig";
+import { LATEST_VERSION, parsePackageMetadata, serializePackageMetadata } from "./v1";
 
 it("fails to parse an object without a version", function () {
     const result = parsePackageMetadata({});

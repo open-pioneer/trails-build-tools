@@ -1,17 +1,18 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
-import { glob } from "tinyglobby";
+
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
+import { glob } from "tinyglobby";
 import { expect, it, onTestFailed } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { expectError } from "./testing/helpers";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
+import { createMemoryLogger } from "./utils/Logger";
 
 it("transpiles a simple javascript project", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
@@ -209,7 +210,7 @@ it("generates source maps when enabled", async function () {
 
     // Sourcemap exists
     const sourceMapPath = resolve(outputDirectory, "entryPointA.js.map");
-    expect(existsSync(sourceMapPath));
+    expect(existsSync(sourceMapPath)).toBe(true);
 
     // Expect pretty source file paths instead of relative local file paths.
     // Also expect that the actual source file content is embedded into the sourcemap.
@@ -453,9 +454,9 @@ it("supports various ways to spell entry points", async function () {
     });
 
     // Everything is transpiled to ".js"
-    expect(existsSync(resolve(outputDirectory, "index.js")));
-    expect(existsSync(resolve(outputDirectory, "relative.js")));
-    expect(existsSync(resolve(outputDirectory, "deeply/nested/module.js")));
+    expect(existsSync(resolve(outputDirectory, "index.js"))).toBe(true);
+    expect(existsSync(resolve(outputDirectory, "relative.js"))).toBe(true);
+    expect(existsSync(resolve(outputDirectory, "deeply/nested/module.js"))).toBe(true);
 });
 
 it("throws an error if an imported file does not exist", async function () {

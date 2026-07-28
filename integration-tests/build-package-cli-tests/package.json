@@ -1,6 +1,10 @@
 {
     "name": "build-package-cli-tests",
     "private": true,
+    "scripts": {
+        "clean": "rimraf temp",
+        "test": "vitest"
+    },
     "devDependencies": {
         "@chakra-ui/icons": "catalog:tests",
         "@open-pioneer/build-package-cli": "workspace:^",
@@ -17,7 +21,6 @@
         "@types/uuid": "catalog:tests",
         "chakra-react-select": "catalog:tests",
         "classnames": "catalog:tests",
-        "tinyglobby": "catalog:",
         "fs-extra": "catalog:",
         "ol": "catalog:tests",
         "proj4": "catalog:tests",
@@ -25,11 +28,8 @@
         "react-dom": "catalog:tests",
         "react-select": "catalog:tests",
         "react-use": "catalog:tests",
+        "tinyglobby": "catalog:",
         "uuid": "catalog:tests",
         "zx": "catalog:"
-    },
-    "scripts": {
-        "clean": "rimraf temp",
-        "test": "vitest"
     }
 }

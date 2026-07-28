@@ -1,13 +1,14 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type * as Ts from "typescript";
-import { Logger } from "./utils/Logger";
-import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { glob } from "tinyglobby";
+import type * as Ts from "typescript";
 import { SUPPORTED_TS_EXTENSIONS } from "./model/PackageModel";
 import { createDebugger } from "./utils/debug";
-import { existsSync } from "node:fs";
+import { NormalizedEntryPoint } from "./utils/entryPoints";
+import { Logger } from "./utils/Logger";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:buildDts");
@@ -94,6 +95,7 @@ export async function shouldGenerateTypes(packageDirectory: string, force?: bool
     return files.length > 0;
 }
 
+// oxlint-disable-next-line max-params
 function createTypeScriptConfig(
     ts: TsModule,
     packageDirectory: string,
@@ -120,6 +122,7 @@ function createTypeScriptConfig(
     const fileNames = entryPoints.map((e) => resolve(packageDirectory, e.inputModulePath));
     let options: Ts.CompilerOptions = {};
     let errors: Ts.Diagnostic[] = [];
+    // oxlint-disable-next-line oxc/branches-sharing-code
     if (tsConfigPath && existsSync(tsConfigPath)) {
         const configFile = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
         if (configFile.error) {

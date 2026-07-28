@@ -1,11 +1,12 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { existsSync, lstatSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
-import type { Plugin, PluginContext } from "rollup";
 import { normalizePath } from "@rollup/pluginutils";
-import { resolveWithExtensions } from "../utils/resolve";
+import type { Plugin, PluginContext } from "rollup";
 import { getExtension, getFileNameWithQuery } from "../utils/pathUtils";
+import { resolveWithExtensions } from "../utils/resolve";
 
 export interface ResolvePluginOptions {
     packageDirectory: string;

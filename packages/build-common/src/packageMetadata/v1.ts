@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 /**
  * This module contains the description for version 1.x of the serialized metadata format.
  * After the initial release, only compatible changes can be made:
@@ -50,9 +51,9 @@
  * @module
  */
 import { SemVer } from "semver";
+import { z } from "zod";
 import type { PackageMetadataV1 as V1 } from "../../types";
 import { canParse } from "../versionUtils";
-import { z } from "zod";
 
 export const LATEST_VERSION = "1.1.0";
 
@@ -204,7 +205,7 @@ export const serializePackageMetadata: typeof V1.serializePackageMetadata = (
     metadata: V1.OutputPackageMetadata,
     target: V1.MinorVersion
 ) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     if ((metadata as any)[VERSION_FIELD]) {
         throw new Error(`The package metadata version should not be specified directly.`);
     }

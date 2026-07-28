@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { posix } from "node:path";
 import { dataToEsm, normalizePath } from "@rollup/pluginutils";
+import { gte } from "semver";
 import type * as API from "../../types";
 import { canParse } from "../versionUtils";
-import { gte } from "semver";
 
 const PACKAGE_NAME = "@open-pioneer/runtime";
 const REACT_INTEGRATION_MODULE_ID = "@open-pioneer/runtime/react-integration";

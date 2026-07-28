@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { RuntimeSupport } from "@open-pioneer/build-common";
+
 import { readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { cwd } from "node:process";
+import { RuntimeSupport } from "@open-pioneer/build-common";
 import { normalizePath, Rolldown, UserConfig, Plugin as VitePlugin } from "vite";
-import { ReportableError } from "./ReportableError";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
@@ -17,12 +17,13 @@ import {
     VIRTUAL_ID_FILTER
 } from "./codegen/shared";
 import { DeploymentModule } from "./deployment";
-import { MetadataRepository } from "./metadata/MetadataRepository";
+import { createMetadataContextFromRolldown } from "./metadata/Context";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
+import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
+import { ReportableError } from "./ReportableError";
 import { createDebugger } from "./utils/debug";
 import { fileExists } from "./utils/fileUtils";
-import { createMetadataContextFromRolldown } from "./metadata/Context";
 
 type PluginContext = Rolldown.PluginContext;
 type SourceDescription = Rolldown.SourceDescription;
@@ -325,9 +326,9 @@ function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
 
     ctx.error({
         message: message,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         cause: (error as any).cause,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         stack: (error as any).stack
     });
 }
@@ -369,14 +370,14 @@ function jsModule(code: string): SourceDescription {
 
 function getCauseMessages(error: unknown): string[] {
     const causes: string[] = [];
-    // eslint-disable-next-line no-constant-condition
+    // oxlint-disable-next-line no-constant-condition
     while (1) {
         const cause = (error as Error)?.cause;
         if (!cause) {
             break;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         const message = (cause as any).message;
         if (!message || typeof message !== "string") {
             break;

@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { copy } from "fs-extra";
+
 import { lstatSync } from "node:fs";
 import { relative, resolve } from "node:path";
+import { copy } from "fs-extra";
 import { ResolvedValidationOptions } from "./model/Options";
-import { ValidationReporter } from "./utils/ValidationReporter";
 import { createDebugger } from "./utils/debug";
 import { resolveFirstMatchWithExtensions } from "./utils/resolve";
+import { ValidationReporter } from "./utils/ValidationReporter";
 
 export interface CopyAuxiliaryFilesOptions {
     /** Package source directory. */
