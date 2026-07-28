@@ -36,12 +36,14 @@
         "commander": "catalog:",
         "handlebars": "catalog:",
         "js-yaml": "catalog:",
+        "spdx-satisfies": "catalog:",
         "tinyglobby": "catalog:",
         "zod": "catalog:",
         "zx": "catalog:"
     },
     "devDependencies": {
         "@types/js-yaml": "catalog:",
+        "@types/spdx-satisfies": "catalog:",
         "build-tools": "workspace:*"
     },
     "engines": {

@@ -68,6 +68,15 @@ The additional licenses can be used to add additional licenses that are not auto
 
 `skipDevDependencies` controls whether dev dependencies are excluded from the report. It defaults to `true` when omitted, so older `license-config.yaml` files keep their previous behavior.
 
+### Compound SPDX license expressions
+
+A dependency's license may be a compound [SPDX license expression](https://spdx.org/licenses/), e.g. `"MIT AND BSD-3-Clause"` or `"(MPL-2.0 OR Apache-2.0)"`. These are evaluated with [`spdx-satisfies`](https://www.npmjs.com/package/spdx-satisfies):
+
+- `AND`: every license in the expression must be listed in `allowedLicenses`.
+- `OR`: allowed as soon as at least one of the alternatives is listed in `allowedLicenses`.
+
+If a dependency's license expression cannot be satisfied this way (or a specific license should be forced regardless), add an explicit `overrideLicenses` entry for that dependency; its `license` value replaces the whole expression.
+
 ## License
 
 Apache-2.0 (see `LICENSE` file)

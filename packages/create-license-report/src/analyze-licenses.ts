@@ -7,6 +7,7 @@ import { findFirstLicenseFile, findFirstNoticeFile } from "./find-license-files"
 import { LicenseItem } from "./license-report-template";
 import { PnpmLicenseProject, walkProjectLocations } from "./pnpm-license-report";
 import { createConsoleLogger, getChalk, Logger, SILENT_LOGGER } from "@open-pioneer/cli-logging";
+import spdxSatisfies from "spdx-satisfies";
 
 interface DependencyEntry {
     id: string;
@@ -112,6 +113,18 @@ export async function analyzeLicenses(
     return { error: hasError, items };
 }
 
+/**
+ * If `license` is not a valid SPDX expression (e.g. `"UNLICENSED"`),
+ * falls back to an exact string match.
+ */
+function isLicenseAllowed(license: string, allowedLicenses: string[]): boolean {
+    try {
+        return spdxSatisfies(license, allowedLicenses);
+    } catch {
+        return allowedLicenses.includes(license);
+    }
+}
+
 function processEntry(
     entry: DependencyEntry,
     config: LicenseConfig,
@@ -130,7 +143,7 @@ function processEntry(
                 `Failed to detect licenses of dependency ${dependencyInfo}${entry.packagePath ? ` at ${entry.packagePath}` : ""}`
             )
         );
-    } else if (!config.allowedLicenses.includes(license)) {
+    } else if (!isLicenseAllowed(license, config.allowedLicenses)) {
         hasError = true;
         logger.warn(
             chalk.yellow(
