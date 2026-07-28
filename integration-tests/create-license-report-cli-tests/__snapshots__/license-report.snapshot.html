@@ -1,251 +1,302 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>License Report – simple-project</title><style>
-    :root {
-        color-scheme: light;
-        --bg: #f4f5f7;
-        --surface: #ffffff;
-        --border: #e2e4e9;
-        --text: #1c1f26;
-        --text-muted: #5b6270;
-        --accent: #3654d1;
-        --accent-contrast: #ffffff;
-        --radius: 10px;
-        font-synthesis: none;
-    }
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>License Report – simple-project</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #f4f5f7;
+                --surface: #ffffff;
+                --border: #e2e4e9;
+                --text: #1c1f26;
+                --text-muted: #5b6270;
+                --accent: #3654d1;
+                --accent-contrast: #ffffff;
+                --radius: 10px;
+                font-synthesis: none;
+            }
 
-    * {
-        box-sizing: border-box;
-    }
+            * {
+                box-sizing: border-box;
+            }
 
-    body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family:
-            "Segoe UI",
-            system-ui,
-            -apple-system,
-            Roboto,
-            Helvetica,
-            Arial,
-            sans-serif;
-        line-height: 1.5;
-    }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family:
+                    "Segoe UI",
+                    system-ui,
+                    -apple-system,
+                    Roboto,
+                    Helvetica,
+                    Arial,
+                    sans-serif;
+                line-height: 1.5;
+            }
 
-    a {
-        color: var(--accent);
-    }
+            a {
+                color: var(--accent);
+            }
 
-    .page-header {
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        padding: 2rem 1.5rem;
-    }
+            .page-header {
+                background: var(--surface);
+                border-bottom: 1px solid var(--border);
+                padding: 2rem 1.5rem;
+            }
 
-    .page-header-inner {
-        max-width: 880px;
-        margin: 0 auto;
-    }
+            .page-header-inner {
+                max-width: 880px;
+                margin: 0 auto;
+            }
 
-    .page-header h1 {
-        margin: 0;
-        font-size: 1.5rem;
-        letter-spacing: -0.01em;
-    }
+            .page-header h1 {
+                margin: 0;
+                font-size: 1.5rem;
+                letter-spacing: -0.01em;
+            }
 
-    .page-header .project-name {
-        margin: 0.25rem 0 0;
-        color: var(--text-muted);
-        font-size: 1rem;
-    }
+            .page-header .project-name {
+                margin: 0.25rem 0 0;
+                color: var(--text-muted);
+                font-size: 1rem;
+            }
 
-    .stats {
-        display: flex;
-        gap: 1.5rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
+            .stats {
+                display: flex;
+                gap: 1.5rem;
+                margin-top: 1rem;
+                flex-wrap: wrap;
+            }
 
-    .stat {
-        font-size: 0.875rem;
-        color: var(--text-muted);
-    }
+            .stat {
+                font-size: 0.875rem;
+                color: var(--text-muted);
+            }
 
-    .stat strong {
-        color: var(--text);
-        font-size: 1rem;
-    }
+            .stat strong {
+                color: var(--text);
+                font-size: 1rem;
+            }
 
-    main {
-        max-width: 880px;
-        margin: 0 auto;
-        padding: 1.5rem;
-    }
+            main {
+                max-width: 880px;
+                margin: 0 auto;
+                padding: 1.5rem;
+            }
 
-    .toolbar {
-        display: flex;
-        gap: 0.75rem;
-        align-items: center;
-        margin-bottom: 1.25rem;
-        flex-wrap: wrap;
-    }
+            .toolbar {
+                display: flex;
+                gap: 0.75rem;
+                align-items: center;
+                margin-bottom: 1.25rem;
+                flex-wrap: wrap;
+            }
 
-    #search {
-        flex: 1 1 240px;
-        padding: 0.55rem 0.8rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        font-size: 0.9rem;
-        background: var(--surface);
-        color: var(--text);
-    }
+            #search {
+                flex: 1 1 240px;
+                padding: 0.55rem 0.8rem;
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                font-size: 0.9rem;
+                background: var(--surface);
+                color: var(--text);
+            }
 
-    #search:focus {
-        outline: 2px solid var(--accent);
-        outline-offset: 1px;
-    }
+            #search:focus {
+                outline: 2px solid var(--accent);
+                outline-offset: 1px;
+            }
 
-    .toolbar-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
+            .toolbar-actions {
+                display: flex;
+                gap: 0.5rem;
+            }
 
-    .toolbar-actions button {
-        padding: 0.5rem 0.9rem;
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        background: var(--surface);
-        color: var(--text);
-        font-size: 0.85rem;
-        cursor: pointer;
-    }
+            .toolbar-actions button {
+                padding: 0.5rem 0.9rem;
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                background: var(--surface);
+                color: var(--text);
+                font-size: 0.85rem;
+                cursor: pointer;
+            }
 
-    .toolbar-actions button:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-    }
+            .toolbar-actions button:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+            }
 
-    .dependencies {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.6rem;
-    }
+            .dependencies {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+            }
 
-    .dependency {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        overflow: hidden;
-    }
+            .dependency {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                overflow: hidden;
+            }
 
-    .dependency[hidden] {
-        display: none;
-    }
+            .dependency[hidden] {
+                display: none;
+            }
 
-    .dependency summary {
-        display: flex;
-        align-items: baseline;
-        gap: 0.6rem;
-        padding: 0.85rem 1rem;
-        cursor: pointer;
-        list-style: none;
-    }
+            .dependency summary {
+                display: flex;
+                align-items: baseline;
+                gap: 0.6rem;
+                padding: 0.85rem 1rem;
+                cursor: pointer;
+                list-style: none;
+            }
 
-    .dependency summary::-webkit-details-marker {
-        display: none;
-    }
+            .dependency summary::-webkit-details-marker {
+                display: none;
+            }
 
-    .dependency summary::before {
-        content: "\25B8";
-        display: inline-block;
-        color: var(--text-muted);
-        transition: transform 0.15s ease;
-        flex: 0 0 auto;
-    }
+            .dependency summary::before {
+                content: "\25B8";
+                display: inline-block;
+                color: var(--text-muted);
+                transition: transform 0.15s ease;
+                flex: 0 0 auto;
+            }
 
-    .dependency[open] summary::before {
-        transform: rotate(90deg);
-    }
+            .dependency[open] summary::before {
+                transform: rotate(90deg);
+            }
 
-    .dep-name {
-        font-weight: 600;
-    }
+            .dep-name {
+                font-weight: 600;
+            }
 
-    .dep-version {
-        color: var(--text-muted);
-        font-size: 0.85rem;
-    }
+            .dep-version {
+                color: var(--text-muted);
+                font-size: 0.85rem;
+            }
 
-    .license-badge {
-        margin-left: auto;
-        padding: 0.15rem 0.55rem;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        white-space: nowrap;
-    }
+            .license-badge {
+                margin-left: auto;
+                padding: 0.15rem 0.55rem;
+                border-radius: 999px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                white-space: nowrap;
+            }
 
-    .dependency-content {
-        padding: 0 1rem 1.1rem;
-        border-top: 1px solid var(--border);
-    }
+            .dependency-content {
+                padding: 0 1rem 1.1rem;
+                border-top: 1px solid var(--border);
+            }
 
-    .dependency-content h3 {
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--text-muted);
-        margin: 1rem 0 0.4rem;
-    }
+            .dependency-content h3 {
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                color: var(--text-muted);
+                margin: 1rem 0 0.4rem;
+            }
 
-    .dependency-content pre {
-        white-space: pre-wrap;
-        word-break: break-word;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 0.75rem;
-        margin: 0;
-        font-size: 0.8rem;
-        font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-        max-height: 20rem;
-        overflow: auto;
-    }
+            .dependency-content pre {
+                white-space: pre-wrap;
+                word-break: break-word;
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 0.75rem;
+                margin: 0;
+                font-size: 0.8rem;
+                font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+                max-height: 20rem;
+                overflow: auto;
+            }
 
-    .empty-state {
-        text-align: center;
-        color: var(--text-muted);
-        padding: 2rem 0;
-    }
-</style></head><body><header class="page-header"><div class="page-header-inner"><h1>License Report</h1><p class="project-name">simple-project</p><div class="stats"><span class="stat"><strong>1</strong> dependencies</span><span class="stat"><strong>1</strong> licenses</span></div></div></header><main><div class="toolbar"><input id="search" type="search" placeholder="Filter by name or license…"/><div class="toolbar-actions"><button id="expand-all" type="button">Expand all</button><button id="collapse-all" type="button">Collapse all</button></div></div><ul class="dependencies" id="dependency-list"><li class="dependency" data-name="package-a" data-license="mit"><details><summary><span class="dep-name">package-a</span><span class="dep-version">0.0.1</span><span class="license-badge" style="background: hsl(24, 55%, 92%); color: hsl(24, 55%, 30%);">MIT</span></summary><div class="dependency-content"><h3>License</h3><pre>The MIT License (MIT)
+            .empty-state {
+                text-align: center;
+                color: var(--text-muted);
+                padding: 2rem 0;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="page-header">
+            <div class="page-header-inner">
+                <h1>License Report</h1>
+                <p class="project-name">simple-project</p>
+                <div class="stats">
+                    <span class="stat"><strong>1</strong> dependencies</span
+                    ><span class="stat"><strong>1</strong> licenses</span>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="toolbar">
+                <input id="search" type="search" placeholder="Filter by name or license…" />
+                <div class="toolbar-actions">
+                    <button id="expand-all" type="button">Expand all</button
+                    ><button id="collapse-all" type="button">Collapse all</button>
+                </div>
+            </div>
+            <ul class="dependencies" id="dependency-list">
+                <li class="dependency" data-name="package-a" data-license="mit">
+                    <details>
+                        <summary>
+                            <span class="dep-name">package-a</span
+                            ><span class="dep-version">0.0.1</span
+                            ><span
+                                class="license-badge"
+                                style="background: hsl(24, 55%, 92%); color: hsl(24, 55%, 30%)"
+                                >MIT</span
+                            >
+                        </summary>
+                        <div class="dependency-content">
+                            <h3>License</h3>
+                            <pre>
+The MIT License (MIT)
 TEST
-</pre></div></details></li></ul><p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p></main><script>
-    const list = document.getElementById("dependency-list");
-    const items = Array.from(list.querySelectorAll(".dependency"));
-    const emptyState = document.getElementById("empty-state");
-    const search = document.getElementById("search");
+</pre
+                            >
+                        </div>
+                    </details>
+                </li>
+            </ul>
+            <p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p>
+        </main>
+        <script>
+            const list = document.getElementById("dependency-list");
+            const items = Array.from(list.querySelectorAll(".dependency"));
+            const emptyState = document.getElementById("empty-state");
+            const search = document.getElementById("search");
 
-    search.addEventListener("input", () => {
-        const query = search.value.trim().toLowerCase();
-        let visibleCount = 0;
-        for (const item of items) {
-            const matches =
-                !query ||
-                item.dataset.name.includes(query) ||
-                item.dataset.license.includes(query);
-            item.hidden = !matches;
-            if (matches) visibleCount++;
-        }
-        emptyState.hidden = visibleCount !== 0;
-    });
+            search.addEventListener("input", () => {
+                const query = search.value.trim().toLowerCase();
+                let visibleCount = 0;
+                for (const item of items) {
+                    const matches =
+                        !query ||
+                        item.dataset.name.includes(query) ||
+                        item.dataset.license.includes(query);
+                    item.hidden = !matches;
+                    if (matches) visibleCount++;
+                }
+                emptyState.hidden = visibleCount !== 0;
+            });
 
-    document.getElementById("expand-all").addEventListener("click", () => {
-        for (const item of items) item.open = true;
-    });
-    document.getElementById("collapse-all").addEventListener("click", () => {
-        for (const item of items) item.open = false;
-    });
-</script></body></html>
+            document.getElementById("expand-all").addEventListener("click", () => {
+                for (const item of items) item.querySelector("details").open = true;
+            });
+            document.getElementById("collapse-all").addEventListener("click", () => {
+                for (const item of items) item.querySelector("details").open = false;
+            });
+        </script>
+    </body>
+</html>

@@ -267,10 +267,10 @@ const SCRIPT = `
     });
 
     document.getElementById("expand-all").addEventListener("click", () => {
-        for (const item of items) item.open = true;
+        for (const item of items) item.querySelector("details").open = true;
     });
     document.getElementById("collapse-all").addEventListener("click", () => {
-        for (const item of items) item.open = false;
+        for (const item of items) item.querySelector("details").open = false;
     });
 `;
 
@@ -309,9 +309,7 @@ function LicenseItemView(item: LicenseItem) {
                 { class: "dependency-content" },
                 h("h3", null, "License"),
                 h("pre", null, item.licenseText),
-                item.noticeText
-                    ? [h("h3", null, "Notice"), h("pre", null, item.noticeText)]
-                    : null
+                item.noticeText ? [h("h3", null, "Notice"), h("pre", null, item.noticeText)] : null
             )
         )
     );
@@ -382,7 +380,11 @@ function ReportPage(projectName: string, licenseItems: LicenseItem[]) {
                     { class: "dependencies", id: "dependency-list" },
                     licenseItems.map(LicenseItemView)
                 ),
-                h("p", { id: "empty-state", class: "empty-state", hidden: true }, "No dependencies match your filter.")
+                h(
+                    "p",
+                    { id: "empty-state", class: "empty-state", hidden: true },
+                    "No dependencies match your filter."
+                )
             ),
             h("script", { dangerouslySetInnerHTML: { __html: SCRIPT } })
         )
