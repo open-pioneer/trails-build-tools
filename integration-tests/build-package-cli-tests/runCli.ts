@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { relative, resolve } from "node:path";
 import { copy } from "fs-extra";
 import { PACKAGE_DIR, TEMP_DATA_DIR, TEST_DATA_DIR } from "./paths";

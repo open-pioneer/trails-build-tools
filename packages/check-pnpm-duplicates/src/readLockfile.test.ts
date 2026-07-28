@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { beforeAll, expect, it } from "vitest";
 import { prepareLockfileDir } from "./testing/paths";
 import { readLockfile } from "./readLockfile";

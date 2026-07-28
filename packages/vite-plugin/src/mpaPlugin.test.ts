@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { runViteBuild, TEMP_DATA_DIR, TEST_DATA_DIR } from "./utils/testUtils";

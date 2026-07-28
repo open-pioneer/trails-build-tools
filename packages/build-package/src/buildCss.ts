@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { normalizePath } from "@rollup/pluginutils";
 import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
-import path, { extname, resolve } from "node:path";
+import { extname, default as nativePath, default as path, resolve } from "node:path";
 import type * as PostCss from "postcss";
-import { fileURLToPath, pathToFileURL } from "url";
 import type * as Sass from "sass";
+import { fileURLToPath, pathToFileURL } from "url";
 import { Logger } from "./utils/Logger";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { indent } from "./utils/indent";
 import { isInDirectory } from "./utils/pathUtils";
-import nativePath from "node:path";
 
 export interface BuildCssOptions {
     /** Package name from package.json */
@@ -131,7 +131,7 @@ async function loadPreprocessor(lang: "scss", logger: Logger) {
 
     let compileStringAsync: (typeof Sass)["compileStringAsync"];
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         const sassModule: any = await import("sass");
 
         // "Real" named exports are not present in all versions
@@ -221,7 +221,7 @@ function addSourceMap(code: string, sourceMap: unknown) {
 /**
  * Fixes source paths in source maps produced by sass, which can then be consumed by post css.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 function fixSassSourceMapPaths(sourceMapJson: any, packageDirectory: string) {
     return {
         ...sourceMapJson,

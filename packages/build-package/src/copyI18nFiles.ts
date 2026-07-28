@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { copy } from "fs-extra";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
@@ -33,6 +34,7 @@ export async function copyI18nFiles({
             throw new Error(`I18n file does not exist: ${absoluteSourcePath}`);
         }
         const absoluteTargetPath = resolve(outputDirectory, file);
+        // oxlint-disable-next-line no-await-in-loop
         await copy(absoluteSourcePath, absoluteTargetPath);
     }
 }

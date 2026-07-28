@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { RuntimeSupport } from "@open-pioneer/build-common";
 import { readFile } from "node:fs/promises";
 import { dirname } from "node:path";
@@ -325,9 +326,9 @@ function reportError(ctx: PluginContext, error: unknown, isDev: boolean) {
 
     ctx.error({
         message: message,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         cause: (error as any).cause,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         stack: (error as any).stack
     });
 }
@@ -369,14 +370,14 @@ function jsModule(code: string): SourceDescription {
 
 function getCauseMessages(error: unknown): string[] {
     const causes: string[] = [];
-    // eslint-disable-next-line no-constant-condition
+    // oxlint-disable-next-line no-constant-condition
     while (1) {
         const cause = (error as Error)?.cause;
         if (!cause) {
             break;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any
         const message = (cause as any).message;
         if (!message || typeof message !== "string") {
             break;

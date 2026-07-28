@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { BUILD_CONFIG_NAME, loadBuildConfig, RuntimeSupport } from "@open-pioneer/build-common";
 import { existsSync, realpathSync } from "fs";
 import { ErrnoException, resolve as importMetaResolve } from "import-meta-resolve";
@@ -76,7 +77,7 @@ export function checkImportsPlugin({
                 throw new Error("check-imports requires the node-resolve plugin to be present");
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // oxlint-disable-next-line @typescript-eslint/no-explicit-any
             getPackageInfo = (nodeResolvePlugin as any).getPackageInfoForId;
             if (typeof getPackageInfo !== "function") {
                 throw new Error(
@@ -213,6 +214,7 @@ class CheckImportsState {
         { path: string; packageInfo: NodeResolvePackageInfo | undefined }
     >();
 
+    // oxlint-disable-next-line max-params
     constructor(
         rootDirectory: string,
         packageJson: Record<string, unknown>,
@@ -481,7 +483,7 @@ class CheckImportsState {
                 result: undefined,
                 promise: this.#detectTrailsPackageImpl(packageName).then((result) => {
                     // We know this is initialized, see assignment above
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
                     cacheEntry!.result = result;
                 })
             };
@@ -589,7 +591,7 @@ function tryNodeImport(moduleId: string, parentFile: string): "found" | "not-fou
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 function isDeclaredDependency(packageName: string, packageJson: Record<string, any>): boolean {
     return !!(
         packageJson?.dependencies?.[packageName] ||

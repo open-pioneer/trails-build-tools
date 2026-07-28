@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { generate, nodes, template } from "../utils/babelDeps";
 import { serializeModuleId } from "./shared";
 import { PackageMetadata } from "../metadata/Metadata";
@@ -94,6 +95,7 @@ export async function generateI18nMessages(options: I18nMessageOptions): Promise
             continue;
         }
 
+        // oxlint-disable-next-line no-await-in-loop
         const { messages, overrides } = await loadI18n(pkg, filePath);
         if (pkg.name === appName) {
             packageOverrides = overrides;

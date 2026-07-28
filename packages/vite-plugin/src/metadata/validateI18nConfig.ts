@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists } from "../utils/fileUtils";
@@ -18,6 +19,7 @@ export async function validateI18nConfig(
     const locales = appMetadata.locales;
     for (const pkg of appMetadata.packages) {
         isDebug && debug("Checking i18n files of package %s", pkg.name);
+        // oxlint-disable-next-line no-await-in-loop
         await checkPackageI18nFiles(ctx, pkg, locales);
     }
 
@@ -41,6 +43,7 @@ async function checkPackageI18nFiles(
         isDebug && debug("Checking i18n file %s", filePath);
 
         ctx.addWatchFile(filePath);
+        // oxlint-disable-next-line no-await-in-loop
         if (!(await fileExists(filePath))) {
             throw new ReportableError(
                 `I18n file in package '${pkg.name}' for locale '${locale}' does not exist: '${filePath}'.`
@@ -110,7 +113,7 @@ async function checkAppI18n(
                 buffer += ", ";
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
             const pkg = errors[i]!;
             buffer += `'${pkg.name}' (${pkg.locales.toSorted().join(", ")})`;
         }

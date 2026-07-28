@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { resolve } from "node:path";
 import { loadI18nFile } from "../metadata/parseI18nYaml";
 import { generateI18nIndex, generateI18nMessages } from "./generateI18n";

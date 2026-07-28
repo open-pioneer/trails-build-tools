@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import {
     BUILD_CONFIG_NAME,
     BuildConfig,
@@ -307,7 +308,7 @@ async function parsePackageJson(packageJsonPath: string) {
         throw new ReportableError(`Expected a 'package.json' file at ${packageJsonPath}`);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     let packageJsonContent: any;
     try {
         packageJsonContent = JSON.parse(await readFile(packageJsonPath, "utf-8"));

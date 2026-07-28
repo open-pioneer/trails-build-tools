@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import {
     Property,
     Service,
@@ -110,7 +111,7 @@ function validatePackageJson(
 
     if (
         !sourcePackageJson.publishConfig ||
-        (sourcePackageJson.publishConfig as any).directory !== "dist" // eslint-disable-line @typescript-eslint/no-explicit-any
+        (sourcePackageJson.publishConfig as any).directory !== "dist" // oxlint-disable-line @typescript-eslint/no-explicit-any
     ) {
         validationErrors.report(
             `${sourcePackageJsonPath} should define 'publishConfig.directory' to point to the 'dist' directory (see https://pnpm.io/package_json#publishconfigdirectory).`

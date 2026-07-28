@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 export { BuildConfig } from "@open-pioneer/build-support";
 import { BuildConfig } from "@open-pioneer/build-support";
 
-// eslint-disable-next-line unused-imports/no-unused-vars
 declare const VALIDATED_RUNTIME_VERSION: unique symbol;
 
 export namespace RuntimeSupport {
