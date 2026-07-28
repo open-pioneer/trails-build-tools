@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 4.0.3
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+
 ## 4.0.2
 
 ### Patch Changes

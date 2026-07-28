@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package
 
+## 4.3.2
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+- Updated dependencies [3b1f9cf]
+    - @open-pioneer/build-support@3.1.3
+    - @open-pioneer/build-common@4.0.3
+
 ## 4.3.1
 
 ### Patch Changes
@@ -182,6 +191,7 @@
 ### Minor Changes
 
 - e4ae880: Implement additional validations when importing modules from other packages.
+
     - When importing modules from normal node packages, `build-package` will now check that the imported module actually exists.
     - When importing modules from another trails package in the same repository, `build-package` now verifies that the imported module is an actual entry point of that package (declared in the `build.config.mjs`).
 

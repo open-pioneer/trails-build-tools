@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 6.0.3
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+- Updated dependencies [3b1f9cf]
+    - @open-pioneer/build-common@4.0.3
+
 ## 6.0.2
 
 ### Patch Changes
@@ -122,6 +130,7 @@
 - f12e73f: Emit better errors when an application's i18n configuration does not match the supported locales of its dependencies.
 
     This can happen if:
+
     - An application does not list the `i18n` option in its `build.config.mjs` at all, or if
     - there is no overlap between the application's locales and the locales supported by one of its dependencies.
 
