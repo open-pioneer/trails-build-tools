@@ -14,25 +14,16 @@ export async function createLicenseReport(options: LicenseOptions) {
     const chalk = await getChalk();
     logger.info(chalk.gray("Start creating license report"));
 
-    const packageJsonPath = resolve(options.workingDir, "package.json");
-    if (!existsSync(packageJsonPath)) {
-        throw new Error(`package.json not found at: ${packageJsonPath}`);
-    }
-    const configPath = resolve(options.workingDir, options.configPath);
-    if (!existsSync(configPath)) {
-        throw new Error(`License config not found at: ${configPath}`);
-    }
-    const configPathDirectory = dirname(configPath);
-    const outputHtmlPath = resolve(options.workingDir, options.outputHtmlPath);
+    const { packageJsonPath, configPath, configPathDirectory, outputHtmlPath } = createPaths(options);
+    const projectName = getProjectName(packageJsonPath);
 
     logger.info(
         chalk.gray(
             `Using license config from ${configPath}, package.json from ${packageJsonPath} and writing result to ${outputHtmlPath}`
         )
     );
-
+    
     const config = readLicenseConfig(configPath);
-    const projectName = getProjectName(packageJsonPath);
 
     const projects = await getPnpmLicenseReport(options.workingDir, !config.skipDevDependencies);
 
@@ -42,8 +33,6 @@ export async function createLicenseReport(options: LicenseOptions) {
         configPathDirectory,
         options.log
     );
-
-    items.sort((a, b) => a.name.localeCompare(b.name));
 
     mkdirSync(dirname(outputHtmlPath), { recursive: true });
     const reportHtml = generateReportHtml(projectName, items);
@@ -56,6 +45,20 @@ export async function createLicenseReport(options: LicenseOptions) {
     logger.info(
         chalk.gray(`License report finished successfully. Report written to ${outputHtmlPath}`)
     );
+}
+
+function createPaths(options: LicenseOptions) {
+    const packageJsonPath = resolve(options.workingDir, "package.json");
+    if (!existsSync(packageJsonPath)) {
+        throw new Error(`package.json not found at: ${packageJsonPath}`);
+    }
+    const configPath = resolve(options.workingDir, options.configPath);
+    if (!existsSync(configPath)) {
+        throw new Error(`License config not found at: ${configPath}`);
+    }
+    const configPathDirectory = dirname(configPath);
+    const outputHtmlPath = resolve(options.workingDir, options.outputHtmlPath);
+    return { packageJsonPath, configPath, configPathDirectory, outputHtmlPath };
 }
 
 /**

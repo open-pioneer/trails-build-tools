@@ -45,6 +45,7 @@ export async function analyzeLicenses(
     let hasError = false;
     const usedOverrides = new Set<OverrideLicenseEntry>();
 
+    // set overrides from own config 
     const getOverrideEntry = (name: string, version: string) => {
         const entry = config.overrideLicenses?.find(
             (e) => e.name === name && e.version === version
@@ -58,6 +59,7 @@ export async function analyzeLicenses(
     const entries: DependencyEntry[] = [];
     let index = 0;
 
+    // check every output from pnpm and save entry
     for (const project of projects) {
         for (const { path, version } of walkProjectLocations(project)) {
             const overrideEntry = getOverrideEntry(project.name, version);
@@ -73,6 +75,7 @@ export async function analyzeLicenses(
         }
     }
 
+    // add additional licenses from own config
     for (const additional of config.additionalLicenses ?? []) {
         entries.push({
             id: `dep-${index++}`,
@@ -92,6 +95,7 @@ export async function analyzeLicenses(
         items.push(result.item);
     }
 
+    // check if overrides are not used anymore
     if (config.overrideLicenses) {
         for (const overrideEntry of config.overrideLicenses) {
             if (!usedOverrides.has(overrideEntry)) {
@@ -103,7 +107,8 @@ export async function analyzeLicenses(
             }
         }
     }
-
+    
+    items.sort((a, b) => a.name.localeCompare(b.name));
     return { error: hasError, items };
 }
 
