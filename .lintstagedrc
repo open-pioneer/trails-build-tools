@@ -1,7 +1,7 @@
 {
     "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}": [
-        "prettier --write",
+        "oxfmt --no-error-on-unmatched-pattern",
         "oxlint --no-error-on-unmatched-pattern"
     ],
-    "*.{md,json,css,scss,html,yaml,yml}": ["prettier --write"]
+    "*.{md,json,css,scss,html,yaml,yml}": ["oxfmt --no-error-on-unmatched-pattern"]
 }

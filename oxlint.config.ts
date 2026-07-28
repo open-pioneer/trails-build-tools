@@ -21,7 +21,6 @@ export default defineConfig({
         "**/test-data",
         "**/.*",
         "**/__snapshots"
-        // "packages/pnpm-plugin-defaults/pnpmfile.cjs"
     ],
     options: {
         reportUnusedDisableDirectives: "error"

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Plugin } from "vite";
+import type { PioneerPluginOptions } from "../types";
 import { codegenPlugin } from "./codegenPlugin";
 import { mpaPlugin } from "./mpaPlugin";
-import type { PioneerPluginOptions } from "../types";
 export { type PioneerPluginOptions };
 
 export function pioneer(options?: PioneerPluginOptions): Plugin[] {

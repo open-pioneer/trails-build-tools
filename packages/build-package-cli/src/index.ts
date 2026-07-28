@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
+import { cwd, exit } from "node:process";
 import { build } from "@open-pioneer/build-package";
 import { Command } from "commander";
-import { cwd, exit } from "node:process";
 import { version } from "../package.json";
 
 const program = new Command();

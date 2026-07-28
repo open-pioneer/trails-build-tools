@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { realpath } from "fs/promises";
-import { ResolverFactory } from "oxc-resolver";
 import { dirname, posix } from "path";
+import { ResolverFactory } from "oxc-resolver";
 import { glob } from "tinyglobby";
+import { normalizePath } from "vite";
 import { createDebugger } from "../utils/debug";
 import { MetadataContext } from "./Context";
-import { PackageMetadata } from "./Metadata";
 import { loadPackageMetadata } from "./loadPackageMetadata";
-import { normalizePath } from "vite";
+import { PackageMetadata } from "./Metadata";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");

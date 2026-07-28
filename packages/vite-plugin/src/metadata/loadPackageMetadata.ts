@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import posix from "node:path/posix";
 import {
     BUILD_CONFIG_NAME,
     BuildConfig,
@@ -10,10 +14,6 @@ import {
     createPackageConfigFromPackageMetadata,
     loadBuildConfig
 } from "@open-pioneer/build-common";
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import posix from "node:path/posix";
 import { normalizePath } from "vite";
 import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";

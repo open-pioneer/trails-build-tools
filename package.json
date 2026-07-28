@@ -1,9 +1,9 @@
 {
     "name": "build-tools",
-    "type": "module",
     "version": "0.0.1",
     "private": true,
     "license": "Apache-2.0",
+    "type": "module",
     "scripts": {
         "clean": "pnpm recursive --no-sort run clean",
         "dev": "pnpm run --parallel --if-present dev",
@@ -13,12 +13,11 @@
         "watch-types": "pnpm check-types -w",
         "lint": "oxlint .",
         "lint:fix": "oxlint . --fix",
-        "prettier-check": "pnpm prettier:common -c",
-        "prettier": "pnpm prettier:common -w",
-        "prettier:common": "prettier ./packages ./integration-tests --cache",
+        "fmt": "oxfmt",
+        "fmt:check": "oxfmt --check",
         "prepare": "husky",
         "ci:test": "pnpm run clean && pnpm run check-types && pnpm run lint && pnpm run build && pnpm install && pnpm run test run",
-        "ci:version": "pnpm changeset version && pnpm prettier && pnpm install",
+        "ci:version": "pnpm changeset version && pnpm exec oxfmt && pnpm install",
         "ci:publish": "pnpm run clean && pnpm run build && pnpm publish -r --access public && pnpm changeset tag"
     },
     "devDependencies": {
@@ -28,9 +27,9 @@
         "esbuild": "catalog:",
         "husky": "catalog:",
         "lint-staged": "catalog:",
-        "prettier": "catalog:",
-        "rimraf": "catalog:",
+        "oxfmt": "catalog:",
         "oxlint": "catalog:",
+        "rimraf": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
         "vitest": "catalog:"

@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { BUILD_CONFIG_NAME, loadBuildConfig, RuntimeSupport } from "@open-pioneer/build-common";
 import { existsSync, realpathSync } from "fs";
-import { ErrnoException, resolve as importMetaResolve } from "import-meta-resolve";
 import { dirname, isAbsolute, join, resolve } from "node:path";
-import { Plugin, PluginContext, ResolvedId } from "rollup";
 import { fileURLToPath, pathToFileURL } from "url";
+import { BUILD_CONFIG_NAME, loadBuildConfig, RuntimeSupport } from "@open-pioneer/build-common";
+import { ErrnoException, resolve as importMetaResolve } from "import-meta-resolve";
+import { Plugin, PluginContext, ResolvedId } from "rollup";
 import { loadPackageJson } from "../model/InputModel";
 import { getEntryPointsFromBuildConfig } from "../model/PackageModel";
 import { createDebugger } from "../utils/debug";
-import { getFileNameWithQuery, isInDirectory } from "../utils/pathUtils";
 import { getExportedName } from "../utils/entryPoints";
+import { getFileNameWithQuery, isInDirectory } from "../utils/pathUtils";
 
 export interface CheckImportsOptions {
     packageJson: Record<string, unknown>;
@@ -107,7 +107,8 @@ export function checkImportsPlugin({
                 // We allow the import but remap it to external, because node modules
                 // must not be bundled.
                 const nodeResolveData = options?.custom?.["node-resolve"] as
-                    NodeResolveData | undefined;
+                    | NodeResolveData
+                    | undefined;
                 if (nodeResolveData) {
                     isDebug &&
                         debug(

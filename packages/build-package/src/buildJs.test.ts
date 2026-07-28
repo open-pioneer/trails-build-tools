@@ -1,18 +1,18 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
-import { glob } from "tinyglobby";
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
+import { glob } from "tinyglobby";
 import { expect, it, onTestFailed } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { expectError } from "./testing/helpers";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { createMemoryLogger } from "./utils/Logger";
 import { normalizeEntryPoints } from "./utils/entryPoints";
+import { createMemoryLogger } from "./utils/Logger";
 
 it("transpiles a simple javascript project", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");

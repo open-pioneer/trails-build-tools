@@ -1,12 +1,12 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
+import { existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { DEFAULT_PACKAGE_TARGET, PackageMetadataV1 } from "@open-pioneer/build-common";
 import { PublishConfig, ValidationOptions } from "@open-pioneer/build-support";
 import findGitRoot from "find-git-root";
 import findWorkspaces from "find-workspaces";
-import { existsSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
 import { shouldGenerateTypes } from "../buildDts";
 import { createDebugger } from "../utils/debug";
 import { isInDirectory } from "../utils/pathUtils";

@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { glob } from "tinyglobby";
-import { copy } from "fs-extra";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { copy } from "fs-extra";
+import { rimraf } from "rimraf";
+import { glob } from "tinyglobby";
 import { beforeAll, describe, expect, it } from "vitest";
 import { SNAPSHOT_DIR, TEMP_DATA_DIR, TEST_DATA_DIR } from "./paths";
 import { runCli } from "./runCli";
-import { rimraf } from "rimraf";
 
 beforeAll(async () => {
     await rimraf(TEMP_DATA_DIR);

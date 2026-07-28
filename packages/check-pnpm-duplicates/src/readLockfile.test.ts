@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, expect, it } from "vitest";
-import { prepareLockfileDir } from "./testing/paths";
 import { readLockfile } from "./readLockfile";
+import { prepareLockfileDir } from "./testing/paths";
 
 let projectDir!: string;
 beforeAll(() => {

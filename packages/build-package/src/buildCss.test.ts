@@ -3,12 +3,12 @@
 
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createMemoryLogger } from "./utils/Logger";
 import { BuildCssOptions, buildCss } from "./buildCss";
-import { normalizeEntryPoint } from "./utils/entryPoints";
+import { SUPPORTED_CSS_EXTENSIONS } from "./model/PackageModel";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { SUPPORTED_CSS_EXTENSIONS } from "./model/PackageModel";
+import { normalizeEntryPoint } from "./utils/entryPoints";
+import { createMemoryLogger } from "./utils/Logger";
 
 describe("buildCss", function () {
     it("bundles local css files", async function () {
@@ -50,7 +50,7 @@ describe("buildCss", function () {
             cssEntryPoint: normalize("./myStyles.css")
         });
 
-        /* 
+        /*
             Non-local css files are not bundled.
         */
         expect(readText(resolve(outputDirectory, "myStyles.css"))).toMatchInlineSnapshot(`
@@ -196,7 +196,7 @@ describe("buildCss", function () {
             cssEntryPoint: normalize("./main.scss")
         });
 
-        /* 
+        /*
             Non-local css files are not bundled.
 
             The exception to this (in the sass case) is css emitted by sass modules

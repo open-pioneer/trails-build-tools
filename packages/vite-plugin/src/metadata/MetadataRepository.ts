@@ -1,15 +1,16 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { BUILD_CONFIG_NAME, RuntimeSupport } from "@open-pioneer/build-common";
 import { realpath } from "fs/promises";
 import { basename, dirname } from "path";
+import { BUILD_CONFIG_NAME, RuntimeSupport } from "@open-pioneer/build-common";
 import { normalizePath } from "vite";
 import { findDepPkgJsonPath } from "vitefu";
 import { ReportableError } from "../ReportableError";
 import { Cache } from "../utils/Cache";
 import { createDebugger } from "../utils/debug";
 import { MetadataContext } from "./Context";
+import { loadPackageMetadata } from "./loadPackageMetadata";
 import {
     AppMetadata,
     InternalPackageMetadata,
@@ -17,7 +18,6 @@ import {
     PackageLocation,
     PackageMetadata
 } from "./Metadata";
-import { loadPackageMetadata } from "./loadPackageMetadata";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 
 const isDebug = !!process.env.DEBUG;

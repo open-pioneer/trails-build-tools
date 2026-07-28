@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { mkdir, rm, writeFile } from "fs/promises";
+import { resolve } from "path";
+import { buildCss } from "./buildCss";
+import { buildDts } from "./buildDts";
 import { buildJs } from "./buildJs";
 import { copyAssets } from "./copyAssets";
-import { createDebugger } from "./utils/debug";
-import { buildCss } from "./buildCss";
-import { generatePackageJson } from "./generatePackageJson";
-import { Logger, getChalk } from "./utils/Logger";
-import { resolve } from "path";
-import { InputModel } from "./model/InputModel";
-import { createPackageModel } from "./model/PackageModel";
-import { ValidationReporter } from "./utils/ValidationReporter";
 import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { copyI18nFiles } from "./copyI18nFiles";
-import { buildDts } from "./buildDts";
+import { generatePackageJson } from "./generatePackageJson";
+import { InputModel } from "./model/InputModel";
 import { ResolvedOptions } from "./model/Options";
+import { createPackageModel } from "./model/PackageModel";
+import { createDebugger } from "./utils/debug";
+import { Logger, getChalk } from "./utils/Logger";
+import { ValidationReporter } from "./utils/ValidationReporter";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:build-package");

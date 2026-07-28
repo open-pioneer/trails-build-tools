@@ -1,26 +1,16 @@
 {
     "name": "@open-pioneer/build-common",
-    "description": "Common functionality used when building Open Pioneer Trails applications or packages.",
     "version": "4.0.2",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
-    "type": "commonjs",
+    "description": "Common functionality used when building Open Pioneer Trails applications or packages.",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/build-common"
-    },
-    "homepage": "https://github.com/open-pioneer",
-    "keywords": [
-        "open-pioneer-trails"
-    ],
-    "scripts": {
-        "clean": "rimraf dist temp",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
-        "test": "vitest"
     },
     "files": [
         "dist/**/*.js",
@@ -30,16 +20,26 @@
         "README.md",
         "LICENSE"
     ],
-    "devDependencies": {
-        "@open-pioneer/build-support": "workspace:^",
-        "@types/semver": "catalog:",
-        "build-tools": "workspace:*"
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "types": "types.d.ts",
+    "scripts": {
+        "clean": "rimraf dist temp",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch",
+        "test": "vitest"
     },
     "dependencies": {
         "@rollup/pluginutils": "catalog:",
         "semver": "catalog:",
         "zod": "catalog:",
         "zod-validation-error": "catalog:"
+    },
+    "devDependencies": {
+        "@open-pioneer/build-support": "workspace:^",
+        "@types/semver": "catalog:",
+        "build-tools": "workspace:*"
     },
     "engines": {
         "node": ">= 20"

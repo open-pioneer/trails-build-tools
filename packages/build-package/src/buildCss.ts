@@ -1,16 +1,16 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { normalizePath } from "@rollup/pluginutils";
 import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { extname, default as nativePath, default as path, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "url";
+import { normalizePath } from "@rollup/pluginutils";
 import type * as PostCss from "postcss";
 import type * as Sass from "sass";
-import { fileURLToPath, pathToFileURL } from "url";
-import { Logger } from "./utils/Logger";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { indent } from "./utils/indent";
+import { Logger } from "./utils/Logger";
 import { isInDirectory } from "./utils/pathUtils";
 
 export interface BuildCssOptions {

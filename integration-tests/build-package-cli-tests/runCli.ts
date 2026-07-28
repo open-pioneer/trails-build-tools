@@ -3,8 +3,8 @@
 
 import { relative, resolve } from "node:path";
 import { copy } from "fs-extra";
-import { PACKAGE_DIR, TEMP_DATA_DIR, TEST_DATA_DIR } from "./paths";
 import { $, usePowerShell } from "zx";
+import { PACKAGE_DIR, TEMP_DATA_DIR, TEST_DATA_DIR } from "./paths";
 
 const os = process.platform; //returns win32 even on win 64bit
 if (os === "win32") {

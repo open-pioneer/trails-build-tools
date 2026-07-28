@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
+import { PackageMetadata } from "../metadata/Metadata";
+import { I18nFile } from "../metadata/parseI18nYaml";
+import { ReportableError } from "../ReportableError";
 import { generate, nodes, template } from "../utils/babelDeps";
 import { serializeModuleId } from "./shared";
-import { PackageMetadata } from "../metadata/Metadata";
-import { ReportableError } from "../ReportableError";
-import { I18nFile } from "../metadata/parseI18nYaml";
 
 const INDEX_TEMPLATE = template.program(`
     export const locales = %%LOCALES_ARRAY%%;

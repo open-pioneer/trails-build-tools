@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, it } from "vitest";
-
 // @ts-expect-error import of non-module happens to work in vitest (pnpmfile must be CJS)
 import pnpmFile from "../src/pnpmfile";
 

@@ -1,12 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { RuntimeSupport } from "@open-pioneer/build-common";
 import { readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { cwd } from "node:process";
+import { RuntimeSupport } from "@open-pioneer/build-common";
 import { normalizePath, Rolldown, UserConfig, Plugin as VitePlugin } from "vite";
-import { ReportableError } from "./ReportableError";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
@@ -18,12 +17,13 @@ import {
     VIRTUAL_ID_FILTER
 } from "./codegen/shared";
 import { DeploymentModule } from "./deployment";
-import { MetadataRepository } from "./metadata/MetadataRepository";
+import { createMetadataContextFromRolldown } from "./metadata/Context";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
+import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
+import { ReportableError } from "./ReportableError";
 import { createDebugger } from "./utils/debug";
 import { fileExists } from "./utils/fileUtils";
-import { createMetadataContextFromRolldown } from "./metadata/Context";
 
 type PluginContext = Rolldown.PluginContext;
 type SourceDescription = Rolldown.SourceDescription;

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { load as loadYaml } from "js-yaml";
 import { readFileSync, existsSync } from "node:fs";
+import { load as loadYaml } from "js-yaml";
 
 export interface Config {
     skipDevDependencies: boolean;

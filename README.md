@@ -11,14 +11,14 @@ This package contains build tools required by the Open Pioneer Trails framework.
 
 - Build all packages (or start their dev mode):
 
-  ```sh
-  # Builds all packages
-  $ pnpm run build  
+    ```sh
+    # Builds all packages
+    $ pnpm run build
 
-  # Or, in the package directory:
-  $ cd packages/...
-  $ pnpm dev
-  ```
+    # Or, in the package directory:
+    $ cd packages/...
+    $ pnpm dev
+    ```
 
 - Run `pnpm install` to link packages (and the CLI tool used by integration tests)
 - Run `pnpm test`
@@ -52,9 +52,9 @@ $ pnpm changeset status # Show which packages would be published, verify configu
 
 Things to keep in mind:
 
--   There should currently be no pending changesets for ignored packages (`ignore` in `.changeset/config.json`).
-    Otherwise the merged versions PR will not trigger a publish.
-    You can prefix the file names of those changesets with "." temporarily.
+- There should currently be no pending changesets for ignored packages (`ignore` in `.changeset/config.json`).
+  Otherwise the merged versions PR will not trigger a publish.
+  You can prefix the file names of those changesets with "." temporarily.
 
 ## License
 

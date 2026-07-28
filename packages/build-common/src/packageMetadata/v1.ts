@@ -51,9 +51,9 @@
  * @module
  */
 import { SemVer } from "semver";
+import { z } from "zod";
 import type { PackageMetadataV1 as V1 } from "../../types";
 import { canParse } from "../versionUtils";
-import { z } from "zod";
 
 export const LATEST_VERSION = "1.1.0";
 
