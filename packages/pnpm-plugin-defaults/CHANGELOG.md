@@ -1,5 +1,11 @@
 # @open-pioneer/pnpm-plugin-defaults
 
+## 0.1.4
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+
 ## 0.1.3
 
 ### Patch Changes
