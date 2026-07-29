@@ -1,4 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-export * as PackageMetadataV1 from "./v1";
+import { defineLibraryConfig } from "shared-configs/tsdown";
+
+export default defineLibraryConfig();

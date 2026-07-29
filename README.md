@@ -23,6 +23,8 @@ This package contains build tools required by the Open Pioneer Trails framework.
 - Run `pnpm install` to link packages (and the CLI tool used by integration tests)
 - Run `pnpm test`
 
+Note that type checks (`pnpm watch-types` / `check-types`) also require a previous build because declarations have to be generated.
+
 ### Windows users
 
 If you're developing the build tools on windows, you will likely have to Window's support für symbolic links.

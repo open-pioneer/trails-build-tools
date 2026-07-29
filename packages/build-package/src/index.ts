@@ -1,15 +1,51 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import type * as API from "..";
+import { createConsoleLogger, SILENT_LOGGER } from "@open-pioneer/build-common";
 import { buildPackage } from "./buildPackage";
 import { createInputModel } from "./model/InputModel";
 import { resolveOptions } from "./model/Options";
-import { createConsoleLogger, SILENT_LOGGER } from "@open-pioneer/build-common";
 
-type Build = typeof API.build;
+/** Options accepted by the {@link build} function. */
+export interface BuildOptions {
+    /**
+     * The package to be built.
+     * The output is placed into `dist` within that package.
+     */
+    packageDirectory: string;
 
-export const build: Build = async ({ packageDirectory, rootDirectory, logger }) => {
+    /**
+     * The root directory.
+     *
+     * When defined, this directory must be a parent of `packageDirectory`.
+     * Other packages in this directory will be treated as local packages during validation steps.
+     *
+     * Defaults to the workspace root (npm/pnpm/yarn) or to the root of the current git repository.
+     * If neither is found, an error will be thrown.
+     */
+    rootDirectory?: string;
+
+    /**
+     * Custom logger for output.
+     * Explicitly set this to `null` to disable output.
+     *
+     * Defaults to the global `console`.
+     */
+    logger?: Pick<Console, "error" | "warn" | "info"> | null;
+}
+
+/**
+ * Builds a package to be published.
+ *
+ * Compiled output is written to the package's `dist` directory.
+ *
+ * Returns a promise that rejects when there was a fatal build error.
+ */
+export async function build({
+    packageDirectory,
+    rootDirectory,
+    logger
+}: BuildOptions): Promise<void> {
     const input = await createInputModel(packageDirectory);
     const options = await resolveOptions(
         packageDirectory,
@@ -24,4 +60,4 @@ export const build: Build = async ({ packageDirectory, rootDirectory, logger }) 
         options,
         logger: internalLogger
     });
-};
+}

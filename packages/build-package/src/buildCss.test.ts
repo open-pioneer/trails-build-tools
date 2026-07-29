@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { resolve } from "node:path";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 import { describe, expect, it } from "vitest";
 import { BuildCssOptions, buildCss } from "./buildCss";
 import { SUPPORTED_CSS_EXTENSIONS } from "./model/PackageModel";
 import { cleanDir, readText } from "./testing/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
 import { normalizeEntryPoint } from "./utils/entryPoints";
-import { createMemoryLogger } from "@open-pioneer/build-common";
+
+const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 
 describe("buildCss", function () {
     it("bundles local css files", async function () {

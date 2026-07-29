@@ -1,36 +1,33 @@
 {
     "name": "@open-pioneer/create-license-cli",
-    "description": "Implements creation of Open Pioneer Trails license file.",
     "version": "0.0.1",
-    "main": "dist/index.js",
-    "type": "module",
+    "description": "Implements creation of Open Pioneer Trails license file.",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/build-license"
     },
-    "homepage": "https://github.com/open-pioneer",
-    "keywords": [
-        "open-pioneer-trails"
-    ],
     "bin": {
         "create-license-report": "./dist/index.js"
     },
-    "scripts": {
-        "clean": "rimraf dist temp",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
-        "test": "vitest"
-    },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
+        "dist",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
+    "type": "module",
+    "scripts": {
+        "clean": "rimraf dist temp",
+        "test": "vitest",
+        "build": "tsdown",
+        "dev": "tsdown --watch"
+    },
     "dependencies": {
         "@open-pioneer/cli-logging": "workspace:^",
         "commander": "catalog:",
@@ -45,7 +42,10 @@
         "@types/js-yaml": "catalog:",
         "@types/spdx-expression-parse": "catalog:",
         "@types/spdx-satisfies": "catalog:",
-        "build-tools": "workspace:*"
+        "build-tools": "workspace:*",
+        "publint": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:"
     },
     "engines": {
         "node": ">= 20"

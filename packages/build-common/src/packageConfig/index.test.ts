@@ -4,7 +4,7 @@
 import { BuildConfig } from "@open-pioneer/build-support";
 import { expect, it } from "vitest";
 import { createPackageConfigFromBuildConfig, createPackageConfigFromPackageMetadata } from ".";
-import type { PackageMetadataV1 as V1 } from "../..";
+import type { PackageMetadataV1 } from "../packageMetadata";
 
 it("maps build.config.mjs contents to internal representation", function () {
     const buildConfig: BuildConfig = {
@@ -143,7 +143,7 @@ it("maps build.config.mjs contents to internal representation", function () {
 });
 
 it("maps package metadata to internal representation", function () {
-    const metadata: V1.PackageMetadata = {
+    const metadata: PackageMetadataV1.PackageMetadata = {
         packageFormatVersion: "1.0.0",
         services: [
             {

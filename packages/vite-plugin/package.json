@@ -9,26 +9,28 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/open-pioneer/trails-build-tools.git",
+        "url": "git+https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/vite-plugin"
     },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
+        "dist",
         "client.d.ts",
-        "types.d.ts",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
     "type": "module",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json",
+        "./client": {
+            "types": "./client.d.ts"
+        }
+    },
     "scripts": {
         "clean": "rimraf dist temp",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "test": "vitest"
     },
     "dependencies": {
@@ -39,6 +41,7 @@
         "debug": "catalog:",
         "js-yaml": "catalog:",
         "oxc-resolver": "catalog:",
+        "tinyglobby": "catalog:",
         "vitefu": "catalog:",
         "zod": "catalog:",
         "zod-validation-error": "catalog:"
@@ -51,11 +54,14 @@
         "@types/babel__template": "catalog:",
         "@types/debug": "catalog:",
         "@types/js-yaml": "catalog:",
-        "build-tools": "workspace:*",
+        "publint": "catalog:",
         "rimraf": "catalog:",
         "rolldown": "catalog:",
         "sass": "catalog:",
+        "shared-configs": "workspace:*",
         "tinyglobby": "catalog:",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
         "vite": "catalog:"
     },
     "peerDependencies": {

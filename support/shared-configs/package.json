@@ -1,0 +1,12 @@
+{
+    "name": "shared-configs",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./tsdown": "./tsdown.ts"
+    },
+    "dependencies": {
+        "tsdown": "catalog:"
+    }
+}

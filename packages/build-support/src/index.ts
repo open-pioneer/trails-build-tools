@@ -1,6 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
+/**
+ * The build configuration for an open pioneer trails package.
+ *
+ * Should be exported from a `build.config.mjs` file.
+ */
 export interface BuildConfig {
     /**
      * Lists entry points exposed by this package.
@@ -370,4 +375,6 @@ export interface ServiceOverridesConfig {
  *
  * @returns config
  */
-export declare function defineBuildConfig(config: BuildConfig): BuildConfig;
+export function defineBuildConfig(config: BuildConfig): BuildConfig {
+    return config;
+}

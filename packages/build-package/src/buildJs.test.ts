@@ -3,15 +3,17 @@
 
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { createMemoryLogger,PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
+import { createMemoryLogger, PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
 import { glob } from "tinyglobby";
 import { expect, it, onTestFailed } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { expectError } from "./testing/helpers";
 import { cleanDir, readText } from "./testing/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
 import { normalizeEntryPoints } from "./utils/entryPoints";
+
+const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 
 it("transpiles a simple javascript project", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");

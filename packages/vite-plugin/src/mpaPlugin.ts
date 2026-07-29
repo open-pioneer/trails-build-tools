@@ -6,8 +6,7 @@ import { posix, resolve } from "node:path";
 import { cwd } from "node:process";
 import { RolldownOptions } from "rolldown";
 import { Plugin, ResolvedConfig, UserConfig } from "vite";
-import { type PioneerPluginOptions } from ".";
-import { AdvancedAppOptions } from "../types";
+import { AdvancedAppOptions, type PioneerPluginOptions } from "./types";
 
 export function mpaPlugin(options: PioneerPluginOptions | undefined): Plugin {
     const rootSite = options?.rootSite ?? false;

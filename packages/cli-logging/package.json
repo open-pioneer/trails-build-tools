@@ -1,39 +1,43 @@
 {
     "name": "@open-pioneer/cli-logging",
-    "description": "Logging utilities for Open Pioneer Trails CLI tools.",
     "version": "0.0.1",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
-    "type": "module",
+    "description": "Logging utilities for Open Pioneer Trails CLI tools.",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/cli-logging"
     },
-    "homepage": "https://github.com/open-pioneer",
-    "keywords": [
-        "open-pioneer-trails"
-    ],
-    "scripts": {
-        "clean": "rimraf dist",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch"
-    },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
+        "dist",
         "types.d.ts",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
+    "type": "module",
+    "types": "types.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
+    "scripts": {
+        "clean": "rimraf dist",
+        "build": "tsdown",
+        "dev": "tsdown --watch"
+    },
     "dependencies": {
         "chalk": "catalog:"
     },
     "devDependencies": {
-        "build-tools": "workspace:*"
+        "build-tools": "workspace:*",
+        "publint": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:"
     },
     "engines": {
         "node": ">= 20"

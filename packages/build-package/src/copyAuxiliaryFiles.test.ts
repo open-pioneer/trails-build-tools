@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { resolve } from "node:path";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 import { describe, expect, it } from "vitest";
 import { CopyAuxiliaryFilesOptions, copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { cleanDir, readText } from "./testing/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
 import { ValidationReporter } from "./utils/ValidationReporter";
-import { createMemoryLogger } from "@open-pioneer/build-common";
+
+const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 
 describe("copyAuxiliaryFiles", function () {
     it("copies all supported auxiliary files", async function () {

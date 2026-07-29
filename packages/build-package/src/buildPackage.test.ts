@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { resolve } from "node:path";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 import { expect, it } from "vitest";
 import { buildPackage } from "./buildPackage";
 import { createInputModel } from "./model/InputModel";
 import { resolveOptions } from "./model/Options";
 import { cleanDir, readText } from "./testing/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { createMemoryLogger } from "@open-pioneer/build-common";
+import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
+
+const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 
 it("copies i18n files if configured in build.config.js", async () => {
     const packageDirectory = resolve(TEST_DATA_DIR, "project-with-i18n");
