@@ -67,9 +67,7 @@ const FileSpecSchema = z.union([
     z
         .object({ package: z.string() })
         .transform((o) => ({ type: "package" as const, path: o.package })),
-    z
-        .object({ custom: z.string() })
-        .transform((o) => ({ type: "custom" as const, path: o.custom }))
+    z.object({ custom: z.string() }).transform((o) => ({ type: "custom" as const, path: o.custom }))
 ]);
 
 const OverrideLicenseEntrySchema = z.object({
@@ -112,6 +110,6 @@ export function readLicenseConfig(path: string): ReadProjectConfig {
         }
         return result.data as ReadProjectConfig;
     } catch (e) {
-        throw new Error(`Failed to read license config from ${path}: ${e}`);
+        throw new Error(`Failed to read license config from ${path}: ${e}`, { cause: e });
     }
 }

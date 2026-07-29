@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { resolve } from "node:path";
 import { $, ProcessOutput, usePowerShell } from "zx";
 import { PACKAGE_DIR, TEMP_PATH } from "./paths";
@@ -43,6 +44,6 @@ export async function runCli(
                 output: e.toString()
             };
         }
-        throw new Error("unexpected error from CLI");
+        throw new Error("unexpected error from CLI", { cause: e });
     }
 }

@@ -3,13 +3,13 @@
 
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { FileSpec, ReadProjectConfig, OverrideLicenseEntry } from "./readProjectConfig";
-import { findFirstLicenseFile, findFirstNoticeFile } from "./findLicenseFiles";
-import { LicenseItem } from "./reportTemplate";
-import { PnpmLicenseProject, walkProjectLocations } from "./pnpmLicenseReport";
 import { createConsoleLogger, getChalk, Logger, SILENT_LOGGER } from "@open-pioneer/cli-logging";
 import spdxExpressionParse from "spdx-expression-parse";
 import spdxSatisfies from "spdx-satisfies";
+import { findFirstLicenseFile, findFirstNoticeFile } from "./findLicenseFiles";
+import { PnpmLicenseProject, walkProjectLocations } from "./pnpmLicenseReport";
+import { FileSpec, ReadProjectConfig, OverrideLicenseEntry } from "./readProjectConfig";
+import { LicenseItem } from "./reportTemplate";
 
 interface DependencyEntry {
     id: string;
@@ -48,7 +48,7 @@ export async function verifyLicenses(
     let hasError = false;
     const usedOverrides = new Set<OverrideLicenseEntry>();
 
-    // set overrides from own config 
+    // set overrides from own config
     const getOverrideEntry = (name: string, version: string) => {
         const entry = config.overrideLicenses?.find(
             (e) => e.name === name && e.version === version
@@ -91,9 +91,10 @@ export async function verifyLicenses(
         });
     }
 
+    const context: ProcessEntryContext = { config, configDirectory, logger, chalk };
     const items: LicenseItem[] = [];
     for (const entry of entries) {
-        const result = processEntry(entry, config, configDirectory, logger, chalk);
+        const result = processEntry(entry, context);
         if (result.hasError) hasError = true;
         items.push(result.item);
     }
@@ -110,7 +111,7 @@ export async function verifyLicenses(
             }
         }
     }
-    
+
     items.sort((a, b) => a.name.localeCompare(b.name));
     return { error: hasError, items };
 }
@@ -146,12 +147,16 @@ function containsOrConjunction(info: ReturnType<typeof spdxExpressionParse>): bo
     );
 }
 
+interface ProcessEntryContext {
+    config: ReadProjectConfig;
+    configDirectory: string;
+    logger: Logger;
+    chalk: Awaited<ReturnType<typeof getChalk>>;
+}
+
 function processEntry(
     entry: DependencyEntry,
-    config: ReadProjectConfig,
-    configDirectory: string,
-    logger: Logger,
-    chalk: Awaited<ReturnType<typeof getChalk>>
+    { config, configDirectory, logger, chalk }: ProcessEntryContext
 ): { item: LicenseItem; hasError: boolean } {
     const dependencyInfo = `'${entry.name}'${entry.version ? ` (version: ${entry.version})` : ""}`;
     let hasError = false;
@@ -195,7 +200,8 @@ function processEntry(
             return readFileSync(filePath, "utf-8");
         } catch (e) {
             throw new Error(
-                `Failed to read license file for project ${dependencyInfo} at ${filePath}: ${e}`
+                `Failed to read license file for project ${dependencyInfo} at ${filePath}: ${e}`,
+                { cause: e }
             );
         }
     };

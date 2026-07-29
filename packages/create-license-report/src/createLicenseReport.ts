@@ -1,13 +1,13 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/cli-logging";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
-import { verifyLicenses } from "./verifyLicenses";
+import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/cli-logging";
+import { getPnpmLicenseReport } from "./pnpmLicenseReport";
 import { readLicenseConfig } from "./readProjectConfig";
 import { generateReportHtml } from "./reportTemplate";
-import { getPnpmLicenseReport } from "./pnpmLicenseReport";
+import { verifyLicenses } from "./verifyLicenses";
 
 interface LicenseOptions {
     log: boolean;
@@ -26,7 +26,8 @@ export async function createLicenseReport(options: LicenseOptions) {
     const chalk = await getChalk();
     logger.info(chalk.gray("Start creating license report"));
 
-    const { packageJsonPath, configPath, configPathDirectory, outputHtmlPath } = createPaths(options);
+    const { packageJsonPath, configPath, configPathDirectory, outputHtmlPath } =
+        createPaths(options);
     const projectName = getProjectName(packageJsonPath);
 
     logger.info(
@@ -34,7 +35,7 @@ export async function createLicenseReport(options: LicenseOptions) {
             `Using license config from ${configPath}, package.json from ${packageJsonPath} and writing result to ${outputHtmlPath}`
         )
     );
-    
+
     const config = readLicenseConfig(configPath);
 
     const projects = await getPnpmLicenseReport(options.workingDir, !config.skipDevDependencies);
@@ -85,6 +86,8 @@ function getProjectName(path: string): string {
         }
         return name;
     } catch (e) {
-        throw new Error(`Failed to read project name from package.json at ${path}: ${e}`);
+        throw new Error(`Failed to read project name from package.json at ${path}: ${e}`, {
+            cause: e
+        });
     }
 }
