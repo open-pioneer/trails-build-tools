@@ -10,8 +10,8 @@ import type * as PostCss from "postcss";
 import type * as Sass from "sass";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { indent } from "./utils/indent";
-import { Logger } from "./utils/Logger";
 import { isInDirectory } from "./utils/pathUtils";
+import type { Logger } from "@open-pioneer/build-common";
 
 export interface BuildCssOptions {
     /** Package name from package.json */

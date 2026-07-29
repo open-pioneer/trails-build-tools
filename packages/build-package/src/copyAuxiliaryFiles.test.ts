@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { resolve } from "node:path";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 import { describe, expect, it } from "vitest";
 import { CopyAuxiliaryFilesOptions, copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { cleanDir, readText } from "./testing/io";
 import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
-import { createMemoryLogger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
 
 const TEMP_DATA_DIR = tempDirForTest(import.meta.url);

@@ -12,8 +12,8 @@ import {
 import { ResolvedValidationOptions } from "./model/Options";
 import { PackageModel } from "./model/PackageModel";
 import { getExportedName } from "./utils/entryPoints";
-import { Logger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
+import type { Logger } from "@open-pioneer/build-common";
 
 type SimplePackageModel = Pick<
     PackageModel,

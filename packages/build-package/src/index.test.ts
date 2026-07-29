@@ -5,12 +5,12 @@ import { existsSync } from "fs";
 import { cp, mkdir } from "fs/promises";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { createMemoryLogger } from "@open-pioneer/build-common";
 import { beforeAll, expect, it, vi } from "vitest";
 import { build } from ".";
 import { expectError } from "./testing/helpers";
 import { cleanDir, readText } from "./testing/io";
 import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
-import { createMemoryLogger } from "./utils/Logger";
 
 const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 

@@ -3,7 +3,7 @@
 
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
+import { createMemoryLogger, PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
 import { glob } from "tinyglobby";
 import { expect, it, onTestFailed } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
@@ -12,7 +12,6 @@ import { expectError } from "./testing/helpers";
 import { cleanDir, readText } from "./testing/io";
 import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
 import { normalizeEntryPoints } from "./utils/entryPoints";
-import { createMemoryLogger } from "./utils/Logger";
 
 const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 

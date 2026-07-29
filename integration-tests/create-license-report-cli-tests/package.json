@@ -1,0 +1,11 @@
+{
+    "name": "create-license-report-cli-tests",
+    "private": true,
+    "scripts": {
+        "test": "vitest"
+    },
+    "devDependencies": {
+        "@open-pioneer/create-license-cli": "workspace:^",
+        "zx": "catalog:"
+    }
+}
