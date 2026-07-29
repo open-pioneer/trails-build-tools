@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, it } from "vitest";
-import { PackageMetadataV1 } from "../..";
+import { PackageMetadataV1 } from ".";
 import { DEFAULT_PACKAGE_TARGET } from "../buildConfig";
 import { LATEST_VERSION, parsePackageMetadata, serializePackageMetadata } from "./v1";
 

@@ -22,13 +22,13 @@
     "type": "commonjs",
     "scripts": {
         "clean": "rimraf -g 'pnpmfile.*'",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "test": "vitest"
     },
     "devDependencies": {
-        "build-tools": "workspace:*"
+        "publint": "catalog:",
+        "tsdown": "catalog:"
     },
     "engines": {
         "node": ">= 20"

@@ -16,7 +16,7 @@
         "fmt": "oxfmt",
         "fmt:check": "oxfmt --check",
         "prepare": "husky",
-        "ci:test": "pnpm run clean && pnpm run check-types && pnpm run lint && pnpm run build && pnpm install && pnpm run test run",
+        "ci:test": "pnpm run clean && pnpm run build && pnpm run check-types && pnpm run lint && pnpm install && pnpm run test run",
         "ci:version": "pnpm changeset version && pnpm exec oxfmt && pnpm install",
         "ci:publish": "pnpm run clean && pnpm run build && pnpm publish -r --access public && pnpm changeset tag"
     },
@@ -24,7 +24,6 @@
         "@changesets/cli": "catalog:",
         "@tony.ganchev/eslint-plugin-header": "catalog:",
         "@types/node": "catalog:",
-        "esbuild": "catalog:",
         "husky": "catalog:",
         "lint-staged": "catalog:",
         "oxfmt": "catalog:",

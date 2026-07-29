@@ -17,16 +17,16 @@ pnpm install --frozen-lockfile --lockfile-only 1>/dev/null || (
 echo '--- check code style ---'
 pnpm exec lint-staged
 
+echo '--- build ---'
+pnpm run clean
+pnpm run build # Also links built CLI for integration tests
+pnpm install
+
 echo '--- run typescript check ---'
+# Must run after the build: packages expose generated .d.ts files from their dist directory.
 pnpm run check-types
 
 echo '--- run tests ---'
-pnpm run clean
-
-# link built CLI for integration tests
-pnpm run build
-pnpm install
-
 # CI=1 disallows `.only` in tests
 # --changed only runs the tests affected by changed files
 CI=1 pnpm exec vitest run --changed --passWithNoTests

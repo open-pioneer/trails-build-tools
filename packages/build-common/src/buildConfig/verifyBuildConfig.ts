@@ -16,10 +16,7 @@ import {
 } from "@open-pioneer/build-support";
 import { z } from "zod";
 import { createErrorMap, fromZodError } from "zod-validation-error";
-import type * as API from "../../types";
 import { MINOR_VERSIONS } from "../packageMetadata/v1";
-
-type VerifyBuildConfig = typeof API.verifyBuildConfig;
 
 const LITERAL_SCHEMA = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 
@@ -109,11 +106,11 @@ const ERROR_MAP = createErrorMap();
  *
  * @returns `value` but casted to the appropriate type.
  */
-export const verifyBuildConfig: VerifyBuildConfig = function verifyBuildConfig(value) {
+export function verifyBuildConfig(value: unknown): BuildConfig {
     const result = BUILD_CONFIG_SCHEMA.safeParse(value, { error: ERROR_MAP });
     if (result.success) {
         return result.data;
     }
 
     throw fromZodError(result.error);
-};
+}

@@ -13,27 +13,27 @@
         "directory": "packages/build-package"
     },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
-        "types.d.ts",
+        "dist",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
     "type": "module",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
     "scripts": {
         "clean": "rimraf dist temp",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "test": "vitest"
     },
     "dependencies": {
         "@open-pioneer/build-common": "workspace:^",
         "@open-pioneer/build-support": "workspace:^",
         "@rollup/plugin-node-resolve": "catalog:",
+        "@rollup/pluginutils": "catalog:",
         "chalk": "catalog:",
         "debug": "catalog:",
         "esbuild": "catalog:",
@@ -48,13 +48,14 @@
         "tinyglobby": "catalog:"
     },
     "devDependencies": {
-        "@rollup/pluginutils": "catalog:",
         "@types/debug": "catalog:",
         "@types/fs-extra": "catalog:",
         "@types/postcss-import": "catalog:",
         "@types/react": "catalog:",
-        "build-tools": "workspace:*",
+        "publint": "catalog:",
         "sass": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:",
         "typescript": "catalog:"
     },
     "peerDependencies": {

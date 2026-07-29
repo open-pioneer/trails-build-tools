@@ -1,10 +1,19 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import type * as API from "../../types";
+import type { MinorVersion } from "../packageMetadata/v1";
+
 export { verifyBuildConfig } from "./verifyBuildConfig";
 export { loadBuildConfig } from "./loadBuildConfig";
 
-export const BUILD_CONFIG_NAME: typeof API.BUILD_CONFIG_NAME = "build.config.mjs";
+/**
+ * The name of the build config file expected in an Open Pioneer Trails page.
+ *
+ * This is currently always `build.config.mjs`.
+ */
+export const BUILD_CONFIG_NAME: string = "build.config.mjs";
 
-export const DEFAULT_PACKAGE_TARGET = "1.0" as API.PackageMetadataV1.MinorVersion;
+/**
+ * The default package format target used when compiling trails packages.
+ */
+export const DEFAULT_PACKAGE_TARGET: MinorVersion = "1.0" as MinorVersion;

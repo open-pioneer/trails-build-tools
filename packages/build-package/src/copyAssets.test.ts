@@ -6,7 +6,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { copyAssets } from "./copyAssets";
 import { cleanDir } from "./testing/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
+
+const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 
 describe("copyAssets", function () {
     it("copies assets matching the configured patterns", async function () {

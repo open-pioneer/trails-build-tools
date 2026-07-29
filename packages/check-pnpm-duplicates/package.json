@@ -16,8 +16,7 @@
         "check-pnpm-duplicates": "./dist/index.js"
     },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
+        "dist",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
@@ -25,9 +24,8 @@
     "type": "module",
     "scripts": {
         "clean": "rimraf dist",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "test": "vitest"
     },
     "dependencies": {
@@ -41,7 +39,9 @@
         "js-yaml": "catalog:"
     },
     "devDependencies": {
-        "build-tools": "workspace:*"
+        "publint": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:"
     },
     "engines": {
         "node": ">= 20"

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from "vitest";
-import { RuntimeSupport } from ".";
+import * as RuntimeSupport from "./index";
 
 describe("parseVirtualModule", function () {
     it("parses virtual modules", function () {

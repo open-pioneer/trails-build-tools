@@ -9,8 +9,10 @@ import { beforeAll, expect, it, vi } from "vitest";
 import { build } from ".";
 import { expectError } from "./testing/helpers";
 import { cleanDir, readText } from "./testing/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
 import { createMemoryLogger } from "./utils/Logger";
+
+const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 
 vi.setConfig({
     testTimeout: 20_000

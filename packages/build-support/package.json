@@ -13,19 +13,26 @@
         "directory": "packages/build-support"
     },
     "files": [
-        "index.js",
-        "index.d.ts",
+        "dist",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
     "type": "module",
-    "main": "index.js",
-    "types": "index.d.ts",
     "exports": {
-        "import": "./index.js",
-        "require": "./index.cjs",
-        "types": "./index.d.ts"
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
+    "scripts": {
+        "clean": "rimraf dist",
+        "build": "tsdown",
+        "dev": "tsdown --watch"
+    },
+    "devDependencies": {
+        "publint": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:",
+        "typescript": "catalog:"
     },
     "engines": {
         "node": ">= 20"

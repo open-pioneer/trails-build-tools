@@ -5,9 +5,11 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CopyAuxiliaryFilesOptions, copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { cleanDir, readText } from "./testing/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
 import { createMemoryLogger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
+
+const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 
 describe("copyAuxiliaryFiles", function () {
     it("copies all supported auxiliary files", async function () {

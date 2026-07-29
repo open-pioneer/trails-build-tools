@@ -13,22 +13,22 @@
         "directory": "packages/vite-plugin"
     },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
+        "dist",
         "client.d.ts",
-        "types.d.ts",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
     "type": "module",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json",
+        "./client": "./client.d.ts"
+    },
     "scripts": {
         "clean": "rimraf dist temp",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "test": "vitest"
     },
     "dependencies": {
@@ -51,11 +51,14 @@
         "@types/babel__template": "catalog:",
         "@types/debug": "catalog:",
         "@types/js-yaml": "catalog:",
-        "build-tools": "workspace:*",
+        "publint": "catalog:",
         "rimraf": "catalog:",
         "rolldown": "catalog:",
         "sass": "catalog:",
+        "shared-configs": "workspace:*",
         "tinyglobby": "catalog:",
+        "tsdown": "catalog:",
+        "typescript": "catalog:",
         "vite": "catalog:"
     },
     "peerDependencies": {
@@ -65,5 +68,10 @@
     },
     "engines": {
         "node": ">= 20"
+    },
+    "inlinedDependencies": {
+        "fdir": "6.5.0",
+        "picomatch": "4.0.5",
+        "tinyglobby": "0.2.17"
     }
 }

@@ -1,8 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Plugin } from "vite";
-
 export interface PioneerPluginOptions {
     /**
      * Whether to include the root `index.html` site (by default at `src/index.html`) in the build.
@@ -68,5 +66,3 @@ export interface AdvancedAppOptions {
      */
     [appName: string]: string;
 }
-
-declare function pioneer(options?: PioneerPluginOptions): Plugin[];
