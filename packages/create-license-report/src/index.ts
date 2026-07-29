@@ -4,7 +4,7 @@ import { getChalk } from "@open-pioneer/cli-logging";
 import { Command } from "commander";
 import { exit } from "node:process";
 import { version } from "../package.json";
-import { createLicenseReport } from "./create-license-report";
+import { createLicenseReport } from "./createLicenseReport";
 
 const LICENSE_CONFIG = "support/license-config.yaml";
 const WORKING_DIR = process.cwd();

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { globSync } from "tinyglobby";
 import { basename } from "path";
-import { FileSpec } from "./license-config";
+import { FileSpec } from "./readProjectConfig";
 
 const LICENSE_FILES = "LICENSE LICENCE COPYING".split(" ");
 const NOTICE_FILES = "NOTICE".split(" ");

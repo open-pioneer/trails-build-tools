@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 import { load as loadYaml } from "js-yaml";
 import { z } from "zod";
 
-export interface LicenseConfig {
+export interface ReadProjectConfig {
     allowedLicenses: string[];
 
     /**
@@ -98,7 +98,7 @@ const LicenseConfigSchema = z.object({
 /**
  * Reads the license config yaml file.
  */
-export function readLicenseConfig(path: string): LicenseConfig {
+export function readLicenseConfig(path: string): ReadProjectConfig {
     try {
         const content = readFileSync(path, "utf-8");
         const rawConfig = loadYaml(content);
@@ -109,7 +109,7 @@ export function readLicenseConfig(path: string): LicenseConfig {
                 .join("\n");
             throw new Error(`Invalid license config:\n${messages}`);
         }
-        return result.data as LicenseConfig;
+        return result.data as ReadProjectConfig;
     } catch (e) {
         throw new Error(`Failed to read license config from ${path}: ${e}`);
     }

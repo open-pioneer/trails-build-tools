@@ -3,9 +3,9 @@
 import { afterEach, expect, it, onTestFailed, vi } from "vitest";
 import { resolve } from "node:path";
 import { PROJECT_DIR } from "./testing/paths";
-import { PnpmLicenseProject } from "./pnpm-license-report";
-import { readLicenseConfig } from "./license-config";
-import { analyzeLicenses } from "./analyze-licenses";
+import { PnpmLicenseProject } from "./pnpmLicenseReport";
+import { readLicenseConfig } from "./readProjectConfig";
+import { verifyLicenses } from "./verifyLicenses";
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -15,7 +15,7 @@ it("expect to analyze the dependencies", async () => {
     const configPath = resolve(PROJECT_DIR, "license-config.yaml");
     const projects = mockPnpmProjects();
     const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
+    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
     onTestFailed(() => console.log(analyzedLicenses.items));
     expect(analyzedLicenses.error).toBe(false);
     expect(analyzedLicenses.items).toMatchInlineSnapshot(`
@@ -40,7 +40,7 @@ it("expect to find unallowed licenses", async () => {
     const configPath = resolve(PROJECT_DIR, "license-config-missing.yaml");
     const projects = mockPnpmProjects();
     const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
+    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
 
     expect(analyzedLicenses.error).toBe(true);
 
@@ -61,7 +61,7 @@ it("expect AND license expression to require every sub-license to be allowed", a
     const configPath = resolve(PROJECT_DIR, "license-config.yaml");
     const projects = mockPnpmProjects("MIT AND Apache-2.0");
     const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
+    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
     onTestFailed(() => console.log(analyzedLicenses.items));
     expect(analyzedLicenses.error).toBe(false);
     expect(analyzedLicenses.items[0]?.license).toBe("MIT AND Apache-2.0");
@@ -73,7 +73,7 @@ it("expect AND license expression to fail if one sub-license is not allowed", as
     const configPath = resolve(PROJECT_DIR, "license-config.yaml");
     const projects = mockPnpmProjects("MIT AND GPL-3.0-only");
     const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
+    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
 
     expect(analyzedLicenses.error).toBe(true);
     onTestFailed(() => console.log(warnSpy.mock.calls));
@@ -94,7 +94,7 @@ it("expect OR license expression to fail even if one alternative is allowed", as
     const configPath = resolve(PROJECT_DIR, "license-config.yaml");
     const projects = mockPnpmProjects("(GPL-3.0-only OR MIT)");
     const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
+    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
 
     expect(analyzedLicenses.error).toBe(true);
     onTestFailed(() => console.log(warnSpy.mock.calls));
@@ -115,7 +115,7 @@ it("expect OR license expression to pass if added verbatim to allowedLicenses", 
     const projects = mockPnpmProjects("(GPL-3.0-only OR MIT)");
     const config = readLicenseConfig(configPath);
     config.allowedLicenses.push("(GPL-3.0-only OR MIT)");
-    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
+    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
     onTestFailed(() => console.log(analyzedLicenses.items));
     expect(analyzedLicenses.error).toBe(false);
     expect(analyzedLicenses.items[0]?.license).toBe("(GPL-3.0-only OR MIT)");
@@ -126,7 +126,7 @@ it("expect overrideLicenses to bypass expression evaluation entirely", async () 
     const projects = mockPnpmProjects("(GPL-3.0-only OR ISC)");
     const config = readLicenseConfig(configPath);
     config.overrideLicenses = [{ name: "package-a", version: "0.0.1", license: "MIT" }];
-    const analyzedLicenses = await analyzeLicenses(projects, config, PROJECT_DIR, true);
+    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
 
     onTestFailed(() => console.log(analyzedLicenses.items));
     expect(analyzedLicenses.error).toBe(false);

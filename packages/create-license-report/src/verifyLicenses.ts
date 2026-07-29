@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { FileSpec, LicenseConfig, OverrideLicenseEntry } from "./license-config";
-import { findFirstLicenseFile, findFirstNoticeFile } from "./find-license-files";
-import { LicenseItem } from "./license-report-template";
-import { PnpmLicenseProject, walkProjectLocations } from "./pnpm-license-report";
+import { FileSpec, ReadProjectConfig, OverrideLicenseEntry } from "./readProjectConfig";
+import { findFirstLicenseFile, findFirstNoticeFile } from "./findLicenseFiles";
+import { LicenseItem } from "./reportTemplate";
+import { PnpmLicenseProject, walkProjectLocations } from "./pnpmLicenseReport";
 import { createConsoleLogger, getChalk, Logger, SILENT_LOGGER } from "@open-pioneer/cli-logging";
 import spdxExpressionParse from "spdx-expression-parse";
 import spdxSatisfies from "spdx-satisfies";
@@ -32,9 +32,9 @@ interface DependencyEntry {
  * The `config` argument supports local overrides and additional licenses not detected by pnpm.
  * `configDirectory` is the directory of the configuration file, used to resolve custom license files.
  */
-export async function analyzeLicenses(
+export async function verifyLicenses(
     projects: PnpmLicenseProject[],
-    config: LicenseConfig,
+    config: ReadProjectConfig,
     configDirectory: string,
     log: boolean
 ): Promise<{
@@ -147,7 +147,7 @@ function containsOrConjunction(info: ReturnType<typeof spdxExpressionParse>): bo
 
 function processEntry(
     entry: DependencyEntry,
-    config: LicenseConfig,
+    config: ReadProjectConfig,
     configDirectory: string,
     logger: Logger,
     chalk: Awaited<ReturnType<typeof getChalk>>

@@ -4,10 +4,10 @@ import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/cli-
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { LicenseOptions } from "./types";
-import { analyzeLicenses } from "./analyze-licenses";
-import { readLicenseConfig } from "./license-config";
-import { generateReportHtml } from "./license-report-template";
-import { getPnpmLicenseReport } from "./pnpm-license-report";
+import { verifyLicenses } from "./verifyLicenses";
+import { readLicenseConfig } from "./readProjectConfig";
+import { generateReportHtml } from "./reportTemplate";
+import { getPnpmLicenseReport } from "./pnpmLicenseReport";
 
 export async function createLicenseReport(options: LicenseOptions) {
     const logger = options.log ? await createConsoleLogger(console) : SILENT_LOGGER;
@@ -27,7 +27,7 @@ export async function createLicenseReport(options: LicenseOptions) {
 
     const projects = await getPnpmLicenseReport(options.workingDir, !config.skipDevDependencies);
 
-    const { error, items } = await analyzeLicenses(
+    const { error, items } = await verifyLicenses(
         projects,
         config,
         configPathDirectory,
