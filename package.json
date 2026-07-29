@@ -1,9 +1,9 @@
 {
     "name": "build-tools",
-    "type": "module",
     "version": "0.0.1",
     "private": true,
     "license": "Apache-2.0",
+    "type": "module",
     "scripts": {
         "clean": "pnpm recursive --no-sort run clean",
         "dev": "pnpm run --parallel --if-present dev",
@@ -11,39 +11,32 @@
         "test": "vitest",
         "check-types": "tsc --noEmit",
         "watch-types": "pnpm check-types -w",
-        "lint": "eslint ./packages ./integration-tests",
-        "prettier-check": "pnpm prettier:common -c",
-        "prettier": "pnpm prettier:common -w",
-        "prettier:common": "prettier ./packages ./integration-tests --cache",
+        "lint": "oxlint .",
+        "lint:fix": "oxlint . --fix",
+        "fmt": "oxfmt",
+        "fmt:check": "oxfmt --check",
         "prepare": "husky",
         "ci:test": "pnpm run clean && pnpm run check-types && pnpm run lint && pnpm run build && pnpm install && pnpm run test run",
-        "ci:version": "pnpm changeset version && pnpm prettier && pnpm install",
+        "ci:version": "pnpm changeset version && pnpm exec oxfmt && pnpm install",
         "ci:publish": "pnpm run clean && pnpm run build && pnpm publish -r --access public && pnpm changeset tag"
     },
     "devDependencies": {
         "@changesets/cli": "catalog:",
-        "@eslint/js": "catalog:",
+        "@tony.ganchev/eslint-plugin-header": "catalog:",
         "@types/node": "catalog:",
-        "@typescript-eslint/parser": "catalog:",
         "esbuild": "catalog:",
-        "eslint": "catalog:",
-        "eslint-config-prettier": "catalog:",
-        "eslint-import-resolver-typescript": "catalog:",
-        "eslint-plugin-headers": "catalog:",
-        "eslint-plugin-import": "catalog:",
-        "eslint-plugin-unused-imports": "catalog:",
         "husky": "catalog:",
         "lint-staged": "catalog:",
-        "prettier": "catalog:",
+        "oxfmt": "catalog:",
+        "oxlint": "catalog:",
         "rimraf": "catalog:",
         "typescript": "catalog:",
-        "typescript-eslint": "catalog:",
         "vite": "catalog:",
         "vitest": "catalog:"
     },
     "engines": {
-        "node": ">= 20",
+        "node": ">= 24",
         "pnpm": ">= 10"
     },
-    "packageManager": "pnpm@10.32.1"
+    "packageManager": "pnpm@11.17.0"
 }

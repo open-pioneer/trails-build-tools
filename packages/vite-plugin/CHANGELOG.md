@@ -1,5 +1,65 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 6.0.3
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+- Updated dependencies [3b1f9cf]
+    - @open-pioneer/build-common@4.0.3
+
+## 6.0.2
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+- 82b4559: Fix parsing of `qualifier` for services defined by dependencies in `node_modules`.
+- Updated dependencies [1a78924]
+- Updated dependencies [82b4559]
+    - @open-pioneer/build-common@4.0.2
+
+## 6.0.1
+
+### Patch Changes
+
+- 78e38e2: Bump various dependencies
+- 7d706a3: Refactor: use private javascript properties instead of typescript private keyword
+- Updated dependencies [78e38e2]
+    - @open-pioneer/build-common@4.0.1
+
+## 6.0.0
+
+### Major Changes
+
+- a13823e: Update to Vite 8 (support for Vite 7 is dropped).
+
+### Minor Changes
+
+- 9dda91c: Support a new virtual module to get the current deployment's base URL both during development and production:
+
+    ```ts
+    import { baseUrl } from "open-pioneer:deployment";
+
+    // Base URL of the deployed application, for example:
+    // - http://localhost:5173/ or http://localhost:5173/optional/path/ (during development)
+    // - https://example.com/path/to/root/ (during production)
+    console.log(baseUrl);
+    ```
+
+- 18c9d75: Add codegen support for hot reloading of i18n message during development.
+  HMR of i18n messages requires the latest version of the runtime package.
+- 9dda91c: Support for package metadata version `1.1.0`.
+
+### Patch Changes
+
+- b49be74: Bump dependencies
+- 9dda91c: Improve error message when the plugin encounters an unsupported package metadata version.
+- Updated dependencies [b49be74]
+- Updated dependencies [9dda91c]
+- Updated dependencies [9dda91c]
+- Updated dependencies [9dda91c]
+    - @open-pioneer/build-common@4.0.0
+
 ## 5.1.2
 
 ### Patch Changes
@@ -70,6 +130,7 @@
 - f12e73f: Emit better errors when an application's i18n configuration does not match the supported locales of its dependencies.
 
     This can happen if:
+
     - An application does not list the `i18n` option in its `build.config.mjs` at all, or if
     - there is no overlap between the application's locales and the locales supported by one of its dependencies.
 

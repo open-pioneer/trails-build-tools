@@ -1,17 +1,17 @@
 name: Run tests
 on:
-  - workflow_dispatch
-  - workflow_call
-  - push
-  - pull_request
+  workflow_dispatch:
+  workflow_call:
+  push:
+    branches:
+      - main
+  pull_request:
 
 permissions:
   contents: read
 
 jobs:
   test:
-    # Don't run for pull requests from this repository to avoid duplicate builds (push also triggers build).
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     name: "Test and Build"
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -19,10 +19,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Install
-        uses: open-pioneer/trails-repo-automation/.github/actions/install@main
+        uses: open-pioneer/trails-repo-automation/.github/actions/install@3db596c46b571582bad9438f2cd49af7b960f44b # main
 
       - name: Run checks
         run: |

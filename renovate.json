@@ -12,6 +12,13 @@
             "groupName": "Update peer dependencies",
             "description": "Don't update peer dependencies automatically",
             "enabled": false
+        },
+        {
+            "matchUpdateTypes": ["major"],
+            "matchPackageNames": ["@pnpm/**"],
+            "description": "Dependencies from the pnpm project",
+            "groupName": "@pnpm/* dependencies",
+            "groupSlug": "pnpm-monorepo-dependencies"
         }
     ]
 }

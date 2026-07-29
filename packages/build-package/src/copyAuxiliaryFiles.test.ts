@@ -1,11 +1,12 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CopyAuxiliaryFilesOptions, copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
-import { ValidationReporter } from "./utils/ValidationReporter";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { resolve } from "node:path";
 import { cleanDir, readText } from "./testing/io";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { ValidationReporter } from "./utils/ValidationReporter";
 import { createMemoryLogger } from "@open-pioneer/build-common";
 
 describe("copyAuxiliaryFiles", function () {

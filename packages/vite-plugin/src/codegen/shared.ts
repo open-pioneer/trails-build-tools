@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { existsSync } from "fs";
 import { basename, dirname, posix } from "node:path/posix";
 import { join } from "path/posix";
@@ -22,6 +23,7 @@ import { normalizePath } from "vite";
  */
 
 const VIRTUAL_PREFIX = "\0open-pioneer:";
+// oxlint-disable-next-line no-control-regex
 const VIRTUAL_PREFIX_RE = /\0open-pioneer:(?<suffix>.*)/;
 
 const APP_MODULE = "@@open-pioneer-app";
@@ -81,6 +83,15 @@ export interface VirtualSourceInfoModule {
 export interface VirtualDeploymentModule {
     type: "deployment";
 }
+
+/**
+ * Filter for rolldown.
+ *
+ * These regular expressions should match against our virtual modules (see above)
+ * but should filter out as many unrelated module ids as possible for performance.
+ */
+// oxlint-disable-next-line no-control-regex
+export const VIRTUAL_ID_FILTER = [/^\0?open-pioneer:/, /[?&]open-pioneer/, /@@open-pioneer/];
 
 /**
  * Takes a module id as input and parses it.

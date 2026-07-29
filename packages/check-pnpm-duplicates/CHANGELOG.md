@@ -1,5 +1,29 @@
 # Changelog @open-pioneer/check-pnpm-duplicates
 
+## 0.3.5
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+
+## 0.3.4
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+
+## 0.3.3
+
+### Patch Changes
+
+- 78e38e2: Bump various dependencies
+
+## 0.3.2
+
+### Patch Changes
+
+- b49be74: Bump dependencies
+
 ## 0.3.1
 
 ### Patch Changes

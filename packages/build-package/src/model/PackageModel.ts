@@ -1,15 +1,16 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { InputModel } from "./InputModel";
+
+import { join } from "node:path";
+import { PackageConfig, createPackageConfigFromBuildConfig } from "@open-pioneer/build-common";
+import { BuildConfig } from "@open-pioneer/build-support";
 import {
     NormalizedEntryPoint,
     normalizeEntryPoint,
     normalizeEntryPoints
 } from "../utils/entryPoints";
-import { join } from "node:path";
 import { ValidationReporter } from "../utils/ValidationReporter";
-import { BuildConfig } from "@open-pioneer/build-support";
-import { PackageConfig, createPackageConfigFromBuildConfig } from "@open-pioneer/build-common";
+import { InputModel } from "./InputModel";
 
 export const SUPPORTED_TS_EXTENSIONS = [".ts", ".mts", ".tsx"];
 export const SUPPORTED_JS_EXTENSIONS = [...SUPPORTED_TS_EXTENSIONS, ".js", ".mjs", ".jsx"];
@@ -112,6 +113,7 @@ export function createPackageModel(
  *
  * The report callback can be used to emit warnings.
  */
+// oxlint-disable-next-line max-params
 export function getEntryPointsFromBuildConfig(
     packageDirectory: string,
     buildConfig: BuildConfig,

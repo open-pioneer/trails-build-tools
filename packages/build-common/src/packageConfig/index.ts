@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import type * as API from "../../types";
+
 import {
     BuildConfig,
     PackageOverridesConfig,
@@ -9,6 +9,7 @@ import {
     ServiceConfig,
     ServiceOverridesConfig
 } from "@open-pioneer/build-support";
+import type * as API from "../../types";
 
 export const createPackageConfigFromBuildConfig: typeof API.createPackageConfigFromBuildConfig =
     normalizeConfig;
@@ -69,6 +70,11 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
         }
     }
 
+    let runtimeMeta;
+    if (rawConfig.runtimeMeta) {
+        runtimeMeta = rawConfig.runtimeMeta;
+    }
+
     return {
         services,
         servicesModule,
@@ -76,7 +82,8 @@ function normalizeConfig(rawConfig: BuildConfig): API.PackageConfig {
         styles,
         languages,
         properties,
-        overrides
+        overrides,
+        runtimeMeta
     };
 }
 
@@ -226,6 +233,13 @@ function readConfig(metadata: API.PackageMetadataV1.PackageMetadata): API.Packag
         }
     }
 
+    let runtimeMeta: API.PackageConfig["runtimeMeta"];
+    if (metadata.runtimeMeta) {
+        runtimeMeta = {
+            metadataVersion: metadata.runtimeMeta.metadataVersion ?? undefined
+        };
+    }
+
     return {
         services,
         servicesModule: metadata.servicesModule ?? undefined,
@@ -233,7 +247,8 @@ function readConfig(metadata: API.PackageMetadataV1.PackageMetadata): API.Packag
         languages,
         uiReferences: readUiReferences(metadata.ui),
         properties,
-        overrides: undefined
+        overrides: undefined,
+        runtimeMeta
     };
 }
 
@@ -255,7 +270,7 @@ function readService(metadata: API.PackageMetadataV1.ServiceConfig): API.Service
 function readProvides(metadata: API.PackageMetadataV1.ProvidesConfig): API.ProvidedInterface {
     return {
         interfaceName: metadata.interfaceName,
-        qualifier: metadata.interfaceName ?? undefined
+        qualifier: metadata.qualifier ?? undefined
     };
 }
 

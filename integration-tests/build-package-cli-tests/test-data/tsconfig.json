@@ -3,7 +3,7 @@
         "target": "ESNext",
         "lib": ["DOM", "DOM.Iterable", "ES2022"],
         "module": "ES2022",
-        "moduleResolution": "node",
+        "moduleResolution": "Bundler",
         "noEmit": true,
         "allowJs": false,
         "jsx": "react-jsx",
@@ -16,8 +16,9 @@
         "forceConsistentCasingInFileNames": true,
 
         "isolatedModules": true,
-        "esModuleInterop": false,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+
+        "types": ["node"]
     },
     "include": ["types"]
 }

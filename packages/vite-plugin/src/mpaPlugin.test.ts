@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { runViteBuild, TEMP_DATA_DIR, TEST_DATA_DIR } from "./utils/testUtils";
-import { describe, it, assert, expect } from "vitest";
 import { globSync } from "tinyglobby";
+import { describe, it, assert, expect } from "vitest";
+import { runViteBuild, TEMP_DATA_DIR, TEST_DATA_DIR } from "./utils/testUtils";
 
 describe("multi page support", function () {
     it("should include the root site if configured", async function () {
@@ -141,10 +142,8 @@ describe("multi page support", function () {
 
         const appContent = readFileSync(join(outDir, "my-app.js"), "utf-8");
         expect(appContent).toMatchInlineSnapshot(`
-          "const SOME_EXPORT = 42;
-          export {
-            SOME_EXPORT
-          };
+          "var SOME_EXPORT = 42;
+          export { SOME_EXPORT };
           "
         `);
     });

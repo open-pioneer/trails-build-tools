@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
+import { PackageMetadata } from "../metadata/Metadata";
+import { I18nFile } from "../metadata/parseI18nYaml";
+import { ReportableError } from "../ReportableError";
 import { generate, nodes, template } from "../utils/babelDeps";
 import { serializeModuleId } from "./shared";
-import { PackageMetadata } from "../metadata/Metadata";
-import { ReportableError } from "../ReportableError";
-import { I18nFile } from "../metadata/parseI18nYaml";
 
 const INDEX_TEMPLATE = template.program(`
     export const locales = %%LOCALES_ARRAY%%;
@@ -53,6 +54,8 @@ export function generateI18nIndex(packageDirectory: string, locales: string[]): 
     return generate(program).code;
 }
 
+export type I18nPackageMetadata = Pick<PackageMetadata, "name" | "i18nPaths">;
+
 export interface I18nMessageOptions {
     /** The locale to generate. */
     locale: string;
@@ -67,7 +70,7 @@ export interface I18nMessageOptions {
     packages: Pick<PackageMetadata, "name" | "i18nPaths">[];
 
     /** Called by the function when the contents of an i18n file (in i18nPaths) is required. */
-    loadI18n: (path: string) => Promise<I18nFile>;
+    loadI18n: (pkg: I18nPackageMetadata, filePath: string) => Promise<I18nFile>;
 }
 
 /**
@@ -92,7 +95,8 @@ export async function generateI18nMessages(options: I18nMessageOptions): Promise
             continue;
         }
 
-        const { messages, overrides } = await loadI18n(filePath);
+        // oxlint-disable-next-line no-await-in-loop
+        const { messages, overrides } = await loadI18n(pkg, filePath);
         if (pkg.name === appName) {
             packageOverrides = overrides;
         } else if (overrides) {

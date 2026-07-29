@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { describe, expect, it } from "vitest";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+
 import { resolve } from "node:path";
-import { cleanDir, readText } from "./testing/io";
+import { describe, expect, it } from "vitest";
 import { buildDts, shouldGenerateTypes } from "./buildDts";
-import { normalizeEntryPoints } from "./utils/entryPoints";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
+import { cleanDir, readText } from "./testing/io";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { normalizeEntryPoints } from "./utils/entryPoints";
 import { createMemoryLogger } from "@open-pioneer/build-common";
 
 describe(
@@ -60,7 +61,7 @@ describe(
               "export interface GreetingProps {
                   message: string;
               }
-              export declare function Greeting({ message }: GreetingProps): import("react/jsx-runtime").JSX.Element;
+              export declare function Greeting({ message }: GreetingProps): import("react").JSX.Element;
               "
             `);
             expect(defaults.logger.messages).toHaveLength(0);

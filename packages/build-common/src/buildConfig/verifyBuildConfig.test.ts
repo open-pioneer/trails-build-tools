@@ -1,9 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { expect, it } from "vitest";
-import { verifyBuildConfig } from "./verifyBuildConfig";
-import { PackageMetadataV1 } from "../packageMetadata";
 
+import { expect, it } from "vitest";
+import { PackageMetadataV1 } from "../packageMetadata";
+import { verifyBuildConfig } from "./verifyBuildConfig";
+
+// oxlint-disable-next-line vitest/expect-expect
 it("allows valid values", () => {
     verifyBuildConfig({ styles: "foo" });
 });
@@ -22,6 +24,7 @@ it("throws for invalid parameter names", () => {
     );
 });
 
+// oxlint-disable-next-line vitest/expect-expect
 it.each(PackageMetadataV1.MINOR_VERSIONS)("supports target version '%s'", (minor) => {
     verifyBuildConfig({
         publishConfig: {
@@ -38,4 +41,14 @@ it("rejects invalid target version", () => {
             }
         })
     ).toThrow(/publishConfig.packageFormatTarget/);
+});
+
+// oxlint-disable-next-line vitest/expect-expect
+it("allow runtimeMeta", () => {
+    const metaRuntimeConfig = {
+        runtimeMeta: {
+            metadataVersion: "1.0.0"
+        }
+    };
+    verifyBuildConfig(metaRuntimeConfig);
 });

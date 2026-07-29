@@ -2,8 +2,6 @@
 
 The vite plugin provided by this package is required by Open Pioneer Trails applications.
 
-This plugin supports vite `4.x` and `5.x`.
-
 Usage:
 
 ```js
@@ -133,8 +131,8 @@ The Open Pioneer Trails repository supports multiple deployment modes that can e
     });
     ```
 
-This plugin internally configures the rollup options inside vite's config to achieve above goals.
-`build.rollupOptions.input` and `.output` should not be altered manually when using this plugin.
+This plugin internally configures the rolldown options inside vite's config to achieve above goals.
+`build.rolldownOptions.input` and `.output` should not be altered manually when using this plugin.
 
 ## Development
 

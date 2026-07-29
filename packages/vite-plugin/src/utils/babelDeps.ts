@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import generateModule from "@babel/generator";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export const generate = ((generateModule as any).default ||
     generateModule) as typeof generateModule;
 
 import templateModule from "@babel/template";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export const template = ((templateModule as any).default ||
     templateModule) as typeof templateModule;
 

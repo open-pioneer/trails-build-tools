@@ -1,9 +1,10 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { createMemoryLogger, PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
-import { glob } from "tinyglobby";
+
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { createMemoryLogger,PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
+import { glob } from "tinyglobby";
 import { expect, it, onTestFailed } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
@@ -208,7 +209,7 @@ it("generates source maps when enabled", async function () {
 
     // Sourcemap exists
     const sourceMapPath = resolve(outputDirectory, "entryPointA.js.map");
-    expect(existsSync(sourceMapPath));
+    expect(existsSync(sourceMapPath)).toBe(true);
 
     // Expect pretty source file paths instead of relative local file paths.
     // Also expect that the actual source file content is embedded into the sourcemap.
@@ -452,9 +453,9 @@ it("supports various ways to spell entry points", async function () {
     });
 
     // Everything is transpiled to ".js"
-    expect(existsSync(resolve(outputDirectory, "index.js")));
-    expect(existsSync(resolve(outputDirectory, "relative.js")));
-    expect(existsSync(resolve(outputDirectory, "deeply/nested/module.js")));
+    expect(existsSync(resolve(outputDirectory, "index.js"))).toBe(true);
+    expect(existsSync(resolve(outputDirectory, "relative.js"))).toBe(true);
+    expect(existsSync(resolve(outputDirectory, "deeply/nested/module.js"))).toBe(true);
 });
 
 it("throws an error if an imported file does not exist", async function () {
@@ -663,6 +664,38 @@ it("checks that imports to other packages can be resolved at compile time", asyn
     expect(messages[3]).toMatch(
         // File used for 'main' does not exist
         /Failed to import 'package-with-main'/
+    );
+});
+
+it("checks that relative imports do not leave the package directory", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-illegal-relative-imports");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-illegal-relative-imports");
+    const entryPoints = normalize(["index"]);
+
+    const defaults = testDefaults();
+    const logger = defaults.logger;
+
+    await cleanDir(outputDirectory);
+    await expect(() =>
+        buildJs({
+            ...defaults,
+            packageDirectory,
+            outputDirectory,
+            entryPoints,
+            strict: true,
+            packageJson: {}
+        })
+    ).rejects.toMatchInlineSnapshot(
+        `[RollupError: [plugin check-imports] Aborting due to dependency problems (strict validation is enabled).]`
+    );
+
+    const messages = logger.messages.map((m) => m.args.join());
+    expect(messages).toHaveLength(2);
+    expect(messages).toEqual(
+        expect.arrayContaining([
+            expect.stringContaining("'../outside-package'"),
+            expect.stringContaining("'./../../outside-package-nested'")
+        ])
     );
 });
 

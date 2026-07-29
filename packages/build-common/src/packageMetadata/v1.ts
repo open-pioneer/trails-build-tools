@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 /**
  * This module contains the description for version 1.x of the serialized metadata format.
  * After the initial release, only compatible changes can be made:
@@ -37,6 +38,12 @@
  * - Packages may now use the `open-pioneer:deployment` module.
  *   This import is passed through during package compilation and must be handled by the vite plugin at runtime.
  *
+ * ### 1.0.1
+ *
+ * - New optional `runtimeMeta` field.
+ *   This is used by `@open-pioneer/runtime` to indicate which version of app metadata it supports.
+ *   It should not be used by other packages.
+ *
  * ### 1.0.0
  *
  * Initial release
@@ -44,15 +51,15 @@
  * @module
  */
 import { SemVer } from "semver";
-import type { PackageMetadataV1 as V1 } from "../../types";
-import { canParse } from "./versionUtils";
 import { z } from "zod";
+import type { PackageMetadataV1 as V1 } from "../../types";
+import { canParse } from "../versionUtils";
 
 export const LATEST_VERSION = "1.1.0";
 
 // Target (minor version) to semver with patch version (if any).
 const LATEST_VERSION_FOR_TARGET: Record<V1.MinorVersion, string> = {
-    ["1.0" as V1.MinorVersion]: "1.0.0",
+    ["1.0" as V1.MinorVersion]: "1.0.1",
     ["1.1" as V1.MinorVersion]: "1.1.0"
 };
 
@@ -98,13 +105,18 @@ const SERVICE_CONFIG_SCHEMA: z.ZodType<V1.ServiceConfig> = z.object({
     references: REFERENCE_CONFIG_SCHEMA.array().nullish().optional()
 });
 
+const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<V1.RuntimeMeta> = z.object({
+    metadataVersion: z.string().nullish().optional()
+});
+
 const PACKAGE_METADATA_SCHEMA: z.ZodType<V1.PackageMetadata> = VERSION_SCHEMA.extend({
     services: SERVICE_CONFIG_SCHEMA.array().nullish().optional(),
     servicesModule: z.string().nullish().optional(),
     styles: z.string().nullish().optional(),
     i18n: I18N_CONFIG_SCHEMA.nullish().optional(),
     ui: UI_CONFIG_SCHEMA.nullish().optional(),
-    properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional()
+    properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional(),
+    runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.nullish().optional()
 });
 
 const featuresSince: Record<"app-deployment-module", V1.MinorVersion> = {
@@ -193,7 +205,7 @@ export const serializePackageMetadata: typeof V1.serializePackageMetadata = (
     metadata: V1.OutputPackageMetadata,
     target: V1.MinorVersion
 ) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     if ((metadata as any)[VERSION_FIELD]) {
         throw new Error(`The package metadata version should not be specified directly.`);
     }

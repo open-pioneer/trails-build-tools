@@ -1,11 +1,12 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { beforeEach, expect, it } from "vitest";
+
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
+import { beforeEach, expect, it } from "vitest";
+import { PackageEntry } from "./findDuplicates";
 import { TEMP_DATA_DIR } from "./testing/paths";
 import { updateConfig } from "./updateConfig";
-import { PackageEntry } from "./findDuplicates";
 
 const UPDATE_CONFIG_DIR = resolve(TEMP_DATA_DIR, "update-config");
 

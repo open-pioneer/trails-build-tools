@@ -1,5 +1,53 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 3.2.2
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+- Updated dependencies [3b1f9cf]
+    - @open-pioneer/build-package@4.3.2
+
+## 3.2.1
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+- Updated dependencies [1a78924]
+    - @open-pioneer/build-package@4.3.1
+
+## 3.2.0
+
+### Minor Changes
+
+- f7e6e6a: Implement strict validation for relative imports: imports that point outside the package directory are an error.
+
+### Patch Changes
+
+- 78e38e2: Bump various dependencies
+- Updated dependencies [78e38e2]
+- Updated dependencies [f7e6e6a]
+- Updated dependencies [7d706a3]
+    - @open-pioneer/build-package@4.3.0
+
+## 3.1.0
+
+### Minor Changes
+
+- 9dda91c: Support `publishConfig.validation: false` to disable validation entirely.
+- 9dda91c: Add support for the new `open-pioneer:deployment` import when building packages.
+
+    When compiling packages that make use of this new module, you must set the package format target (`--target` via CLI) to `1.1` or later.
+    Trails projects that consume such a package need an updated versions of the Open Pioneer Trails Vite plugin that supports the new target version.
+
+### Patch Changes
+
+- b49be74: Bump dependencies
+- Updated dependencies [b49be74]
+- Updated dependencies [9dda91c]
+- Updated dependencies [9dda91c]
+    - @open-pioneer/build-package@4.2.0
+
 ## 3.0.9
 
 ### Patch Changes
@@ -103,6 +151,7 @@
 
 - e4ae880: Switch to `type: module`
 - e4ae880: Implement additional validations when importing modules from other packages.
+
     - When importing modules from normal node packages, `build-package` will now check that the imported module actually exists.
     - When importing modules from another trails package in the same repository, `build-package` now verifies that the imported module is an actual entry point of that package (declared in the `build.config.mjs`).
 

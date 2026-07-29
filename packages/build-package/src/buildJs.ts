@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
+import nativePath, { posix } from "node:path";
+import { cwd } from "node:process";
 import { PackageMetadataV1 } from "@open-pioneer/build-common";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { normalizePath } from "@rollup/pluginutils";
-import nativePath, { posix } from "node:path";
-import { cwd } from "node:process";
 import { LogLevel, RollupLog, rollup } from "rollup";
 import esbuild from "rollup-plugin-esbuild";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
@@ -68,6 +69,7 @@ export async function buildJs({
             checkImportsPlugin({
                 packageJson,
                 packageJsonPath,
+                packageDirectory,
                 rootDirectory,
                 strict
             }),

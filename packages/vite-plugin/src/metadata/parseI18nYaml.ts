@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { readFile } from "fs/promises";
 import { load as loadYaml } from "js-yaml";
 import { z } from "zod";
@@ -73,7 +74,10 @@ export async function loadI18nFile(path: string): Promise<I18nFile> {
  * Parses an i18n yaml document.
  */
 export function parseI18nYaml(yaml: string): I18nFile {
-    const data = loadYaml(yaml);
+    let data = undefined;
+    if (yaml.trim()) {
+        data = loadYaml(yaml);
+    }
     return parseI18nFile(data);
 }
 

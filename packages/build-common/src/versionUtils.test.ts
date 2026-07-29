@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { describe, expect, it } from "vitest";
-import { canParse as canParse } from "./versionUtils";
+import { canParse } from "./versionUtils";
 
 describe("canParse", function () {
     it("supports older compatible versions", function () {

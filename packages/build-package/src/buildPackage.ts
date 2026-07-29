@@ -1,18 +1,19 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { mkdir, rm, writeFile } from "fs/promises";
+import { resolve } from "path";
+import { buildCss } from "./buildCss";
+import { buildDts } from "./buildDts";
 import { buildJs } from "./buildJs";
 import { copyAssets } from "./copyAssets";
-import { createDebugger } from "./utils/debug";
-import { buildCss } from "./buildCss";
-import { generatePackageJson } from "./generatePackageJson";
-import { resolve } from "path";
-import { InputModel } from "./model/InputModel";
-import { createPackageModel } from "./model/PackageModel";
-import { ValidationReporter } from "./utils/ValidationReporter";
 import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { copyI18nFiles } from "./copyI18nFiles";
-import { buildDts } from "./buildDts";
+import { generatePackageJson } from "./generatePackageJson";
+import { InputModel } from "./model/InputModel";
+import { createPackageModel } from "./model/PackageModel";
+import { createDebugger } from "./utils/debug";
+import { ValidationReporter } from "./utils/ValidationReporter";
 import { ResolvedOptions } from "./model/Options";
 import { getChalk, type Logger } from "@open-pioneer/build-common";
 

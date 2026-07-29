@@ -1,26 +1,16 @@
 {
     "name": "@open-pioneer/vite-plugin-pioneer",
+    "version": "6.0.3",
     "description": "The vite plugin provided by this package is required by Open Pioneer Trails applications.",
-    "version": "5.1.2",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
-    "type": "module",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/vite-plugin"
-    },
-    "homepage": "https://github.com/open-pioneer",
-    "keywords": [
-        "open-pioneer-trails"
-    ],
-    "scripts": {
-        "clean": "rimraf dist temp",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
-        "test": "vitest"
     },
     "files": [
         "dist/**/*.js",
@@ -31,10 +21,15 @@
         "README.md",
         "LICENSE"
     ],
-    "peerDependencies": {
-        "@open-pioneer/runtime": "*",
-        "sass": "^1.77.6",
-        "vite": "^7.0.0"
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "types.d.ts",
+    "scripts": {
+        "clean": "rimraf dist temp",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch",
+        "test": "vitest"
     },
     "dependencies": {
         "@babel/generator": "catalog:",
@@ -57,12 +52,16 @@
         "@types/debug": "catalog:",
         "@types/js-yaml": "catalog:",
         "build-tools": "workspace:*",
-        "esbuild": "catalog:",
-        "tinyglobby": "catalog:",
         "rimraf": "catalog:",
-        "rollup": "catalog:",
+        "rolldown": "catalog:",
         "sass": "catalog:",
+        "tinyglobby": "catalog:",
         "vite": "catalog:"
+    },
+    "peerDependencies": {
+        "@open-pioneer/runtime": "*",
+        "sass": "^1.77.6",
+        "vite": "^8.0.0"
     },
     "engines": {
         "node": ">= 20"

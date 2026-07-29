@@ -1,26 +1,16 @@
 {
     "name": "@open-pioneer/build-package",
+    "version": "4.3.2",
     "description": "Implements partial compilation for Open Pioneer Trails packages.",
-    "version": "4.1.2",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
-    "type": "module",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/build-package"
-    },
-    "homepage": "https://github.com/open-pioneer",
-    "keywords": [
-        "open-pioneer-trails"
-    ],
-    "scripts": {
-        "clean": "rimraf dist temp",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
-        "test": "vitest"
     },
     "files": [
         "dist/**/*.js",
@@ -30,6 +20,43 @@
         "README.md",
         "LICENSE"
     ],
+    "type": "module",
+    "main": "dist/index.js",
+    "types": "types.d.ts",
+    "scripts": {
+        "clean": "rimraf dist temp",
+        "build": "node build.mjs build",
+        "build-dev": "node build.mjs buildDev",
+        "dev": "node build.mjs watch",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "@open-pioneer/build-common": "workspace:^",
+        "@open-pioneer/build-support": "workspace:^",
+        "@rollup/plugin-node-resolve": "catalog:",
+        "chalk": "catalog:",
+        "debug": "catalog:",
+        "esbuild": "catalog:",
+        "find-git-root": "catalog:",
+        "find-workspaces": "catalog:",
+        "fs-extra": "catalog:",
+        "import-meta-resolve": "catalog:",
+        "postcss": "catalog:",
+        "postcss-import": "catalog:",
+        "rollup": "catalog:",
+        "rollup-plugin-esbuild": "catalog:",
+        "tinyglobby": "catalog:"
+    },
+    "devDependencies": {
+        "@rollup/pluginutils": "catalog:",
+        "@types/debug": "catalog:",
+        "@types/fs-extra": "catalog:",
+        "@types/postcss-import": "catalog:",
+        "@types/react": "catalog:",
+        "build-tools": "workspace:*",
+        "sass": "catalog:",
+        "typescript": "catalog:"
+    },
     "peerDependencies": {
         "sass": "*",
         "typescript": "*"
@@ -41,33 +68,6 @@
         "sass": {
             "optional": true
         }
-    },
-    "dependencies": {
-        "@open-pioneer/build-common": "workspace:^",
-        "@open-pioneer/build-support": "workspace:^",
-        "@rollup/plugin-node-resolve": "catalog:",
-        "chalk": "catalog:",
-        "debug": "catalog:",
-        "esbuild": "catalog:",
-        "tinyglobby": "catalog:",
-        "find-git-root": "catalog:",
-        "find-workspaces": "catalog:",
-        "fs-extra": "catalog:",
-        "import-meta-resolve": "catalog:",
-        "postcss": "catalog:",
-        "postcss-import": "catalog:",
-        "rollup": "catalog:",
-        "rollup-plugin-esbuild": "catalog:"
-    },
-    "devDependencies": {
-        "@rollup/pluginutils": "catalog:",
-        "@types/debug": "catalog:",
-        "@types/fs-extra": "catalog:",
-        "@types/postcss-import": "catalog:",
-        "@types/react": "catalog:",
-        "build-tools": "workspace:*",
-        "sass": "catalog:",
-        "typescript": "catalog:"
     },
     "engines": {
         "node": ">= 20"

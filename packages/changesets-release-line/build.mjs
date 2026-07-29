@@ -1,4 +1,4 @@
-/* eslint-disable headers/header-format */
+/* oxlint-disable @tony.ganchev/header/header */
 
 import { build } from "build-tools/support/build.js";
 

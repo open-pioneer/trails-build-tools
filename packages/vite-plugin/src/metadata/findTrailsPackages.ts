@@ -1,14 +1,15 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { realpath } from "fs/promises";
-import { ResolverFactory } from "oxc-resolver";
 import { dirname, posix } from "path";
+import { ResolverFactory } from "oxc-resolver";
 import { glob } from "tinyglobby";
+import { normalizePath } from "vite";
 import { createDebugger } from "../utils/debug";
 import { MetadataContext } from "./Context";
-import { PackageMetadata } from "./Metadata";
 import { loadPackageMetadata } from "./loadPackageMetadata";
-import { normalizePath } from "vite";
+import { PackageMetadata } from "./Metadata";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -40,10 +41,12 @@ export async function findTrailsPackages(sourceRoot: string): Promise<PackageMet
         visit(dirname(file));
     }
 
+    // TODO(perf): could use some concurrency -- visit dependencies in parallel
     const trailsPackages: PackageMetadata[] = [];
     while (workQueue.length) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
         const packageDirectory = workQueue.pop()!;
+        // oxlint-disable-next-line no-await-in-loop
         const pkg = await loadPackageMetadata(ctx, packageDirectory, {
             sourceRoot,
             importedFrom: undefined,
@@ -55,11 +58,13 @@ export async function findTrailsPackages(sourceRoot: string): Promise<PackageMet
 
         trailsPackages.push(pkg);
         for (const dependency of pkg.dependencies) {
+            // oxlint-disable-next-line no-await-in-loop
             const depResult = await packageResolver.async(
                 packageDirectory,
                 dependency.packageName + "/package.json"
             );
             if (depResult.path) {
+                // oxlint-disable-next-line no-await-in-loop
                 const depPath = await realpath(dirname(depResult.path));
                 visit(depPath);
             }

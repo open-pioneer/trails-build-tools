@@ -11,24 +11,24 @@
  * until they are invalidated.
  */
 export class Cache<Key, Value, Context extends unknown[] = []> {
-    private values = new Map<string, Value>();
-    private jobs = new Map<string, Promise<Value>>();
-    private provider: CacheProvider<Key, Value, Context>;
+    #values = new Map<string, Value>();
+    #jobs = new Map<string, Promise<Value>>();
+    #provider: CacheProvider<Key, Value, Context>;
 
     constructor(provider: CacheProvider<Key, Value, Context>) {
-        this.provider = provider;
+        this.#provider = provider;
     }
 
     /**
      * Removes an entry associated with the given key.
      */
     invalidate(key: Key): void {
-        const id = this.provider.getId(key);
-        const oldValue = this.values.get(id);
-        this.values.delete(id);
-        this.jobs.delete(id);
+        const id = this.#provider.getId(key);
+        const oldValue = this.#values.get(id);
+        this.#values.delete(id);
+        this.#jobs.delete(id);
         if (oldValue) {
-            this.provider.onInvalidate?.(key, oldValue);
+            this.#provider.onInvalidate?.(key, oldValue);
         }
     }
 
@@ -46,17 +46,17 @@ export class Cache<Key, Value, Context extends unknown[] = []> {
      * @returns the value associated with `key`
      */
     async get(key: Key, ...context: Context): Promise<Value> {
-        const provider = this.provider;
+        const provider = this.#provider;
         const id = provider.getId(key);
 
-        const values = this.values;
+        const values = this.#values;
         const existingValue = values.get(id);
         if (existingValue) {
             provider.onCachedReturn?.(key, existingValue);
             return Promise.resolve(existingValue);
         }
 
-        const jobs = this.jobs;
+        const jobs = this.#jobs;
         const existingJob = jobs.get(id);
         if (existingJob) {
             return existingJob;

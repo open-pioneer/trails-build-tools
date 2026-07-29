@@ -1,5 +1,39 @@
 # Changelog @open-pioneer/build-common
 
+## 4.0.3
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+
+## 4.0.2
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+- 82b4559: Fix parsing of `qualifier` for services defined by dependencies in `node_modules`.
+
+## 4.0.1
+
+### Patch Changes
+
+- 78e38e2: Bump various dependencies
+
+## 4.0.0
+
+### Major Changes
+
+- 9dda91c: Add support for multiple package format targets (currently 1.0 and 1.1) at the same time.
+
+### Minor Changes
+
+- 9dda91c: Add support for `open-pioneer:deployment`.
+- 9dda91c: Support `publishConfig.validation: false` to disable validation entirely.
+
+### Patch Changes
+
+- b49be74: Bump dependencies
+
 ## 3.2.2
 
 ### Patch Changes

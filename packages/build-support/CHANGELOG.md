@@ -1,5 +1,34 @@
 # Changelog @open-pioneer/build-support
 
+## 3.1.3
+
+### Patch Changes
+
+- 3b1f9cf: Migrate from eslint to oxlint and from prettier to oxfmt
+
+## 3.1.2
+
+### Patch Changes
+
+- 1a78924: Bump dependencies
+
+## 3.1.1
+
+### Patch Changes
+
+- 78e38e2: Bump various dependencies
+
+## 3.1.0
+
+### Minor Changes
+
+- 9dda91c: Support `publishConfig.validation: false` to disable validation entirely.
+- 9dda91c: Add the `publishConfig.packageFormatTarget` to customize the target (trails-) package version. Raising this value enables new features but also needs an updating vite plugin on the package consumer's side.
+
+### Patch Changes
+
+- b49be74: Bump dependencies
+
 ## 3.0.6
 
 ### Patch Changes

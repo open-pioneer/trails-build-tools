@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BuildCssOptions, buildCss } from "./buildCss";
-import { normalizeEntryPoint } from "./utils/entryPoints";
+import { SUPPORTED_CSS_EXTENSIONS } from "./model/PackageModel";
 import { cleanDir, readText } from "./testing/io";
 import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
-import { SUPPORTED_CSS_EXTENSIONS } from "./model/PackageModel";
+import { normalizeEntryPoint } from "./utils/entryPoints";
 import { createMemoryLogger } from "@open-pioneer/build-common";
 
 describe("buildCss", function () {
@@ -49,7 +50,7 @@ describe("buildCss", function () {
             cssEntryPoint: normalize("./myStyles.css")
         });
 
-        /* 
+        /*
             Non-local css files are not bundled.
         */
         expect(readText(resolve(outputDirectory, "myStyles.css"))).toMatchInlineSnapshot(`
@@ -65,13 +66,16 @@ describe("buildCss", function () {
           @import "bar.css" (min-width: 25em);
           @import "baz.css" layer(baz-layer);
           /* This import must not be bundled because it points to an external dependency */
+
           .foo {
               color: white;
           }
+
           /* 
               From postcss-import examples.
               None of these should be bundled.
           */
+
           .main {
               padding: 1;
           }
@@ -173,6 +177,7 @@ describe("buildCss", function () {
           body {
             height: 100%;
           }
+
           .a .b-c {
             color: green;
           }"
@@ -191,7 +196,7 @@ describe("buildCss", function () {
             cssEntryPoint: normalize("./main.scss")
         });
 
-        /* 
+        /*
             Non-local css files are not bundled.
 
             The exception to this (in the sass case) is css emitted by sass modules
@@ -209,15 +214,18 @@ describe("buildCss", function () {
           @import url(foo-1.css);
           @import url("foo-2.css");
           @import "bar.css" (min-width: 25em);
+
           .from-local-css-module {
               color: white;
           }
           .from-local-sass-module {
             color: white;
           }
+
           .from-external-sass-module {
             color: green;
           }
+
           .main {
             padding: 1;
           }"
@@ -248,6 +256,7 @@ describe("buildCss", function () {
           body {
             height: 100%;
           }
+
           .a .b-c {
             color: green;
           }
