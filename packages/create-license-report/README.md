@@ -47,7 +47,7 @@ allowedLicenses:
     - "Apache-2.0"
     - "MIT"
 
-# Skip dev dependencies in the report. Optional, defaults to `true`.
+# Optional, defaults to `true`.
 skipDevDependencies: true
 
 overrideLicenses:
@@ -66,7 +66,7 @@ The allowed licenses are the licenses that are allowed for the dependencies. If 
 and the build will fail. The override licenses can be used to override the license of a dependency. This is useful if the license cannot be automatically detected.
 The additional licenses can be used to add additional licenses that are not automatically detected. This is useful for packages that do not have a license file or a license field in their package.json.
 
-`skipDevDependencies` controls whether dev dependencies are excluded from the report. It defaults to `true` when omitted, so older `license-config.yaml` files keep their previous behavior.
+`skipDevDependencies` controls whether dev dependencies are excluded from the report. It defaults to `true` when omitted.
 
 ### Compound SPDX license expressions
 

@@ -3,11 +3,22 @@
 import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/cli-logging";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
-import { LicenseOptions } from "./types";
 import { verifyLicenses } from "./verifyLicenses";
 import { readLicenseConfig } from "./readProjectConfig";
 import { generateReportHtml } from "./reportTemplate";
 import { getPnpmLicenseReport } from "./pnpmLicenseReport";
+
+interface LicenseOptions {
+    log: boolean;
+    /** Path to the `license-config.yaml` file. */
+    configPath: string;
+
+    /** Path to the working directory of the project. Defaults to the package root. */
+    workingDir: string;
+
+    /** Output path for the generated HTML report. Defaults to `dist/license-report.html`. */
+    outputHtmlPath: string;
+}
 
 export async function createLicenseReport(options: LicenseOptions) {
     const logger = options.log ? await createConsoleLogger(console) : SILENT_LOGGER;
