@@ -9,27 +9,30 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/open-pioneer/trails-build-tools.git",
+        "url": "git+https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/changesets-release-line"
     },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
+        "dist",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
     "type": "module",
-    "main": "dist/index.js",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
     "scripts": {
         "clean": "rimraf dist",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch"
+        "build": "tsdown",
+        "dev": "tsdown --watch"
     },
     "devDependencies": {
         "@changesets/cli": "catalog:",
-        "build-tools": "workspace:*"
+        "publint": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:"
     },
     "engines": {
         "node": ">= 20"

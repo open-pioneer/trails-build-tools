@@ -9,37 +9,39 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/open-pioneer/trails-build-tools.git",
+        "url": "git+https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/build-common"
     },
     "files": [
-        "dist/**/*.js",
-        "dist/**/*.js.map",
-        "types.d.ts",
+        "dist",
         "CHANGELOG.md",
         "README.md",
         "LICENSE"
     ],
-    "type": "commonjs",
-    "main": "dist/index.js",
-    "types": "types.d.ts",
+    "type": "module",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
     "scripts": {
         "clean": "rimraf dist temp",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "test": "vitest"
     },
     "dependencies": {
+        "@open-pioneer/build-support": "workspace:^",
         "@rollup/pluginutils": "catalog:",
         "semver": "catalog:",
         "zod": "catalog:",
         "zod-validation-error": "catalog:"
     },
     "devDependencies": {
-        "@open-pioneer/build-support": "workspace:^",
         "@types/semver": "catalog:",
-        "build-tools": "workspace:*"
+        "publint": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:",
+        "typescript": "catalog:"
     },
     "engines": {
         "node": ">= 20"

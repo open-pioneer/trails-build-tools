@@ -52,18 +52,173 @@
  */
 import { SemVer } from "semver";
 import { z } from "zod";
-import type { PackageMetadataV1 as V1 } from "../../types";
 import { canParse } from "../versionUtils";
 
-export const LATEST_VERSION = "1.1.0";
+export type Nullish<T> = T | null | undefined;
+
+/**
+ * Helper type to express a set of statically known values (with autocompletion) that can still be extended.
+ *
+ * See this issue for more details: https://github.com/microsoft/TypeScript/issues/29729
+ */
+export type ExtensibleUnion<Values extends string> = Values | (string & {});
+
+export interface RuntimeMeta {
+    metadataVersion?: Nullish<string>;
+}
+
+/**
+ * Framework metadata for a package.
+ */
+export interface PackageMetadata {
+    /** Semantic version, 1.x.y */
+    packageFormatVersion: string;
+
+    /** Services in the package */
+    services?: Nullish<ServiceConfig[]>;
+
+    /** Services module to import. Required if there are any services. */
+    servicesModule?: Nullish<string>;
+
+    /** Styles to import, if the package comes with builtin CSS rules styles. */
+    styles?: Nullish<string>;
+
+    /** Languages and their messages defined by the package. */
+    i18n?: Nullish<I18nConfig>;
+
+    /** References etc. required by UI components. */
+    ui?: Nullish<UiConfig>;
+
+    /** Properties defined by the package. */
+    properties?: Nullish<PropertyConfig[]>;
+
+    /** Runtime package metadata. Only supported on the runtime package. */
+    runtimeMeta?: Nullish<RuntimeMeta>;
+}
+
+/**
+ * Same as {@link PackageMetadata}, but without the format version.
+ * The format version is filled in automatically when writing metadata.
+ */
+export type OutputPackageMetadata = Omit<PackageMetadata, "packageFormatVersion">;
+
+/**
+ * Represents a service instance.
+ */
+export interface ServiceConfig {
+    /** Name of the service. Service names are unique within a package. */
+    serviceName: string;
+
+    /** Interfaces provided by the service. */
+    provides?: Nullish<ProvidesConfig[]>;
+
+    /** References required by the service. */
+    references?: Nullish<ReferenceConfig[]>;
+}
+
+/**
+ * Represents an interface implemented by a service.
+ */
+export interface ProvidesConfig {
+    /** Provided interface name. */
+    interfaceName: string;
+
+    /** Interface qualifier (optional). */
+    qualifier?: Nullish<string>;
+}
+
+/**
+ * Represents a reference required by a service.
+ */
+export interface ReferenceConfig {
+    /** Requires all implementations of this interface or a unique implementation. */
+    type: "all" | "unique";
+
+    /** Name of the reference (injected as). Reference names are unique within a service. */
+    referenceName: string;
+
+    /** Required interface name. */
+    interfaceName: string;
+
+    /** Interface qualifier (optional). */
+    qualifier?: Nullish<string>;
+}
+
+export type UiReferenceConfig = Omit<ReferenceConfig, "referenceName">;
+
+/**
+ * Represents supported languages of a package.
+ */
+export interface I18nConfig {
+    /** Supported languages. */
+    languages?: Nullish<string[]>;
+}
+
+/**
+ * Represents UI options of a package.
+ */
+export interface UiConfig {
+    /** References required by UI components. */
+    references: Nullish<UiReferenceConfig[]>;
+}
+
+/**
+ * Represents a property in a package.
+ */
+export interface PropertyConfig {
+    /** Name of the property. Property names are unique within a package. */
+    propertyName: string;
+
+    /** Initial value of the property. */
+    defaultValue?: unknown;
+
+    /** True if a non-null value is required at runtime. */
+    required?: Nullish<boolean>;
+}
+
+export interface ParseMetadataSuccess {
+    type: "success";
+    value: PackageMetadata;
+}
+
+export interface ParseMetadataError {
+    type: "error";
+
+    /** Note: new error codes might be introduced in the future. */
+    code: ExtensibleUnion<"unsupported-version" | "validation-error">;
+    message: string;
+    cause?: unknown;
+}
+
+export type ParseMetadataResult = ParseMetadataSuccess | ParseMetadataError;
+
+/**
+ * The key under which the package metadata is added to the `package.json` of an npm package.
+ */
+export const PACKAGE_JSON_KEY = "openPioneerFramework";
+
+/**
+ * The latest supported metadata version (a semver).
+ * Guaranteed to start with `"1."`.
+ */
+export const LATEST_VERSION: string = "1.1.0";
+
+export type MinorVersion = string & { __brand: "package-format-minor-version" };
+
+/**
+ * Minor versions, e.g. `1.0`, `1.1`.
+ * These versions do _not_ include the patch version (not needed: patch versions are compatible with each other).
+ */
+export const MINOR_VERSIONS: readonly MinorVersion[] = [
+    "1.0" as MinorVersion,
+    "1.1" as MinorVersion
+];
 
 // Target (minor version) to semver with patch version (if any).
-const LATEST_VERSION_FOR_TARGET: Record<V1.MinorVersion, string> = {
-    ["1.0" as V1.MinorVersion]: "1.0.1",
-    ["1.1" as V1.MinorVersion]: "1.1.0"
+const LATEST_VERSION_FOR_TARGET: Record<MinorVersion, string> = {
+    ["1.0" as MinorVersion]: "1.0.1",
+    ["1.1" as MinorVersion]: "1.1.0"
 };
-
-export const MINOR_VERSIONS = ["1.0" as V1.MinorVersion, "1.1" as V1.MinorVersion] as const;
 
 /* NOTE: do not use .strict() for objects here to allow future additions of optional properties */
 
@@ -73,7 +228,7 @@ const VERSION_SCHEMA = z.object({
     [VERSION_FIELD]: z.string()
 });
 
-const PROPERTY_CONFIG_SCHEMA: z.ZodType<V1.PropertyConfig> = z.object({
+const PROPERTY_CONFIG_SCHEMA: z.ZodType<PropertyConfig> = z.object({
     propertyName: z.string(),
     defaultValue: z.any().nullish().optional(),
     required: z.boolean().nullish().optional()
@@ -84,32 +239,32 @@ const REFERENCE_CONFIG_SCHEMA = z.object({
     referenceName: z.string(),
     interfaceName: z.string(),
     qualifier: z.string().nullish().optional()
-}) satisfies z.ZodType<V1.ReferenceConfig>;
+}) satisfies z.ZodType<ReferenceConfig>;
 
-const UI_CONFIG_SCHEMA: z.ZodType<V1.UiConfig> = z.object({
+const UI_CONFIG_SCHEMA: z.ZodType<UiConfig> = z.object({
     references: REFERENCE_CONFIG_SCHEMA.omit({ referenceName: true }).array()
 });
 
-const I18N_CONFIG_SCHEMA: z.ZodType<V1.I18nConfig> = z.object({
+const I18N_CONFIG_SCHEMA: z.ZodType<I18nConfig> = z.object({
     languages: z.string().array().optional()
 });
 
-const PROVIDES_CONFIG_SCHEMA: z.ZodType<V1.ProvidesConfig> = z.object({
+const PROVIDES_CONFIG_SCHEMA: z.ZodType<ProvidesConfig> = z.object({
     interfaceName: z.string(),
     qualifier: z.string().nullish().optional()
 });
 
-const SERVICE_CONFIG_SCHEMA: z.ZodType<V1.ServiceConfig> = z.object({
+const SERVICE_CONFIG_SCHEMA: z.ZodType<ServiceConfig> = z.object({
     serviceName: z.string(),
     provides: PROVIDES_CONFIG_SCHEMA.array().nullish().optional(),
     references: REFERENCE_CONFIG_SCHEMA.array().nullish().optional()
 });
 
-const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<V1.RuntimeMeta> = z.object({
+const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<RuntimeMeta> = z.object({
     metadataVersion: z.string().nullish().optional()
 });
 
-const PACKAGE_METADATA_SCHEMA: z.ZodType<V1.PackageMetadata> = VERSION_SCHEMA.extend({
+const PACKAGE_METADATA_SCHEMA: z.ZodType<PackageMetadata> = VERSION_SCHEMA.extend({
     services: SERVICE_CONFIG_SCHEMA.array().nullish().optional(),
     servicesModule: z.string().nullish().optional(),
     styles: z.string().nullish().optional(),
@@ -119,18 +274,24 @@ const PACKAGE_METADATA_SCHEMA: z.ZodType<V1.PackageMetadata> = VERSION_SCHEMA.ex
     runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.nullish().optional()
 });
 
-const featuresSince: Record<"app-deployment-module", V1.MinorVersion> = {
-    "app-deployment-module": "1.1" as V1.MinorVersion
+const featuresSince: Record<"app-deployment-module", MinorVersion> = {
+    "app-deployment-module": "1.1" as MinorVersion
 };
 
-export const supportsFeature: typeof V1.supportsFeature = (compileTarget, feature) => {
+/**
+ * Checks whether the chosen package format compilation target supports the given feature.
+ */
+export function supportsFeature(
+    target: MinorVersion,
+    feature: "app-deployment-module"
+): { supports: true } | { supports: false; needed: MinorVersion } {
     const featureTarget = featuresSince[feature];
     if (!featureTarget) {
         throw new Error(`Unknown feature: '${feature}'`);
     }
 
     const featureSemver = toSemver(featureTarget);
-    const compileSemver = toSemver(compileTarget);
+    const compileSemver = toSemver(target);
     if (compileSemver.compare(featureSemver) >= 0) {
         return {
             supports: true
@@ -141,18 +302,21 @@ export const supportsFeature: typeof V1.supportsFeature = (compileTarget, featur
             needed: featureTarget
         };
     }
-};
+}
 
 const MINOR_VERSION_RE = /^\d+\.\d+$/;
 
-function toSemver(target: V1.MinorVersion): SemVer {
+function toSemver(target: MinorVersion): SemVer {
     if (!target.match(MINOR_VERSION_RE)) {
         throw new Error(`Target '${target}' is not a valid target version.`);
     }
     return new SemVer(target + ".0");
 }
 
-export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) => {
+/**
+ * Attempts to parse the given `jsonValue` object into a validated metadata object.
+ */
+export function parsePackageMetadata(jsonValue: unknown): ParseMetadataResult {
     // Require that at least the version field is present.
     const versionResult = VERSION_SCHEMA.safeParse(jsonValue);
     if (!versionResult.success) {
@@ -199,12 +363,20 @@ export const parsePackageMetadata: typeof V1.parsePackageMetadata = (jsonValue) 
         type: "success",
         value: metadataResult.data
     };
-};
+}
 
-export const serializePackageMetadata: typeof V1.serializePackageMetadata = (
-    metadata: V1.OutputPackageMetadata,
-    target: V1.MinorVersion
-) => {
+/**
+ * Serializes the given metadata object into its raw json object representation.
+ *
+ * Note: the framework metadata version will be included automatically.
+ *
+ * NOTE: This will probably have to be multiple signatures in the future, when additional metadata fields are added.
+ * At this time (version 1.1), only new _source code_ features have been added.
+ */
+export function serializePackageMetadata(
+    metadata: OutputPackageMetadata,
+    target: MinorVersion
+): unknown {
     // oxlint-disable-next-line @typescript-eslint/no-explicit-any
     if ((metadata as any)[VERSION_FIELD]) {
         throw new Error(`The package metadata version should not be specified directly.`);
@@ -215,7 +387,7 @@ export const serializePackageMetadata: typeof V1.serializePackageMetadata = (
         throw new Error(`Unknown target version: '${target}'.`);
     }
 
-    const augmentedMetadata: V1.PackageMetadata = {
+    const augmentedMetadata: PackageMetadata = {
         ...metadata,
         [VERSION_FIELD]: latestVersion
     };
@@ -228,4 +400,4 @@ export const serializePackageMetadata: typeof V1.serializePackageMetadata = (
         throw new Error(`Failed to validate framework metadata before writing`, { cause: e });
     }
     return finalMetadata;
-};
+}

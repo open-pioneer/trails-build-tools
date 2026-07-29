@@ -4,28 +4,54 @@
 import { posix } from "node:path";
 import { dataToEsm, normalizePath } from "@rollup/pluginutils";
 import { gte } from "semver";
-import type * as API from "../../types";
 import { canParse } from "../versionUtils";
 
-const PACKAGE_NAME = "@open-pioneer/runtime";
-const REACT_INTEGRATION_MODULE_ID = "@open-pioneer/runtime/react-integration";
-const METADATA_MODULE_ID = "@open-pioneer/runtime/metadata";
+declare const VALIDATED_RUNTIME_VERSION: unique symbol;
 
-export const RuntimeSupport: typeof API.RuntimeSupport = {
-    RUNTIME_PACKAGE_NAME: PACKAGE_NAME,
-    REACT_INTEGRATION_MODULE_ID,
-    METADATA_MODULE_ID,
-    generateReactHooks,
-    parseVirtualModule,
-    generateSourceInfo,
+export type VirtualModuleType = "app" | "react-hooks" | "source-info" | "deployment";
 
-    DEFAULT_METADATA_VERSION: "1.0.0" as API.RuntimeSupport.RuntimeMetadataVersion,
-    CURRENT_METADATA_MAJOR: "1.0.0" as API.RuntimeSupport.RuntimeMetadataVersion,
-    getSupportedRuntimeMetadataVersion: canSupportRuntimeMetadataVersion,
-    getRuntimeFeatures
+/**
+ * A runtime version that we know we can support.
+ */
+export type RuntimeMetadataVersion = string & { __brand: typeof VALIDATED_RUNTIME_VERSION };
+
+export type RuntimeValidationError = {
+    code: "invalid-version" | "unsupported-version";
+    error?: Error;
 };
 
-function parseVirtualModule(moduleId: string): API.RuntimeSupport.VirtualModuleType | undefined {
+export interface RuntimePackageFeatures {
+    supportsMessageBox: boolean;
+}
+
+/** Package name of the Open Pioneer Trails runtime library. */
+export const RUNTIME_PACKAGE_NAME: string = "@open-pioneer/runtime";
+
+/** The (unresolved) react-integration module id.  */
+export const REACT_INTEGRATION_MODULE_ID: string = "@open-pioneer/runtime/react-integration";
+
+/** The (unresolved) metadata module id. */
+export const METADATA_MODULE_ID: string = "@open-pioneer/runtime/metadata";
+
+/**
+ * The default runtime version if none is specified.
+ * For backwards compatibility.
+ */
+export const DEFAULT_METADATA_VERSION: RuntimeMetadataVersion = "1.0.0" as RuntimeMetadataVersion;
+
+/**
+ * Current major version supported by this tool.
+ */
+export const CURRENT_METADATA_MAJOR: RuntimeMetadataVersion = "1.0.0" as RuntimeMetadataVersion;
+
+const CURRENT_RUNTIME_METADATA_VERSION = "1.1.0";
+
+/**
+ * Checks if the given module id is a virtual module.
+ * Returns the type of the virtual module or undefined if the module id does not match anything.
+ *
+ * Throws an error if the module id uses the virtual prefix without a match, as that might be a mistake by the user. */
+export function parseVirtualModule(moduleId: string): VirtualModuleType | undefined {
     if (!/^open-pioneer:/.test(moduleId)) {
         return undefined;
     }
@@ -43,10 +69,14 @@ function parseVirtualModule(moduleId: string): API.RuntimeSupport.VirtualModuleT
     throw new Error(`Unsupported module id '${moduleId}'.`);
 }
 
-function generateReactHooks(packageName: string, runtimeModuleId = REACT_INTEGRATION_MODULE_ID) {
+/** Returns the module content to implement the `open-pioneer:react-hooks` module. */
+export function generateReactHooks(
+    packageName: string,
+    reactIntegrationModuleId: string = REACT_INTEGRATION_MODULE_ID
+): string {
     return `
 import { useServiceInternal, useServicesInternal, usePropertiesInternal, useIntlInternal } from ${JSON.stringify(
-        runtimeModuleId
+        reactIntegrationModuleId
     )};
 
 const PACKAGE_NAME = ${JSON.stringify(packageName)};
@@ -57,8 +87,14 @@ export const useIntl = /*@__PURE__*/ useIntlInternal.bind(undefined, PACKAGE_NAM
     `.trim();
 }
 
-function generateSourceInfo(packageName: string, modulePath: string) {
-    const sourceId = getSourceId(packageName, modulePath);
+/**
+ * Generates the module containing the sourceId of the importing file.
+ *
+ * `packageName` is the name of the package.
+ * `relativeModulePath` is the path of the module relative to the package root.
+ */
+export function generateSourceInfo(packageName: string, relativeModulePath: string): string {
+    const sourceId = getSourceId(packageName, relativeModulePath);
     const sourceInfo = {
         sourceId
     };
@@ -70,11 +106,12 @@ function generateSourceInfo(packageName: string, modulePath: string) {
     });
 }
 
-const CURRENT_RUNTIME_METADATA_VERSION = "1.1.0";
-
-function canSupportRuntimeMetadataVersion(
+/**
+ * Returns the parsed runtime version if the code generation can support it, otherwise `undefined`.
+ */
+export function getSupportedRuntimeMetadataVersion(
     runtimeMetadataVersion: string
-): API.RuntimeSupport.RuntimeMetadataVersion | API.RuntimeSupport.RuntimeValidationError {
+): RuntimeMetadataVersion | RuntimeValidationError {
     let supports;
     try {
         supports = canParse(CURRENT_RUNTIME_METADATA_VERSION, runtimeMetadataVersion);
@@ -88,10 +125,13 @@ function canSupportRuntimeMetadataVersion(
     if (!supports) {
         return { code: "unsupported-version" };
     }
-    return runtimeMetadataVersion as API.RuntimeSupport.RuntimeMetadataVersion;
+    return runtimeMetadataVersion as RuntimeMetadataVersion;
 }
 
-function getRuntimeFeatures(runtimeVersion: API.RuntimeSupport.RuntimeMetadataVersion) {
+/**
+ * Returns features of the given runtime version that can be used by the code generator.
+ */
+export function getRuntimeFeatures(runtimeVersion: RuntimeMetadataVersion): RuntimePackageFeatures {
     const supportsMessageBox = gte(runtimeVersion, "1.1.0");
     return {
         supportsMessageBox

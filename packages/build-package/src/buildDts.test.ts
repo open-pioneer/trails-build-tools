@@ -6,9 +6,11 @@ import { describe, expect, it } from "vitest";
 import { buildDts, shouldGenerateTypes } from "./buildDts";
 import { SUPPORTED_JS_EXTENSIONS } from "./model/PackageModel";
 import { cleanDir, readText } from "./testing/io";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./testing/paths";
+import { TEST_DATA_DIR, tempDirForTest } from "./testing/paths";
 import { normalizeEntryPoints } from "./utils/entryPoints";
 import { createMemoryLogger } from "./utils/Logger";
+
+const TEMP_DATA_DIR = tempDirForTest(import.meta.url);
 
 describe(
     "buildDts",

@@ -9,7 +9,7 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/open-pioneer/trails-build-tools.git",
+        "url": "git+https://github.com/open-pioneer/trails-build-tools.git",
         "directory": "packages/pnpm-plugin-defaults"
     },
     "files": [
@@ -22,13 +22,13 @@
     "type": "commonjs",
     "scripts": {
         "clean": "rimraf -g 'pnpmfile.*'",
-        "build": "node build.mjs build",
-        "build-dev": "node build.mjs buildDev",
-        "dev": "node build.mjs watch",
+        "build": "tsdown",
+        "dev": "tsdown --watch",
         "test": "vitest"
     },
     "devDependencies": {
-        "build-tools": "workspace:*"
+        "publint": "catalog:",
+        "tsdown": "catalog:"
     },
     "engines": {
         "node": ">= 20"
