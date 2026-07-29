@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
 import { beforeAll } from "vitest";
 import { resolve } from "node:path";
 import { cpSync } from "node:fs";
@@ -25,7 +26,7 @@ export function useTemporaryPnpmLockfile(): void {
         // Deps are all "file:" deps, so no network needed. This creates
         // node_modules, which the CLI needs to read license info via
         // `pnpm licenses list`.
-        const shell = $({ cwd: TEMP_PATH });
+        const shell = $({ cwd: TEMP_PATH, env: { ...process.env, CI: "true" } });
         await shell`pnpm install --offline`;
     });
 }

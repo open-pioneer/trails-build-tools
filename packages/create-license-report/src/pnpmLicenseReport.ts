@@ -1,5 +1,8 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
+
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { $, usePowerShell } from "zx";
 
 if (process.platform === "win32") {
@@ -60,12 +63,23 @@ export function* walkProjectLocations(
 
     for (let i = 0; i < versions.length; i++) {
         const path = paths[i];
-        const version = versions[i];
+        // Fix for tests: pnpm does not report a version for `file:`/`link:` dependencies, so fall back
+        // to reading it from the package's own package.json.
+        const version = versions[i] || (path && readVersionFromPackageJson(path));
         if (!version || !path) {
             throw new Error(
                 `Paths or versions contains undefined entry for project ${project.name}), indices of paths must correspond to that of versions.`
             );
         }
         yield { path, version };
+    }
+}
+
+function readVersionFromPackageJson(packagePath: string): string | undefined {
+    try {
+        const content = readFileSync(resolve(packagePath, "package.json"), "utf-8");
+        return (JSON.parse(content) as { version?: string }).version;
+    } catch {
+        return undefined;
     }
 }
