@@ -20,6 +20,10 @@ pnpm exec lint-staged
 echo '--- build ---'
 pnpm run clean
 pnpm run build # Also links built CLI for integration tests
+
+# Must run after the build: it generates fields in the package.json of published packages.
+pnpm run check-generated
+
 pnpm install
 
 echo '--- run typescript check ---'

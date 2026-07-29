@@ -9,4 +9,4 @@
 "@open-pioneer/pnpm-plugin-defaults": minor
 ---
 
-Switch from legacy `main` / `types` fields to the modern `exports` field in `package.json`
+Switch this package from legacy `main` / `types` fields to the modern `exports` field in `package.json`

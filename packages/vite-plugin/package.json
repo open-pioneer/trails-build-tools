@@ -23,7 +23,9 @@
     "exports": {
         ".": "./dist/index.js",
         "./package.json": "./package.json",
-        "./client": "./client.d.ts"
+        "./client": {
+            "types": "./client.d.ts"
+        }
     },
     "scripts": {
         "clean": "rimraf dist temp",
@@ -39,6 +41,7 @@
         "debug": "catalog:",
         "js-yaml": "catalog:",
         "oxc-resolver": "catalog:",
+        "tinyglobby": "catalog:",
         "vitefu": "catalog:",
         "zod": "catalog:",
         "zod-validation-error": "catalog:"
@@ -68,10 +71,5 @@
     },
     "engines": {
         "node": ">= 20"
-    },
-    "inlinedDependencies": {
-        "fdir": "6.5.0",
-        "picomatch": "4.0.5",
-        "tinyglobby": "0.2.17"
     }
 }

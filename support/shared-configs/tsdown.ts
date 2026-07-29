@@ -8,6 +8,10 @@ const LIBRARY_CONFIG: UserConfig = {
     format: "esm",
     platform: "node",
 
+    deps: {
+        onlyBundle: []
+    },
+
     dts: {
         // Declaration maps have no inline `sourcesContent`, so they would only work if we shipped
         // `src` as well. Not worth the additional package size.
@@ -24,25 +28,6 @@ const LIBRARY_CONFIG: UserConfig = {
     publint: true,
     plugins: [dropDeclarationSourceMappingUrl()]
 };
-
-/**
- * The top level `sourcemap` option makes rolldown append a `sourceMappingURL` comment to _every_
- * emitted chunk, including the `.d.ts` (where `dts.sourcemap: false` then suppresses the map file
- * itself). Remove the dangling reference again.
- */
-function dropDeclarationSourceMappingUrl(): TsdownPlugin {
-    return {
-        name: "shared-configs:drop-declaration-source-mapping-url",
-        generateBundle(_options, bundle) {
-            for (const file of Object.values(bundle)) {
-                if (file.type !== "chunk" || !file.fileName.endsWith(".d.ts")) {
-                    continue;
-                }
-                file.code = file.code.replace(/\n?\/\/# sourceMappingURL=\S*\s*$/, "\n");
-            }
-        }
-    };
-}
 
 /**
  * Returns the tsdown configuration used to build a publishable library package.
@@ -73,4 +58,23 @@ export function defineLibraryConfig(overrides: UserConfig = {}): UserConfig {
  */
 export function defineCliConfig(overrides: UserConfig = {}): UserConfig {
     return mergeConfig(LIBRARY_CONFIG, { dts: false, exports: false }, overrides);
+}
+
+/**
+ * The top level `sourcemap` option makes rolldown append a `sourceMappingURL` comment to _every_
+ * emitted chunk, including the `.d.ts` (where `dts.sourcemap: false` then suppresses the map file
+ * itself). Remove the dangling reference again.
+ */
+function dropDeclarationSourceMappingUrl(): TsdownPlugin {
+    return {
+        name: "shared-configs:drop-declaration-source-mapping-url",
+        generateBundle(_options, bundle) {
+            for (const file of Object.values(bundle)) {
+                if (file.type !== "chunk" || !file.fileName.endsWith(".d.ts")) {
+                    continue;
+                }
+                file.code = file.code.replace(/\n?\/\/# sourceMappingURL=\S*\s*$/, "\n");
+            }
+        }
+    };
 }
