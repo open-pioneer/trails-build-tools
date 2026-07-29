@@ -1,7 +1,5 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
-import { h } from "preact";
-import { render } from "preact-render-to-string";
 
 export interface LicenseItem {
     /** Unique id */
@@ -246,8 +244,69 @@ const STYLE = `
     }
 `;
 
+/**
+ * Renders the dependency list. 
+ */
 const SCRIPT = `
+    const data = JSON.parse(document.getElementById("license-data").textContent);
+
+    function createDependencyItem(item) {
+        const li = document.createElement("li");
+        li.className = "dependency";
+        li.dataset.name = item.name.toLowerCase();
+        li.dataset.license = item.license.toLowerCase();
+
+        const summary = document.createElement("summary");
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "dep-name";
+        nameSpan.textContent = item.name;
+        summary.appendChild(nameSpan);
+
+        if (item.version) {
+            const versionSpan = document.createElement("span");
+            versionSpan.className = "dep-version";
+            versionSpan.textContent = item.version;
+            summary.appendChild(versionSpan);
+        }
+
+        const badge = document.createElement("span");
+        badge.className = "license-badge";
+        badge.style.background = \`hsl(\${item.hue}, 55%, 92%)\`;
+        badge.style.color = \`hsl(\${item.hue}, 55%, 30%)\`;
+        badge.textContent = item.license;
+        summary.appendChild(badge);
+
+        const content = document.createElement("div");
+        content.className = "dependency-content";
+
+        const licenseHeading = document.createElement("h3");
+        licenseHeading.textContent = "License";
+        const licensePre = document.createElement("pre");
+        licensePre.textContent = item.licenseText;
+        content.append(licenseHeading, licensePre);
+
+        if (item.noticeText) {
+            const noticeHeading = document.createElement("h3");
+            noticeHeading.textContent = "Notice";
+            const noticePre = document.createElement("pre");
+            noticePre.textContent = item.noticeText;
+            content.append(noticeHeading, noticePre);
+        }
+
+        const details = document.createElement("details");
+        details.append(summary, content);
+        li.appendChild(details);
+        return li;
+    }
+
     const list = document.getElementById("dependency-list");
+    const fragment = document.createDocumentFragment();
+    for (const item of data) {
+        fragment.appendChild(createDependencyItem(item));
+    }
+    list.appendChild(fragment);
+
     const items = Array.from(list.querySelectorAll(".dependency"));
     const emptyState = document.getElementById("empty-state");
     const search = document.getElementById("search");
@@ -283,117 +342,60 @@ function licenseHue(license: string): number {
     return hash % 360;
 }
 
-function LicenseItemView(item: LicenseItem) {
-    const hue = licenseHue(item.license);
-    const badgeStyle = `background: hsl(${hue}, 55%, 92%); color: hsl(${hue}, 55%, 30%);`;
-    return h(
-        "li",
-        {
-            class: "dependency",
-            key: item.id,
-            "data-name": item.name.toLowerCase(),
-            "data-license": item.license.toLowerCase()
-        },
-        h(
-            "details",
-            null,
-            h(
-                "summary",
-                null,
-                h("span", { class: "dep-name" }, item.name),
-                item.version ? h("span", { class: "dep-version" }, item.version) : null,
-                h("span", { class: "license-badge", style: badgeStyle }, item.license)
-            ),
-            h(
-                "div",
-                { class: "dependency-content" },
-                h("h3", null, "License"),
-                h("pre", null, item.licenseText),
-                item.noticeText ? [h("h3", null, "Notice"), h("pre", null, item.noticeText)] : null
-            )
-        )
-    );
-}
-
-function ReportPage(projectName: string, licenseItems: LicenseItem[]) {
-    const licenseCount = new Set(licenseItems.map((item) => item.license)).size;
-    return h(
-        "html",
-        { lang: "en" },
-        h(
-            "head",
-            null,
-            h("meta", { charset: "utf-8" }),
-            h("meta", { name: "viewport", content: "width=device-width, initial-scale=1" }),
-            h("title", null, `License Report – ${projectName}`),
-            h("style", { dangerouslySetInnerHTML: { __html: STYLE } })
-        ),
-        h(
-            "body",
-            null,
-            h(
-                "header",
-                { class: "page-header" },
-                h(
-                    "div",
-                    { class: "page-header-inner" },
-                    h("h1", null, "License Report"),
-                    h("p", { class: "project-name" }, projectName),
-                    h(
-                        "div",
-                        { class: "stats" },
-                        h(
-                            "span",
-                            { class: "stat" },
-                            h("strong", null, String(licenseItems.length)),
-                            " dependencies"
-                        ),
-                        h(
-                            "span",
-                            { class: "stat" },
-                            h("strong", null, String(licenseCount)),
-                            " licenses"
-                        )
-                    )
-                )
-            ),
-            h(
-                "main",
-                null,
-                h(
-                    "div",
-                    { class: "toolbar" },
-                    h("input", {
-                        id: "search",
-                        type: "search",
-                        placeholder: "Filter by name or license…"
-                    }),
-                    h(
-                        "div",
-                        { class: "toolbar-actions" },
-                        h("button", { id: "expand-all", type: "button" }, "Expand all"),
-                        h("button", { id: "collapse-all", type: "button" }, "Collapse all")
-                    )
-                ),
-                h(
-                    "ul",
-                    { class: "dependencies", id: "dependency-list" },
-                    licenseItems.map(LicenseItemView)
-                ),
-                h(
-                    "p",
-                    { id: "empty-state", class: "empty-state", hidden: true },
-                    "No dependencies match your filter."
-                )
-            ),
-            h("script", { dangerouslySetInnerHTML: { __html: SCRIPT } })
-        )
-    );
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }
 
 /**
- * Generates a html report from the given inputs.
+ * Generates a license report from a static template; `projectName` and `licenseItems` are embedded as JSON payload
  */
 export function generateReportHtml(projectName: string, licenseItems: LicenseItem[]): string {
-    return `<!DOCTYPE html>\n${render(ReportPage(projectName, licenseItems))}`;
+    const licenseCount = new Set(licenseItems.map((item) => item.license)).size;
+    const payload = licenseItems.map((item) => ({
+        ...item,
+        hue: licenseHue(item.license)
+    }));
+    // Escape "<" so a literal "</script>" inside the JSON payload can't close the tag early.
+    const json = JSON.stringify(payload).replace(/</g, "\\u003c");
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>License Report – ${escapeHtml(projectName)}</title>
+<style>${STYLE}</style>
+</head>
+<body>
+<header class="page-header">
+<div class="page-header-inner">
+<h1>License Report</h1>
+<p class="project-name">${escapeHtml(projectName)}</p>
+<div class="stats">
+<span class="stat"><strong>${licenseItems.length}</strong> dependencies</span>
+<span class="stat"><strong>${licenseCount}</strong> licenses</span>
+</div>
+</div>
+</header>
+<main>
+<div class="toolbar">
+<input id="search" type="search" placeholder="Filter by name or license…" />
+<div class="toolbar-actions">
+<button id="expand-all" type="button">Expand all</button>
+<button id="collapse-all" type="button">Collapse all</button>
+</div>
+</div>
+<ul class="dependencies" id="dependency-list"></ul>
+<p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p>
+</main>
+<script id="license-data" type="application/json">${json}</script>
+<script>${SCRIPT}</script>
+</body>
+</html>
+`;
 }

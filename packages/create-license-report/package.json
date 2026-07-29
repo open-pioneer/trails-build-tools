@@ -35,8 +35,6 @@
         "@open-pioneer/cli-logging": "workspace:^",
         "commander": "catalog:",
         "js-yaml": "catalog:",
-        "preact": "catalog:",
-        "preact-render-to-string": "catalog:",
         "spdx-expression-parse": "catalog:",
         "spdx-satisfies": "catalog:",
         "tinyglobby": "catalog:",
