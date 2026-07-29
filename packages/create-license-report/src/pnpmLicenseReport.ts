@@ -43,8 +43,20 @@ export async function getPnpmLicenseReport(
     }
 
     const processOutputLicense = await shell`pnpm ${args}`;
-    const report = (await processOutputLicense.json()) as PnpmLicensesReport;
+    const report = parseJsonOutput<PnpmLicensesReport>(processOutputLicense.stdout);
     return Object.values(report).flat();
+}
+
+/**
+ * Parses `stdout` as JSON, tolerating warning lines pnpm sometimes writes
+ * to stdout before the actual JSON payload (e.g. npmrc env substitution warnings).
+ */
+function parseJsonOutput<T>(stdout: string): T {
+    const jsonStart = stdout.indexOf("{");
+    if (jsonStart === -1) {
+        throw new Error(`Expected JSON output from pnpm, got: ${stdout}`);
+    }
+    return JSON.parse(stdout.slice(jsonStart)) as T;
 }
 
 /**
