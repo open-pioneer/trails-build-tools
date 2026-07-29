@@ -48,7 +48,8 @@ export async function getPnpmLicenseReport(
 }
 
 /**
- * Parses `stdout` as JSON, tolerating warning lines pnpm sometimes writes
+ * Some tests, specially on Github, did not succeed if processOutputLicense.json was used directly.
+ * So we parse `stdout` as JSON and tolerating warning lines. pnpm sometimes writes
  * to stdout before the actual JSON payload (e.g. npmrc env substitution warnings).
  */
 function parseJsonOutput<T>(stdout: string): T {
