@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-common",
-    "version": "4.0.3",
+    "version": "5.0.0",
     "description": "Common functionality used when building Open Pioneer Trails applications or packages.",
     "keywords": [
         "open-pioneer-trails"
