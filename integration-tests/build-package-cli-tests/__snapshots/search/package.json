@@ -25,6 +25,10 @@
         "chakra-react-select": "^4.7.6",
         "@chakra-ui/icons": "^2.1.1"
     },
+    "publishConfig": {
+        "directory": "dist",
+        "linkDirectory": false
+    },
     "exports": {
         "./package.json": "./package.json",
         ".": {

@@ -29,6 +29,10 @@
         "react-dom": "^18.3.1",
         "react-use": "^17.4.2"
     },
+    "publishConfig": {
+        "directory": "dist",
+        "linkDirectory": false
+    },
     "exports": {
         "./package.json": "./package.json",
         ".": {
