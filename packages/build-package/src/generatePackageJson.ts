@@ -48,7 +48,8 @@ const COPY_FIELDS = [
     "engines",
     "os",
     "cpu",
-    "private"
+    "private",
+    "publishConfig"
 ];
 
 /**

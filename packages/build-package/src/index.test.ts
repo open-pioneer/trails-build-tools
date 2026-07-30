@@ -138,6 +138,9 @@ it("should build package to `dist`", async function () {
             "references": [],
           },
         },
+        "publishConfig": {
+          "directory": "dist",
+        },
         "type": "module",
         "version": "0.0.1",
       }
@@ -256,6 +259,9 @@ it("should build package to `dist` with runtime version", async function () {
           "ui": {
             "references": [],
           },
+        },
+        "publishConfig": {
+          "directory": "dist",
         },
         "type": "module",
         "version": "0.0.1",

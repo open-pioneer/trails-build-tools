@@ -2,66 +2,68 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BuildConfig, DEFAULT_PACKAGE_TARGET } from "@open-pioneer/build-common";
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePackageJson";
 import { createInputModelFromData } from "./model/InputModel";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { createMemoryLogger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
 
-describe("generatePackageJson", function () {
-    it("generates a minimal package.json", async function () {
-        const options = testDefaults({
-            packageJson: {
-                name: "my-package",
-                version: "1.0.0",
-                license: "MIT",
-                publishConfig: {
-                    directory: "dist"
-                }
-            },
-            strict: false
-        });
-        const pkgJson = await generatePackageJson(options);
-        expect(pkgJson).toMatchInlineSnapshot(`
-          {
-            "exports": {
-              "./package.json": "./package.json",
-            },
-            "license": "MIT",
-            "name": "my-package",
-            "openPioneerFramework": {
-              "i18n": {
-                "languages": [],
-              },
-              "packageFormatVersion": "1.0.1",
-              "properties": [],
-              "services": [],
-              "ui": {
-                "references": [],
-              },
-            },
-            "type": "module",
-            "version": "1.0.0",
-          }
-        `);
-        expect(options.logger.messages).toEqual([]); // no warnings
+it("generates a minimal package.json", async function () {
+    const options = testDefaults({
+        packageJson: {
+            name: "my-package",
+            version: "1.0.0",
+            license: "MIT",
+            publishConfig: {
+                directory: "dist"
+            }
+        },
+        strict: false
     });
+    const pkgJson = await generatePackageJson(options);
+    expect(pkgJson).toMatchInlineSnapshot(`
+      {
+        "exports": {
+          "./package.json": "./package.json",
+        },
+        "license": "MIT",
+        "name": "my-package",
+        "openPioneerFramework": {
+          "i18n": {
+            "languages": [],
+          },
+          "packageFormatVersion": "1.0.1",
+          "properties": [],
+          "services": [],
+          "ui": {
+            "references": [],
+          },
+        },
+        "publishConfig": {
+          "directory": "dist",
+        },
+        "type": "module",
+        "version": "1.0.0",
+      }
+    `);
+    expect(options.logger.messages).toEqual([]); // no warnings
+});
 
-    it("emits a warning when a required fields is missing", async function () {
-        const options = testDefaults({
-            packageJson: {
-                name: "my-package",
-                // missing version
-                license: "MIT",
-                publishConfig: {
-                    directory: "dist"
-                }
-            },
-            strict: false
-        });
-        await generatePackageJson(options);
-        expect(options.logger.messages).toMatchInlineSnapshot(`
+it("emits a warning when a required fields is missing", async function () {
+    const options = testDefaults({
+        packageJson: {
+            name: "my-package",
+            // missing version
+            license: "MIT",
+            publishConfig: {
+                directory: "dist"
+            }
+        },
+        strict: false
+    });
+    await generatePackageJson(options);
+    expect(options.logger.messages).toMatchInlineSnapshot(`
           [
             {
               "args": [
@@ -71,22 +73,22 @@ describe("generatePackageJson", function () {
             },
           ]
         `);
-    });
+});
 
-    it("throws an error when enabling strict validation", async function () {
-        const options = testDefaults({
-            packageJson: {
-                // all required fields missing
-            },
-            strict: true
-        });
-        await expect(async () => {
-            await generatePackageJson(options);
-            options.reporter.check();
-        }).rejects.toThrowErrorMatchingInlineSnapshot(
-            `[Error: Aborting due to validation errors (strict validation is enabled).]`
-        );
-        expect(options.logger.messages).toMatchInlineSnapshot(`
+it("throws an error when enabling strict validation", async function () {
+    const options = testDefaults({
+        packageJson: {
+            // all required fields missing
+        },
+        strict: true
+    });
+    await expect(async () => {
+        await generatePackageJson(options);
+        options.reporter.check();
+    }).rejects.toThrowErrorMatchingInlineSnapshot(
+        `[Error: Aborting due to validation errors (strict validation is enabled).]`
+    );
+    expect(options.logger.messages).toMatchInlineSnapshot(`
           [
             {
               "args": [
@@ -114,27 +116,27 @@ describe("generatePackageJson", function () {
             },
           ]
         `);
-    });
+});
 
-    it("includes javascript entry points in 'exports'", async function () {
-        const options = testDefaults({
-            jsEntryPoints: [
-                {
-                    inputModulePath: "./does-not-matter1.js",
-                    outputModuleId: "index"
-                },
-                {
-                    inputModulePath: "./does-not-matter2.js",
-                    outputModuleId: "other-entry-point"
-                },
-                {
-                    inputModulePath: "./does-not-matter3.js",
-                    outputModuleId: "foo/bar/index"
-                }
-            ]
-        });
-        const { exports } = await generatePackageJson(options);
-        expect(exports).toMatchInlineSnapshot(`
+it("includes javascript entry points in 'exports'", async function () {
+    const options = testDefaults({
+        jsEntryPoints: [
+            {
+                inputModulePath: "./does-not-matter1.js",
+                outputModuleId: "index"
+            },
+            {
+                inputModulePath: "./does-not-matter2.js",
+                outputModuleId: "other-entry-point"
+            },
+            {
+                inputModulePath: "./does-not-matter3.js",
+                outputModuleId: "foo/bar/index"
+            }
+        ]
+    });
+    const { exports } = await generatePackageJson(options);
+    expect(exports).toMatchInlineSnapshot(`
           {
             ".": {
               "import": "./index.js",
@@ -148,116 +150,116 @@ describe("generatePackageJson", function () {
             "./package.json": "./package.json",
           }
         `);
-    });
+});
 
-    it("includes css entry point in 'exports'", async function () {
-        const options = testDefaults({
-            cssEntryPoint: {
-                inputModulePath: "./does-not-matter1.css",
-                outputModuleId: "my-styles"
-            }
-        });
-        const { exports } = await generatePackageJson(options);
-        expect(exports).toMatchInlineSnapshot(`
+it("includes css entry point in 'exports'", async function () {
+    const options = testDefaults({
+        cssEntryPoint: {
+            inputModulePath: "./does-not-matter1.css",
+            outputModuleId: "my-styles"
+        }
+    });
+    const { exports } = await generatePackageJson(options);
+    expect(exports).toMatchInlineSnapshot(`
           {
             "./my-styles.css": "./my-styles.css",
             "./package.json": "./package.json",
           }
         `);
-    });
+});
 
-    it("copies commonly used package.json fields", async function () {
-        const sourcePkgJson: Record<string, unknown> = {
-            name: "package",
-            version: "1.2.3",
-            license: "MIT",
-            description: "hello world",
-            keywords: ["a", "b"],
-            homepage: "https://example.com",
-            bugs: {
-                url: "https://example.com/issues"
-            },
-            author: {
-                name: "T. User"
-            },
-            contributors: [
-                {
-                    name: "M. Mustermann"
+it("copies commonly used package.json fields", async function () {
+    const sourcePkgJson: Record<string, unknown> = {
+        name: "package",
+        version: "1.2.3",
+        license: "MIT",
+        description: "hello world",
+        keywords: ["a", "b"],
+        homepage: "https://example.com",
+        bugs: {
+            url: "https://example.com/issues"
+        },
+        author: {
+            name: "T. User"
+        },
+        contributors: [
+            {
+                name: "M. Mustermann"
+            }
+        ],
+        repository: {
+            type: "git",
+            url: "https://github.com/npm/cli.git"
+        },
+        dependencies: {
+            "other-package": "^1.2.3"
+        },
+        peerDependencies: {
+            vite: "*"
+        },
+        peerDependenciesMeta: {
+            vite: {
+                optional: true
+            }
+        },
+        private: true
+    };
+    const pkgJson = await generatePackageJson(
+        testDefaults({
+            packageJson: {
+                ...sourcePkgJson,
+                // Just to pass validation
+                publishConfig: {
+                    directory: "dist"
                 }
-            ],
-            repository: {
-                type: "git",
-                url: "https://github.com/npm/cli.git"
+            }
+        })
+    );
+
+    for (const key of Object.keys(sourcePkgJson)) {
+        expect(pkgJson[key], `validating key '${key}'`).toEqual(sourcePkgJson[key]);
+    }
+});
+
+it("includes framework metadata in package.json", async function () {
+    const servicesEntryPoint: NormalizedEntryPoint = {
+        inputModulePath: "./does-not-matter.js",
+        outputModuleId: "custom-services-name"
+    };
+    const { exports, openPioneerFramework } = await generatePackageJson(
+        testDefaults({
+            jsEntryPoints: [servicesEntryPoint],
+            servicesEntryPoint,
+            cssEntryPoint: {
+                inputModulePath: "./does-not-matter1.css",
+                outputModuleId: "my-styles"
             },
-            dependencies: {
-                "other-package": "^1.2.3"
-            },
-            peerDependencies: {
-                vite: "*"
-            },
-            peerDependenciesMeta: {
-                vite: {
-                    optional: true
-                }
-            },
-            private: true
-        };
-        const pkgJson = await generatePackageJson(
-            testDefaults({
-                packageJson: {
-                    ...sourcePkgJson,
-                    // Just to pass validation
-                    publishConfig: {
-                        directory: "dist"
+            buildConfig: {
+                i18n: ["en", "de"],
+                services: {
+                    MyService: {
+                        references: {
+                            a: "b"
+                        },
+                        provides: "c"
                     }
-                }
-            })
-        );
-
-        for (const key of Object.keys(sourcePkgJson)) {
-            expect(pkgJson[key], `validating key '${key}'`).toEqual(sourcePkgJson[key]);
-        }
-    });
-
-    it("includes framework metadata in package.json", async function () {
-        const servicesEntryPoint: NormalizedEntryPoint = {
-            inputModulePath: "./does-not-matter.js",
-            outputModuleId: "custom-services-name"
-        };
-        const { exports, openPioneerFramework } = await generatePackageJson(
-            testDefaults({
-                jsEntryPoints: [servicesEntryPoint],
-                servicesEntryPoint,
-                cssEntryPoint: {
-                    inputModulePath: "./does-not-matter1.css",
-                    outputModuleId: "my-styles"
                 },
-                buildConfig: {
-                    i18n: ["en", "de"],
-                    services: {
-                        MyService: {
-                            references: {
-                                a: "b"
-                            },
-                            provides: "c"
-                        }
-                    },
-                    ui: {
-                        references: ["d"]
-                    },
-                    properties: {
-                        a: 1,
-                        b: null
-                    },
-                    propertiesMeta: {
-                        b: {
-                            required: false
-                        }
+                ui: {
+                    references: ["d"]
+                },
+                properties: {
+                    a: 1,
+                    b: null
+                },
+                propertiesMeta: {
+                    b: {
+                        required: false
                     }
                 }
-            })
-        );
-        expect(exports).toMatchInlineSnapshot(`
+            }
+        })
+    );
+    expect(exports).toMatchInlineSnapshot(`
           {
             "./custom-services-name": {
               "import": "./custom-services-name.js",
@@ -266,7 +268,7 @@ describe("generatePackageJson", function () {
             "./package.json": "./package.json",
           }
         `);
-        expect(openPioneerFramework).toMatchInlineSnapshot(`
+    expect(openPioneerFramework).toMatchInlineSnapshot(`
           {
             "i18n": {
               "languages": [
@@ -316,53 +318,55 @@ describe("generatePackageJson", function () {
             },
           }
         `);
-    });
+});
 
-    it("includes runtime metadata when specified", async function () {
-        const options = testDefaults({
-            packageJson: {
-                name: "my-package",
-                version: "1.0.0",
-                license: "MIT",
-                publishConfig: {
-                    directory: "dist"
-                }
-            },
-            buildConfig: {
-                runtimeMeta: {
-                    metadataVersion: "1.1.123456"
-                }
-            },
-            strict: false
-        });
-        const pkgJson = await generatePackageJson(options);
-        expect(pkgJson).toMatchInlineSnapshot(`
-          {
-            "exports": {
-              "./package.json": "./package.json",
-            },
-            "license": "MIT",
-            "name": "my-package",
-            "openPioneerFramework": {
-              "i18n": {
-                "languages": [],
-              },
-              "packageFormatVersion": "1.0.1",
-              "properties": [],
-              "runtimeMeta": {
-                "metadataVersion": "1.1.123456",
-              },
-              "services": [],
-              "ui": {
-                "references": [],
-              },
-            },
-            "type": "module",
-            "version": "1.0.0",
-          }
-        `);
-        expect(options.logger.messages).toEqual([]); // no warnings
+it("includes runtime metadata when specified", async function () {
+    const options = testDefaults({
+        packageJson: {
+            name: "my-package",
+            version: "1.0.0",
+            license: "MIT",
+            publishConfig: {
+                directory: "dist"
+            }
+        },
+        buildConfig: {
+            runtimeMeta: {
+                metadataVersion: "1.1.123456"
+            }
+        },
+        strict: false
     });
+    const pkgJson = await generatePackageJson(options);
+    expect(pkgJson).toMatchInlineSnapshot(`
+      {
+        "exports": {
+          "./package.json": "./package.json",
+        },
+        "license": "MIT",
+        "name": "my-package",
+        "openPioneerFramework": {
+          "i18n": {
+            "languages": [],
+          },
+          "packageFormatVersion": "1.0.1",
+          "properties": [],
+          "runtimeMeta": {
+            "metadataVersion": "1.1.123456",
+          },
+          "services": [],
+          "ui": {
+            "references": [],
+          },
+        },
+        "publishConfig": {
+          "directory": "dist",
+        },
+        "type": "module",
+        "version": "1.0.0",
+      }
+    `);
+    expect(options.logger.messages).toEqual([]); // no warnings
 });
 
 function testDefaults(options?: {
