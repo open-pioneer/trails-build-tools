@@ -1,5 +1,19 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 7.0.0
+
+### Major Changes
+
+- 8e38b33: Switch this package from legacy `main` / `types` fields to the modern `exports` field in `package.json`
+
+### Patch Changes
+
+- 8e38b33: Change build setup: now uses tsdown instead of esbuild.
+- Updated dependencies [8e38b33]
+- Updated dependencies [8e38b33]
+- Updated dependencies [8e38b33]
+    - @open-pioneer/build-common@5.0.0
+
 ## 6.0.3
 
 ### Patch Changes

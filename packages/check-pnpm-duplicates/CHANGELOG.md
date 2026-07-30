@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/check-pnpm-duplicates
 
+## 0.4.0
+
+### Minor Changes
+
+- 8e38b33: Switch this package from legacy `main` / `types` fields to the modern `exports` field in `package.json`
+
+### Patch Changes
+
+- 8e38b33: Change build setup: now uses tsdown instead of esbuild.
+
 ## 0.3.5
 
 ### Patch Changes
