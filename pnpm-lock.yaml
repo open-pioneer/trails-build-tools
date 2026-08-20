@@ -22,8 +22,8 @@ catalogs:
       specifier: ^1100.2.2
       version: 1100.2.2
     '@pnpm/lockfile.utils':
-      specifier: ^1100.1.7
-      version: 1100.1.7
+      specifier: ^1101.1.0
+      version: 1101.1.0
     '@pnpm/lockfile.walker':
       specifier: ^1100.0.19
       version: 1100.0.19
@@ -529,7 +529,7 @@ importers:
         version: 1100.2.2(@pnpm/logger@1100.0.0)
       '@pnpm/lockfile.utils':
         specifier: 'catalog:'
-        version: 1100.1.7
+        version: 1101.1.0
       '@pnpm/lockfile.walker':
         specifier: 'catalog:'
         version: 1100.0.19
@@ -1852,10 +1852,6 @@ packages:
     resolution: {integrity: sha512-l8xf0PlDbupJsIYwh17Poc7+m/dIYTUcwK8HaLv/YOJCxKjt8KnOaVZE5ZPO2t9YQqa1YPFBBwdI+GCEy55E4A==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/constants@1100.0.1':
-    resolution: {integrity: sha512-0CqK4HTdfON1IiBIg1ib06hGJv2sDWovOZ8tP/S8BOkhVYXoter1wia1OtgUeSIabDgyeWgL8LRHG4PhkuIAPw==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/constants@1101.0.0':
     resolution: {integrity: sha512-jJQU6y8lhic2at0+W246+tMDdEqhbS1WSRlTjmIXeXrrWU2rAbhixi11loE+lI3f/E1Ci1+3i5N6ewOumeNJdg==}
     engines: {node: '>=22.13'}
@@ -1864,24 +1860,12 @@ packages:
     resolution: {integrity: sha512-7MNukALUyiFMwOYQongnRWZnpjs4R5lBZgKcycnWjBhN4LxavPciczrz7XK0GuFrw3QS1V5wMV02lPYLF/bA4w==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/deps.path@1100.0.13':
-    resolution: {integrity: sha512-i/ZnfDCPImnwnQnjj1p/H8sNn2+oetbnsLFA6drOIJFZTyIMnXt6AAA9zaiZc+J3m2HPK/WKY2hfVv+ZefE7TQ==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/deps.path@1100.1.0':
     resolution: {integrity: sha512-1KbfwG1D5mKg0g1XacgGlw9NsBpO7HspQHdYbMhN6XvQ+10V3v4G9PQCo5Vlems6qolZKNYC0wv/HKOETuAsQA==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/error@1100.1.0':
-    resolution: {integrity: sha512-ZpinzFJNeHEvNxm3lWvZ1jqZ78DTNoClPrNSvZH83JNEWmyDAdw2QDNmiYjpG5nIYarZjahEGKz+oQlgKrvnNg==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/error@1100.1.2':
     resolution: {integrity: sha512-HzeZOy38srT5glZqrlBcdfHd13tec3wrLiVRB5vQnj+ScOswQ2DzZzMJpqMh39gss6zhiTl/MskqKzoY/qT9ew==}
-    engines: {node: '>=22.13'}
-
-  '@pnpm/fetching.fetcher-base@1100.2.6':
-    resolution: {integrity: sha512-uT+EE9/et1LEg129liqU3bmbZAH7yFXQ0dg7TS+dHfYokeQ+c085hKTRvjGrqwU0+7FUFhTvQ0PzhTRaFmM12Q==}
     engines: {node: '>=22.13'}
 
   '@pnpm/fetching.fetcher-base@1100.2.7':
@@ -1890,10 +1874,6 @@ packages:
 
   '@pnpm/fs.graceful-fs@1100.1.1':
     resolution: {integrity: sha512-knCLxjy9vx18Z1cwzzqD251jxrJhQpJ09Gch+AecX0rOWj/sygjk0UXSWZPaHPwVtK5Je7i2CIAoyYwsb8wZTg==}
-    engines: {node: '>=22.13'}
-
-  '@pnpm/hooks.types@1100.2.5':
-    resolution: {integrity: sha512-ViDpXumb91tCFs8zpQxsfaarvA/b7KPNk7ViDfxzvTI4MfTmFmuaz1OTcot+qt17kA86/Sp7yFVMH6EPF/Jn+A==}
     engines: {node: '>=22.13'}
 
   '@pnpm/hooks.types@1100.2.6':
@@ -1910,16 +1890,8 @@ packages:
     resolution: {integrity: sha512-f5Ru2UfFxFi0/Bm4k40PG98plC60U+5adTZKKrYuaevpWxSAykxVCtP2XuS6SOc0LJ6YYaaaqW9Q82u9WUFNSw==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/lockfile.types@1100.0.18':
-    resolution: {integrity: sha512-Cf6YXIReMoVGg8/Jwsy7Tm0FqRB/sO6E1b+Li6OJXKcXr5EAitj9i13grGa1CB0tm7+l9jbaO9i8t2fxsN+srQ==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/lockfile.types@1100.0.19':
     resolution: {integrity: sha512-aGfowxMEG5r3kBA17JD9ZYmLrq8edKNl5aR10S1/5ebmNfCYvstaCH9Bh7U5AEvCwJREXp3i1vRt8rGsmDjYPQ==}
-    engines: {node: '>=22.13'}
-
-  '@pnpm/lockfile.utils@1100.1.7':
-    resolution: {integrity: sha512-9/JZ+H/2rWju9glrW2snAqnJwxqkvTDGJvoMpxjrXhcHLXs+b0MH0ZLwKq5xPeEyVVIwsbznzd3pJksk+FY4MA==}
     engines: {node: '>=22.13'}
 
   '@pnpm/lockfile.utils@1101.1.0':
@@ -1949,10 +1921,6 @@ packages:
   '@pnpm/ramda@0.28.1':
     resolution: {integrity: sha512-zcAG+lvU0fMziNeGXpPyCyCJYp5ZVrPElEE4t14jAmViaihohocZ+dDkcRIyAomox8pQsuZnv1EyHR+pOhmUWw==}
 
-  '@pnpm/resolving.resolver-base@1101.0.0':
-    resolution: {integrity: sha512-SHaX1QP/pW+SPnlp2czh+rJ3UiotBdWf+ABE6llHuIcfIMVKjVdakYRUuLXfwfHSmuthyzre7lIbkTgAPFhH8w==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/resolving.resolver-base@1101.1.0':
     resolution: {integrity: sha512-QKVY738e16fn7/A8AlY8YG/kGloPkwnqDTsC8N6f9wHD8t6/vr3W4ouroLzWtiRv2lY/PqCUAC3nYyng/GI+Qg==}
     engines: {node: '>=22.13'}
@@ -1963,10 +1931,6 @@ packages:
 
   '@pnpm/store.cafs-types@1100.0.2':
     resolution: {integrity: sha512-eoD3eIkNsEwqUXq47Yc2RoRHpUyv0IDEdhrn5d8m/8l2sw9PRDCFBTPM76WPZ6nRfEN09ArsAAfihzZ96iEaIA==}
-    engines: {node: '>=22.13'}
-
-  '@pnpm/types@1101.8.0':
-    resolution: {integrity: sha512-oI4t7shio2C3ld+S8bLfrG6aDyepkWwefa4Lw/I4E2JrPDkp8ZKDD1BcgYbkM+bwtgjyJpD0VgPrkqGqu6Uh/w==}
     engines: {node: '>=22.13'}
 
   '@pnpm/types@1101.9.0':
@@ -5342,8 +5306,6 @@ snapshots:
       normalize-registry-url: 2.0.1
       ramda: '@pnpm/ramda@0.28.1'
 
-  '@pnpm/constants@1100.0.1': {}
-
   '@pnpm/constants@1101.0.0': {}
 
   '@pnpm/crypto.hash@1100.0.2':
@@ -5351,31 +5313,15 @@ snapshots:
       '@pnpm/fs.graceful-fs': 1100.1.1
       ssri: 13.0.1
 
-  '@pnpm/deps.path@1100.0.13':
-    dependencies:
-      '@pnpm/crypto.hash': 1100.0.2
-      '@pnpm/types': 1101.8.0
-      semver: 7.8.5
-
   '@pnpm/deps.path@1100.1.0':
     dependencies:
       '@pnpm/crypto.hash': 1100.0.2
       '@pnpm/types': 1101.9.0
       semver: 7.8.5
 
-  '@pnpm/error@1100.1.0':
-    dependencies:
-      '@pnpm/constants': 1100.0.1
-
   '@pnpm/error@1100.1.2':
     dependencies:
       '@pnpm/constants': 1101.0.0
-
-  '@pnpm/fetching.fetcher-base@1100.2.6':
-    dependencies:
-      '@pnpm/resolving.resolver-base': 1101.0.0
-      '@pnpm/types': 1101.8.0
-      '@types/ssri': 7.1.5
 
   '@pnpm/fetching.fetcher-base@1100.2.7':
     dependencies:
@@ -5386,14 +5332,6 @@ snapshots:
   '@pnpm/fs.graceful-fs@1100.1.1':
     dependencies:
       graceful-fs: 4.2.11
-
-  '@pnpm/hooks.types@1100.2.5':
-    dependencies:
-      '@pnpm/fetching.fetcher-base': 1100.2.6
-      '@pnpm/lockfile.types': 1100.0.18
-      '@pnpm/resolving.resolver-base': 1101.0.0
-      '@pnpm/store.cafs-types': 1100.0.2
-      '@pnpm/types': 1101.8.0
 
   '@pnpm/hooks.types@1100.2.6':
     dependencies:
@@ -5432,28 +5370,11 @@ snapshots:
       ramda: '@pnpm/ramda@0.28.1'
       semver: 7.8.5
 
-  '@pnpm/lockfile.types@1100.0.18':
-    dependencies:
-      '@pnpm/patching.types': 1100.0.1
-      '@pnpm/resolving.resolver-base': 1101.0.0
-      '@pnpm/types': 1101.8.0
-
   '@pnpm/lockfile.types@1100.0.19':
     dependencies:
       '@pnpm/patching.types': 1100.0.1
       '@pnpm/resolving.resolver-base': 1101.1.0
       '@pnpm/types': 1101.9.0
-
-  '@pnpm/lockfile.utils@1100.1.7':
-    dependencies:
-      '@pnpm/deps.path': 1100.0.13
-      '@pnpm/error': 1100.1.0
-      '@pnpm/hooks.types': 1100.2.5
-      '@pnpm/lockfile.types': 1100.0.18
-      '@pnpm/resolving.resolver-base': 1101.0.0
-      '@pnpm/resolving.tarball-url': 1100.0.1
-      '@pnpm/types': 1101.8.0
-      ramda: '@pnpm/ramda@0.28.1'
 
   '@pnpm/lockfile.utils@1101.1.0':
     dependencies:
@@ -5492,10 +5413,6 @@ snapshots:
 
   '@pnpm/ramda@0.28.1': {}
 
-  '@pnpm/resolving.resolver-base@1101.0.0':
-    dependencies:
-      '@pnpm/types': 1101.8.0
-
   '@pnpm/resolving.resolver-base@1101.1.0':
     dependencies:
       '@pnpm/types': 1101.9.0
@@ -5503,8 +5420,6 @@ snapshots:
   '@pnpm/resolving.tarball-url@1100.0.1': {}
 
   '@pnpm/store.cafs-types@1100.0.2': {}
-
-  '@pnpm/types@1101.8.0': {}
 
   '@pnpm/types@1101.9.0': {}
 
