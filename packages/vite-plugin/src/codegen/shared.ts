@@ -23,7 +23,6 @@ import { normalizePath } from "vite";
  */
 
 const VIRTUAL_PREFIX = "\0open-pioneer:";
-// oxlint-disable-next-line no-control-regex
 const VIRTUAL_PREFIX_RE = /\0open-pioneer:(?<suffix>.*)/;
 
 const APP_MODULE = "@@open-pioneer-app";
@@ -90,7 +89,6 @@ export interface VirtualDeploymentModule {
  * These regular expressions should match against our virtual modules (see above)
  * but should filter out as many unrelated module ids as possible for performance.
  */
-// oxlint-disable-next-line no-control-regex
 export const VIRTUAL_ID_FILTER = [/^\0?open-pioneer:/, /[?&]open-pioneer/, /@@open-pioneer/];
 
 /**
