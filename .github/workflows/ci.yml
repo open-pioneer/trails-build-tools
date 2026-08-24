@@ -1,4 +1,6 @@
-name: Run tests
+# Runs quality checks (linting, tests, etc.), updates the release PR / publishes packages.
+# Also builds the sample site + api docs (in the main branch) and publishes them to github pages.
+name: CI
 on:
   workflow_dispatch:
   workflow_call:
@@ -22,17 +24,18 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install
-        uses: open-pioneer/trails-repo-automation/.github/actions/install@main
+        uses: open-pioneer/trails-repo-automation/.github/actions/install@dev
 
       - name: Run checks
         run: |
           pnpm run ci:test
 
-  call_version:
-    if: github.ref == 'refs/heads/main'
+  release:
     name: "Publish or create version PR"
-    uses: "./.github/workflows/version.yml"
-    needs: test
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - test
+    uses: open-pioneer/trails-repo-automation/.github/workflows/shared-release.yml@dev
     permissions:
       contents: write
       pull-requests: write
