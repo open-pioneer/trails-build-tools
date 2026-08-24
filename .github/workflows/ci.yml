@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install
-        uses: open-pioneer/trails-repo-automation/.github/actions/install@dev
+        uses: open-pioneer/trails-repo-automation/.github/actions/install@main
 
       - name: Run checks
         run: |
@@ -35,7 +35,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs:
       - test
-    uses: open-pioneer/trails-repo-automation/.github/workflows/shared-release.yml@dev
+    uses: open-pioneer/trails-repo-automation/.github/workflows/shared-release.yml@main
     permissions:
       contents: write
       pull-requests: write
