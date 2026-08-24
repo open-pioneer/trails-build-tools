@@ -28,7 +28,7 @@ catalog:
   import-meta-resolve: ^4.2.0
   js-yaml: ^5.3.0
   oxc-resolver: ^11.24.2
-  postcss-import: ^16.2.0
+  postcss-import: ^17.0.0
   postcss: ^8.5.26
   rolldown: "^1.2.4"
   rollup-plugin-esbuild: ^6.2.1
