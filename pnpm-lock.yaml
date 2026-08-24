@@ -70,8 +70,8 @@ catalogs:
       specifier: ^7.8.0
       version: 7.8.0
     chalk:
-      specifier: ^5.6.2
-      version: 5.6.2
+      specifier: ^6.0.0
+      version: 6.0.0
     commander:
       specifier: ^15.0.0
       version: 15.0.0
@@ -407,7 +407,7 @@ importers:
         version: 5.4.0(rollup@4.62.4)
       chalk:
         specifier: 'catalog:'
-        version: 5.6.2
+        version: 6.0.0
       debug:
         specifier: 'catalog:'
         version: 4.4.3(supports-color@7.2.0)
@@ -477,7 +477,7 @@ importers:
         version: link:../build-package
       chalk:
         specifier: 'catalog:'
-        version: 5.6.2
+        version: 6.0.0
       commander:
         specifier: 'catalog:'
         version: 15.0.0
@@ -541,7 +541,7 @@ importers:
         version: 1101.9.0
       chalk:
         specifier: 'catalog:'
-        version: 5.6.2
+        version: 6.0.0
       commander:
         specifier: 'catalog:'
         version: 15.0.0
@@ -2614,9 +2614,9 @@ packages:
       react: ^18.0.0
       react-dom: ^18.0.0
 
-  chalk@5.6.2:
-    resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
-    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
+  chalk@6.0.0:
+    resolution: {integrity: sha512-2uNTXIuTTxk7ciZgAU1BQcgnchcG0xXnrs6jzkQfj9SsRa9M2s5zE8WT96hS6KmG4MzWHSrvH43DF1m4XRkrFg==}
+    engines: {node: '>=22'}
 
   chardet@2.2.0:
     resolution: {integrity: sha512-rddelWYNPRrXq6PtNEN2S3f6t9ILzvqaN5pVgi4kqt9jHQaXIial9PznB5iSPVlQSLNaaH22ItWz3EJtQ10+OA==}
@@ -5973,7 +5973,7 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  chalk@5.6.2: {}
+  chalk@6.0.0: {}
 
   chardet@2.2.0: {}
 
