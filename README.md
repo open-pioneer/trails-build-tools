@@ -1,6 +1,6 @@
 # build-tools
 
-[![Run tests](https://github.com/open-pioneer/trails-build-tools/actions/workflows/test-and-build.yml/badge.svg)](https://github.com/open-pioneer/trails-build-tools/actions/workflows/test-and-build.yml)
+[![Run tests](https://github.com/open-pioneer/trails-build-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/open-pioneer/trails-build-tools/actions/workflows/ci.yml)
 [![Audit dependencies (daily)](https://github.com/open-pioneer/trails-build-tools/actions/workflows/audit-dependencies.yml/badge.svg)](https://github.com/open-pioneer/trails-build-tools/actions/workflows/audit-dependencies.yml)
 
 This package contains build tools required by the Open Pioneer Trails framework.
