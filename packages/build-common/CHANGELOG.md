@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/build-common
 
+## 5.0.1
+
+### Patch Changes
+
+- 4337957: Update dependencies
+- Updated dependencies [4337957]
+    - @open-pioneer/build-support@4.0.1
+
 ## 5.0.0
 
 ### Major Changes

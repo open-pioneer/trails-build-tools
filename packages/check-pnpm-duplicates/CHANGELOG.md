@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/check-pnpm-duplicates
 
+## 0.4.1
+
+### Patch Changes
+
+- 4337957: Update dependencies
+
 ## 0.4.0
 
 ### Minor Changes

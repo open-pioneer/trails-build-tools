@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-package-cli",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "description": "Provides a CLI tool to compile Open Pioneer Trails packages.",
     "keywords": [
         "open-pioneer-trails"
