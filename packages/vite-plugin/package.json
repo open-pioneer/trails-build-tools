@@ -34,11 +34,9 @@
         "test": "vitest"
     },
     "dependencies": {
-        "@babel/generator": "catalog:",
-        "@babel/template": "catalog:",
-        "@babel/types": "catalog:",
         "@open-pioneer/build-common": "workspace:^",
         "debug": "catalog:",
+        "esrap": "catalog:",
         "js-yaml": "catalog:",
         "oxc-resolver": "catalog:",
         "tinyglobby": "catalog:",
@@ -50,9 +48,8 @@
         "@open-pioneer/build-support": "workspace:^",
         "@open-pioneer/runtime": ">= 4.0.0",
         "@open-pioneer/vite-plugin-pioneer": "workspace:^",
-        "@types/babel__generator": "catalog:",
-        "@types/babel__template": "catalog:",
         "@types/debug": "catalog:",
+        "@types/estree": "catalog:",
         "@types/js-yaml": "catalog:",
         "publint": "catalog:",
         "rimraf": "catalog:",

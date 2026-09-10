@@ -1,61 +1,23 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { PackageOverrides, Reference, UiReference } from "@open-pioneer/build-common";
+import { PackageOverrides, Reference, Service, UiReference } from "@open-pioneer/build-common";
+import type { Expression, ImportDeclaration, ObjectExpression, Property } from "estree";
 import { PackageMetadata } from "../metadata/Metadata";
 import { ReportableError } from "../ReportableError";
-import { generate, nodes, Nodes, template } from "../utils/babelDeps";
+import {
+    array,
+    exportDefault,
+    identifier,
+    importNamed,
+    jsonToExpression,
+    literal,
+    object,
+    printProgram,
+    property,
+    undefinedValue
+} from "./ast";
 import { IdGenerator } from "./IdGenerator";
-
-const SERVICE_IMPORT = template.statement(`
-    import { %%SERVICE_NAME%% as %%IMPORT_NAME%% } from %%IMPORT_SOURCE%%;
-`);
-
-const PKG_OBJECT = template.expression(`
-    {
-        name: %%PACKAGE_NAME%%,
-        services: %%PACKAGE_SERVICES%%,
-        ui: %%PACKAGE_UI%%,
-        properties: %%PROPERTIES%%
-    }
-`);
-
-const SERVICE_OBJECT = template.expression(`
-    {
-        name: %%SERVICE_NAME%%,
-        clazz: %%SERVICE_IMPORT%%,
-        provides: %%SERVICE_INTERFACES%%,
-        references: %%SERVICE_REFERENCES%%
-    }
-`);
-
-const INTERFACE_OBJECT = template.expression(`
-    {
-        name: %%INTERFACE_NAME%%,
-        qualifier: %%QUALIFIER%%
-    }
-`);
-
-const REFERENCE_OBJECT = template.expression(`
-    {
-        name: %%INTERFACE_NAME%%,
-        qualifier: %%QUALIFIER%%,
-        all: %%ALL%%
-    }
-`);
-
-const UI_OBJECT = template.expression(`
-    {
-        references: %%UI_REFERENCES%%
-    }
-`);
-
-const PROPERTY_OBJECT = template.expression(`
-    {
-        value: %%VALUE%%,
-        required: %%REQUIRED%%
-    }
-`);
 
 export type PackageMetadataInput = Pick<PackageMetadata, "name" | "config" | "servicesModulePath">;
 
@@ -78,8 +40,8 @@ export interface PackageMetadataOptions {
  */
 export function generatePackagesMetadata({ appName, packages }: PackageMetadataOptions): string {
     const idGenerator = new IdGenerator();
-    const packagesMetadata = nodes.objectExpression([]);
-    const imports: Nodes.Statement[] = [];
+    const imports: ImportDeclaration[] = [];
+    const packageProperties: Property[] = [];
 
     let overrides: Map<string, PackageOverrides> | undefined;
     for (const pkg of packages) {
@@ -100,22 +62,21 @@ export function generatePackagesMetadata({ appName, packages }: PackageMetadataO
             },
             importServiceClass(variableName, className, moduleId) {
                 const id = idGenerator.generate(variableName);
-                const renderedImporter = SERVICE_IMPORT({
-                    SERVICE_NAME: nodes.identifier(className),
-                    IMPORT_NAME: nodes.identifier(id),
-                    IMPORT_SOURCE: nodes.stringLiteral(moduleId)
-                });
-                imports.push(renderedImporter);
+                imports.push(importNamed(className, id, moduleId));
                 return id;
             }
         });
-        packagesMetadata.properties.push(
-            nodes.objectProperty(nodes.stringLiteral(pkg.name), packageMetadata)
+        packageProperties.push(
+            property(pkg.name, packageMetadata, { comment: `Package '${pkg.name}'` })
         );
     }
 
-    const program = nodes.program([...imports, nodes.exportDefaultDeclaration(packagesMetadata)]);
-    return generate(program).code;
+    return printProgram([
+        ...imports,
+        exportDefault(object(packageProperties), {
+            comment: "Metadata of all packages, keyed by package name"
+        })
+    ]);
 }
 
 /**
@@ -136,8 +97,8 @@ function generatePackageMetadata(
          */
         enableService(serviceName: string): boolean;
     }
-): Nodes.Expression {
-    const servicesObject = nodes.objectExpression([]);
+): ObjectExpression {
+    const serviceProperties: Property[] = [];
     for (const service of pkg.config.services.values()) {
         if (!options.enableService(service.serviceName)) {
             continue;
@@ -155,92 +116,59 @@ function generatePackageMetadata(
             service.serviceName,
             pkg.servicesModulePath
         );
-        const serviceObject = SERVICE_OBJECT({
-            SERVICE_NAME: nodes.stringLiteral(service.serviceName),
-            SERVICE_IMPORT: nodes.identifier(importName),
-            SERVICE_INTERFACES: nodes.arrayExpression(
-                service.provides.map((p) =>
-                    INTERFACE_OBJECT({
-                        INTERFACE_NAME: nodes.stringLiteral(p.interfaceName),
-                        QUALIFIER:
-                            p.qualifier == null ? undefinedNode() : nodes.stringLiteral(p.qualifier)
-                    })
-                )
-            ),
-            SERVICE_REFERENCES: nodes.objectExpression(
-                Array.from(service.references.entries()).map(([referenceName, referenceConfig]) =>
-                    nodes.objectProperty(
-                        nodes.stringLiteral(referenceName),
-                        referenceObject(referenceConfig)
-                    )
-                )
-            )
-        });
-
-        servicesObject.properties.push(
-            nodes.objectProperty(nodes.stringLiteral(service.serviceName), serviceObject)
+        serviceProperties.push(
+            property(service.serviceName, serviceObject(service, importName), {
+                comment: `Service '${service.serviceName}'`
+            })
         );
     }
 
-    const uiObject = UI_OBJECT({
-        UI_REFERENCES: nodes.arrayExpression(pkg.config.uiReferences.map((r) => referenceObject(r)))
-    });
-
-    const propertiesObject = nodes.objectExpression(
-        Array.from(pkg.config.properties.values()).map((prop) =>
-            nodes.objectProperty(
-                nodes.stringLiteral(prop.propertyName),
-                PROPERTY_OBJECT({
-                    VALUE: jsonToExpression(prop.defaultValue),
-                    REQUIRED: nodes.booleanLiteral(prop.required)
-                })
-            )
+    const uiReferences = pkg.config.uiReferences.map(referenceObject);
+    const propertyProperties = Array.from(pkg.config.properties.values(), (prop) =>
+        property(
+            prop.propertyName,
+            object([
+                property("value", jsonToExpression(prop.defaultValue)),
+                property("required", literal(prop.required))
+            ])
         )
     );
 
-    const pkgObject = PKG_OBJECT({
-        PACKAGE_NAME: nodes.stringLiteral(pkg.name),
-        PACKAGE_SERVICES: servicesObject,
-        PACKAGE_UI: uiObject,
-        PROPERTIES: propertiesObject
-    });
-    return pkgObject;
+    return object([
+        property("name", literal(pkg.name)),
+        property("services", object(serviceProperties)),
+        property("ui", object([property("references", array(uiReferences))])),
+        property("properties", object(propertyProperties))
+    ]);
 }
 
-function jsonToExpression(json: unknown): Nodes.Expression {
-    if (json == null) {
-        return nodes.nullLiteral();
-    }
-    if (typeof json === "string") {
-        return nodes.stringLiteral(json);
-    }
-    if (typeof json === "number") {
-        return nodes.numericLiteral(json);
-    }
-    if (typeof json === "boolean") {
-        return nodes.booleanLiteral(json);
-    }
-    if (Array.isArray(json)) {
-        return nodes.arrayExpression(json.map((item) => jsonToExpression(item)));
-    }
-    if (typeof json === "object") {
-        return nodes.objectExpression(
-            Object.entries(json).map(([name, value]) =>
-                nodes.objectProperty(nodes.stringLiteral(name), jsonToExpression(value))
-            )
-        );
-    }
-    throw new Error(`Unexpected value while serializing JSON: ${json}.`);
+function serviceObject(service: Service, importName: string): ObjectExpression {
+    const provides = service.provides.map((p) =>
+        object([
+            property("name", literal(p.interfaceName)),
+            property("qualifier", optionalString(p.qualifier))
+        ])
+    );
+    const references = Array.from(service.references, ([referenceName, ref]) =>
+        property(referenceName, referenceObject(ref))
+    );
+    return object([
+        property("name", literal(service.serviceName)),
+        property("clazz", identifier(importName)),
+        property("provides", array(provides)),
+        property("references", object(references))
+    ]);
 }
 
-function referenceObject(ref: Reference | UiReference): Nodes.Expression {
-    return REFERENCE_OBJECT({
-        INTERFACE_NAME: nodes.stringLiteral(ref.interfaceName),
-        QUALIFIER: ref.qualifier ? nodes.stringLiteral(ref.qualifier) : undefinedNode(),
-        ALL: nodes.booleanLiteral(ref.type === "all" ? true : false) // TODO: Rework internal app format
-    });
+function referenceObject(ref: Reference | UiReference): ObjectExpression {
+    return object([
+        property("name", literal(ref.interfaceName)),
+        property("qualifier", optionalString(ref.qualifier)),
+        property("all", literal(ref.type === "all")) // TODO: Rework internal app format
+    ]);
 }
 
-function undefinedNode() {
-    return nodes.unaryExpression("void", nodes.numericLiteral(0));
+/** `"value"` or `void 0` */
+function optionalString(value: string | undefined): Expression {
+    return value == null ? undefinedValue() : literal(value);
 }

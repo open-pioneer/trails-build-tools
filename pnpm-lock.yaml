@@ -6,15 +6,6 @@ settings:
 
 catalogs:
   default:
-    '@babel/generator':
-      specifier: ^7.29.8
-      version: 7.29.8
-    '@babel/template':
-      specifier: ^7.29.7
-      version: 7.29.7
-    '@babel/types':
-      specifier: ^7.29.8
-      version: 7.29.8
     '@changesets/cli':
       specifier: ^2.31.1
       version: 2.31.1
@@ -42,15 +33,12 @@ catalogs:
     '@tony.ganchev/eslint-plugin-header':
       specifier: ^3.4.4
       version: 3.4.4
-    '@types/babel__generator':
-      specifier: ^7.27.0
-      version: 7.27.0
-    '@types/babel__template':
-      specifier: ^7.4.4
-      version: 7.4.4
     '@types/debug':
       specifier: ^4.1.13
       version: 4.1.13
+    '@types/estree':
+      specifier: ^1.0.9
+      version: 1.0.9
     '@types/fs-extra':
       specifier: ^11.0.4
       version: 11.0.4
@@ -81,6 +69,9 @@ catalogs:
     esbuild:
       specifier: ^0.28.2
       version: 0.28.2
+    esrap:
+      specifier: ^2.3.7
+      version: 2.3.7
     find-git-root:
       specifier: ^1.1.0
       version: 1.1.0
@@ -570,21 +561,15 @@ importers:
 
   packages/vite-plugin:
     dependencies:
-      '@babel/generator':
-        specifier: 'catalog:'
-        version: 7.29.8
-      '@babel/template':
-        specifier: 'catalog:'
-        version: 7.29.7
-      '@babel/types':
-        specifier: 'catalog:'
-        version: 7.29.8
       '@open-pioneer/build-common':
         specifier: workspace:^
         version: link:../build-common
       debug:
         specifier: 'catalog:'
         version: 4.4.3(supports-color@7.2.0)
+      esrap:
+        specifier: 'catalog:'
+        version: 2.3.7
       js-yaml:
         specifier: 'catalog:'
         version: 5.4.1
@@ -613,15 +598,12 @@ importers:
       '@open-pioneer/vite-plugin-pioneer':
         specifier: workspace:^
         version: 'link:'
-      '@types/babel__generator':
-        specifier: 'catalog:'
-        version: 7.27.0
-      '@types/babel__template':
-        specifier: 'catalog:'
-        version: 7.4.4
       '@types/debug':
         specifier: 'catalog:'
         version: 4.1.13
+      '@types/estree':
+        specifier: 'catalog:'
+        version: 1.0.9
       '@types/js-yaml':
         specifier: 'catalog:'
         version: 4.0.9
@@ -2225,12 +2207,6 @@ packages:
   '@tybys/wasm-util@0.10.3':
     resolution: {integrity: sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg==}
 
-  '@types/babel__generator@7.27.0':
-    resolution: {integrity: sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg==}
-
-  '@types/babel__template@7.4.4':
-    resolution: {integrity: sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A==}
-
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
@@ -2757,6 +2733,14 @@ packages:
   esquery@1.7.0:
     resolution: {integrity: sha512-Ap6G0WQwcU/LHsvLwON1fAQX9Zp0A2Y6Y/cJBl9r/JbW90Zyg4/zbG6zzKa2OTALELarYHmKu0GhpM5EO+7T0g==}
     engines: {node: '>=0.10'}
+
+  esrap@2.3.7:
+    resolution: {integrity: sha512-n2nf7fZR3c9yXf0BPEuHuXqT+KW0SJVj4cN5FMEkpCZ3scLjOQWpiccyCxVzCC2q1wubTghuEGzngJY/7Ah0Ow==}
+    peerDependencies:
+      '@typescript-eslint/types': ^8.2.0
+    peerDependenciesMeta:
+      '@typescript-eslint/types':
+        optional: true
 
   esrecurse@4.3.0:
     resolution: {integrity: sha512-KmfKL3b6G+RXvP8N1vr3Tq1kL/oCFgn2NYXEtqP8/L3pKapUA4G8cFVaoF3SU323CD4XypR/ffioHmkti6/Tag==}
@@ -5585,15 +5569,6 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@types/babel__generator@7.27.0':
-    dependencies:
-      '@babel/types': 7.29.8
-
-  '@types/babel__template@7.4.4':
-    dependencies:
-      '@babel/parser': 7.29.8
-      '@babel/types': 7.29.8
-
   '@types/chai@5.2.3':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -6064,6 +6039,10 @@ snapshots:
   esquery@1.7.0:
     dependencies:
       estraverse: 5.3.0
+
+  esrap@2.3.7:
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.5
 
   esrecurse@4.3.0:
     dependencies:

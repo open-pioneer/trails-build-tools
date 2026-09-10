@@ -4,54 +4,66 @@
 import { PackageMetadata } from "../metadata/Metadata";
 import { I18nFile } from "../metadata/parseI18nYaml";
 import { ReportableError } from "../ReportableError";
-import { generate, nodes, template } from "../utils/babelDeps";
+import {
+    array,
+    arrow,
+    call,
+    constDeclaration,
+    dynamicImport,
+    exportDefault,
+    exportNamed,
+    functionDeclaration,
+    identifier,
+    literal,
+    member,
+    newExpression,
+    printProgram,
+    returnStatement,
+    switchCase,
+    switchStatement,
+    template,
+    throwStatement
+} from "./ast";
 import { serializeModuleId } from "./shared";
-
-const INDEX_TEMPLATE = template.program(`
-    export const locales = %%LOCALES_ARRAY%%;
-
-    export function loadMessages(locale) {
-        %%LOCALE_SWITCH%%
-        throw new Error(\`Unsupported locale: '\${locale}'\`);
-    }
-`);
-
-const IMPORT_TEMPLATE = template.statement(`
-    return import(%%MODULE_ID%%).then(mod => mod.default);
-`);
-
-const MESSAGES_TEMPLATE = template.program(`
-    const messages = JSON.parse(%%SERIALIZED%%);
-    export default messages;
-`);
 
 /**
  * Generates a lookup table for the languages supported by the given application.
  */
 export function generateI18nIndex(packageDirectory: string, locales: string[]): string {
-    const localesArray = nodes.arrayExpression(
-        locales.map((locale) => nodes.stringLiteral(locale))
-    );
-    const switchStmt = nodes.switchStatement(
-        nodes.identifier("locale"),
-        locales.map((locale) => {
-            const localeModuleId = serializeModuleId({
-                type: "app-i18n",
-                packageDirectory,
-                locale
-            });
-            const importStatement = IMPORT_TEMPLATE({
-                MODULE_ID: nodes.stringLiteral(localeModuleId)
-            });
-            return nodes.switchCase(nodes.stringLiteral(locale), [importStatement]);
-        })
-    );
+    const locale = identifier("locale");
 
-    const program = INDEX_TEMPLATE({
-        LOCALES_ARRAY: localesArray,
-        LOCALE_SWITCH: switchStmt
+    // case "<locale>": return import("<module>").then((mod) => mod.default);
+    const cases = locales.map((localeName) => {
+        const moduleId = serializeModuleId({
+            type: "app-i18n",
+            packageDirectory,
+            locale: localeName
+        });
+        const loadModule = call(member(dynamicImport(moduleId), "then"), [
+            arrow(["mod"], member(identifier("mod"), "default"))
+        ]);
+        return switchCase(literal(localeName), [returnStatement(loadModule)]);
     });
-    return generate(program).code;
+
+    return printProgram([
+        exportNamed(constDeclaration("locales", array(locales.map(literal))), {
+            comment: "Locales supported by the application"
+        }),
+        // export function loadMessages("locale") { ... }
+        exportNamed(
+            functionDeclaration(
+                "loadMessages",
+                ["locale"],
+                [
+                    switchStatement(locale, cases),
+                    throwStatement(
+                        newExpression("Error", [template`Unsupported locale: '${locale}'`])
+                    )
+                ]
+            ),
+            { comment: "Lazily loads the messages for the given locale" }
+        )
+    ]);
 }
 
 export type I18nPackageMetadata = Pick<PackageMetadata, "name" | "i18nPaths">;
@@ -140,8 +152,14 @@ export async function generateI18nMessages(options: I18nMessageOptions): Promise
 
     // Transport the object as a json string for improved parsing performance
     const serialized = JSON.stringify(allMessages);
-    const program = MESSAGES_TEMPLATE({
-        SERIALIZED: nodes.stringLiteral(serialized)
-    });
-    return generate(program).code;
+    return printProgram([
+        // const messages = JSON.parse("...")
+        constDeclaration(
+            "messages",
+            call(member(identifier("JSON"), "parse"), [literal(serialized)]),
+            { comment: `Messages for locale '${locale}', keyed by package name and message id` }
+        ),
+        // export default messages
+        exportDefault(identifier("messages"))
+    ]);
 }
