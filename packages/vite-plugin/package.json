@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/vite-plugin-pioneer",
-    "version": "7.0.0",
+    "version": "7.0.1",
     "description": "The vite plugin provided by this package is required by Open Pioneer Trails applications.",
     "keywords": [
         "open-pioneer-trails"

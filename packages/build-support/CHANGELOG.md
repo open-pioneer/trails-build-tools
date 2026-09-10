@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-support
 
+## 4.0.1
+
+### Patch Changes
+
+- 4337957: Update dependencies
+
 ## 4.0.0
 
 ### Major Changes

@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/check-pnpm-duplicates",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "description": "Provides a CLI tool to detect accidental duplicates in a pnpm lockfile.",
     "keywords": [
         "open-pioneer-trails"
