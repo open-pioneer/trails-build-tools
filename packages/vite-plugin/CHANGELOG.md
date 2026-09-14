@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 7.0.1
+
+### Patch Changes
+
+- 9e63026: Replace the `@babel/*` dependencies used for code generation with `esrap`.
+- 4337957: Update dependencies
+- Updated dependencies [4337957]
+    - @open-pioneer/build-common@5.0.1
+
 ## 7.0.0
 
 ### Major Changes
