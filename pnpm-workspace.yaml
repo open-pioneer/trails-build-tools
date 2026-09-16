@@ -122,6 +122,9 @@ overrides:
   # https://github.com/advisories/GHSA-2v37-7h3g-55p8, CVE-2026-67213
   "nanoid@<3.3.17": "^3.3.17"
 
+audit:
+  level: "moderate"
+
 auditConfig:
   ignoreGhsas:
     # https://github.com/advisories/GHSA-w5hq-g745-h8pq, CVE-2026-41907
