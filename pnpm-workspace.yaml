@@ -8,11 +8,6 @@ packages:
   - "!**/__snapshots/**"
 
 catalog:
-  "@pnpm/lockfile.fs": ^1100.2.6
-  "@pnpm/lockfile.utils": ^1102.1.1
-  "@pnpm/lockfile.walker": ^1100.0.22
-  "@pnpm/types": ^1102.1.0
-  "@pnpm/logger": ^1100.0.0
   "@rollup/plugin-node-resolve": ^16.0.3
   "@rollup/pluginutils": ^5.4.0
   chalk: ^6.0.0

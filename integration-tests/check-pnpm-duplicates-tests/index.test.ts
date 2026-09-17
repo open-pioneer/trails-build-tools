@@ -1,18 +1,15 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { cpSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeAll, expect, it } from "vitest";
-import { TEMP_DATA_DIR, TEST_DATA_DIR } from "./paths";
+import { TEST_DATA_DIR } from "./paths";
+import { setupPnpmWorkspace } from "./prepareProjectDir";
 import { runCli } from "./runCli";
 
-const LOCKFILE_DIR = resolve(TEMP_DATA_DIR, "project-dir");
-
+let LOCKFILE_DIR!: string;
 beforeAll(() => {
-    const sourceLockfile = resolve(TEST_DATA_DIR, "_pnpm-lock.yaml");
-    rmSync(LOCKFILE_DIR, { recursive: true, force: true });
-    cpSync(sourceLockfile, resolve(LOCKFILE_DIR, "pnpm-lock.yaml"), { recursive: true });
+    LOCKFILE_DIR = setupPnpmWorkspace("project-dir");
 });
 
 it("reports all duplicates by default", async () => {
