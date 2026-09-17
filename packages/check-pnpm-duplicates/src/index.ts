@@ -7,8 +7,8 @@ import { Command } from "commander";
 import { version } from "../package.json";
 import { findDuplicatePackages } from "./findDuplicates";
 import { generateReport } from "./generateReport";
+import { assertSupportedPnpmVersion, getPnpmVersion, listPackages } from "./pnpm";
 import { emptyConfig, readConfig } from "./readConfig";
-import { readLockfile } from "./readLockfile";
 import { updateConfig } from "./updateConfig";
 
 const program = new Command();
@@ -37,21 +37,27 @@ async function main() {
         // Read user configuration
         const config = configPath ? readConfig(configPath) : emptyConfig();
 
-        // Read pnpm lockfile
-        let lockfile;
+        // Check pnpm version
+        let pnpmVersion;
         try {
-            lockfile = await readLockfile(directory);
+            pnpmVersion = await getPnpmVersion(directory);
         } catch (e) {
-            throw new Error(`Failed to read lockfile in ${directory}`, { cause: e });
+            throw new Error(`Failed to run pnpm. Is it installed?`, { cause: e });
+        }
+        assertSupportedPnpmVersion(pnpmVersion);
+
+        // List all packages in the lockfile
+        let projects;
+        try {
+            projects = await listPackages(directory, config.skipDevDependencies);
+        } catch (e) {
+            throw new Error(`Failed to list packages in ${directory}: ${(e as Error).message}`, {
+                cause: e
+            });
         }
 
         // Find duplicates
-        let duplicates;
-        try {
-            duplicates = await findDuplicatePackages(lockfile, config.skipDevDependencies);
-        } catch (e) {
-            throw new Error(`Could not analyze lockfile for duplicates`, { cause: e });
-        }
+        const duplicates = findDuplicatePackages(projects);
 
         // Report results
         const ok = generateReport(config, duplicates);

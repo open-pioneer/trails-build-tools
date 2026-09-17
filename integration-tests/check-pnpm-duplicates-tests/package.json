@@ -6,6 +6,7 @@
     },
     "devDependencies": {
         "@open-pioneer/check-pnpm-duplicates": "workspace:^",
+        "js-yaml": "catalog:",
         "zx": "catalog:"
     }
 }
