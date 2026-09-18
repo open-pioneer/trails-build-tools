@@ -20,7 +20,7 @@ import { createDebugger } from "../utils/debug";
 import { fileExists, isInDirectory } from "../utils/fileUtils";
 import { PACKAGE_NAME } from "../utils/package";
 import { MetadataContext } from "./Context";
-import { InternalPackageMetadata, PackageDependency } from "./Metadata";
+import { DiscoveredPackage, PackageDependency } from "./Metadata";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -28,12 +28,12 @@ const debug = createDebugger("open-pioneer:metadata");
 export interface LoadPackageOptions {
     sourceRoot: string;
     importedFrom: string | undefined;
-    allowMissingBuildConfigInLocalPackage?: boolean;
+    allowMissingBuildConfigInSourcePackage?: boolean;
 }
 
 /**
  * This function is called to read a package's metadata during build
- * (for internal and external packages).
+ * (for source and published packages).
  *
  * Depending on the location of the package either reads build config (source package)
  * or serialized metadata from package.json.
@@ -42,7 +42,7 @@ export async function loadPackageMetadata(
     ctx: MetadataContext,
     packageDir: string,
     options: LoadPackageOptions
-): Promise<InternalPackageMetadata> {
+): Promise<DiscoveredPackage> {
     return await new PackageMetadataReader(ctx, packageDir, options).readPackageMetadata();
 }
 
@@ -65,18 +65,18 @@ class PackageMetadataReader {
         this.#sourceRoot = options.sourceRoot;
         this.#packageJsonPath = join(packageDir, "package.json");
         this.#importedFrom = options.importedFrom;
-        this.#allowMissingBuildConfig = options?.allowMissingBuildConfigInLocalPackage ?? false;
+        this.#allowMissingBuildConfig = options?.allowMissingBuildConfigInSourcePackage ?? false;
     }
 
     /**
      * Reads package metadata for the configured package.
      */
-    async readPackageMetadata(): Promise<InternalPackageMetadata> {
+    async readPackageMetadata(): Promise<DiscoveredPackage> {
         const ctx = this.#ctx;
         const packageDir = this.#packageDir;
         const packageJsonPath = this.#packageJsonPath;
         const sourceRoot = this.#sourceRoot;
-        const mode = isLocalPackage(packageDir, sourceRoot) ? "local" : "external";
+        const mode = isSourcePackage(packageDir, sourceRoot) ? "source" : "published";
         isDebug && debug(`Visiting package directory ${packageDir} in mode ${mode}.`);
 
         // We must always read at least the package.json to see what kind of package
@@ -86,14 +86,14 @@ class PackageMetadataReader {
             name: packageName,
             version: packageVersion,
             dependencies,
-            frameworkMetadata
+            packageMetadata
         } = await parsePackageJson(packageJsonPath);
 
         // The package config is read either from the package's build.config.mjs (for source packages)
         // or from a package's serialized metadata in its package.json (for published packages).
-        // For external packages: if we don't see any Open Pioneer Trails metadata we simply treat it as a plain package,
+        // For published packages: if we don't see any Open Pioneer Trails metadata we simply treat it as a plain package,
         // which will then be ignored by further analysis.
-        const configResult = await this.#readConfig(mode, packageName, frameworkMetadata);
+        const configResult = await this.#readConfig(mode, packageName, packageMetadata);
         if (!configResult) {
             return {
                 type: "plain",
@@ -170,37 +170,37 @@ class PackageMetadataReader {
      * Attempts to read the package's metadata/configuration, depending on mode.
      */
     async #readConfig(
-        mode: "local" | "external",
+        mode: "source" | "published",
         packageName: string,
-        frameworkMetadata: unknown
+        packageMetadata: unknown
     ): Promise<PackageConfigResult | undefined> {
         const ctx = this.#ctx;
         const packageDir = this.#packageDir;
         switch (mode) {
-            /** External packages must have framework metadata in their package.json (or they are not considered Open Pioneer Trails packages at all). */
-            case "external": {
-                if (!frameworkMetadata) {
+            /** Published packages must have package metadata in their package.json (or they are not considered Open Pioneer Trails packages at all). */
+            case "published": {
+                if (!packageMetadata) {
                     return undefined;
                 }
-                return this.#parsePackageConfigFromMetadata(packageName, frameworkMetadata);
+                return this.#parsePackageConfigFromMetadata(packageName, packageMetadata);
             }
-            /** Local packages may have either a build.config (the common case) or a built package.json for testing, but never both. */
-            case "local": {
+            /** Source packages may have either a build.config (the common case) or a built package.json for testing, but never both. */
+            case "source": {
                 const buildConfigPath = join(packageDir, BUILD_CONFIG_NAME);
                 const buildConfigExists = existsSync(buildConfigPath);
-                if (buildConfigExists && frameworkMetadata) {
+                if (buildConfigExists && packageMetadata) {
                     throw new Error(
-                        `Package '${packageName}' at ${packageDir} contains both framework metadata in its package.json and a ${BUILD_CONFIG_NAME}.` +
+                        `Package '${packageName}' at ${packageDir} contains both package metadata in its package.json and a ${BUILD_CONFIG_NAME}.` +
                             ` Mixing both formats is not supported.` +
                             ` Metadata in package.json files is only intended for distributed packages.`
                     );
                 }
 
-                if (frameworkMetadata) {
+                if (packageMetadata) {
                     ctx.warn(
-                        `Using framework metadata from package.json instead of ${BUILD_CONFIG_NAME} in ${packageDir}, make sure that this intended.`
+                        `Using package metadata from package.json instead of ${BUILD_CONFIG_NAME} in ${packageDir}, make sure that this intended.`
                     );
-                    return this.#parsePackageConfigFromMetadata(packageName, frameworkMetadata);
+                    return this.#parsePackageConfigFromMetadata(packageName, packageMetadata);
                 }
                 return this.#parsePackageConfigFromBuildConfig(buildConfigPath);
             }
@@ -211,12 +211,12 @@ class PackageMetadataReader {
      * Attempts to resolve the package's services entry point (e.g. ./services.ts), depending on mode.
      */
     async #resolveServicesModule(
-        mode: "local" | "external",
+        mode: "source" | "published",
         packageName: string,
         moduleId: string
     ): Promise<string | undefined> {
         const importedFrom = this.#importedFrom;
-        if (mode === "external" && importedFrom) {
+        if (mode === "published" && importedFrom) {
             /**
              * FIXME: This is a workaround for a weird interaction with vite's dependency optimizer and virtual modules.
              * We are trying to import a real file here (e.g. ./node_modules/.../@open-pioneer/some-package/services.js)
@@ -244,11 +244,11 @@ class PackageMetadataReader {
      */
     async #parsePackageConfigFromMetadata(
         packageName: string,
-        frameworkMetadata: unknown
+        packageMetadata: unknown
     ): Promise<PackageConfigResult | undefined> {
         const packageDir = this.#packageDir;
         const packageJsonPath = this.#packageJsonPath;
-        const metadataResult = PackageMetadataV1.parsePackageMetadata(frameworkMetadata);
+        const metadataResult = PackageMetadataV1.parsePackageMetadata(packageMetadata);
         if (metadataResult.type === "error") {
             if (metadataResult.code === "unsupported-version") {
                 throw new ReportableError(
@@ -371,12 +371,12 @@ async function parsePackageJson(packageJsonPath: string) {
         addDep(depName, true);
     }
 
-    const frameworkMetadata = packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
+    const packageMetadata = packageJsonContent[PackageMetadataV1.PACKAGE_JSON_KEY] ?? undefined;
     return {
         name: packageName,
         version: version ?? undefined,
         dependencies: Array.from(deps.values()),
-        frameworkMetadata: frameworkMetadata
+        packageMetadata: packageMetadata
     };
 }
 
@@ -395,6 +395,6 @@ async function resolveLocalFile(
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/;
 
-function isLocalPackage(file: string, sourceDir: string) {
+function isSourcePackage(file: string, sourceDir: string) {
     return isInDirectory(file, sourceDir) && !NODE_MODULES_RE.test(file);
 }

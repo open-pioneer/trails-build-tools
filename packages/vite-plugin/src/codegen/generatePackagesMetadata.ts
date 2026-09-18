@@ -3,7 +3,7 @@
 
 import { PackageOverrides, Reference, Service, UiReference } from "@open-pioneer/build-common";
 import type { Expression, ImportDeclaration, ObjectExpression, Property } from "estree";
-import { PackageMetadata } from "../metadata/Metadata";
+import { AnalyzedPackage } from "../metadata/Metadata";
 import { ReportableError } from "../ReportableError";
 import {
     array,
@@ -19,7 +19,7 @@ import {
 } from "./ast";
 import { IdGenerator } from "./IdGenerator";
 
-export type PackageMetadataInput = Pick<PackageMetadata, "name" | "config" | "servicesModulePath">;
+export type PackageMetadataInput = Pick<AnalyzedPackage, "name" | "config" | "servicesModulePath">;
 
 export interface PackageMetadataOptions {
     /**

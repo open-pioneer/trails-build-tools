@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { PackageMetadata } from "../metadata/Metadata";
+import { AnalyzedPackage } from "../metadata/Metadata";
 import { I18nFile } from "../metadata/parseI18nYaml";
 import { ReportableError } from "../ReportableError";
 import {
@@ -66,7 +66,7 @@ export function generateI18nIndex(packageDirectory: string, locales: string[]): 
     ]);
 }
 
-export type I18nPackageMetadata = Pick<PackageMetadata, "name" | "i18nPaths">;
+export type I18nPackageMetadata = Pick<AnalyzedPackage, "name" | "i18nPaths">;
 
 export interface I18nMessageOptions {
     /** The locale to generate. */
@@ -79,7 +79,7 @@ export interface I18nMessageOptions {
     appName: string;
 
     /** All packages in the application (including the app). */
-    packages: Pick<PackageMetadata, "name" | "i18nPaths">[];
+    packages: I18nPackageMetadata[];
 
     /** Called by the function when the contents of an i18n file (in i18nPaths) is required. */
     loadI18n: (pkg: I18nPackageMetadata, filePath: string) => Promise<I18nFile>;

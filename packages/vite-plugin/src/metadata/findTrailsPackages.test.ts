@@ -5,9 +5,9 @@ import { resolve } from "path";
 import { expect, it } from "vitest";
 import { TEST_DATA_DIR } from "../utils/testUtils";
 import { findTrailsPackages } from "./findTrailsPackages";
-import { PackageMetadata } from "./Metadata";
+import { AnalyzedPackage } from "./Metadata";
 
-it("finds local trails packages", async () => {
+it("finds source packages", async () => {
     const sourceRoot = resolve(TEST_DATA_DIR, "codegen-packages");
     const packages = await findTrailsPackages(sourceRoot);
     expect(getPackageInfo(packages)).toMatchInlineSnapshot(`
@@ -24,7 +24,7 @@ it("finds local trails packages", async () => {
     `);
 });
 
-it("finds external packages via node modules", async () => {
+it("finds published packages via node modules", async () => {
     const sourceRoot = resolve(TEST_DATA_DIR, "codegen-packages-external/src");
     const packages = await findTrailsPackages(sourceRoot);
 
@@ -43,7 +43,7 @@ it("finds external packages via node modules", async () => {
     `);
 });
 
-function getPackageInfo(packages: PackageMetadata[]) {
+function getPackageInfo(packages: AnalyzedPackage[]) {
     return packages.map((p) => {
         return {
             name: p.name,
