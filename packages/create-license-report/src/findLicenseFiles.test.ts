@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, it } from "vitest";
-import { PROJECT_DIR } from "./testing/paths";
 import { findFirstLicenseFile } from "./findLicenseFiles";
+import { PROJECT_DIR } from "./testing/paths";
 
 it("expect to  find a license config file", async () => {
     const fileSpec = findFirstLicenseFile(PROJECT_DIR);

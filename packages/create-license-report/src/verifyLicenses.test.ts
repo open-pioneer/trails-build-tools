@@ -1,11 +1,11 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { afterEach, expect, it, onTestFailed, vi } from "vitest";
 import { resolve } from "node:path";
-import { PROJECT_DIR } from "./testing/paths";
+import { afterEach, expect, it, onTestFailed, vi } from "vitest";
 import { PnpmLicenseProject } from "./pnpmLicenseReport";
 import { readLicenseConfig } from "./readProjectConfig";
+import { PROJECT_DIR } from "./testing/paths";
 import { verifyLicenses } from "./verifyLicenses";
 
 afterEach(() => {
@@ -109,7 +109,6 @@ it("expect OR license expression to fail even if one alternative is allowed", as
             )
     ).toBe(true);
 });
-
 
 it("expect OR license expression to pass if added verbatim to allowedLicenses", async () => {
     const configPath = resolve(PROJECT_DIR, "license-config.yaml");

@@ -21,6 +21,7 @@ export default defineConfig({
         "**/test-data",
         "**/.*",
         "**/__snapshots",
+        "**/__snapshots__",
         "pnpm-lock.yaml"
     ],
     overrides: [

@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { expect, it } from "vitest";
 import { resolve } from "node:path";
-import { PROJECT_DIR } from "./testing/paths";
+import { expect, it } from "vitest";
 import { readLicenseConfig } from "./readProjectConfig";
+import { PROJECT_DIR } from "./testing/paths";
 
 it("expect to read license config", async () => {
     const pathToConfig = resolve(PROJECT_DIR, "license-config.yaml");

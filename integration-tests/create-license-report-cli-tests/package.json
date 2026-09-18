@@ -5,7 +5,7 @@
         "test": "vitest"
     },
     "devDependencies": {
-        "@open-pioneer/create-license-cli": "workspace:^",
+        "@open-pioneer/create-license-report": "workspace:^",
         "zx": "catalog:"
     }
 }

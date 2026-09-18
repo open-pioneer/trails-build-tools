@@ -9,11 +9,11 @@ import {
     UiReference,
     PackageMetadataV1 as V1
 } from "@open-pioneer/build-common";
+import type { Logger } from "@open-pioneer/cli-logging";
 import { ResolvedValidationOptions } from "./model/Options";
 import { PackageModel } from "./model/PackageModel";
 import { getExportedName } from "./utils/entryPoints";
 import { ValidationReporter } from "./utils/ValidationReporter";
-import type { Logger } from "@open-pioneer/build-common";
 
 type SimplePackageModel = Pick<
     PackageModel,
@@ -48,7 +48,8 @@ const COPY_FIELDS = [
     "engines",
     "os",
     "cpu",
-    "private"
+    "private",
+    "publishConfig"
 ];
 
 /**

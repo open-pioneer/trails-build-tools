@@ -1,5 +1,21 @@
 # @open-pioneer/pnpm-plugin-defaults
 
+## 0.2.1
+
+### Patch Changes
+
+- 4337957: Update dependencies
+
+## 0.2.0
+
+### Minor Changes
+
+- 8e38b33: Switch this package from legacy `main` / `types` fields to the modern `exports` field in `package.json`
+
+### Patch Changes
+
+- 8e38b33: Change build setup: now uses tsdown instead of esbuild.
+
 ## 0.1.4
 
 ### Patch Changes

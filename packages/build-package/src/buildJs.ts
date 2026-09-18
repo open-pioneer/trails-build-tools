@@ -4,6 +4,7 @@
 import nativePath, { posix } from "node:path";
 import { cwd } from "node:process";
 import { PackageMetadataV1 } from "@open-pioneer/build-common";
+import type { Logger } from "@open-pioneer/cli-logging";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { normalizePath } from "@rollup/pluginutils";
 import { LogLevel, RollupLog, rollup } from "rollup";
@@ -15,7 +16,6 @@ import { REACT_HOOKS_ID, SOURCE_INFO_ID, virtualModulesPlugin } from "./rollup/v
 import { NormalizedEntryPoint } from "./utils/entryPoints";
 import { isInDirectory } from "./utils/pathUtils";
 import { rebaseSourcemapPath } from "./utils/sourceMaps";
-import type { Logger } from "@open-pioneer/build-common";
 
 export interface BuildJsOptions {
     /** Package name from package.json */

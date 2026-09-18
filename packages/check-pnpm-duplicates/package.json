@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/check-pnpm-duplicates",
-    "version": "0.3.5",
+    "version": "0.4.1",
     "description": "Provides a CLI tool to detect accidental duplicates in a pnpm lockfile.",
     "keywords": [
         "open-pioneer-trails"
@@ -29,11 +29,6 @@
         "test": "vitest"
     },
     "dependencies": {
-        "@pnpm/lockfile.fs": "catalog:",
-        "@pnpm/lockfile.utils": "catalog:",
-        "@pnpm/lockfile.walker": "catalog:",
-        "@pnpm/logger": "catalog:",
-        "@pnpm/types": "catalog:",
         "chalk": "catalog:",
         "commander": "catalog:",
         "js-yaml": "catalog:"
@@ -44,6 +39,7 @@
         "tsdown": "catalog:"
     },
     "engines": {
-        "node": ">= 20"
+        "node": ">= 20",
+        "pnpm": ">= 11"
     }
 }

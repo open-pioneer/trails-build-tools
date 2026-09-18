@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { $, ProcessOutput, usePowerShell } from "zx";
 import { PACKAGE_DIR, TEMP_PATH } from "./paths";
 
-const PATH_TO_DIST = "node_modules/@open-pioneer/create-license-cli/dist/index.js";
+const PATH_TO_DIST = "node_modules/@open-pioneer/create-license-report/dist/index.js";
 
 export interface RunResult {
     exitCode: number;

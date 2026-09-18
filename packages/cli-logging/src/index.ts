@@ -7,19 +7,6 @@ export interface Logger {
     error(...args: unknown[]): void;
 }
 
-const NO_OP = () => undefined;
-
-export const SILENT_LOGGER: Logger = {
-    info: NO_OP,
-    warn: NO_OP,
-    error: NO_OP
-};
-
-export async function getChalk() {
-    const { default: chalk } = await import("chalk");
-    return chalk;
-}
-
 export async function createConsoleLogger(
     console: Pick<Console, "info" | "warn" | "error">
 ): Promise<Logger> {
@@ -35,4 +22,35 @@ export async function createConsoleLogger(
             console.error(chalk.red(...args));
         }
     };
+}
+
+export interface MemoryLogMessage {
+    type: "info" | "warn" | "error";
+    args: unknown[];
+}
+
+export function createMemoryLogger(): Logger & { messages: MemoryLogMessage[] } {
+    const messages: MemoryLogMessage[] = [];
+    const logWithType = (type: "info" | "warn" | "error", ...args: unknown[]) => {
+        messages.push({ type, args });
+    };
+    return {
+        messages,
+        info: logWithType.bind(undefined, "info"),
+        warn: logWithType.bind(undefined, "warn"),
+        error: logWithType.bind(undefined, "error")
+    };
+}
+
+const NO_OP = () => undefined;
+
+export const SILENT_LOGGER: Logger = {
+    info: NO_OP,
+    warn: NO_OP,
+    error: NO_OP
+};
+
+export async function getChalk() {
+    const { default: chalk } = await import("chalk");
+    return chalk;
 }

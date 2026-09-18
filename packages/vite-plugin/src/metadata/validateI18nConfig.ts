@@ -5,7 +5,7 @@ import { ReportableError } from "../ReportableError";
 import { createDebugger } from "../utils/debug";
 import { fileExists } from "../utils/fileUtils";
 import { MetadataContext } from "./Context";
-import { AppMetadata, PackageMetadata } from "./Metadata";
+import { AnalyzedApp, AnalyzedPackage } from "./Metadata";
 import { MetadataRepository } from "./MetadataRepository";
 
 const isDebug = !!process.env.DEBUG;
@@ -14,7 +14,7 @@ const debug = createDebugger("open-pioneer:validateI18nConfig");
 export async function validateI18nConfig(
     ctx: MetadataContext,
     repository: MetadataRepository,
-    appMetadata: AppMetadata
+    appMetadata: AnalyzedApp
 ) {
     const locales = appMetadata.locales;
     for (const pkg of appMetadata.packages) {
@@ -28,7 +28,7 @@ export async function validateI18nConfig(
 
 async function checkPackageI18nFiles(
     ctx: MetadataContext,
-    pkg: PackageMetadata,
+    pkg: AnalyzedPackage,
     locales: string[]
 ) {
     for (const locale of locales) {
@@ -57,7 +57,7 @@ async function checkPackageI18nFiles(
 async function checkAppI18n(
     ctx: MetadataContext,
     repository: MetadataRepository,
-    appMetadata: AppMetadata
+    appMetadata: AnalyzedApp
 ) {
     const appPackage = appMetadata.appPackage;
     const appLocales = new Set(appMetadata.locales);
@@ -75,7 +75,7 @@ async function checkAppI18n(
             return repository.getI18nFile(ctx, i18nPath);
         })
     );
-    const errors: PackageMetadata[] = [];
+    const errors: AnalyzedPackage[] = [];
     for (const pkg of appMetadata.packages) {
         const pkgLocales = pkg.locales;
 

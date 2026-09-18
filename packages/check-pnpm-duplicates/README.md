@@ -4,6 +4,8 @@ Provides the `check-pnpm-duplicates` command line tool.
 The tool checks the project's current pnpm lockfile for duplicate packages.
 Any unexpected package duplications are reported as an error.
 
+The tool invokes `pnpm list` under the hood and requires **pnpm 11** or later.
+
 ## Installation
 
 ```bash

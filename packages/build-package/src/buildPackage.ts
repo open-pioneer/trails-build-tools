@@ -3,6 +3,7 @@
 
 import { mkdir, rm, writeFile } from "fs/promises";
 import { resolve } from "path";
+import { getChalk, type Logger } from "@open-pioneer/cli-logging";
 import { buildCss } from "./buildCss";
 import { buildDts } from "./buildDts";
 import { buildJs } from "./buildJs";
@@ -11,11 +12,10 @@ import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { copyI18nFiles } from "./copyI18nFiles";
 import { generatePackageJson } from "./generatePackageJson";
 import { InputModel } from "./model/InputModel";
+import { ResolvedOptions } from "./model/Options";
 import { createPackageModel } from "./model/PackageModel";
 import { createDebugger } from "./utils/debug";
 import { ValidationReporter } from "./utils/ValidationReporter";
-import { ResolvedOptions } from "./model/Options";
-import { getChalk, type Logger } from "@open-pioneer/build-common";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:build-package");

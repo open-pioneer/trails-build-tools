@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { resolve } from "node:path";
-import { createMemoryLogger } from "@open-pioneer/build-common";
+import { createMemoryLogger } from "@open-pioneer/cli-logging";
 import { describe, expect, it } from "vitest";
 import { BuildCssOptions, buildCss } from "./buildCss";
 import { SUPPORTED_CSS_EXTENSIONS } from "./model/PackageModel";
@@ -32,7 +32,6 @@ describe("buildCss", function () {
           ".imported {
               color: green;
           }
-
           .main {
               padding: 1;
           }
@@ -68,16 +67,13 @@ describe("buildCss", function () {
           @import "bar.css" (min-width: 25em);
           @import "baz.css" layer(baz-layer);
           /* This import must not be bundled because it points to an external dependency */
-
           .foo {
               color: white;
           }
-
           /* 
               From postcss-import examples.
               None of these should be bundled.
           */
-
           .main {
               padding: 1;
           }
@@ -125,7 +121,6 @@ describe("buildCss", function () {
           ".imported {
               color: green;
           }
-
           .main {
               padding: 1;
           }
@@ -176,6 +171,7 @@ describe("buildCss", function () {
           ".from-css {
               color: white;
           }
+
           body {
             height: 100%;
           }
@@ -216,7 +212,6 @@ describe("buildCss", function () {
           @import url(foo-1.css);
           @import url("foo-2.css");
           @import "bar.css" (min-width: 25em);
-
           .from-local-css-module {
               color: white;
           }
@@ -255,6 +250,7 @@ describe("buildCss", function () {
           ".from-css {
               color: white;
           }
+
           body {
             height: 100%;
           }

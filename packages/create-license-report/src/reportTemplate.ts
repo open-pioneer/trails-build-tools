@@ -245,7 +245,7 @@ const STYLE = `
 `;
 
 /**
- * Renders the dependency list. 
+ * Renders the dependency list.
  */
 const SCRIPT = `
     const data = JSON.parse(document.getElementById("license-data").textContent);

@@ -16,6 +16,10 @@
     "peerDependencies": {
         "@open-pioneer/runtime": "workspace:^"
     },
+    "publishConfig": {
+        "directory": "dist",
+        "linkDirectory": false
+    },
     "exports": {
         "./package.json": "./package.json",
         ".": {

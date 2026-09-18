@@ -5,7 +5,7 @@ import { existsSync } from "fs";
 import { cp, mkdir } from "fs/promises";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { createMemoryLogger } from "@open-pioneer/build-common";
+import { createMemoryLogger } from "@open-pioneer/cli-logging";
 import { beforeAll, expect, it, vi } from "vitest";
 import { build } from ".";
 import { expectError } from "./testing/helpers";
@@ -138,6 +138,9 @@ it("should build package to `dist`", async function () {
             "references": [],
           },
         },
+        "publishConfig": {
+          "directory": "dist",
+        },
         "type": "module",
         "version": "0.0.1",
       }
@@ -256,6 +259,9 @@ it("should build package to `dist` with runtime version", async function () {
           "ui": {
             "references": [],
           },
+        },
+        "publishConfig": {
+          "directory": "dist",
         },
         "type": "module",
         "version": "0.0.1",

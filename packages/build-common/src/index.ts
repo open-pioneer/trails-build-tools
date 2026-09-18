@@ -11,4 +11,3 @@ export {
 export { PackageMetadataV1 } from "./packageMetadata";
 export * from "./packageConfig";
 export * as RuntimeSupport from "./runtimeSupport";
-export * from "./utils/Logger";

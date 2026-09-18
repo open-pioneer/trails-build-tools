@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-package",
-    "version": "4.3.2",
+    "version": "5.0.1",
     "description": "Implements partial compilation for Open Pioneer Trails packages.",
     "keywords": [
         "open-pioneer-trails"
@@ -32,9 +32,9 @@
     "dependencies": {
         "@open-pioneer/build-common": "workspace:^",
         "@open-pioneer/build-support": "workspace:^",
+        "@open-pioneer/cli-logging": "workspace:^",
         "@rollup/plugin-node-resolve": "catalog:",
         "@rollup/pluginutils": "catalog:",
-        "chalk": "catalog:",
         "debug": "catalog:",
         "esbuild": "catalog:",
         "find-git-root": "catalog:",

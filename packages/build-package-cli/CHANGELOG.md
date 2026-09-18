@@ -1,5 +1,31 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 4.0.1
+
+### Patch Changes
+
+- 4337957: Update dependencies
+- Updated dependencies [4337957]
+    - @open-pioneer/build-package@5.0.1
+
+## 4.0.0
+
+### Major Changes
+
+- 8e38b33: Switch this package from legacy `main` / `types` fields to the modern `exports` field in `package.json`
+
+### Minor Changes
+
+- 14379bb: Copy the `publishConfig` field when generating the contents of the `package.json` in `dist`.
+
+### Patch Changes
+
+- 8e38b33: Change build setup: now uses tsdown instead of esbuild.
+- Updated dependencies [8e38b33]
+- Updated dependencies [14379bb]
+- Updated dependencies [8e38b33]
+    - @open-pioneer/build-package@5.0.0
+
 ## 3.2.2
 
 ### Patch Changes

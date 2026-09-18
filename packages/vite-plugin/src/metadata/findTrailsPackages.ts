@@ -9,12 +9,12 @@ import { normalizePath } from "vite";
 import { createDebugger } from "../utils/debug";
 import { MetadataContext } from "./Context";
 import { loadPackageMetadata } from "./loadPackageMetadata";
-import { PackageMetadata } from "./Metadata";
+import { AnalyzedPackage } from "./Metadata";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
 
-export async function findTrailsPackages(sourceRoot: string): Promise<PackageMetadata[]> {
+export async function findTrailsPackages(sourceRoot: string): Promise<AnalyzedPackage[]> {
     const ctx = createDummyContext();
     const packageResolver = ResolverFactory.default();
 
@@ -42,7 +42,7 @@ export async function findTrailsPackages(sourceRoot: string): Promise<PackageMet
     }
 
     // TODO(perf): could use some concurrency -- visit dependencies in parallel
-    const trailsPackages: PackageMetadata[] = [];
+    const trailsPackages: AnalyzedPackage[] = [];
     while (workQueue.length) {
         // oxlint-disable-next-line @typescript-eslint/no-non-null-assertion
         const packageDirectory = workQueue.pop()!;
@@ -50,7 +50,7 @@ export async function findTrailsPackages(sourceRoot: string): Promise<PackageMet
         const pkg = await loadPackageMetadata(ctx, packageDirectory, {
             sourceRoot,
             importedFrom: undefined,
-            allowMissingBuildConfigInLocalPackage: true
+            allowMissingBuildConfigInSourcePackage: true
         });
         if (pkg.type === "plain") {
             continue;

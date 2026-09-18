@@ -1,7 +1,7 @@
 {
-    "name": "@open-pioneer/create-license-cli",
+    "name": "@open-pioneer/create-license-report",
     "version": "0.0.1",
-    "description": "Implements creation of Open Pioneer Trails license file.",
+    "description": "Creates a license report for the dependencies of an Open Pioneer Trails project.",
     "keywords": [
         "open-pioneer-trails"
     ],
@@ -9,8 +9,8 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/open-pioneer/trails-build-tools.git",
-        "directory": "packages/build-license"
+        "url": "git+https://github.com/open-pioneer/trails-build-tools.git",
+        "directory": "packages/create-license-report"
     },
     "bin": {
         "create-license-report": "./dist/index.js"
@@ -42,7 +42,6 @@
         "@types/js-yaml": "catalog:",
         "@types/spdx-expression-parse": "catalog:",
         "@types/spdx-satisfies": "catalog:",
-        "build-tools": "workspace:*",
         "publint": "catalog:",
         "shared-configs": "workspace:*",
         "tsdown": "catalog:"

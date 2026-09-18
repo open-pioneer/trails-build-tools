@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { createConsoleLogger, SILENT_LOGGER } from "@open-pioneer/build-common";
+import { createConsoleLogger, SILENT_LOGGER } from "@open-pioneer/cli-logging";
 import { buildPackage } from "./buildPackage";
 import { createInputModel } from "./model/InputModel";
 import { resolveOptions } from "./model/Options";

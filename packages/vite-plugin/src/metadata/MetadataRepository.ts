@@ -12,11 +12,11 @@ import { createDebugger } from "../utils/debug";
 import { MetadataContext } from "./Context";
 import { loadPackageMetadata } from "./loadPackageMetadata";
 import {
-    AppMetadata,
-    InternalPackageMetadata,
+    AnalyzedApp,
+    AnalyzedPackage,
+    DiscoveredPackage,
     PackageDependency,
-    PackageLocation,
-    PackageMetadata
+    PackageLocation
 } from "./Metadata";
 import { I18nFile, loadI18nFile } from "./parseI18nYaml";
 
@@ -29,7 +29,7 @@ const debug = createDebugger("open-pioneer:metadata");
  * otherwise hot reloading may not be triggered correctly on file changes.
  */
 interface MetadataEntry {
-    metadata: InternalPackageMetadata;
+    metadata: DiscoveredPackage;
     watchFiles: ReadonlySet<string>;
 }
 
@@ -61,7 +61,7 @@ export class MetadataRepository {
     #i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
 
     /**
-     * @param sourceRoot Source folder on disk, needed to detect 'local' packages
+     * @param sourceRoot Source folder on disk, needed to detect source packages
      */
     constructor(sourceRoot: string) {
         this.#sourceRoot = sourceRoot;
@@ -92,7 +92,7 @@ export class MetadataRepository {
      * For packages that use our package extensions (services etc.), metadata will be gathered and
      * will be returned here.
      */
-    async getAppMetadata(ctx: MetadataContext, appDirectory: string): Promise<AppMetadata> {
+    async getAppMetadata(ctx: MetadataContext, appDirectory: string): Promise<AnalyzedApp> {
         isDebug && debug(`Request for app metadata of ${appDirectory}`);
 
         const appPackageMetadata = await this.#getPackageMetadata(ctx, {
@@ -101,7 +101,7 @@ export class MetadataRepository {
         });
         if (!appPackageMetadata) {
             throw new ReportableError(
-                `Failed to parse app metadata in ${appDirectory}. Ensure that the app is a valid local package.`
+                `Failed to parse app metadata in ${appDirectory}. Ensure that the app is a valid source package.`
             );
         }
 
@@ -109,7 +109,7 @@ export class MetadataRepository {
         const appLocales = Array.from(appPackageMetadata.i18nPaths.keys());
 
         // Map to ensure that we don't return duplicates. Key: package name
-        const packageMetadataByName = new Map<string, PackageMetadata>();
+        const packageMetadataByName = new Map<string, AnalyzedPackage>();
         const packageSeenByDirectory = new Set<string>();
         packageMetadataByName.set(appPackageMetadata.name, appPackageMetadata);
         packageSeenByDirectory.add(appPackageMetadata.directory);
@@ -156,7 +156,7 @@ export class MetadataRepository {
         const packages = Array.from(packageMetadataByName.values());
         const runtimeMetadataVersion = detectRuntimeMetadataVersion(packages);
 
-        const appMetadata: AppMetadata = {
+        const appMetadata: AnalyzedApp = {
             name: appPackageMetadata.name,
             directory: appPackageMetadata.directory,
             locales: appLocales,
@@ -174,7 +174,7 @@ export class MetadataRepository {
     async #getPackageMetadata(
         ctx: MetadataContext,
         loc: PackageLocation
-    ): Promise<PackageMetadata | undefined> {
+    ): Promise<AnalyzedPackage | undefined> {
         isDebug && debug(`Request for package metadata of ${formatPackageLocation(loc)}`);
 
         const packageDir = await this.#resolvePackageLocation(loc);
@@ -258,7 +258,7 @@ export class MetadataRepository {
     #createPackageMetadataCache(): PackageMetadataCache {
         const sourceRoot = this.#sourceRoot;
         const provider = {
-            _byName: new Map<string, PackageMetadata>(),
+            _byName: new Map<string, AnalyzedPackage>(),
 
             getId(directory: string) {
                 return normalizePath(directory);
@@ -333,7 +333,7 @@ export class MetadataRepository {
 }
 
 function detectRuntimeMetadataVersion(
-    packages: PackageMetadata[]
+    packages: AnalyzedPackage[]
 ): RuntimeSupport.RuntimeMetadataVersion {
     const runtimePackage = packages.find((p) => p.name === RuntimeSupport.RUNTIME_PACKAGE_NAME);
     if (!runtimePackage) {
@@ -393,7 +393,7 @@ function isBuildConfig(file: string) {
     return basename(file) === BUILD_CONFIG_NAME;
 }
 
-function formatPackage(packageMetadata: PackageMetadata) {
+function formatPackage(packageMetadata: AnalyzedPackage) {
     let str = `${packageMetadata.name}`;
     if (packageMetadata.version != null) {
         str += `@${packageMetadata.version}`;

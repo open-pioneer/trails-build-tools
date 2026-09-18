@@ -76,9 +76,7 @@ export function* walkProjectLocations(
 
     for (let i = 0; i < versions.length; i++) {
         const path = paths[i];
-        // Fix for tests: pnpm does not report a version for `file:`/`link:` dependencies, so fall back
-        // to reading it from the package's own package.json.
-        const version = versions[i] || (path && readVersionFromPackageJson(path));
+        const version = getVersion(versions[i], path);
         if (!version || !path) {
             throw new Error(
                 `Paths or versions contains undefined entry for project ${project.name}), indices of paths must correspond to that of versions.`
@@ -86,6 +84,20 @@ export function* walkProjectLocations(
         }
         yield { path, version };
     }
+}
+
+/**
+ * For `file:` and `link:` dependencies, pnpm reports either no version (pnpm 11) or the
+ * specifier itself (pnpm 12), so the version is read from the package's own package.json.
+ */
+function getVersion(
+    reportedVersion: string | null | undefined,
+    packagePath: string | undefined
+): string | undefined {
+    if (reportedVersion && !/^(file|link):/.test(reportedVersion)) {
+        return reportedVersion;
+    }
+    return packagePath ? readVersionFromPackageJson(packagePath) : undefined;
 }
 
 function readVersionFromPackageJson(packagePath: string): string | undefined {

@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { globSync } from "tinyglobby";
 import { basename } from "path";
+import { globSync } from "tinyglobby";
 import { FileSpec } from "./readProjectConfig";
 
 const LICENSE_FILES = "LICENSE LICENCE COPYING".split(" ");
