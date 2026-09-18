@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/check-pnpm-duplicates
 
+## 0.5.0
+
+### Minor Changes
+
+- e38b2ca: **Breaking:** the tool now requires pnpm 11 or later and aborts with an error for older versions.
+
+    The implementation is now based on `pnpm list` to read the packages in the lockfile instead of parsing it with the `@pnpm/*` packages.
+    This removes all `@pnpm/*` dependencies from this package.
+
 ## 0.4.1
 
 ### Patch Changes
