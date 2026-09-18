@@ -19,7 +19,7 @@ if (process.platform === "win32") {
 export async function helpMessage(): Promise<string> {
     const cli = resolve(PACKAGE_DIR, PATH_TO_DIST);
     const shell = $({ cwd: TEMP_PATH });
-    const processOutputLicense = await shell`node ${cli} --help`;
+    const processOutputLicense = await shell`node ${cli} --help`.quiet();
     return processOutputLicense.toString();
 }
 

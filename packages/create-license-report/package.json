@@ -24,19 +24,17 @@
     "type": "module",
     "scripts": {
         "clean": "rimraf dist temp",
-        "test": "vitest",
         "build": "tsdown",
         "dev": "tsdown --watch"
     },
     "dependencies": {
-        "@open-pioneer/cli-logging": "workspace:^",
+        "@open-pioneer/cli-common": "workspace:^",
+        "chalk": "catalog:",
         "commander": "catalog:",
         "js-yaml": "catalog:",
         "spdx-expression-parse": "catalog:",
         "spdx-satisfies": "catalog:",
-        "tinyglobby": "catalog:",
-        "zod": "catalog:",
-        "zx": "catalog:"
+        "zod": "catalog:"
     },
     "devDependencies": {
         "@types/js-yaml": "catalog:",
@@ -47,6 +45,7 @@
         "tsdown": "catalog:"
     },
     "engines": {
-        "node": ">= 20"
+        "node": ">= 20",
+        "pnpm": ">= 11"
     }
 }

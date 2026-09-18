@@ -2,9 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export interface LicenseItem {
-    /** Unique id */
-    id: string;
-
     /** Project name */
     name: string;
 
@@ -245,12 +242,22 @@ const STYLE = `
 `;
 
 /**
- * Renders the dependency list.
+ * Renders the dependency list from the embedded JSON payload (see {@link ReportPayload}).
  */
 const SCRIPT = `
-    const data = JSON.parse(document.getElementById("license-data").textContent);
+    const { items: data } = JSON.parse(document.getElementById("license-data").textContent);
+
+    // Deterministically derives a muted hue for a license's badge from its name.
+    function licenseHue(license) {
+        let hash = 0;
+        for (let i = 0; i < license.length; i++) {
+            hash = (hash * 31 + license.charCodeAt(i)) >>> 0;
+        }
+        return hash % 360;
+    }
 
     function createDependencyItem(item) {
+        const hue = licenseHue(item.license);
         const li = document.createElement("li");
         li.className = "dependency";
         li.dataset.name = item.name.toLowerCase();
@@ -272,8 +279,8 @@ const SCRIPT = `
 
         const badge = document.createElement("span");
         badge.className = "license-badge";
-        badge.style.background = \`hsl(\${item.hue}, 55%, 92%)\`;
-        badge.style.color = \`hsl(\${item.hue}, 55%, 30%)\`;
+        badge.style.background = \`hsl(\${hue}, 55%, 92%)\`;
+        badge.style.color = \`hsl(\${hue}, 55%, 30%)\`;
         badge.textContent = item.license;
         summary.appendChild(badge);
 
@@ -333,13 +340,10 @@ const SCRIPT = `
     });
 `;
 
-/** Deterministically derives a muted hue for a license's badge from its name. */
-function licenseHue(license: string): number {
-    let hash = 0;
-    for (let i = 0; i < license.length; i++) {
-        hash = (hash * 31 + license.charCodeAt(i)) >>> 0;
-    }
-    return hash % 360;
+/** The data embedded into the page and consumed by its script. */
+interface ReportPayload {
+    projectName: string;
+    items: LicenseItem[];
 }
 
 function escapeHtml(value: string): string {
@@ -352,16 +356,26 @@ function escapeHtml(value: string): string {
 }
 
 /**
- * Generates a license report from a static template; `projectName` and `licenseItems` are embedded as JSON payload
+ * Serializes `value` for a `<script type="application/json">` element.
+ * HTML entities are not decoded inside script elements, so the characters that could end the element
+ * (`</script>`) or start a comment (`<!--`) are written as JSON escape sequences instead.
+ */
+function embedJson(value: unknown): string {
+    return JSON.stringify(value)
+        .replace(/</g, "\\u003c")
+        .replace(/>/g, "\\u003e")
+        .replace(/&/g, "\\u0026")
+        .replace(/\u2028/g, "\\u2028")
+        .replace(/\u2029/g, "\\u2029");
+}
+
+/**
+ * Renders the license report as a self-contained HTML page.
+ * The items are embedded as a JSON payload and rendered by the page's script.
  */
 export function generateReportHtml(projectName: string, licenseItems: LicenseItem[]): string {
     const licenseCount = new Set(licenseItems.map((item) => item.license)).size;
-    const payload = licenseItems.map((item) => ({
-        ...item,
-        hue: licenseHue(item.license)
-    }));
-    // Escape "<" so a literal "</script>" inside the JSON payload can't close the tag early.
-    const json = JSON.stringify(payload).replace(/</g, "\\u003c");
+    const payload: ReportPayload = { projectName, items: licenseItems };
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -393,7 +407,7 @@ export function generateReportHtml(projectName: string, licenseItems: LicenseIte
 <ul class="dependencies" id="dependency-list"></ul>
 <p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p>
 </main>
-<script id="license-data" type="application/json">${json}</script>
+<script id="license-data" type="application/json">${embedJson(payload)}</script>
 <script>${SCRIPT}</script>
 </body>
 </html>

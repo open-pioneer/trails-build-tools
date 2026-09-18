@@ -1,22 +1,41 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFileSync } from "fs";
-import { resolve } from "path";
-import { createConsoleLogger, getChalk, Logger, SILENT_LOGGER } from "@open-pioneer/cli-logging";
-import spdxExpressionParse from "spdx-expression-parse";
-import spdxSatisfies from "spdx-satisfies";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import type { Logger } from "@open-pioneer/cli-common";
+import { checkLicense, LicenseCheckResult } from "./checkLicense";
 import { findFirstLicenseFile, findFirstNoticeFile } from "./findLicenseFiles";
 import { PnpmLicenseProject, walkProjectLocations } from "./pnpmLicenseReport";
-import { FileSpec, ReadProjectConfig, OverrideLicenseEntry } from "./readProjectConfig";
+import { FileSpec, LicenseConfig, OverrideLicenseEntry } from "./readLicenseConfig";
 import { LicenseItem } from "./reportTemplate";
 
+export interface VerifyLicensesOptions {
+    /** Dependencies reported by pnpm. */
+    projects: PnpmLicenseProject[];
+
+    config: LicenseConfig;
+
+    /** Directory of the config file, used to resolve custom license files. */
+    configDirectory: string;
+
+    logger: Logger;
+}
+
+export interface VerifyLicensesResult {
+    /** False if at least one dependency has a missing or disallowed license, or no license text. */
+    ok: boolean;
+
+    /** Report entries for all dependencies, sorted by name and version. */
+    items: LicenseItem[];
+}
+
+/** A dependency after the config was applied, before its license files are read. */
 interface DependencyEntry {
-    id: string;
     name: string;
     version: string | undefined;
     license: string | undefined;
-    /** Disk path of the package on disk; used to auto-detect license/notice files */
+    /** Disk path of the package; used to auto-detect license/notice files */
     packagePath: string | undefined;
     /** Explicit license files; if undefined and packagePath is set, files are auto-detected */
     licenseFiles: FileSpec[] | undefined;
@@ -25,31 +44,58 @@ interface DependencyEntry {
 }
 
 /**
- * Iterates over the results of the given license report.
- * For valid projects, we read the license (and optionally notice) files and build {@link LicenseItem} objects.
- *
- * When an invalid project (e.g. missing license) is encountered, we report an error and return `error: true`.
- *
- * The `config` argument supports local overrides and additional licenses not detected by pnpm.
- * `configDirectory` is the directory of the configuration file, used to resolve custom license files.
+ * Checks the license of every dependency against the config and reads the license (and notice) texts
+ * for the report.
+ * Problems are logged as warnings and reported through `ok: false`, the affected dependency is still
+ * part of the result.
  */
-export async function verifyLicenses(
-    projects: PnpmLicenseProject[],
-    config: ReadProjectConfig,
-    configDirectory: string,
-    log: boolean
-): Promise<{
-    error: boolean;
-    items: LicenseItem[];
-}> {
-    const logger = log ? await createConsoleLogger(console) : SILENT_LOGGER;
-    const chalk = await getChalk();
+export function verifyLicenses(options: VerifyLicensesOptions): VerifyLicensesResult {
+    const { config, configDirectory, logger } = options;
+    const entries = collectEntries(options);
 
-    let hasError = false;
+    let ok = true;
+    const items: LicenseItem[] = [];
+    for (const entry of entries) {
+        const dependencyInfo = formatDependency(entry);
+
+        const result = checkLicense(entry.license, config.allowedLicenses);
+        if (result !== "allowed") {
+            ok = false;
+            logger.warn(getLicenseErrorMessage(result, entry, dependencyInfo));
+        }
+
+        const { licenseText, noticeText } = readLicenseTexts(entry, configDirectory);
+        if (!licenseText) {
+            ok = false;
+            logger.warn(
+                `Failed to detect license text of dependency ${dependencyInfo}${entry.packagePath ? ` in ${entry.packagePath}` : ""}`
+            );
+        }
+
+        items.push({
+            name: entry.name,
+            version: entry.version,
+            license: entry.license ?? "Unknown",
+            licenseText,
+            noticeText
+        });
+    }
+
+    items.sort(
+        (a, b) => a.name.localeCompare(b.name) || (a.version ?? "").localeCompare(b.version ?? "")
+    );
+    return { ok, items };
+}
+
+/**
+ * Combines the pnpm report with the config:
+ * `overrideLicenses` replaces what pnpm detected for a dependency,
+ * `additionalLicenses` adds entries pnpm does not know about.
+ * Overrides that match no dependency are reported as warnings.
+ */
+function collectEntries({ projects, config, logger }: VerifyLicensesOptions): DependencyEntry[] {
     const usedOverrides = new Set<OverrideLicenseEntry>();
-
-    // set overrides from own config
-    const getOverrideEntry = (name: string, version: string) => {
+    const findOverride = (name: string, version: string) => {
         const entry = config.overrideLicenses?.find(
             (e) => e.name === name && e.version === version
         );
@@ -60,28 +106,21 @@ export async function verifyLicenses(
     };
 
     const entries: DependencyEntry[] = [];
-    let index = 0;
-
-    // check every output from pnpm and save entry
     for (const project of projects) {
         for (const { path, version } of walkProjectLocations(project)) {
-            const overrideEntry = getOverrideEntry(project.name, version);
+            const override = findOverride(project.name, version);
             entries.push({
-                id: `dep-${index++}`,
                 name: project.name,
                 version,
-                license: overrideEntry?.license ?? project.license,
+                license: override?.license ?? project.license,
                 packagePath: path,
-                licenseFiles: overrideEntry?.licenseFiles,
-                noticeFiles: overrideEntry?.noticeFiles
+                licenseFiles: override?.licenseFiles,
+                noticeFiles: override?.noticeFiles
             });
         }
     }
-
-    // add additional licenses from own config
     for (const additional of config.additionalLicenses ?? []) {
         entries.push({
-            id: `dep-${index++}`,
             name: additional.name,
             version: additional.version,
             license: additional.license,
@@ -91,106 +130,27 @@ export async function verifyLicenses(
         });
     }
 
-    const context: ProcessEntryContext = { config, configDirectory, logger, chalk };
-    const items: LicenseItem[] = [];
-    for (const entry of entries) {
-        const result = processEntry(entry, context);
-        if (result.hasError) hasError = true;
-        items.push(result.item);
-    }
-
-    // check if overrides are not used anymore
-    if (config.overrideLicenses) {
-        for (const overrideEntry of config.overrideLicenses) {
-            if (!usedOverrides.has(overrideEntry)) {
-                logger.warn(
-                    chalk.yellow(
-                        `License override for dependency '${overrideEntry.name}' (version(s): ${overrideEntry.version}) was not used, it should either be updated or removed.`
-                    )
-                );
-            }
+    for (const override of config.overrideLicenses ?? []) {
+        if (!usedOverrides.has(override)) {
+            logger.warn(
+                `License override for dependency '${override.name}' (version: ${override.version}) was not used, it should either be updated or removed.`
+            );
         }
     }
-
-    items.sort((a, b) => a.name.localeCompare(b.name));
-    return { error: hasError, items };
+    return entries;
 }
 
 /**
- * If `license` is not a valid SPDX expression (e.g. `"UNLICENSED"`),
- * falls back to an exact string match.
+ * Reads the configured license and notice files of the entry.
+ * Without configured files, the package directory is searched for well known file names.
  */
-function isLicenseAllowed(license: string, allowedLicenses: string[]): boolean {
-    try {
-        return spdxSatisfies(license, allowedLicenses);
-    } catch {
-        return allowedLicenses.includes(license);
-    }
-}
-
-function isOrExpression(license: string): boolean {
-    try {
-        return containsOrConjunction(spdxExpressionParse(license));
-    } catch {
-        return false;
-    }
-}
-
-function containsOrConjunction(info: ReturnType<typeof spdxExpressionParse>): boolean {
-    if (!("conjunction" in info)) {
-        return false;
-    }
-    return (
-        info.conjunction === "or" ||
-        containsOrConjunction(info.left) ||
-        containsOrConjunction(info.right)
-    );
-}
-
-interface ProcessEntryContext {
-    config: ReadProjectConfig;
-    configDirectory: string;
-    logger: Logger;
-    chalk: Awaited<ReturnType<typeof getChalk>>;
-}
-
-function processEntry(
+function readLicenseTexts(
     entry: DependencyEntry,
-    { config, configDirectory, logger, chalk }: ProcessEntryContext
-): { item: LicenseItem; hasError: boolean } {
-    const dependencyInfo = `'${entry.name}'${entry.version ? ` (version: ${entry.version})` : ""}`;
-    let hasError = false;
-
-    const license = entry.license;
-    if (!license || license === "Unknown") {
-        hasError = true;
-        logger.warn(
-            chalk.yellow(
-                `Failed to detect licenses of dependency ${dependencyInfo}${entry.packagePath ? ` at ${entry.packagePath}` : ""}`
-            )
-        );
-    } else if (isOrExpression(license) && !config.allowedLicenses.includes(license)) {
-        hasError = true;
-        // "OR" expressions are ambiguous, they leave the actual license choice open
-        logger.warn(
-            chalk.yellow(
-                `License '${license}' of dependency ${dependencyInfo} combines multiple licenses with 'OR'. ` +
-                    `Please decide for one of the licenses, either by adding an override for this dependency ` +
-                    `to overrideLicenses, or by adding '${license}' to allowedLicenses.`
-            )
-        );
-    } else if (!isLicenseAllowed(license, config.allowedLicenses)) {
-        hasError = true;
-        logger.warn(
-            chalk.yellow(
-                `License '${license}' of dependency ${dependencyInfo} is not allowed by configuration.`
-            )
-        );
-    }
-
-    const resolvedLicenseFiles =
+    configDirectory: string
+): { licenseText: string; noticeText: string } {
+    const licenseFiles =
         entry.licenseFiles ?? (entry.packagePath ? findFirstLicenseFile(entry.packagePath) : []);
-    const resolvedNoticeFiles =
+    const noticeFiles =
         entry.noticeFiles ?? (entry.packagePath ? findFirstNoticeFile(entry.packagePath) : []);
 
     const readFile = (file: FileSpec): string => {
@@ -200,32 +160,36 @@ function processEntry(
             return readFileSync(filePath, "utf-8");
         } catch (e) {
             throw new Error(
-                `Failed to read license file for project ${dependencyInfo} at ${filePath}: ${e}`,
+                `Failed to read license file for project ${formatDependency(entry)} at ${filePath}: ${e}`,
                 { cause: e }
             );
         }
     };
-
-    const licenseTexts = resolvedLicenseFiles.map(readFile);
-    if (licenseTexts.length === 0) {
-        hasError = true;
-        logger.warn(
-            chalk.yellow(
-                `Failed to detect license text of dependency ${dependencyInfo}${entry.packagePath ? ` in ${entry.packagePath}` : ""}`
-            )
-        );
-    }
-
-    const noticeTexts = resolvedNoticeFiles.map(readFile);
-
-    const item: LicenseItem = {
-        id: `${entry.id}-${entry.version ?? entry.name}`,
-        name: entry.name,
-        version: entry.version,
-        license: license ?? "Unknown",
-        licenseText: licenseTexts.join("\n\n"),
-        noticeText: noticeTexts.join("\n\n")
+    return {
+        licenseText: licenseFiles.map(readFile).join("\n\n"),
+        noticeText: noticeFiles.map(readFile).join("\n\n")
     };
+}
 
-    return { item, hasError };
+function getLicenseErrorMessage(
+    result: Exclude<LicenseCheckResult, "allowed">,
+    entry: DependencyEntry,
+    dependencyInfo: string
+): string {
+    switch (result) {
+        case "unknown":
+            return `Failed to detect licenses of dependency ${dependencyInfo}${entry.packagePath ? ` at ${entry.packagePath}` : ""}`;
+        case "ambiguous":
+            return (
+                `License '${entry.license}' of dependency ${dependencyInfo} combines multiple licenses with 'OR'. ` +
+                `Please decide for one of the licenses, either by adding an override for this dependency ` +
+                `to overrideLicenses, or by adding '${entry.license}' to allowedLicenses.`
+            );
+        case "not-allowed":
+            return `License '${entry.license}' of dependency ${dependencyInfo} is not allowed by configuration.`;
+    }
+}
+
+function formatDependency(entry: DependencyEntry): string {
+    return `'${entry.name}'${entry.version ? ` (version: ${entry.version})` : ""}`;
 }

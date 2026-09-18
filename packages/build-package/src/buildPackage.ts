@@ -3,7 +3,7 @@
 
 import { mkdir, rm, writeFile } from "fs/promises";
 import { resolve } from "path";
-import { getChalk, type Logger } from "@open-pioneer/cli-logging";
+import { getChalk, type Logger } from "@open-pioneer/cli-common";
 import { buildCss } from "./buildCss";
 import { buildDts } from "./buildDts";
 import { buildJs } from "./buildJs";

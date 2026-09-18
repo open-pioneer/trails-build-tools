@@ -249,11 +249,21 @@
 <ul class="dependencies" id="dependency-list"></ul>
 <p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p>
 </main>
-<script id="license-data" type="application/json">[{"id":"dep-0-0.0.1","name":"package-a","version":"0.0.1","license":"MIT","licenseText":"The MIT License (MIT)\nTEST\n","noticeText":"","hue":24}]</script>
+<script id="license-data" type="application/json">{"projectName":"simple-project","items":[{"name":"package-a","version":"0.0.1","license":"MIT","licenseText":"The MIT License (MIT)\nTEST\n","noticeText":""}]}</script>
 <script>
-    const data = JSON.parse(document.getElementById("license-data").textContent);
+    const { items: data } = JSON.parse(document.getElementById("license-data").textContent);
+
+    // Deterministically derives a muted hue for a license's badge from its name.
+    function licenseHue(license) {
+        let hash = 0;
+        for (let i = 0; i < license.length; i++) {
+            hash = (hash * 31 + license.charCodeAt(i)) >>> 0;
+        }
+        return hash % 360;
+    }
 
     function createDependencyItem(item) {
+        const hue = licenseHue(item.license);
         const li = document.createElement("li");
         li.className = "dependency";
         li.dataset.name = item.name.toLowerCase();
@@ -275,8 +285,8 @@
 
         const badge = document.createElement("span");
         badge.className = "license-badge";
-        badge.style.background = `hsl(${item.hue}, 55%, 92%)`;
-        badge.style.color = `hsl(${item.hue}, 55%, 30%)`;
+        badge.style.background = `hsl(${hue}, 55%, 92%)`;
+        badge.style.color = `hsl(${hue}, 55%, 30%)`;
         badge.textContent = item.license;
         summary.appendChild(badge);
 

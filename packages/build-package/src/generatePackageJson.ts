@@ -9,7 +9,7 @@ import {
     UiReference,
     PackageMetadataV1 as V1
 } from "@open-pioneer/build-common";
-import type { Logger } from "@open-pioneer/cli-logging";
+import type { Logger } from "@open-pioneer/cli-common";
 import { ResolvedValidationOptions } from "./model/Options";
 import { PackageModel } from "./model/PackageModel";
 import { getExportedName } from "./utils/entryPoints";

@@ -3,7 +3,7 @@
 
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type { Logger } from "@open-pioneer/cli-logging";
+import type { Logger } from "@open-pioneer/cli-common";
 import { glob } from "tinyglobby";
 import type * as Ts from "typescript";
 import { SUPPORTED_TS_EXTENSIONS } from "./model/PackageModel";

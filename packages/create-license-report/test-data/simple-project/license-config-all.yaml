@@ -13,6 +13,6 @@ overrideLicenses:
 
 additionalLicenses:
   - name: "package-c"
-    license: "MIT"
+    license: "Apache-2.0"
     licenseFiles:
       - custom: "./licenses/package-c"

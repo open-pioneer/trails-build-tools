@@ -1,21 +1,19 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { load as loadYaml } from "js-yaml";
 import { z } from "zod";
 
-export interface ReadProjectConfig {
+export interface LicenseConfig {
+    /** SPDX license ids (or verbatim license expressions) that dependencies may use. */
     allowedLicenses: string[];
 
-    /**
-     * Skip dev dependencies when creating the report.
-     * Defaults to `true` when not set in the config file (backwards compatible).
-     */
+    /** Skip dev dependencies when creating the report. Defaults to `true`. */
     skipDevDependencies: boolean;
 
-    overrideLicenses: OverrideLicenseEntry[] | undefined;
-    additionalLicenses: AdditionalLicensesEntry[] | undefined;
+    overrideLicenses?: OverrideLicenseEntry[];
+    additionalLicenses?: AdditionalLicensesEntry[];
 }
 
 export interface OverrideLicenseEntry {
@@ -58,7 +56,28 @@ export interface FileSpec {
     path: string;
 }
 
-function nullish<T extends z.ZodTypeAny>(schema: T) {
+/**
+ * Reads the license config yaml file.
+ */
+export function readLicenseConfig(path: string): LicenseConfig {
+    try {
+        const content = readFileSync(path, "utf-8");
+        const rawConfig = loadYaml(content);
+        const result = LicenseConfigSchema.safeParse(rawConfig);
+        if (!result.success) {
+            const messages = result.error.issues
+                .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
+                .join("\n");
+            throw new Error(`Invalid license config:\n${messages}`);
+        }
+        return result.data;
+    } catch (e) {
+        throw new Error(`Failed to read license config from ${path}: ${e}`, { cause: e });
+    }
+}
+
+// YAML keys without a value (e.g. an empty `overrideLicenses:`) are parsed as null.
+function nullish<T extends z.ZodType>(schema: T) {
     return z.preprocess((v) => (v === null ? undefined : v), schema);
 }
 
@@ -80,6 +99,7 @@ const OverrideLicenseEntrySchema = z.object({
 
 const AdditionalLicensesEntrySchema = z.object({
     name: z.string(),
+    // TODO: Check this, I think it needs to be required.
     version: z.string().optional(),
     license: z.string(),
     licenseFiles: z
@@ -93,23 +113,3 @@ const LicenseConfigSchema = z.object({
     overrideLicenses: nullish(z.array(OverrideLicenseEntrySchema).optional()),
     additionalLicenses: nullish(z.array(AdditionalLicensesEntrySchema).optional())
 });
-
-/**
- * Reads the license config yaml file.
- */
-export function readLicenseConfig(path: string): ReadProjectConfig {
-    try {
-        const content = readFileSync(path, "utf-8");
-        const rawConfig = loadYaml(content);
-        const result = LicenseConfigSchema.safeParse(rawConfig);
-        if (!result.success) {
-            const messages = result.error.issues
-                .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
-                .join("\n");
-            throw new Error(`Invalid license config:\n${messages}`);
-        }
-        return result.data as ReadProjectConfig;
-    } catch (e) {
-        throw new Error(`Failed to read license config from ${path}: ${e}`, { cause: e });
-    }
-}

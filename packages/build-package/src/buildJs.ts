@@ -4,7 +4,7 @@
 import nativePath, { posix } from "node:path";
 import { cwd } from "node:process";
 import { PackageMetadataV1 } from "@open-pioneer/build-common";
-import type { Logger } from "@open-pioneer/cli-logging";
+import type { Logger } from "@open-pioneer/cli-common";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import { normalizePath } from "@rollup/pluginutils";
 import { LogLevel, RollupLog, rollup } from "rollup";

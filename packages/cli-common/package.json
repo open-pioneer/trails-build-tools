@@ -1,7 +1,7 @@
 {
-    "name": "@open-pioneer/cli-logging",
+    "name": "@open-pioneer/cli-common",
     "version": "0.0.1",
-    "description": "Logging utilities for Open Pioneer Trails CLI tools.",
+    "description": "Shared helpers for Open Pioneer Trails CLI tools.",
     "keywords": [
         "open-pioneer-trails"
     ],
@@ -10,7 +10,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/open-pioneer/trails-build-tools.git",
-        "directory": "packages/cli-logging"
+        "directory": "packages/cli-common"
     },
     "files": [
         "dist",
@@ -24,7 +24,7 @@
         "./package.json": "./package.json"
     },
     "scripts": {
-        "clean": "rimraf dist",
+        "clean": "rimraf dist temp",
         "build": "tsdown",
         "dev": "tsdown --watch"
     },

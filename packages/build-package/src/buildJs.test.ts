@@ -4,7 +4,7 @@
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { PackageMetadataV1, RuntimeSupport } from "@open-pioneer/build-common";
-import { createMemoryLogger } from "@open-pioneer/cli-logging";
+import { createMemoryLogger } from "@open-pioneer/cli-common";
 import { glob } from "tinyglobby";
 import { expect, it, onTestFailed } from "vitest";
 import { BuildJsOptions, buildJs } from "./buildJs";

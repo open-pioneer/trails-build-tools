@@ -5,7 +5,7 @@ import { existsSync } from "fs";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { extname, default as nativePath, default as path, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "url";
-import type { Logger } from "@open-pioneer/cli-logging";
+import type { Logger } from "@open-pioneer/cli-common";
 import { normalizePath } from "@rollup/pluginutils";
 import type * as PostCss from "postcss";
 import type * as Sass from "sass";

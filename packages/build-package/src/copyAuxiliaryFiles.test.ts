@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { resolve } from "node:path";
-import { createMemoryLogger } from "@open-pioneer/cli-logging";
+import { createMemoryLogger } from "@open-pioneer/cli-common";
 import { describe, expect, it } from "vitest";
 import { CopyAuxiliaryFilesOptions, copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { cleanDir, readText } from "./testing/io";

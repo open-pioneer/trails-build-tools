@@ -2,27 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { resolve } from "node:path";
-import { afterEach, expect, it, onTestFailed, vi } from "vitest";
+import { createMemoryLogger } from "@open-pioneer/cli-common";
+import { expect, it } from "vitest";
 import { PnpmLicenseProject } from "./pnpmLicenseReport";
-import { readLicenseConfig } from "./readProjectConfig";
+import { LicenseConfig, readLicenseConfig } from "./readLicenseConfig";
 import { PROJECT_DIR } from "./testing/paths";
 import { verifyLicenses } from "./verifyLicenses";
 
-afterEach(() => {
-    vi.restoreAllMocks();
-});
-
-it("expect to analyze the dependencies", async () => {
-    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const projects = mockPnpmProjects();
-    const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
-    onTestFailed(() => console.log(analyzedLicenses.items));
-    expect(analyzedLicenses.error).toBe(false);
-    expect(analyzedLicenses.items).toMatchInlineSnapshot(`
+it("reads the license text of an allowed dependency", () => {
+    const { result } = verify(readConfig("license-config.yaml"), mockPnpmProjects());
+    expect(result.ok).toBe(true);
+    expect(result.items).toMatchInlineSnapshot(`
       [
         {
-          "id": "dep-0-0.0.1",
           "license": "MIT",
           "licenseText": "The MIT License (MIT)
       TEST
@@ -35,114 +27,89 @@ it("expect to analyze the dependencies", async () => {
     `);
 });
 
-it("expect to find unallowed licenses", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+it("reports a license that is not allowed", () => {
+    const { result, warnings } = verify(
+        readConfig("license-config-missing.yaml"),
+        mockPnpmProjects()
+    );
+    expect(result.ok).toBe(false);
+    expect(warnings).toContain(
+        "License 'MIT' of dependency 'package-a' (version: 0.0.1) is not allowed by configuration."
+    );
+});
 
-    const configPath = resolve(PROJECT_DIR, "license-config-missing.yaml");
+it("reports an ambiguous OR expression with instructions", () => {
+    const { result, warnings } = verify(
+        readConfig("license-config.yaml"),
+        mockPnpmProjects("(GPL-3.0-only OR MIT)")
+    );
+    expect(result.ok).toBe(false);
+    expect(warnings[0]).toContain(
+        "License '(GPL-3.0-only OR MIT)' of dependency 'package-a' (version: 0.0.1) combines multiple licenses with 'OR'."
+    );
+});
+
+it("uses the license from overrideLicenses instead of the detected one", () => {
+    const licenseConfig = readConfig("license-config.yaml");
+    licenseConfig.overrideLicenses = [{ name: "package-a", version: "0.0.1", license: "MIT" }];
+    const { result } = verify(licenseConfig, mockPnpmProjects("(GPL-3.0-only OR ISC)"));
+    expect(result.ok).toBe(true);
+    expect(result.items[0]?.license).toBe("MIT");
+});
+
+it("warns about overrides that did not match any dependency", () => {
+    const licenseConfig = readConfig("license-config.yaml");
+    licenseConfig.overrideLicenses = [{ name: "package-a", version: "9.9.9", license: "MIT" }];
+    const { result, warnings } = verify(licenseConfig, mockPnpmProjects());
+    expect(result.ok).toBe(true);
+    expect(warnings).toContain(
+        "License override for dependency 'package-a' (version: 9.9.9) was not used, it should either be updated or removed."
+    );
+});
+
+it("adds additionalLicenses with their custom license files", () => {
+    const { result } = verify(readConfig("license-config-all.yaml"), mockPnpmProjects());
+    expect(result.ok).toBe(true);
+    expect(result.items.map((item) => item.name)).toEqual(["package-a", "package-c"]);
+    expect(result.items[1]?.licenseText).toContain("Apache-2.0 License");
+});
+
+it("reports a dependency without a license text", () => {
     const projects = mockPnpmProjects();
-    const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
-
-    expect(analyzedLicenses.error).toBe(true);
-
-    expect(warnSpy).toHaveBeenCalled();
-    onTestFailed(() => console.log(warnSpy.mock.calls));
-    expect(
-        warnSpy.mock.calls
-            .flat()
-            .some((arg) =>
-                String(arg).includes(
-                    "License 'MIT' of dependency 'package-a' (version: 0.0.1) is not allowed by configuration."
-                )
-            )
-    ).toBe(true);
+    projects[0]!.paths = [resolve(PROJECT_DIR, "licenses")];
+    const { result, warnings } = verify(readConfig("license-config.yaml"), projects);
+    expect(result.ok).toBe(false);
+    expect(warnings[0]).toContain("Failed to detect license text of dependency 'package-a'");
 });
 
-it("expect AND license expression to require every sub-license to be allowed", async () => {
-    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const projects = mockPnpmProjects("MIT AND Apache-2.0");
-    const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
-    onTestFailed(() => console.log(analyzedLicenses.items));
-    expect(analyzedLicenses.error).toBe(false);
-    expect(analyzedLicenses.items[0]?.license).toBe("MIT AND Apache-2.0");
-});
+function readConfig(fileName: string): LicenseConfig {
+    return readLicenseConfig(resolve(PROJECT_DIR, fileName));
+}
 
-it("expect AND license expression to fail if one sub-license is not allowed", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const projects = mockPnpmProjects("MIT AND GPL-3.0-only");
-    const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
-
-    expect(analyzedLicenses.error).toBe(true);
-    onTestFailed(() => console.log(warnSpy.mock.calls));
-    expect(
-        warnSpy.mock.calls
-            .flat()
-            .some((arg) =>
-                String(arg).includes(
-                    "License 'MIT AND GPL-3.0-only' of dependency 'package-a' (version: 0.0.1) is not allowed by configuration."
-                )
-            )
-    ).toBe(true);
-});
-
-it("expect OR license expression to fail even if one alternative is allowed", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const projects = mockPnpmProjects("(GPL-3.0-only OR MIT)");
-    const config = readLicenseConfig(configPath);
-    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
-
-    expect(analyzedLicenses.error).toBe(true);
-    onTestFailed(() => console.log(warnSpy.mock.calls));
-    expect(
-        warnSpy.mock.calls
-            .flat()
-            .some((arg) =>
-                String(arg).includes(
-                    "License '(GPL-3.0-only OR MIT)' of dependency 'package-a' (version: 0.0.1) combines multiple licenses with 'OR'."
-                )
-            )
-    ).toBe(true);
-});
-
-it("expect OR license expression to pass if added verbatim to allowedLicenses", async () => {
-    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const projects = mockPnpmProjects("(GPL-3.0-only OR MIT)");
-    const config = readLicenseConfig(configPath);
-    config.allowedLicenses.push("(GPL-3.0-only OR MIT)");
-    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
-    onTestFailed(() => console.log(analyzedLicenses.items));
-    expect(analyzedLicenses.error).toBe(false);
-    expect(analyzedLicenses.items[0]?.license).toBe("(GPL-3.0-only OR MIT)");
-});
-
-it("expect overrideLicenses to bypass expression evaluation entirely", async () => {
-    const configPath = resolve(PROJECT_DIR, "license-config.yaml");
-    const projects = mockPnpmProjects("(GPL-3.0-only OR ISC)");
-    const config = readLicenseConfig(configPath);
-    config.overrideLicenses = [{ name: "package-a", version: "0.0.1", license: "MIT" }];
-    const analyzedLicenses = await verifyLicenses(projects, config, PROJECT_DIR, true);
-
-    onTestFailed(() => console.log(analyzedLicenses.items));
-    expect(analyzedLicenses.error).toBe(false);
-    expect(analyzedLicenses.items[0]?.license).toBe("MIT");
-});
+function verify(licenseConfig: LicenseConfig, projects: PnpmLicenseProject[]) {
+    const logger = createMemoryLogger();
+    const result = verifyLicenses({
+        projects,
+        config: licenseConfig,
+        configDirectory: PROJECT_DIR,
+        logger
+    });
+    const warnings = logger.messages
+        .filter((message) => message.type === "warn")
+        .map((message) => message.args.join(" "));
+    return { result, warnings };
+}
 
 function mockPnpmProjects(license: string = "MIT"): PnpmLicenseProject[] {
-    const licensePath = resolve(
+    const packagePath = resolve(
         PROJECT_DIR,
-        `node_modules/.pnpm/package-a@0.0.1/node_modules/package-a`
+        "node_modules/.pnpm/package-a@0.0.1/node_modules/package-a"
     );
     return [
         {
             name: "package-a",
             versions: ["0.0.1"],
-            paths: [licensePath],
+            paths: [packagePath],
             license
         }
     ];

@@ -1,17 +1,20 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { basename } from "path";
-import { globSync } from "tinyglobby";
-import { FileSpec } from "./readProjectConfig";
+import { readdirSync } from "node:fs";
+import { parse } from "node:path";
+import { FileSpec } from "./readLicenseConfig";
 
-const LICENSE_FILES = "LICENSE LICENCE COPYING".split(" ");
-const NOTICE_FILES = "NOTICE".split(" ");
+const LICENSE_FILES = ["license", "licence", "copying"];
+const NOTICE_FILES = ["notice"];
+
+// Extensions a license text may have when its file name is not just "LICENSE" (e.g. "LICENSE-MIT.txt").
+const TEXT_EXTENSIONS = new Set(["", ".md", ".txt", ".markdown"]);
 
 /**
- * Attempts to find license files in the given directory.
- * Returns the first file matching one of the file patterns above,
- * without checking the content.
+ * Attempts to find the license file in the given directory.
+ * Returns the first file whose name matches one of the well known license file names,
+ * without checking its content.
  *
  * The license output must be checked manually!
  */
@@ -20,30 +23,49 @@ export function findFirstLicenseFile(directory: string): FileSpec[] {
 }
 
 /**
- * Like findLicenseFiles(), but for copyright NOTICE files.
+ * Like {@link findFirstLicenseFile}, but for copyright NOTICE files.
  */
 export function findFirstNoticeFile(directory: string): FileSpec[] {
     return toPackageFiles(findFirstMatch(directory, NOTICE_FILES));
 }
 
-function toPackageFiles(files: string[]): FileSpec[] {
-    return files.map((file) => ({
-        type: "package",
-        path: file
-    }));
+function toPackageFiles(file: string | undefined): FileSpec[] {
+    return file ? [{ type: "package", path: file }] : [];
 }
 
-function findFirstMatch(directory: string, candidates: string[]): string[] {
-    const allFiles = globSync("*", {
-        followSymbolicLinks: false,
-        cwd: directory
-    });
+/**
+ * A file named exactly like a candidate (ignoring case and extension, e.g. `LICENSE.md` or `LICENSE.BSD`) wins.
+ * Otherwise a text file that carries the candidate as a word, such as `LICENSE-MIT.txt`, is accepted.
+ * Files like `license-config.yaml` or `licenses.json` match neither rule.
+ */
+function findFirstMatch(directory: string, candidates: string[]): string | undefined {
+    const files = readdirSync(directory, { withFileTypes: true })
+        .filter((entry) => entry.isFile())
+        .map((entry) => entry.name)
+        .sort();
 
-    for (const candidateName of candidates) {
-        const match = allFiles.find((matchPath) =>
-            basename(matchPath).toLowerCase().includes(candidateName.toLowerCase())
-        );
-        if (match) return [match];
+    for (const candidate of candidates) {
+        const exact = files.find((file) => stem(file) === candidate);
+        if (exact) {
+            return exact;
+        }
     }
-    return [];
+    for (const candidate of candidates) {
+        const partial = files.find((file) => {
+            const path = parse(file);
+            const extension = path.ext.toLowerCase();
+            return (
+                TEXT_EXTENSIONS.has(extension) &&
+                path.name.toLowerCase().split(/[-_]/).includes(candidate)
+            );
+        });
+        if (partial) {
+            return partial;
+        }
+    }
+    return undefined;
+}
+
+function stem(file: string): string {
+    return parse(file).name.toLowerCase();
 }

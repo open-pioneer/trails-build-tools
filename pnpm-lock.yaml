@@ -559,9 +559,9 @@ importers:
       '@open-pioneer/build-support':
         specifier: workspace:^
         version: link:../build-support
-      '@open-pioneer/cli-logging':
+      '@open-pioneer/cli-common':
         specifier: workspace:^
-        version: link:../cli-logging
+        version: link:../cli-common
       '@rollup/plugin-node-resolve':
         specifier: 'catalog:'
         version: 16.0.3(rollup@4.63.1)
@@ -684,6 +684,9 @@ importers:
 
   packages/check-pnpm-duplicates:
     dependencies:
+      '@open-pioneer/cli-common':
+        specifier: workspace:^
+        version: link:../cli-common
       chalk:
         specifier: 'catalog:'
         version: 6.0.0
@@ -704,7 +707,7 @@ importers:
         specifier: 'catalog:'
         version: 0.23.0(oxc-resolver@11.24.2)(publint@0.3.24)(typescript@6.0.3)
 
-  packages/cli-logging:
+  packages/cli-common:
     dependencies:
       chalk:
         specifier: 'catalog:'
@@ -722,9 +725,12 @@ importers:
 
   packages/create-license-report:
     dependencies:
-      '@open-pioneer/cli-logging':
+      '@open-pioneer/cli-common':
         specifier: workspace:^
-        version: link:../cli-logging
+        version: link:../cli-common
+      chalk:
+        specifier: 'catalog:'
+        version: 6.0.0
       commander:
         specifier: 'catalog:'
         version: 15.0.0
@@ -737,15 +743,9 @@ importers:
       spdx-satisfies:
         specifier: 'catalog:'
         version: 6.0.0
-      tinyglobby:
-        specifier: 'catalog:'
-        version: 0.2.17
       zod:
         specifier: 'catalog:'
         version: 4.6.2
-      zx:
-        specifier: 'catalog:'
-        version: 8.8.5
     devDependencies:
       '@types/js-yaml':
         specifier: 'catalog:'

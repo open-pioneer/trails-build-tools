@@ -26,7 +26,7 @@ packages/
   check-pnpm-duplicates/    # `check-pnpm-duplicates` command: finds duplicate packages via `pnpm list --json`
   create-license-report/    # `create-license-report` command: HTML license report from `pnpm licenses list`, checked
                             # against an allow list in license-config.yaml
-  cli-logging/              # Logger interface plus console, memory and silent loggers, used by build-package and the CLIs
+  cli-common/               # Logger interface plus console, memory and silent loggers, used by build-package and the CLIs
   pnpm-plugin-defaults/     # pnpm config dependency (single CommonJS pnpmfile.cjs) that sets our default pnpm options
   changesets-release-line/  # Changelog formatter for @changesets/cli that omits internal dependency bumps
 
@@ -93,7 +93,8 @@ The CLIs print the chain, and the plugin reports anything else as an internal er
 - **Lint**: `pnpm exec oxlint packages/path/to/file-or-folder`
 - **Auto-format**: `pnpm exec oxfmt packages/path/to/file-or-folder`
 - **Typecheck**: `pnpm check-types`
-- **Tests** (run from the repository root):
+- **Tests** (run from the repository root, the packages have no `test` script because vitest only finds its
+  config there):
     - Single file: `pnpm exec vitest run packages/vite-plugin/src/codegenPlugin.test.ts`
     - Single test by name: `pnpm exec vitest run packages/build-package -t "transpiles a simple javascript project"`
     - Integration tests: `pnpm build && pnpm install`, then `pnpm exec vitest run integration-tests`

@@ -3,11 +3,7 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { $, usePowerShell } from "zx";
-
-if (process.platform === "win32") {
-    usePowerShell();
-}
+import { runPnpm } from "@open-pioneer/cli-common";
 
 export interface PnpmLicenseProject {
     /** Project name */
@@ -28,29 +24,33 @@ interface PnpmLicensesReport {
 }
 
 /**
- * Invokes pnpm to list the licenses of all third party dependencies used by this repository.
+ * Invokes `pnpm licenses list` to list the licenses of all dependencies installed in `directory`.
  * Returns a flat list of all projects with their license information.
  */
 export async function getPnpmLicenseReport(
-    workspaceDirectory: string,
+    directory: string,
     devDependencies: boolean
 ): Promise<PnpmLicenseProject[]> {
-    const shell = $({ cwd: workspaceDirectory });
-
     const args = ["licenses", "list", "--json", "--long"];
     if (!devDependencies) {
-        args.push("-P");
+        args.push("--prod");
     }
 
-    const processOutputLicense = await shell`pnpm ${args}`;
-    const report = parseJsonOutput<PnpmLicensesReport>(processOutputLicense.stdout);
+    let stdout;
+    try {
+        stdout = (await runPnpm(directory, args)).stdout;
+    } catch (e) {
+        throw new Error(`Failed to list the licenses in ${directory}: ${(e as Error).message}`, {
+            cause: e
+        });
+    }
+    const report = parseJsonOutput<PnpmLicensesReport>(stdout);
     return Object.values(report).flat();
 }
 
 /**
- * Some tests, specially on Github, did not succeed if processOutputLicense.json was used directly.
- * So we parse `stdout` as JSON and tolerating warning lines. pnpm sometimes writes
- * to stdout before the actual JSON payload (e.g. npmrc env substitution warnings).
+ * pnpm may print warnings (e.g. about missing env variables in `.npmrc`) to stdout before the JSON payload,
+ * so everything up to the first `{` is skipped.
  */
 function parseJsonOutput<T>(stdout: string): T {
     const jsonStart = stdout.indexOf("{");
@@ -70,16 +70,19 @@ export function* walkProjectLocations(
     const paths = project.paths;
     if (paths.length !== versions.length) {
         throw new Error(
-            `Project paths and versions returned by PNPM do not have the same length for project ${project.name}), indices of paths must correspond to that of versions.`
+            `pnpm reported ${paths.length} paths but ${versions.length} versions for project '${project.name}'.`
         );
     }
 
     for (let i = 0; i < versions.length; i++) {
         const path = paths[i];
+        if (!path) {
+            throw new Error(`pnpm reported an empty path for project '${project.name}'.`);
+        }
         const version = getVersion(versions[i], path);
-        if (!version || !path) {
+        if (!version) {
             throw new Error(
-                `Paths or versions contains undefined entry for project ${project.name}), indices of paths must correspond to that of versions.`
+                `Failed to determine the version of project '${project.name}' at ${path}.`
             );
         }
         yield { path, version };
@@ -90,14 +93,11 @@ export function* walkProjectLocations(
  * For `file:` and `link:` dependencies, pnpm reports either no version (pnpm 11) or the
  * specifier itself (pnpm 12), so the version is read from the package's own package.json.
  */
-function getVersion(
-    reportedVersion: string | null | undefined,
-    packagePath: string | undefined
-): string | undefined {
+function getVersion(reportedVersion: string | undefined, packagePath: string): string | undefined {
     if (reportedVersion && !/^(file|link):/.test(reportedVersion)) {
         return reportedVersion;
     }
-    return packagePath ? readVersionFromPackageJson(packagePath) : undefined;
+    return readVersionFromPackageJson(packagePath);
 }
 
 function readVersionFromPackageJson(packagePath: string): string | undefined {

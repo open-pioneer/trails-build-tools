@@ -3,8 +3,8 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { expect, it, vi } from "vitest";
-import { useTemporaryPnpmLockfile } from "./helpers";
+import { beforeAll, expect, it, vi } from "vitest";
+import { setupTestProject } from "./helpers";
 import { TEMP_PATH } from "./paths";
 import { helpMessage, runCli } from "./runCli";
 
@@ -12,7 +12,9 @@ vi.setConfig({
     testTimeout: 30000
 });
 
-useTemporaryPnpmLockfile();
+beforeAll(async () => {
+    await setupTestProject();
+});
 
 it("check help message", async () => {
     const result = await helpMessage();

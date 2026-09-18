@@ -3,13 +3,11 @@
 
 import { resolve } from "node:path";
 import { expect, it } from "vitest";
-import { readLicenseConfig } from "./readProjectConfig";
+import { readLicenseConfig } from "./readLicenseConfig";
 import { PROJECT_DIR } from "./testing/paths";
 
-it("expect to read license config", async () => {
-    const pathToConfig = resolve(PROJECT_DIR, "license-config.yaml");
-    const config = readLicenseConfig(pathToConfig);
-
+it("applies defaults for missing optional entries", () => {
+    const config = readLicenseConfig(resolve(PROJECT_DIR, "license-config.yaml"));
     expect(config).toMatchInlineSnapshot(`
       {
         "additionalLicenses": undefined,
@@ -23,15 +21,13 @@ it("expect to read license config", async () => {
     `);
 });
 
-it("expect to read license config with all attributes", async () => {
-    const pathToConfig = resolve(PROJECT_DIR, "license-config-all.yaml");
-    const config = readLicenseConfig(pathToConfig);
-
+it("reads a config with all entries", () => {
+    const config = readLicenseConfig(resolve(PROJECT_DIR, "license-config-all.yaml"));
     expect(config).toMatchInlineSnapshot(`
       {
         "additionalLicenses": [
           {
-            "license": "MIT",
+            "license": "Apache-2.0",
             "licenseFiles": [
               {
                 "path": "./licenses/package-c",
@@ -56,4 +52,10 @@ it("expect to read license config with all attributes", async () => {
         "skipDevDependencies": false,
       }
     `);
+});
+
+it("rejects an invalid config", () => {
+    expect(() => readLicenseConfig(resolve(PROJECT_DIR, "license-config-invalid.yaml"))).toThrow(
+        /allowedLicenses/
+    );
 });

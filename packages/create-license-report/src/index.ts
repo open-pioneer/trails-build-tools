@@ -2,48 +2,43 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { exit } from "node:process";
-import { getChalk } from "@open-pioneer/cli-logging";
+import { cwd, exit } from "node:process";
+import { createConsoleLogger, getChalk, SILENT_LOGGER } from "@open-pioneer/cli-common";
 import { Command } from "commander";
 import { version } from "../package.json";
 import { createLicenseReport } from "./createLicenseReport";
 
-const LICENSE_CONFIG = "support/license-config.yaml";
-const WORKING_DIR = process.cwd();
-const OUTPUT_HTML = "dist/license-report.html";
-
 const program = new Command();
 program
     .name("create-license-report")
-    .description("Create a license file for Open Pioneer Trails ")
-    .option(
-        "-w, --working-dir <path>",
-        "path to the working directory (default: current directory)"
-    )
-    .option("-c, --config <path>", "path to the license config file", LICENSE_CONFIG)
-    .option("-o, --output <path>", "path to the result file", OUTPUT_HTML)
-    .option("-q, --silent", "disable logging", false)
-    .option("-x, --debug", "show exception stack traces", false)
+    .description("Creates an HTML license report for the dependencies of a project.")
+    .option("-w, --working-dir <path>", "project directory (defaults to the current directory)")
+    .option("-c, --config <path>", "path to the license config file", "support/license-config.yaml")
+    .option("-o, --output <path>", "path to the generated report", "dist/license-report.html")
+    .option("-q, --silent", "disable logging")
+    .option("-d, --debug", "show exception stack traces")
     .version(version);
 program.parse();
 
 async function main() {
     const chalk = await getChalk();
     const opts = program.opts();
-    const workingDir = opts.workingDir ?? WORKING_DIR;
+    const debug = opts.debug ?? false;
+    const silent = opts.silent ?? false;
     try {
-        await createLicenseReport({
+        const ok = await createLicenseReport({
+            workingDir: opts.workingDir ?? cwd(),
             configPath: opts.config,
-            workingDir: workingDir,
             outputHtmlPath: opts.output,
-            log: !opts.silent
+            logger: silent ? SILENT_LOGGER : await createConsoleLogger(console)
         });
-        exit(0);
+        exit(ok ? 0 : 1);
     } catch (e) {
-        if (opts.debug) {
+        if (debug) {
             console.error(e);
         } else {
             console.error(chalk.red((e as Error).message ?? String(e)));
+            console.error("Run with --debug for more information.");
         }
         exit(1);
     }
