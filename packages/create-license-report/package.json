@@ -29,7 +29,6 @@
     },
     "dependencies": {
         "@open-pioneer/cli-common": "workspace:^",
-        "chalk": "catalog:",
         "commander": "catalog:",
         "js-yaml": "catalog:",
         "spdx-expression-parse": "catalog:",

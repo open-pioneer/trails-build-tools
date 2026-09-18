@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { cwd, exit } from "node:process";
-import { checkPnpmVersion } from "@open-pioneer/cli-common";
+import { checkPnpmVersion, getChalk } from "@open-pioneer/cli-common";
 import { Command } from "commander";
 import { version } from "../package.json";
 import { findDuplicatePackages } from "./findDuplicates";
@@ -23,7 +23,7 @@ program
 program.parse();
 
 async function main() {
-    const chalk = (await import("chalk")).default;
+    const chalk = await getChalk();
     const opts = program.opts();
     const configPath = opts.config as string | undefined;
     const debug = opts.debug ?? false;
