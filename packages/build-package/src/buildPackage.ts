@@ -3,6 +3,7 @@
 
 import { mkdir, rm, writeFile } from "fs/promises";
 import { resolve } from "path";
+import { getChalk, type Logger } from "@open-pioneer/cli-common";
 import { buildCss } from "./buildCss";
 import { buildDts } from "./buildDts";
 import { buildJs } from "./buildJs";
@@ -14,7 +15,6 @@ import { InputModel } from "./model/InputModel";
 import { ResolvedOptions } from "./model/Options";
 import { createPackageModel } from "./model/PackageModel";
 import { createDebugger } from "./utils/debug";
-import { Logger, getChalk } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
 
 const isDebug = !!process.env.DEBUG;

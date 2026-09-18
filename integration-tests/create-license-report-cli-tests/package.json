@@ -1,0 +1,8 @@
+{
+    "name": "create-license-report-cli-tests",
+    "private": true,
+    "devDependencies": {
+        "@open-pioneer/create-license-report": "workspace:^",
+        "zx": "catalog:"
+    }
+}

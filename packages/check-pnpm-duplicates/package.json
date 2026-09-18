@@ -25,11 +25,10 @@
     "scripts": {
         "clean": "rimraf dist",
         "build": "tsdown",
-        "dev": "tsdown --watch",
-        "test": "vitest"
+        "dev": "tsdown --watch"
     },
     "dependencies": {
-        "chalk": "catalog:",
+        "@open-pioneer/cli-common": "workspace:^",
         "commander": "catalog:",
         "js-yaml": "catalog:"
     },

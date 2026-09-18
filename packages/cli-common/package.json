@@ -1,0 +1,42 @@
+{
+    "name": "@open-pioneer/cli-common",
+    "version": "0.0.1",
+    "description": "Shared helpers for Open Pioneer Trails CLI tools.",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/open-pioneer/trails-build-tools.git",
+        "directory": "packages/cli-common"
+    },
+    "files": [
+        "dist",
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
+    "type": "module",
+    "exports": {
+        ".": "./dist/index.js",
+        "./package.json": "./package.json"
+    },
+    "scripts": {
+        "clean": "rimraf dist temp",
+        "build": "tsdown",
+        "dev": "tsdown --watch"
+    },
+    "dependencies": {
+        "chalk": "catalog:"
+    },
+    "devDependencies": {
+        "publint": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:"
+    },
+    "engines": {
+        "node": ">= 20"
+    }
+}

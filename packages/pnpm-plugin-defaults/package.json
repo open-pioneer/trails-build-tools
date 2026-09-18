@@ -23,8 +23,7 @@
     "scripts": {
         "clean": "rimraf -g 'pnpmfile.*'",
         "build": "tsdown",
-        "dev": "tsdown --watch",
-        "test": "vitest"
+        "dev": "tsdown --watch"
     },
     "devDependencies": {
         "publint": "catalog:",

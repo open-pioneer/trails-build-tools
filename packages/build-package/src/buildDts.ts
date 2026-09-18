@@ -3,12 +3,12 @@
 
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
+import type { Logger } from "@open-pioneer/cli-common";
 import { glob } from "tinyglobby";
 import type * as Ts from "typescript";
 import { SUPPORTED_TS_EXTENSIONS } from "./model/PackageModel";
 import { createDebugger } from "./utils/debug";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
-import { Logger } from "./utils/Logger";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:buildDts");

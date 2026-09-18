@@ -1,0 +1,50 @@
+{
+    "name": "@open-pioneer/create-license-report",
+    "version": "0.0.1",
+    "description": "Creates a license report for the dependencies of an Open Pioneer Trails project.",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/open-pioneer/trails-build-tools.git",
+        "directory": "packages/create-license-report"
+    },
+    "bin": {
+        "create-license-report": "./dist/index.js"
+    },
+    "files": [
+        "dist",
+        "CHANGELOG.md",
+        "README.md",
+        "LICENSE"
+    ],
+    "type": "module",
+    "scripts": {
+        "clean": "rimraf dist temp",
+        "build": "tsdown",
+        "dev": "tsdown --watch"
+    },
+    "dependencies": {
+        "@open-pioneer/cli-common": "workspace:^",
+        "commander": "catalog:",
+        "js-yaml": "catalog:",
+        "spdx-expression-parse": "catalog:",
+        "spdx-satisfies": "catalog:",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@types/js-yaml": "catalog:",
+        "@types/spdx-expression-parse": "catalog:",
+        "@types/spdx-satisfies": "catalog:",
+        "publint": "catalog:",
+        "shared-configs": "workspace:*",
+        "tsdown": "catalog:"
+    },
+    "engines": {
+        "node": ">= 20",
+        "pnpm": ">= 11"
+    }
+}

@@ -1,0 +1,20 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`check help message 1`] = `
+"Usage: create-license-report [options]
+
+Creates an HTML license report for the dependencies of a project.
+
+Options:
+  -w, --working-dir <path>  project directory (defaults to the current
+                            directory)
+  -c, --config <path>       path to the license config file (default:
+                            "support/license-config.yaml")
+  -o, --output <path>       path to the generated report (default:
+                            "dist/license-report.html")
+  -q, --silent              disable logging
+  -d, --debug               show exception stack traces
+  -V, --version             output the version number
+  -h, --help                display help for command
+"
+`;

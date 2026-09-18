@@ -26,15 +26,14 @@
     "scripts": {
         "clean": "rimraf dist temp",
         "build": "tsdown",
-        "dev": "tsdown --watch",
-        "test": "vitest"
+        "dev": "tsdown --watch"
     },
     "dependencies": {
         "@open-pioneer/build-common": "workspace:^",
         "@open-pioneer/build-support": "workspace:^",
+        "@open-pioneer/cli-common": "workspace:^",
         "@rollup/plugin-node-resolve": "catalog:",
         "@rollup/pluginutils": "catalog:",
-        "chalk": "catalog:",
         "debug": "catalog:",
         "esbuild": "catalog:",
         "find-git-root": "catalog:",

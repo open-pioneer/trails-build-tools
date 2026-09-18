@@ -2,8 +2,7 @@
     "name": "build-package-cli-tests",
     "private": true,
     "scripts": {
-        "clean": "rimraf temp",
-        "test": "vitest"
+        "clean": "rimraf temp"
     },
     "devDependencies": {
         "@chakra-ui/icons": "catalog:tests",
