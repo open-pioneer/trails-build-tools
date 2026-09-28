@@ -95,6 +95,9 @@ overrides:
   "@open-pioneer/runtime": "2.2.0"
   "@formatjs/intl@2.10.15>typescript": "*"
 
+  # Downgrade, 3.2.2 is not signed: https://github.com/mafintosh/why-is-node-running/issues/90
+  "why-is-node-running@3.2.2": "3.2.1"
+
   # https://github.com/advisories/GHSA-h67p-54hq-rp68, CVE-2026-53550
   # https://github.com/advisories/GHSA-2883-xcg3-v3hh
   "js-yaml@>=4.0.0 <4.3.2": "^4.3.2"
