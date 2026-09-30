@@ -37,8 +37,10 @@ The config and output paths are resolved relative to that directory.
 
 ```text
 $ pnpm create-license-report
-Start creating license report
-Using license config from /project/support/license-config.yaml, package.json from /project/package.json and writing result to /project/dist/license-report.html
+Creating license report
+Using package.json: /project/package.json
+License config: /project/support/license-config.yaml
+Output file: /project/dist/license-report.html
 License report finished successfully. Report written to /project/dist/license-report.html
 ```
 
