@@ -18,6 +18,81 @@ export interface LicenseItem {
     noticeText: string;
 }
 
+/** The data embedded into the page and consumed by its script. */
+interface ReportPayload {
+    projectName: string;
+    items: LicenseItem[];
+}
+
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+/**
+ * Serializes `value` for a `<script type="application/json">` element.
+ * HTML entities are not decoded inside script elements, so the characters that could end the element
+ * (`</script>`) or start a comment (`<!--`) are written as JSON escape sequences instead.
+ */
+function embedJson(value: unknown): string {
+    return JSON.stringify(value)
+        .replace(/</g, "\\u003c")
+        .replace(/>/g, "\\u003e")
+        .replace(/&/g, "\\u0026")
+        .replace(/\u2028/g, "\\u2028")
+        .replace(/\u2029/g, "\\u2029");
+}
+
+/**
+ * Renders the license report as a self-contained HTML page.
+ * The items are embedded as a JSON payload and rendered by the page's script.
+ */
+export function generateReportHtml(projectName: string, licenseItems: LicenseItem[]): string {
+    const licenseCount = new Set(licenseItems.map((item) => item.license)).size;
+    const payload: ReportPayload = { projectName, items: licenseItems };
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>License Report – ${escapeHtml(projectName)}</title>
+    <style>${STYLE}</style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="page-header-inner">
+            <h1>License Report</h1>
+            <p class="project-name">${escapeHtml(projectName)}</p>
+            <div class="stats">
+                <span class="stat"><strong>${licenseItems.length}</strong> dependencies</span>
+                <span class="stat"><strong>${licenseCount}</strong> licenses</span>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="toolbar">
+            <input id="search" type="search" placeholder="Filter by name or license…" />
+            <div class="toolbar-actions">
+                <button id="expand-all" type="button">Expand all</button>
+                <button id="collapse-all" type="button">Collapse all</button>
+            </div>
+        </div>
+        <ul class="dependencies" id="dependency-list"></ul>
+        <p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p>
+    </main>
+    <script id="license-data" type="application/json">${embedJson(payload)}</script>
+    <script>${SCRIPT}</script>
+</body>
+</html>
+`.trim();
+}
+
 const STYLE = `
     :root {
         color-scheme: light;
@@ -29,7 +104,14 @@ const STYLE = `
         --accent: #3654d1;
         --accent-contrast: #ffffff;
         --radius: 10px;
+        --content-width: 880px;
         font-synthesis: none;
+    }
+
+    @media (min-width: 1400px) {
+        :root {
+            --content-width: 1240px;
+        }
     }
 
     * {
@@ -62,7 +144,7 @@ const STYLE = `
     }
 
     .page-header-inner {
-        max-width: 880px;
+        max-width: var(--content-width);
         margin: 0 auto;
     }
 
@@ -96,7 +178,7 @@ const STYLE = `
     }
 
     main {
-        max-width: 880px;
+        max-width: var(--content-width);
         margin: 0 auto;
         padding: 1.5rem;
     }
@@ -171,6 +253,11 @@ const STYLE = `
         padding: 0.85rem 1rem;
         cursor: pointer;
         list-style: none;
+        user-select: none;
+    }
+
+    .dependency summary > * {
+        user-select: text;
     }
 
     .dependency summary::-webkit-details-marker {
@@ -185,7 +272,7 @@ const STYLE = `
         flex: 0 0 auto;
     }
 
-    .dependency[open] summary::before {
+    .dependency details[open] summary::before {
         transform: rotate(90deg);
     }
 
@@ -230,7 +317,7 @@ const STYLE = `
         margin: 0;
         font-size: 0.8rem;
         font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-        max-height: 20rem;
+        max-height: 30rem;
         overflow: auto;
     }
 
@@ -339,77 +426,3 @@ const SCRIPT = `
         for (const item of items) item.querySelector("details").open = false;
     });
 `;
-
-/** The data embedded into the page and consumed by its script. */
-interface ReportPayload {
-    projectName: string;
-    items: LicenseItem[];
-}
-
-function escapeHtml(value: string): string {
-    return value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-}
-
-/**
- * Serializes `value` for a `<script type="application/json">` element.
- * HTML entities are not decoded inside script elements, so the characters that could end the element
- * (`</script>`) or start a comment (`<!--`) are written as JSON escape sequences instead.
- */
-function embedJson(value: unknown): string {
-    return JSON.stringify(value)
-        .replace(/</g, "\\u003c")
-        .replace(/>/g, "\\u003e")
-        .replace(/&/g, "\\u0026")
-        .replace(/\u2028/g, "\\u2028")
-        .replace(/\u2029/g, "\\u2029");
-}
-
-/**
- * Renders the license report as a self-contained HTML page.
- * The items are embedded as a JSON payload and rendered by the page's script.
- */
-export function generateReportHtml(projectName: string, licenseItems: LicenseItem[]): string {
-    const licenseCount = new Set(licenseItems.map((item) => item.license)).size;
-    const payload: ReportPayload = { projectName, items: licenseItems };
-
-    return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>License Report – ${escapeHtml(projectName)}</title>
-<style>${STYLE}</style>
-</head>
-<body>
-<header class="page-header">
-<div class="page-header-inner">
-<h1>License Report</h1>
-<p class="project-name">${escapeHtml(projectName)}</p>
-<div class="stats">
-<span class="stat"><strong>${licenseItems.length}</strong> dependencies</span>
-<span class="stat"><strong>${licenseCount}</strong> licenses</span>
-</div>
-</div>
-</header>
-<main>
-<div class="toolbar">
-<input id="search" type="search" placeholder="Filter by name or license…" />
-<div class="toolbar-actions">
-<button id="expand-all" type="button">Expand all</button>
-<button id="collapse-all" type="button">Collapse all</button>
-</div>
-</div>
-<ul class="dependencies" id="dependency-list"></ul>
-<p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p>
-</main>
-<script id="license-data" type="application/json">${embedJson(payload)}</script>
-<script>${SCRIPT}</script>
-</body>
-</html>
-`;
-}

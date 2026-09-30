@@ -1,6 +1,6 @@
 # @open-pioneer/create-license-report
 
-Provides the `create-license-report` command line tool, which can be used to generate a full license report for a pnpm-based project.
+Provides the `create-license-report` command line tool, which can generate a full license report for a pnpm-based project.
 
 The tool collects the licenses of a project's dependencies with `pnpm licenses list`, checks them against a list of allowed licenses and writes an HTML report that contains the license texts.
 A dependency with a missing, unknown or disallowed license fails the run.
@@ -98,6 +98,7 @@ Expressions are evaluated with [`spdx-satisfies`](https://www.npmjs.com/package/
 - `AND`: every license in the expression must be listed in `allowedLicenses`.
 - `OR`: rejected, even if one of the alternatives is allowed, because the expression leaves the actual license open.
   Make the choice explicit, either with an `overrideLicenses` entry that replaces the expression with one license, or by adding the expression text verbatim (e.g. `"(MPL-2.0 OR Apache-2.0)"`) to `allowedLicenses`.
+  (See also <https://github.com/open-pioneer/trails-build-tools/issues/232> for a possible, improved workflow).
 
 ### License overrides
 
@@ -121,7 +122,7 @@ overrideLicenses:
           - "./lib/zlib/README"
 
     # Some packages do not ship with a license file (in node_modules).
-    # You can define a custom license file (provided that it is actually valid).
+    # You can define a custom license file, provided that it is actually valid.
     #
     # The `custom:` key tells the tool to look for the license file relative its configuration file.
     # This way, the license can be checked into the source tree.

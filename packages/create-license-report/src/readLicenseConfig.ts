@@ -99,7 +99,6 @@ const OverrideLicenseEntrySchema = z.object({
 
 const AdditionalLicensesEntrySchema = z.object({
     name: z.string(),
-    // TODO: Check this, I think it needs to be required.
     version: z.string().optional(),
     license: z.string(),
     licenseFiles: z

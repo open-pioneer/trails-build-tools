@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>License Report – simple-project</title>
-<style>
+    <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>License Report – simple-project</title>
+    <style>
     :root {
         color-scheme: light;
         --bg: #f4f5f7;
@@ -15,7 +15,14 @@
         --accent: #3654d1;
         --accent-contrast: #ffffff;
         --radius: 10px;
+        --content-width: 880px;
         font-synthesis: none;
+    }
+
+    @media (min-width: 1400px) {
+        :root {
+            --content-width: 1240px;
+        }
     }
 
     * {
@@ -48,7 +55,7 @@
     }
 
     .page-header-inner {
-        max-width: 880px;
+        max-width: var(--content-width);
         margin: 0 auto;
     }
 
@@ -82,7 +89,7 @@
     }
 
     main {
-        max-width: 880px;
+        max-width: var(--content-width);
         margin: 0 auto;
         padding: 1.5rem;
     }
@@ -157,6 +164,11 @@
         padding: 0.85rem 1rem;
         cursor: pointer;
         list-style: none;
+        user-select: none;
+    }
+
+    .dependency summary > * {
+        user-select: text;
     }
 
     .dependency summary::-webkit-details-marker {
@@ -171,7 +183,7 @@
         flex: 0 0 auto;
     }
 
-    .dependency[open] summary::before {
+    .dependency details[open] summary::before {
         transform: rotate(90deg);
     }
 
@@ -216,7 +228,7 @@
         margin: 0;
         font-size: 0.8rem;
         font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-        max-height: 20rem;
+        max-height: 30rem;
         overflow: auto;
     }
 
@@ -228,29 +240,29 @@
 </style>
 </head>
 <body>
-<header class="page-header">
-<div class="page-header-inner">
-<h1>License Report</h1>
-<p class="project-name">simple-project</p>
-<div class="stats">
-<span class="stat"><strong>1</strong> dependencies</span>
-<span class="stat"><strong>1</strong> licenses</span>
-</div>
-</div>
-</header>
-<main>
-<div class="toolbar">
-<input id="search" type="search" placeholder="Filter by name or license…" />
-<div class="toolbar-actions">
-<button id="expand-all" type="button">Expand all</button>
-<button id="collapse-all" type="button">Collapse all</button>
-</div>
-</div>
-<ul class="dependencies" id="dependency-list"></ul>
-<p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p>
-</main>
-<script id="license-data" type="application/json">{"projectName":"simple-project","items":[{"name":"package-a","version":"0.0.1","license":"MIT","licenseText":"The MIT License (MIT)\nTEST\n","noticeText":""}]}</script>
-<script>
+    <header class="page-header">
+        <div class="page-header-inner">
+            <h1>License Report</h1>
+            <p class="project-name">simple-project</p>
+            <div class="stats">
+                <span class="stat"><strong>1</strong> dependencies</span>
+                <span class="stat"><strong>1</strong> licenses</span>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="toolbar">
+            <input id="search" type="search" placeholder="Filter by name or license…" />
+            <div class="toolbar-actions">
+                <button id="expand-all" type="button">Expand all</button>
+                <button id="collapse-all" type="button">Collapse all</button>
+            </div>
+        </div>
+        <ul class="dependencies" id="dependency-list"></ul>
+        <p id="empty-state" class="empty-state" hidden>No dependencies match your filter.</p>
+    </main>
+    <script id="license-data" type="application/json">{"projectName":"simple-project","items":[{"name":"package-a","version":"0.0.1","license":"MIT","licenseText":"The MIT License (MIT)\nTEST\n","noticeText":""}]}</script>
+    <script>
     const { items: data } = JSON.parse(document.getElementById("license-data").textContent);
 
     // Deterministically derives a muted hue for a license's badge from its name.

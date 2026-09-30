@@ -30,13 +30,15 @@ export interface CreateLicenseReportOptions {
 export async function createLicenseReport(options: CreateLicenseReportOptions): Promise<boolean> {
     const { logger } = options;
     const chalk = await getChalk();
-    logger.info(chalk.gray("Start creating license report"));
+    logger.info(chalk.gray("Creating license report"));
 
     const { packageJsonPath, configPath, configDirectory, outputHtmlPath } = createPaths(options);
     const projectName = getProjectName(packageJsonPath);
     logger.info(
         chalk.gray(
-            `Using license config from ${configPath}, package.json from ${packageJsonPath} and writing result to ${outputHtmlPath}`
+            `Using package.json: ${packageJsonPath}\n` +
+                `License config: ${configPath}\n` +
+                `Output file: ${outputHtmlPath}`
         )
     );
 
