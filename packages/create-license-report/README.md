@@ -118,7 +118,7 @@ overrideLicenses:
     # By default, paths are resolved relative to the _package_.
     - name: "pako"
       version: "2.1.0"
-      license: "MIT and Zlib"
+      license: "MIT AND Zlib"
       licenseFiles:
           - "./LICENSE"
           - "./lib/zlib/README"
