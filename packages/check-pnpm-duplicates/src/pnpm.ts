@@ -1,15 +1,9 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
-
-/** Minimum major version of pnpm supported by this tool. */
-export const MIN_PNPM_MAJOR = 11;
+import { runPnpm } from "@open-pioneer/cli-common";
 
 /**
  * A dependency as reported by `pnpm list --json`.
@@ -40,26 +34,6 @@ export interface PnpmProject {
 }
 
 /**
- * Returns the version of the `pnpm` executable (e.g. `"12.4.2"`).
- */
-export async function getPnpmVersion(directory: string): Promise<string> {
-    const { stdout } = await runPnpm(directory, ["--version"]);
-    return stdout.trim();
-}
-
-/**
- * Throws if the given pnpm version is not supported by this tool.
- */
-export function assertSupportedPnpmVersion(version: string): void {
-    const major = Number.parseInt(version, 10);
-    if (Number.isNaN(major) || major < MIN_PNPM_MAJOR) {
-        throw new Error(
-            `Unsupported pnpm version '${version}': this tool requires pnpm >= ${MIN_PNPM_MAJOR}.`
-        );
-    }
-}
-
-/**
  * Lists all packages in the lockfile of the given directory (including transitive dependencies)
  * by invoking `pnpm list`.
  *
@@ -79,15 +53,4 @@ export async function listPackages(
     }
     const { stdout } = await runPnpm(directory, args);
     return JSON.parse(stdout) as PnpmProject[];
-}
-
-function runPnpm(directory: string, args: string[]) {
-    return execFileAsync("pnpm", args, {
-        cwd: directory,
-        encoding: "utf-8",
-        // The default limit (1 MiB) is too small for larger workspaces
-        maxBuffer: 1024 * 1024 * 1024,
-        // pnpm is a `.cmd` script on windows, which can only be started through a shell
-        shell: process.platform === "win32"
-    });
 }

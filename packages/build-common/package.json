@@ -26,8 +26,7 @@
     "scripts": {
         "clean": "rimraf dist temp",
         "build": "tsdown",
-        "dev": "tsdown --watch",
-        "test": "vitest"
+        "dev": "tsdown --watch"
     },
     "dependencies": {
         "@open-pioneer/build-support": "workspace:^",

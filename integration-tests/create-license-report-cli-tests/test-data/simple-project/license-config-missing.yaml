@@ -1,0 +1,8 @@
+allowedLicenses:
+  - "ISC"
+
+skipDevDependencies: false
+
+overrideLicenses:
+
+additionalLicenses:

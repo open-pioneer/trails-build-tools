@@ -1,0 +1,9 @@
+# List of allowed dependency licenses.
+allowedLicenses:
+  - "Apache-2.0"
+  - "MIT"
+
+overrideLicenses:
+
+additionalLicenses:
+

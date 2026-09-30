@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { cwd, exit } from "node:process";
+import { checkPnpmVersion, getChalk } from "@open-pioneer/cli-common";
 import { Command } from "commander";
 import { version } from "../package.json";
 import { findDuplicatePackages } from "./findDuplicates";
 import { generateReport } from "./generateReport";
-import { assertSupportedPnpmVersion, getPnpmVersion, listPackages } from "./pnpm";
+import { listPackages } from "./pnpm";
 import { emptyConfig, readConfig } from "./readConfig";
 import { updateConfig } from "./updateConfig";
 
@@ -22,7 +23,7 @@ program
 program.parse();
 
 async function main() {
-    const chalk = (await import("chalk")).default;
+    const chalk = await getChalk();
     const opts = program.opts();
     const configPath = opts.config as string | undefined;
     const debug = opts.debug ?? false;
@@ -37,14 +38,7 @@ async function main() {
         // Read user configuration
         const config = configPath ? readConfig(configPath) : emptyConfig();
 
-        // Check pnpm version
-        let pnpmVersion;
-        try {
-            pnpmVersion = await getPnpmVersion(directory);
-        } catch (e) {
-            throw new Error(`Failed to run pnpm. Is it installed?`, { cause: e });
-        }
-        assertSupportedPnpmVersion(pnpmVersion);
+        await checkPnpmVersion(directory);
 
         // List all packages in the lockfile
         let projects;

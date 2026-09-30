@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BuildConfig, DEFAULT_PACKAGE_TARGET } from "@open-pioneer/build-common";
+import { createMemoryLogger } from "@open-pioneer/cli-common";
 import { expect, it } from "vitest";
 import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePackageJson";
 import { createInputModelFromData } from "./model/InputModel";
 import { NormalizedEntryPoint } from "./utils/entryPoints";
-import { createMemoryLogger } from "./utils/Logger";
 import { ValidationReporter } from "./utils/ValidationReporter";
 
 it("generates a minimal package.json", async function () {
