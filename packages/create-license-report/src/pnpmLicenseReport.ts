@@ -31,7 +31,7 @@ export async function getPnpmLicenseReport(
     directory: string,
     devDependencies: boolean
 ): Promise<PnpmLicenseProject[]> {
-    const args = ["licenses", "list", "--json", "--long"];
+    const args = ["licenses", "--recursive", "list", "--json", "--long"];
     if (!devDependencies) {
         args.push("--prod");
     }
