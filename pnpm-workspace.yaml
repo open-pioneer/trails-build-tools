@@ -129,6 +129,9 @@ overrides:
   # https://github.com/advisories/GHSA-2v37-7h3g-55p8, CVE-2026-67213
   "nanoid@<3.3.17": "^3.3.17"
 
+  # https://github.com/advisories/GHSA-68fv-2mgg-jv7q, CVE-2026-93749
+  "source-map-js@>=1.0.0 <1.2.2": "^1.2.2"
+
 audit:
   level: "moderate"
 
@@ -145,6 +148,12 @@ auditConfig:
 
     # https://github.com/advisories/GHSA-mh99-v99m-4gvg, CVE-2026-14257
     - GHSA-mh99-v99m-4gvg
+
+    # https://github.com/advisories/GHSA-vfj7-8cjw-p6xm CVE-2026-93687
+    - GHSA-vfj7-8cjw-p6xm
+
+    # https://github.com/advisories/GHSA-hp3w-g68c-fv3c, CVE-2026-97058
+    - GHSA-hp3w-g68c-fv3c
 
 allowUnusedPatches: true
 patchedDependencies: {}
