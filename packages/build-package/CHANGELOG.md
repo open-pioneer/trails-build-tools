@@ -1,5 +1,14 @@
 # Changelog @open-pioneer/build-package
 
+## 5.0.2
+
+### Patch Changes
+
+- 32fdaaa: Extract common functionality into @open-pioneer/cli-common
+- Updated dependencies [32fdaaa]
+- Updated dependencies [32fdaaa]
+    - @open-pioneer/cli-common@0.1.0
+
 ## 5.0.1
 
 ### Patch Changes
