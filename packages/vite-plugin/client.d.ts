@@ -134,7 +134,7 @@ declare module "open-pioneer:deployment" {
  * // Render a component with the real messages of its package.
  * import { PackageContextProvider } from "@open-pioneer/test-utils/react";
  * import { testMessages, testMessagesLocale } from "open-pioneer:test-support";
- * import { render } from "@testing-library/react";
+ * import { render } from "@testing-library/react"; // or import { render } from "vitest-browser-react";
  *
  * render(
  *     <PackageContextProvider messages={testMessages} locale={testMessagesLocale}>
