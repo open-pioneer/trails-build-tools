@@ -1,0 +1,2 @@
+messages:
+    hello: "hello from pkg-b"

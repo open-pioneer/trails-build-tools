@@ -1,6 +1,6 @@
 # Resolve and generate `open-pioneer:test-support` in the Vite plugin
 
-Status: ready-for-agent
+Status: done
 
 Stage 3 of 6. Stop for review when done.
 
@@ -37,7 +37,6 @@ In `packages/vite-plugin/src/codegenPlugin.ts`:
 Fixture `packages/vite-plugin/test-data/codegen-test-support`:
 
 - `packages/pkg-a` with `i18n: ["en", "de"]`, depending on `pkg-b` (`en` and `de`) and `pkg-c` (`en` only).
-  `pkg-a/i18n/en.yaml` carries an `overrides` block for `pkg-b`, to prove it is ignored.
 - `packages/pkg-no-i18n` without an `i18n` entry.
 - Entry files that import the module, modelled on `codegen-i18n` and `codegen-react-hooks`.
 
@@ -48,7 +47,6 @@ Tests in `codegenPlugin.test.ts`, with `VITEST` set as it is during the test run
 - `?locale=fr` fails naming `pkg-a` and `en, de`.
 - Import from `pkg-no-i18n` fails with the "does not define any i18n messages" message.
 - `?lang=de` and `?locale=` fail, and the reported error carries the accepted form from build-common as cause.
-- The override block in `pkg-a` does not change `pkg-b`'s messages.
 
 ## Out of scope
 

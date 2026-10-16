@@ -10,6 +10,7 @@ import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
+import { generateTestSupport } from "./codegen/generateTestSupport";
 import {
     findPackageJson,
     parseVirtualModuleId,
@@ -17,7 +18,7 @@ import {
     VIRTUAL_ID_FILTER
 } from "./codegen/shared";
 import { DeploymentModule } from "./deployment";
-import { createMetadataContextFromRolldown } from "./metadata/Context";
+import { createMetadataContextFromRolldown, MetadataContext } from "./metadata/Context";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
@@ -77,11 +78,10 @@ export function codegenPlugin(): VitePlugin {
                     try {
                         virtualModule = RuntimeSupport.parseVirtualModule(moduleId);
                     } catch (e) {
-                        this.error({
-                            id: moduleId,
-                            message: "Invalid virtual module id",
-                            cause: e
-                        });
+                        throw new ReportableError(
+                            String((e as Error).message) || "Invalid virtual module id",
+                            { cause: e }
+                        );
                     }
 
                     if (!virtualModule) {
@@ -110,6 +110,15 @@ export function codegenPlugin(): VitePlugin {
                                 type: "deployment"
                             });
                         }
+                        case "test-support":
+                            return serializeModuleId({
+                                type: "test-support",
+                                packageDirectory: getPackageDirectoryFromImporter(
+                                    importer,
+                                    rootDir
+                                ),
+                                locale: virtualModule.locale
+                            });
                     }
                 } catch (e) {
                     reportError(this, e, isDev);
@@ -207,17 +216,19 @@ export function codegenPlugin(): VitePlugin {
                                 locale: mod.locale,
                                 appName: appMetadata.name,
                                 packages: appMetadata.packages,
-                                loadI18n: async (pkg, filePath) => {
-                                    ctx.addWatchFile(filePath);
-                                    if (!(await fileExists(filePath))) {
-                                        throw new ReportableError(
-                                            `I18n file at ${filePath} does not exist.`
-                                        );
-                                    }
-                                    return repository.getI18nFile(ctx, filePath);
-                                }
+                                loadI18n: createI18nLoader(ctx, repository)
                             });
                             isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
+                            return jsModule(generatedSourceCode);
+                        }
+                        case "test-support": {
+                            const generatedSourceCode = await generateTestSupport({
+                                rootPackage: appMetadata.appPackage,
+                                locale: mod.locale,
+                                packages: appMetadata.packages,
+                                loadI18n: createI18nLoader(ctx, repository)
+                            });
+                            isDebug && debug("Generated test support: %O", generatedSourceCode);
                             return jsModule(generatedSourceCode);
                         }
                         default:
@@ -237,6 +248,16 @@ export function codegenPlugin(): VitePlugin {
         generateBundle(_options, bundle) {
             deploymentModule.onGenerateBundle(bundle);
         }
+    };
+}
+
+function createI18nLoader(ctx: MetadataContext, repository: MetadataRepository) {
+    return async (_pkg: unknown, filePath: string) => {
+        ctx.addWatchFile(filePath);
+        if (!(await fileExists(filePath))) {
+            throw new ReportableError(`I18n file at ${filePath} does not exist.`);
+        }
+        return repository.getI18nFile(ctx, filePath);
     };
 }
 

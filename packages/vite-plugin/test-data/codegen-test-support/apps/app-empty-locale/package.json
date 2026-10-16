@@ -1,0 +1,7 @@
+{
+    "name": "app-empty-locale",
+    "private": true,
+    "dependencies": {
+        "pkg-a": "*"
+    }
+}

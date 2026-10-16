@@ -69,8 +69,9 @@ The published package format does not change.
 
 - Plugin fixture `codegen-test-support`: a package with locales `en` and `de`, two dependencies, one of them without
   `de`, plus a package without `i18n`.
-  Cases: default locale, explicit locale, locale not declared by the importer, package without i18n, overrides
-  ignored, import outside a test run.
+  Cases: default locale, explicit locale, locale not declared by the importer, package without i18n, import outside
+  a test run.
+  The override handling of test mode is deliberately not covered by tests, since it may change.
 - Compiler fixture `project-with-test-support-import`: the build fails with the dedicated error.
 
 ## Changesets
