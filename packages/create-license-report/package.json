@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/create-license-report",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "Creates a license report for the dependencies of an Open Pioneer Trails project.",
     "keywords": [
         "open-pioneer-trails"

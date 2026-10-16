@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-common
 
+## 5.1.0
+
+### Minor Changes
+
+- 5b85124: `RuntimeSupport.parseVirtualModule` parses `open-pioneer:test-support`, including the `?locale=<locale>` query.
+
 ## 5.0.1
 
 ### Patch Changes
