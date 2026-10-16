@@ -539,6 +539,15 @@ describe("test support", () => {
             );
         }
     });
+
+    it("generates an error if test support is imported outside a test run", async () => {
+        const error = await expectAsyncError(() =>
+            buildTestSupportApp("app-default", { disableTestMode: true })
+        );
+        expect(error.message).toMatch(
+            /'open-pioneer:test-support' may only be imported from tests\./
+        );
+    });
 });
 
 function findModuleContaining(dir: string, needle: string) {
@@ -555,15 +564,20 @@ function findModuleContaining(dir: string, needle: string) {
     throw new Error(`Failed to find file containing ${JSON.stringify(needle)}`);
 }
 
-async function buildTestSupportApp(appName: string): Promise<string> {
+async function buildTestSupportApp(
+    appName: string,
+    options?: { disableTestMode?: boolean }
+): Promise<string> {
     const rootDir = resolve(TEST_DATA_DIR, "codegen-test-support");
     const outDir = resolve(TEMP_DATA_DIR, "codegen-test-support", appName);
+    const disableTestMode = options?.disableTestMode ?? false;
     await runViteBuild({
         outDir,
         rootDir,
         pluginOptions: {
             apps: [appName]
-        }
+        },
+        testMode: !disableTestMode
     });
     return readFileSync(join(outDir, `${appName}.js`), "utf-8");
 }

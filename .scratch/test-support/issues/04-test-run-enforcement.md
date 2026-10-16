@@ -1,6 +1,6 @@
 # Fail the import outside a test run
 
-Status: ready-for-agent
+Status: done
 
 Stage 4 of 6. Stop for review when done.
 

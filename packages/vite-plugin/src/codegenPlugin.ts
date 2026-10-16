@@ -34,6 +34,7 @@ const debug = createDebugger("open-pioneer:codegen");
 
 export function codegenPlugin(): VitePlugin {
     let isDev!: boolean;
+    let isTestRun!: boolean;
     let rootDir!: string;
     let repository!: MetadataRepository;
     let deploymentModule!: DeploymentModule;
@@ -43,6 +44,7 @@ export function codegenPlugin(): VitePlugin {
 
         async config(userConfig, env) {
             isDev = env.command === "serve";
+            isTestRun = process.env.VITEST === "true";
             rootDir = userConfig.root ?? cwd();
             repository = new MetadataRepository(rootDir);
 
@@ -111,6 +113,11 @@ export function codegenPlugin(): VitePlugin {
                             });
                         }
                         case "test-support":
+                            if (!isTestRun) {
+                                throw new ReportableError(
+                                    "'open-pioneer:test-support' may only be imported from tests."
+                                );
+                            }
                             return serializeModuleId({
                                 type: "test-support",
                                 packageDirectory: getPackageDirectoryFromImporter(
