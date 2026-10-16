@@ -1,0 +1,8 @@
+{
+    "name": "project-with-test-support-import",
+    "version": "0.0.1",
+    "license": "MIT",
+    "dependencies": {
+        "@open-pioneer/runtime": "*"
+    }
+}

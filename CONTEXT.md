@@ -119,10 +119,11 @@ Relative imports may not leave it.
 _Avoid_: root directory, project root, repository root
 
 **Virtual module**:
-A module with an `open-pioneer:` prefix that the Vite plugin generates instead of reading from disk.
-The four ids are `open-pioneer:app`, `open-pioneer:react-hooks`, `open-pioneer:source-info` and
-`open-pioneer:deployment`.
-The package compiler passes them through, so they are resolved again when the published package is used in an app.
+A module with an `open-pioneer:` prefix that the Vite plugin generates instead of reading from disk, for example
+`open-pioneer:app` or `open-pioneer:react-hooks`.
+The `client.d.ts` of the Vite plugin declares every virtual module and what it exports.
+The package compiler passes them through, so they are resolved again when the published package is used in an app,
+except for the modules that only tests may import.
 
 ### Runtime concepts as the build sees them
 

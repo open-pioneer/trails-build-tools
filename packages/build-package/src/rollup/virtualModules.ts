@@ -29,8 +29,8 @@ export function virtualModulesPlugin({
     return {
         name: "virtual-modules",
         resolveId(source, importer) {
-            const virtualModuleType = RuntimeSupport.parseVirtualModule(source);
-            if (!virtualModuleType) {
+            const virtualModule = RuntimeSupport.parseVirtualModule(source);
+            if (!virtualModule) {
                 return undefined; // not responsible
             }
 
@@ -47,7 +47,7 @@ export function virtualModulesPlugin({
 
             importer = assertDefined(importer);
 
-            switch (virtualModuleType) {
+            switch (virtualModule.type) {
                 case "react-hooks":
                     return REACT_HOOKS_ID;
                 case "source-info":
@@ -67,6 +67,11 @@ export function virtualModulesPlugin({
                     // Leave this as-is: the vite plugin needs to handle it.
                     return { id: source, external: true };
                 }
+                case "test-support":
+                    return this.error({
+                        id: importer,
+                        message: `'${source}' may only be imported from tests and cannot be part of a published package.`
+                    });
                 default:
                     this.error({
                         id: importer,

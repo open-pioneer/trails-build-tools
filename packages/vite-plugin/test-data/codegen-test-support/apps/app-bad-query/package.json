@@ -1,0 +1,7 @@
+{
+    "name": "app-bad-query",
+    "private": true,
+    "dependencies": {
+        "pkg-a": "*"
+    }
+}

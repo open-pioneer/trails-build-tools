@@ -45,6 +45,9 @@ const APP_I18N_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
 
 const PACKAGE_HOOKS_MODULE = "@@open-pioneer-react-hooks";
 
+const TEST_SUPPORT_MODULE = "@@open-pioneer-test-support";
+const TEST_SUPPORT_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
+
 const SOURCE_INFO_MODULE = "@@open-pioneer-source-info";
 const SOURCE_INFO_MODULE_MODULE_PATH_RE = /@@open-pioneer-source-info\/(?<module_path>.*)&lang=js$/;
 
@@ -55,7 +58,8 @@ export type VirtualModule =
     | VirtualI18nMessages
     | VirtualPackageModule
     | VirtualSourceInfoModule
-    | VirtualDeploymentModule;
+    | VirtualDeploymentModule
+    | VirtualTestSupportModule;
 
 export interface VirtualAppModule {
     type: "app-meta" | "app-packages" | "app-css" | "app-i18n-index";
@@ -81,6 +85,14 @@ export interface VirtualSourceInfoModule {
 
 export interface VirtualDeploymentModule {
     type: "deployment";
+}
+
+export interface VirtualTestSupportModule {
+    type: "test-support";
+    packageDirectory: string;
+
+    /** The requested message locale, or undefined for the package's default locale. */
+    locale: string | undefined;
 }
 
 /**
@@ -127,6 +139,14 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
         return {
             type: "package-hooks",
             packageDirectory: dirname(sourceFile)
+        };
+    }
+
+    if (base === TEST_SUPPORT_MODULE) {
+        return {
+            type: "test-support",
+            packageDirectory: dirname(sourceFile),
+            locale: moduleId.match(TEST_SUPPORT_LOCALE_RE)?.groups?.["locale"] || undefined
         };
     }
 
@@ -214,6 +234,13 @@ export function serializeModuleId(mod: VirtualModule): string {
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_QUERY}&locale=${mod.locale}`;
         case "deployment":
             return `${VIRTUAL_PREFIX}deployment`;
+        case "test-support": {
+            let result = `${mod.packageDirectory}/${TEST_SUPPORT_MODULE}`;
+            if (mod.locale) {
+                result += `?locale=${mod.locale}`;
+            }
+            return result;
+        }
     }
 }
 

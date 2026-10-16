@@ -8,7 +8,22 @@ import { canParse } from "../versionUtils";
 
 declare const VALIDATED_RUNTIME_VERSION: unique symbol;
 
-export type VirtualModuleType = "app" | "react-hooks" | "source-info" | "deployment";
+export type VirtualModuleType = VirtualModule["type"];
+
+export type VirtualModule = PlainVirtualModule | TestSupportVirtualModule;
+
+/** A virtual module whose id carries no data of its own. */
+export interface PlainVirtualModule {
+    type: "app" | "react-hooks" | "source-info" | "deployment";
+}
+
+/** The `open-pioneer:test-support` module, optionally with a `?locale=<message locale>` query. */
+export interface TestSupportVirtualModule {
+    type: "test-support";
+
+    /** The requested message locale, or undefined when the package's default locale applies. */
+    locale: string | undefined;
+}
 
 /**
  * A runtime version that we know we can support.
@@ -48,25 +63,51 @@ const CURRENT_RUNTIME_METADATA_VERSION = "1.1.0";
 
 /**
  * Checks if the given module id is a virtual module.
- * Returns the type of the virtual module or undefined if the module id does not match anything.
+ * Returns the parsed virtual module or undefined if the module id does not match anything.
+ *
+ * Only `open-pioneer:test-support` accepts a query string.
  *
  * Throws an error if the module id uses the virtual prefix without a match, as that might be a mistake by the user. */
-export function parseVirtualModule(moduleId: string): VirtualModuleType | undefined {
+export function parseVirtualModule(moduleId: string): VirtualModule | undefined {
     if (!/^open-pioneer:/.test(moduleId)) {
         return undefined;
     }
 
+    const testSupportMatch = moduleId.match(/^open-pioneer:test-support(?:\?(?<query>.*))?$/);
+    if (testSupportMatch) {
+        return {
+            type: "test-support",
+            locale: parseTestSupportQuery(moduleId, testSupportMatch.groups?.["query"])
+        };
+    }
+
     switch (moduleId) {
         case "open-pioneer:app":
-            return "app";
+            return { type: "app" };
         case "open-pioneer:react-hooks":
-            return "react-hooks";
+            return { type: "react-hooks" };
         case "open-pioneer:source-info":
-            return "source-info";
+            return { type: "source-info" };
         case "open-pioneer:deployment":
-            return "deployment";
+            return { type: "deployment" };
     }
     throw new Error(`Unsupported module id '${moduleId}'.`);
+}
+
+function parseTestSupportQuery(moduleId: string, query: string | undefined): string | undefined {
+    if (query === undefined) {
+        return undefined;
+    }
+
+    const params = new URLSearchParams(query);
+    const locale = params.get("locale");
+    const keys = Array.from(params.keys());
+    if (keys.length !== 1 || keys[0] !== "locale" || !locale) {
+        throw new Error(
+            `Invalid query in module id '${moduleId}'. Expected 'open-pioneer:test-support?locale=<locale>'.`
+        );
+    }
+    return locale;
 }
 
 /** Returns the module content to implement the `open-pioneer:react-hooks` module. */

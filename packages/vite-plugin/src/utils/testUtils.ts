@@ -16,12 +16,43 @@ if (!existsSync(PACKAGE_JSON_FILE)) {
     throw new Error(`No package.json in current directory. Fix path.`);
 }
 
-export async function runViteBuild(options: {
+export interface ViteBuildOptions {
     outDir: string;
     rootDir: string;
     pluginOptions: PioneerPluginOptions;
     baseUrl?: string;
-}) {
+
+    /**
+     * Simulate execution by vitest.
+     *
+     * This sets an environment variable that is also set by vitest.
+     *
+     * Needed to test virtual modules that are only allowed from test files.
+     *
+     * Default: false.
+     */
+    testMode?: boolean;
+}
+
+export async function runViteBuild(options: ViteBuildOptions) {
+    let vitest;
+    if (!options.testMode) {
+        // Clear flag to fake "production" mode
+        vitest = process.env.VITEST;
+        delete process.env.VITEST;
+    }
+
+    try {
+        await runVite(options);
+    } finally {
+        // Restore flag
+        if (vitest != null) {
+            process.env.VITEST = vitest;
+        }
+    }
+}
+
+async function runVite(options: ViteBuildOptions) {
     const messages: string[] = [];
     const logger: Logger = {
         info() {},

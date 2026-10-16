@@ -10,6 +10,7 @@ import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
+import { generateTestSupport } from "./codegen/generateTestSupport";
 import {
     findPackageJson,
     parseVirtualModuleId,
@@ -17,7 +18,7 @@ import {
     VIRTUAL_ID_FILTER
 } from "./codegen/shared";
 import { DeploymentModule } from "./deployment";
-import { createMetadataContextFromRolldown } from "./metadata/Context";
+import { createMetadataContextFromRolldown, MetadataContext } from "./metadata/Context";
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
@@ -33,6 +34,7 @@ const debug = createDebugger("open-pioneer:codegen");
 
 export function codegenPlugin(): VitePlugin {
     let isDev!: boolean;
+    let isTestRun!: boolean;
     let rootDir!: string;
     let repository!: MetadataRepository;
     let deploymentModule!: DeploymentModule;
@@ -42,6 +44,7 @@ export function codegenPlugin(): VitePlugin {
 
         async config(userConfig, env) {
             isDev = env.command === "serve";
+            isTestRun = process.env.VITEST === "true";
             rootDir = userConfig.root ?? cwd();
             repository = new MetadataRepository(rootDir);
 
@@ -77,14 +80,17 @@ export function codegenPlugin(): VitePlugin {
                     try {
                         virtualModule = RuntimeSupport.parseVirtualModule(moduleId);
                     } catch (e) {
-                        this.error({
-                            id: moduleId,
-                            message: "Invalid virtual module id",
-                            cause: e
-                        });
+                        throw new ReportableError(
+                            String((e as Error).message) || "Invalid virtual module id",
+                            { cause: e }
+                        );
                     }
 
-                    switch (virtualModule) {
+                    if (!virtualModule) {
+                        return undefined;
+                    }
+
+                    switch (virtualModule.type) {
                         case "app":
                             return serializeModuleId({
                                 type: "app-meta",
@@ -106,6 +112,20 @@ export function codegenPlugin(): VitePlugin {
                                 type: "deployment"
                             });
                         }
+                        case "test-support":
+                            if (!isTestRun) {
+                                throw new ReportableError(
+                                    "'open-pioneer:test-support' may only be imported from tests."
+                                );
+                            }
+                            return serializeModuleId({
+                                type: "test-support",
+                                packageDirectory: getPackageDirectoryFromImporter(
+                                    importer,
+                                    rootDir
+                                ),
+                                locale: virtualModule.locale
+                            });
                     }
                 } catch (e) {
                     reportError(this, e, isDev);
@@ -199,20 +219,23 @@ export function codegenPlugin(): VitePlugin {
                         }
                         case "app-i18n": {
                             const generatedSourceCode = await generateI18nMessages({
+                                mode: "app",
                                 locale: mod.locale,
                                 appName: appMetadata.name,
                                 packages: appMetadata.packages,
-                                loadI18n: async (pkg, filePath) => {
-                                    ctx.addWatchFile(filePath);
-                                    if (!(await fileExists(filePath))) {
-                                        throw new ReportableError(
-                                            `I18n file at ${filePath} does not exist.`
-                                        );
-                                    }
-                                    return repository.getI18nFile(ctx, filePath);
-                                }
+                                loadI18n: createI18nLoader(ctx, repository)
                             });
                             isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
+                            return jsModule(generatedSourceCode);
+                        }
+                        case "test-support": {
+                            const generatedSourceCode = await generateTestSupport({
+                                rootPackage: appMetadata.appPackage,
+                                locale: mod.locale,
+                                packages: appMetadata.packages,
+                                loadI18n: createI18nLoader(ctx, repository)
+                            });
+                            isDebug && debug("Generated test support: %O", generatedSourceCode);
                             return jsModule(generatedSourceCode);
                         }
                         default:
@@ -232,6 +255,16 @@ export function codegenPlugin(): VitePlugin {
         generateBundle(_options, bundle) {
             deploymentModule.onGenerateBundle(bundle);
         }
+    };
+}
+
+function createI18nLoader(ctx: MetadataContext, repository: MetadataRepository) {
+    return async (_pkg: unknown, filePath: string) => {
+        ctx.addWatchFile(filePath);
+        if (!(await fileExists(filePath))) {
+            throw new ReportableError(`I18n file at ${filePath} does not exist.`);
+        }
+        return repository.getI18nFile(ctx, filePath);
     };
 }
 

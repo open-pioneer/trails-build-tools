@@ -1,0 +1,7 @@
+{
+    "name": "app-no-i18n",
+    "private": true,
+    "dependencies": {
+        "pkg-no-i18n": "*"
+    }
+}

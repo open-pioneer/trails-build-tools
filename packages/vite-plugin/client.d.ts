@@ -123,3 +123,59 @@ declare module "open-pioneer:deployment" {
      */
     export const baseUrl: string;
 }
+
+/**
+ * Provides test support helpers for the importing package, such as the actual i18n messages that would be used when running in a trails app.
+ *
+ * This module is designed to be used in combination with the `@open-pioneer/test-utils` package.
+ * It can only be imported in tests.
+ *
+ * @example
+ * // Render a component with the real messages of its package.
+ * import { PackageContextProvider } from "@open-pioneer/test-utils/react";
+ * import { testMessages, testMessagesLocale } from "open-pioneer:test-support";
+ * import { render } from "@testing-library/react"; // or import { render } from "vitest-browser-react";
+ *
+ * render(
+ *     <PackageContextProvider messages={testMessages} locale={testMessagesLocale}>
+ *         <MyComponent />
+ *     </PackageContextProvider>
+ * );
+ *
+ * @example
+ * // Request a different locale.
+ * // The locale must be listed in the `i18n` array of the package's `build.config.mjs`.
+ * import { testMessages, testMessagesLocale } from "open-pioneer:test-support?locale=de";
+ */
+declare module "open-pioneer:test-support" {
+    /**
+     * I18n messages keyed by package name and message id.
+     *
+     * The record fits the `messages` property of `PackageContextProvider` from `@open-pioneer/test-utils/react`.
+     * It is empty when the package does not declare any locales in its `build.config.mjs`.
+     */
+    export const testMessages: Record<string, Record<string, string>>;
+
+    /**
+     * The locale of {@link testMessages}.
+     * It is an empty string when the package does not declare any locales.
+     */
+    export const testMessagesLocale: string;
+}
+
+/**
+ * Variant of `open-pioneer:test-support` with an explicit parameters, for example `open-pioneer:test-support?locale=de`.
+ *
+ * See the declaration of `open-pioneer:test-support` for details.
+ */
+declare module "open-pioneer:test-support?*" {
+    /**
+     * I18n messages keyed by package name and message id, in the requested locale.
+     */
+    export const testMessages: Record<string, Record<string, string>>;
+
+    /**
+     * The requested locale.
+     */
+    export const testMessagesLocale: string;
+}
