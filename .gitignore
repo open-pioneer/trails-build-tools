@@ -11,6 +11,7 @@ coverage
 dist
 temp
 node_modules
+.pnpm-store
 
 # allow node_modules in test-data to simulate dependencies
 !**/test-data/**/node_modules

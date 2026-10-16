@@ -27,7 +27,8 @@ The doc comment carries an `@example` that passes both exports to the provider.
 - The default locale is the first entry of the importing package's `i18n` array in its build config.
 - An explicit `?locale=` value must appear in that array.
   Otherwise the plugin reports an error that names the package and its declared locales.
-- An importing package without `i18n` fails with `Package <name> does not define any i18n messages`.
+- An importing package without `i18n` gets an empty `testMessages` object and an empty `testMessagesLocale`.
+  An explicit `?locale=` from such a package is still an error.
 - Any query parameter other than `locale`, or an empty `locale`, is an error that names the accepted form
   `open-pioneer:test-support?locale=<locale>`.
 - A dependency that declares i18n but has no file for the chosen locale contributes nothing.

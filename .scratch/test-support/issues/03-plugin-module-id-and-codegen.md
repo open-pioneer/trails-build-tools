@@ -24,7 +24,7 @@ In `packages/vite-plugin/src/codegenPlugin.ts`:
   When no locale is given, serialize without the query and pick the default at load time.
 - `load`: get the app metadata for the package directory via `repository.getAppMetadata`.
   Determine the locale: the explicit one, or the first entry of the root package's `locales`.
-  If the root package has no locales, throw `Package <name> does not define any i18n messages`.
+  If the root package has no locales, export an empty messages object and an empty locale.
   If the explicit locale is not in the root package's locales, throw an error that names the package and its
   declared locales.
   Call `generateI18nMessages` with `mode: "test"` and the same `loadI18n` callback as `app-i18n`.
@@ -45,7 +45,7 @@ Tests in `codegenPlugin.test.ts`, with `VITEST` set as it is during the test run
 - Default locale yields `en` messages for `pkg-a`, `pkg-b`, `pkg-c`, and `testMessagesLocale === "en"`.
 - `?locale=de` yields `de` for `pkg-a` and `pkg-b`, nothing for `pkg-c`.
 - `?locale=fr` fails naming `pkg-a` and `en, de`.
-- Import from `pkg-no-i18n` fails with the "does not define any i18n messages" message.
+- Import from `pkg-no-i18n` yields an empty messages object and an empty locale.
 - `?lang=de` and `?locale=` fail, and the reported error carries the accepted form from build-common as cause.
 
 ## Out of scope

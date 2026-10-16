@@ -526,9 +526,9 @@ describe("test support", () => {
         );
     });
 
-    it("generates an error if test support is requested by a package without i18n", async () => {
-        const error = await expectAsyncError(() => buildTestSupportApp("app-no-i18n"));
-        expect(error.message).toMatch(/Package 'pkg-no-i18n' does not define any i18n messages/);
+    it("generates empty test support messages for a package without i18n", async () => {
+        const appJs = await buildTestSupportApp("app-no-i18n");
+        expect(appJs).toContain('console.log({}, "");');
     });
 
     it("generates an error if the test support query is invalid", async () => {
