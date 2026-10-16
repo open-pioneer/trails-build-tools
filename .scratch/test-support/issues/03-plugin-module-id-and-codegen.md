@@ -17,9 +17,9 @@ In `packages/vite-plugin/src/codegen/shared.ts`:
 
 In `packages/vite-plugin/src/codegenPlugin.ts`:
 
-- `resolveId`: for `"test-support"`, parse the query of the original id.
-  Accept only `locale=<non-empty>`; any other parameter or an empty value throws a `ReportableError` that names the
-  accepted form `open-pioneer:test-support?locale=<locale>`.
+- `resolveId`: for `type === "test-support"`, take `locale` from the parsed module.
+  `parseVirtualModule` already rejects a bad query (stage 1), and the existing catch wraps that in the
+  `ReportableError` "Invalid virtual module id" with the cause.
   Resolve to the serialized id with the importing package's directory from `getPackageDirectoryFromImporter`.
   When no locale is given, serialize without the query and pick the default at load time.
 - `load`: get the app metadata for the package directory via `repository.getAppMetadata`.
@@ -47,7 +47,7 @@ Tests in `codegenPlugin.test.ts`, with `VITEST` set as it is during the test run
 - `?locale=de` yields `de` for `pkg-a` and `pkg-b`, nothing for `pkg-c`.
 - `?locale=fr` fails naming `pkg-a` and `en, de`.
 - Import from `pkg-no-i18n` fails with the "does not define any i18n messages" message.
-- `?lang=de` and `?locale=` fail naming the accepted form.
+- `?lang=de` and `?locale=` fail, and the reported error carries the accepted form from build-common as cause.
 - The override block in `pkg-a` does not change `pkg-b`'s messages.
 
 ## Out of scope

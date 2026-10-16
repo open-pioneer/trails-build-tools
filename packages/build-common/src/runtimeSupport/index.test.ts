@@ -6,10 +6,50 @@ import * as RuntimeSupport from "./index";
 
 describe("parseVirtualModule", function () {
     it("parses virtual modules", function () {
-        expect(RuntimeSupport.parseVirtualModule("open-pioneer:react-hooks")).toBe("react-hooks");
-        expect(RuntimeSupport.parseVirtualModule("open-pioneer:app")).toBe("app");
+        expect(RuntimeSupport.parseVirtualModule("open-pioneer:react-hooks")).toEqual({
+            type: "react-hooks"
+        });
+        expect(RuntimeSupport.parseVirtualModule("open-pioneer:app")).toEqual({ type: "app" });
         expect(RuntimeSupport.parseVirtualModule("whatever")).toBe(undefined);
         expect(RuntimeSupport.parseVirtualModule("./foo/bar")).toBe(undefined);
+    });
+
+    it("parses the test support module with and without a locale", function () {
+        expect(RuntimeSupport.parseVirtualModule("open-pioneer:test-support")).toEqual({
+            type: "test-support",
+            locale: undefined
+        });
+        expect(RuntimeSupport.parseVirtualModule("open-pioneer:test-support?locale=de")).toEqual({
+            type: "test-support",
+            locale: "de"
+        });
+    });
+
+    it("throws for an invalid test support query", function () {
+        const invalid = [
+            "open-pioneer:test-support?",
+            "open-pioneer:test-support?locale=",
+            "open-pioneer:test-support?lang=de",
+            "open-pioneer:test-support?locale=de&foo=bar"
+        ];
+        for (const moduleId of invalid) {
+            expect(() => RuntimeSupport.parseVirtualModule(moduleId)).toThrowError(
+                `Invalid query in module id '${moduleId}'. Expected 'open-pioneer:test-support?locale=<locale>'.`
+            );
+        }
+    });
+
+    it("throws for other modules with a query", function () {
+        expect(() =>
+            RuntimeSupport.parseVirtualModule("open-pioneer:app?locale=de")
+        ).toThrowErrorMatchingInlineSnapshot(
+            `[Error: Unsupported module id 'open-pioneer:app?locale=de'.]`
+        );
+        expect(() =>
+            RuntimeSupport.parseVirtualModule("open-pioneer:test-supportx")
+        ).toThrowErrorMatchingInlineSnapshot(
+            `[Error: Unsupported module id 'open-pioneer:test-supportx'.]`
+        );
     });
 
     it("throws for unknown modules under the open pioneer prefix", function () {

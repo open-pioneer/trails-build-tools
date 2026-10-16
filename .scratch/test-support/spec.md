@@ -58,7 +58,9 @@ The published package format does not change.
 
 ## Plumbing
 
-- `RuntimeSupport.parseVirtualModule` returns `"test-support"` for the id with or without a query.
+- `RuntimeSupport.parseVirtualModule` returns a discriminated union, `{ type: "test-support", locale }` for this
+  module, where `locale` is the value of the `locale` query parameter or undefined.
+  It throws for any other query parameter, an empty locale, or an empty query.
   Every other id keeps the exact match and still throws when a query is present.
 - Inside the plugin the module id is a magic filename next to the package,
   `<packageDir>/@@open-pioneer-test-support?locale=<locale>`, parsed and serialized in `codegen/shared.ts`.

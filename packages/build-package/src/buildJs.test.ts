@@ -176,6 +176,30 @@ it("transpiles a project with open-pioneer:deployment import", async function ()
     `);
 });
 
+it("transpiling open-pioneer:test-support fails", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-test-support-import");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-test-support-import");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+
+    const logger = createMemoryLogger();
+    const error = await expectError(() =>
+        buildJs({
+            ...testDefaults(),
+            packageDirectory,
+            outputDirectory,
+            entryPoints,
+            logger,
+            packageFormatTarget: "1.1" as PackageMetadataV1.MinorVersion
+        })
+    );
+
+    expect(error).toMatchInlineSnapshot(
+        `[RollupError: [plugin virtual-modules] packages/build-package/test-data/project-with-test-support-import/index.js: 'open-pioneer:test-support' may only be imported from tests and cannot be part of a published package.]`
+    );
+});
+
 it("generates source maps when enabled", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "simple-js-project");
     const outputDirectory = resolve(TEMP_DATA_DIR, "simple-js-sourcemaps");

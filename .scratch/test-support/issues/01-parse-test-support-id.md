@@ -1,6 +1,6 @@
 # Teach build-common and the compiler about `open-pioneer:test-support`
 
-Status: ready-for-agent
+Status: done
 
 Stage 1 of 6. Stop for review when done.
 
@@ -8,11 +8,14 @@ Stage 1 of 6. Stop for review when done.
 
 In `packages/build-common/src/runtimeSupport/index.ts`:
 
-- Add `"test-support"` to `VirtualModuleType`.
-- `parseVirtualModule` returns `"test-support"` for `open-pioneer:test-support` and for `open-pioneer:test-support?<anything>`.
+- `parseVirtualModule` returns a discriminated union `VirtualModule` instead of a string.
+  `{ type: "test-support", locale }` carries the `locale` query parameter, or undefined without a query.
+  Any other parameter, an empty locale or an empty query throws
+  `Invalid query in module id '<id>'. Expected 'open-pioneer:test-support?locale=<locale>'.`
   Every other id keeps the exact string match, so `open-pioneer:app?x` still throws `Unsupported module id`.
-  The query is not interpreted here; the plugin reads it.
-- Extend `index.test.ts` with cases for the plain id, the id with a query, and a different id with a query.
+- Update the callers in `codegenPlugin.ts` and `rollup/virtualModules.ts` to switch on `.type`.
+- Extend `index.test.ts` with cases for the plain id, the id with a locale, the invalid queries, and a different id
+  with a query.
 
 In `packages/build-package/src/rollup/virtualModules.ts`:
 

@@ -84,7 +84,11 @@ export function codegenPlugin(): VitePlugin {
                         });
                     }
 
-                    switch (virtualModule) {
+                    if (!virtualModule) {
+                        return undefined;
+                    }
+
+                    switch (virtualModule.type) {
                         case "app":
                             return serializeModuleId({
                                 type: "app-meta",
