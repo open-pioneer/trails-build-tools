@@ -1,5 +1,27 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 7.1.0
+
+### Minor Changes
+
+- 5b85124: Add the virtual module `open-pioneer:test-support` for tests of Trails packages.
+
+    The module exports `testMessages`, the i18n messages of the importing package and of all its dependencies.
+    The record can be passed to the `messages` property of `PackageContextProvider` from `@open-pioneer/test-utils/react`.
+    It also exports `testMessagesLocale`, the locale of these messages.
+    Both properties can be helpful when implementing browser tests for React components based on Trails.
+
+    Messages are returned in the first locale of the package's `i18n` array in `build.config.mjs` by default.
+    A different locale can be requested with a query, for example `open-pioneer:test-support?locale=de`.
+
+    The module can only be imported from tests.
+    `vite dev` and `vite build` fail with an error when they encounter the import.
+
+### Patch Changes
+
+- Updated dependencies [5b85124]
+    - @open-pioneer/build-common@5.1.0
+
 ## 7.0.1
 
 ### Patch Changes
