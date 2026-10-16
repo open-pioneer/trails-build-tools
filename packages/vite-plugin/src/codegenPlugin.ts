@@ -203,6 +203,7 @@ export function codegenPlugin(): VitePlugin {
                         }
                         case "app-i18n": {
                             const generatedSourceCode = await generateI18nMessages({
+                                mode: "app",
                                 locale: mod.locale,
                                 appName: appMetadata.name,
                                 packages: appMetadata.packages,

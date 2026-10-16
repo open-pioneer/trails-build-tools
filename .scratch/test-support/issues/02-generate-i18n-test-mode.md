@@ -1,6 +1,6 @@
 # Add a test mode to `generateI18nMessages`
 
-Status: ready-for-agent
+Status: done
 
 Stage 2 of 6. Stop for review when done.
 

@@ -68,22 +68,47 @@ export function generateI18nIndex(packageDirectory: string, locales: string[]): 
 
 export type I18nPackageMetadata = Pick<AnalyzedPackage, "name" | "i18nPaths">;
 
-export interface I18nMessageOptions {
+export type I18nMessageOptions = I18nMessageCommonOptions & I18nMessageModeOptions;
+
+export interface I18nMessageCommonOptions {
     /** The locale to generate. */
     locale: string;
 
-    /**
-     * The name of the current application.
-     * Used to detect the application page for overrides.
-     */
-    appName: string;
-
-    /** All packages in the application (including the app). */
+    /** All packages in the dependency graph (including the root package). */
     packages: I18nPackageMetadata[];
 
     /** Called by the function when the contents of an i18n file (in i18nPaths) is required. */
     loadI18n: (pkg: I18nPackageMetadata, filePath: string) => Promise<I18nFile>;
 }
+
+export type I18nMessageModeOptions = I18nAppModeOptions | I18nTestModeOptions;
+
+/**
+ * Messages for a running app, used during development of an app and during production builds.
+ *
+ * All packages must provide messages i18n messages in the requested locale.
+ * After gathering all messages, app overrides are applies to those messages.
+ */
+export interface I18nAppModeOptions {
+    mode: "app";
+
+    /**
+     * The name of the current application.
+     * Used to detect the application package for overrides.
+     */
+    appName: string;
+}
+
+/**
+ * Messages for tests of the root package.
+ * Overrides are ignored and a package without the requested locale is ignored.
+ */
+export interface I18nTestModeOptions {
+    mode: "test";
+}
+
+/** Package name -> message id -> message template. */
+export type I18nMessagesRecord = Record<string, Record<string, string>>;
 
 /**
  * Generates a messages module containing a single default export: the messages record.
@@ -91,7 +116,31 @@ export interface I18nMessageOptions {
  * Messages are taken from the given packages (for the specified locale).
  */
 export async function generateI18nMessages(options: I18nMessageOptions): Promise<string> {
-    const { locale, appName, packages, loadI18n } = options;
+    const allMessages = await collectI18nMessages(options);
+
+    // Transport the object as a json string for improved parsing performance
+    const serialized = JSON.stringify(allMessages);
+    return printProgram([
+        // const messages = JSON.parse("...")
+        constDeclaration(
+            "messages",
+            call(member(identifier("JSON"), "parse"), [literal(serialized)]),
+            {
+                comment: `Messages for locale '${options.locale}', keyed by package name and message id`
+            }
+        ),
+        // export default messages
+        exportDefault(identifier("messages"))
+    ]);
+}
+
+/**
+ * Collects the messages of all packages for the given locale, keyed by package name and message id.
+ */
+export async function collectI18nMessages(
+    options: I18nMessageOptions
+): Promise<I18nMessagesRecord> {
+    const { locale, packages, loadI18n } = options;
     const packageMessages = new Map<string, Map<string, string>>();
     const packagesNeedingMessages = new Set<string>();
     let packageOverrides: Map<string, Map<string, string>> | undefined;
@@ -109,12 +158,14 @@ export async function generateI18nMessages(options: I18nMessageOptions): Promise
 
         // oxlint-disable-next-line no-await-in-loop
         const { messages, overrides } = await loadI18n(pkg, filePath);
-        if (pkg.name === appName) {
-            packageOverrides = overrides;
-        } else if (overrides) {
-            throw new ReportableError(
-                `Unexpected 'overrides' block in '${filePath}'. Overrides are only supported in the app.`
-            );
+        if (options.mode === "app") {
+            if (pkg.name === options.appName) {
+                packageOverrides = overrides;
+            } else if (overrides) {
+                throw new ReportableError(
+                    `Unexpected 'overrides' block in '${filePath}'. Overrides are only supported in the app.`
+                );
+            }
         }
 
         packageMessages.set(pkg.name, messages);
@@ -135,31 +186,20 @@ export async function generateI18nMessages(options: I18nMessageOptions): Promise
     }
 
     // Verify that required messages are present
-    for (const packageName of packagesNeedingMessages) {
-        const messages = packageMessages.get(packageName);
-        if (!messages) {
-            throw new ReportableError(
-                `Package '${packageName}' does not support locale '${locale}'. Either update the package or add messages from the app via 'overrides'.`
-            );
+    if (options.mode === "app") {
+        for (const packageName of packagesNeedingMessages) {
+            const messages = packageMessages.get(packageName);
+            if (!messages) {
+                throw new ReportableError(
+                    `Package '${packageName}' does not support locale '${locale}'. Either update the package or add messages from the app via 'overrides'.`
+                );
+            }
         }
     }
 
-    // Translate to json for codegen. Package name -> key -> i18n message template
-    const allMessages: Record<string, Record<string, string>> = {};
+    const allMessages: I18nMessagesRecord = {};
     for (const [packageName, messages] of packageMessages.entries()) {
         allMessages[packageName] = Object.fromEntries(messages.entries());
     }
-
-    // Transport the object as a json string for improved parsing performance
-    const serialized = JSON.stringify(allMessages);
-    return printProgram([
-        // const messages = JSON.parse("...")
-        constDeclaration(
-            "messages",
-            call(member(identifier("JSON"), "parse"), [literal(serialized)]),
-            { comment: `Messages for locale '${locale}', keyed by package name and message id` }
-        ),
-        // export default messages
-        exportDefault(identifier("messages"))
-    ]);
+    return allMessages;
 }

@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadI18nFile } from "../metadata/parseI18nYaml";
 import { TEST_DATA_DIR } from "../utils/testUtils";
-import { generateI18nIndex, generateI18nMessages } from "./generateI18n";
+import { collectI18nMessages, generateI18nIndex, generateI18nMessages } from "./generateI18n";
 
 describe("generateI18n", function () {
     it("should generate an i18n index module", function () {
@@ -38,6 +38,7 @@ describe("generateI18n", function () {
 
     it("should generate an i18n messages module", async function () {
         const generatedMessages = await generateI18nMessages({
+            mode: "app",
             locale: "de",
             appName: "app-name",
             packages: [
@@ -70,6 +71,7 @@ describe("generateI18n", function () {
 
     it("should generate an i18n messages module with overrides from app", async function () {
         const generatedMessages = await generateI18nMessages({
+            mode: "app",
             locale: "de",
             appName: "app",
             packages: [
@@ -96,5 +98,57 @@ describe("generateI18n", function () {
 
           export default messages;"
         `);
+    });
+
+    it("fails in app mode when a package does not provide the requested locale", async function () {
+        await expect(() =>
+            collectI18nMessages({
+                mode: "app",
+                locale: "en",
+                appName: "app",
+                packages: [
+                    {
+                        name: "package-foo",
+                        i18nPaths: new Map([
+                            ["de", resolve(TEST_DATA_DIR, "codegen-i18n-yaml/package-foo.yaml")]
+                        ])
+                    }
+                ],
+                loadI18n(_pkg, path) {
+                    return loadI18nFile(path);
+                }
+            })
+        ).rejects.toThrowErrorMatchingInlineSnapshot(
+            `[Error: Package 'package-foo' does not support locale 'en'. Either update the package or add messages from the app via 'overrides'.]`
+        );
+    });
+
+    it("skips packages without the requested locale in test mode", async function () {
+        const messages = await collectI18nMessages({
+            mode: "test",
+            locale: "en",
+            packages: [
+                {
+                    name: "package-foo",
+                    i18nPaths: new Map([
+                        ["de", resolve(TEST_DATA_DIR, "codegen-i18n-yaml/package-foo.yaml")]
+                    ])
+                },
+                {
+                    name: "package-bar",
+                    i18nPaths: new Map([
+                        ["en", resolve(TEST_DATA_DIR, "codegen-i18n-yaml/package-bar.yaml")]
+                    ])
+                }
+            ],
+            loadI18n(_pkg, path) {
+                return loadI18nFile(path);
+            }
+        });
+        expect(messages).toEqual({
+            "package-bar": {
+                "from-bar": "Hello from bar"
+            }
+        });
     });
 });
