@@ -23,6 +23,10 @@ import { normalizePath } from "vite";
  */
 
 const VIRTUAL_PREFIX = "\0open-pioneer:";
+
+/** Matches the magic file names (`@@open-pioneer-*`) of the second encoding scheme. */
+export const MAGIC_FILENAME_RE = /@@open-pioneer/;
+
 const VIRTUAL_PREFIX_RE = /\0open-pioneer:(?<suffix>.*)/;
 
 const APP_MODULE = "@@open-pioneer-app";
@@ -101,7 +105,7 @@ export interface VirtualTestSupportModule {
  * These regular expressions should match against our virtual modules (see above)
  * but should filter out as many unrelated module ids as possible for performance.
  */
-export const VIRTUAL_ID_FILTER = [/^\0?open-pioneer:/, /[?&]open-pioneer/, /@@open-pioneer/];
+export const VIRTUAL_ID_FILTER = [/^\0?open-pioneer:/, /[?&]open-pioneer/, MAGIC_FILENAME_RE];
 
 /**
  * Takes a module id as input and parses it.

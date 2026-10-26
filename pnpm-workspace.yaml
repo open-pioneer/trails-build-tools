@@ -58,7 +58,7 @@ catalog:
   rimraf: ^6.1.3
   tsdown: ^0.23.0
   vite: ^8.3.1
-  vitest: ^5.0.2
+  vitest: ^5.0.4
 
 catalogs:
   # Used in integration tests, no need to keep these up to date

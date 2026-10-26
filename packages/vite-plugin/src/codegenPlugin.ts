@@ -13,6 +13,7 @@ import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
 import { generateTestSupport } from "./codegen/generateTestSupport";
 import {
     findPackageJson,
+    MAGIC_FILENAME_RE,
     parseVirtualModuleId,
     serializeModuleId,
     VIRTUAL_ID_FILTER
@@ -36,6 +37,7 @@ export function codegenPlugin(): VitePlugin {
     let isDev!: boolean;
     let isTestRun!: boolean;
     let rootDir!: string;
+    let resolvedRoot!: string;
     let repository!: MetadataRepository;
     let deploymentModule!: DeploymentModule;
 
@@ -54,6 +56,7 @@ export function codegenPlugin(): VitePlugin {
         },
 
         configResolved(config) {
+            resolvedRoot = normalizePath(config.root);
             deploymentModule = new DeploymentModule(isDev, config.base);
         },
 
@@ -70,6 +73,20 @@ export function codegenPlugin(): VitePlugin {
                 try {
                     if (!importer) {
                         return undefined;
+                    }
+
+                    // Vite turns ids inside the root into root-relative URLs ("/packages/x/@@open-pioneer-app?...").
+                    // Vitest's fs module cache re-resolves those URLs without the importer that produced them,
+                    // so map them back to the absolute id.
+                    if (
+                        moduleId.startsWith("/") &&
+                        !moduleId.startsWith(resolvedRoot + "/") &&
+                        MAGIC_FILENAME_RE.test(moduleId)
+                    ) {
+                        const absoluteId = resolvedRoot + moduleId;
+                        if (parseVirtualModuleId(absoluteId)) {
+                            return absoluteId;
+                        }
                     }
 
                     if (parseVirtualModuleId(moduleId)) {

@@ -1,10 +1,12 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { globSync } from "tinyglobby";
 import { describe, expect, it, onTestFailed } from "vitest";
+import { startVitest } from "vitest/node";
+import { pioneer } from ".";
 import { TEMP_DATA_DIR, TEST_DATA_DIR, runViteBuild } from "./utils/testUtils";
 
 describe("app metadata", () => {
@@ -548,6 +550,49 @@ describe("test support", () => {
             /'open-pioneer:test-support' may only be imported from tests\./
         );
     });
+});
+
+describe("vitest", () => {
+    it("resolves virtual modules on warm runs", async () => {
+        const cacheDir = resolve(TEMP_DATA_DIR, "vitest-fs-module-cache");
+        rmSync(cacheDir, { recursive: true, force: true });
+
+        expect(await runFixture(cacheDir)).toEqual([]);
+        expect(await runFixture(cacheDir)).toEqual([]);
+        expect(await runFixture(cacheDir)).toEqual([]);
+    });
+
+    /** Runs the tests of the fixture with vitest and returns the messages of all errors. */
+    async function runFixture(cacheDir: string): Promise<string[]> {
+        const root = resolve(TEST_DATA_DIR, "vitest-fs-module-cache");
+        const vitest = await startVitest(
+            [],
+            {
+                root,
+                config: false,
+                watch: false,
+                reporters: [],
+                fsModuleCache: true,
+                fsModuleCachePath: cacheDir
+            },
+            { root, cacheDir, plugins: [pioneer({ apps: ["app"] })] }
+        );
+        try {
+            const errors = vitest.state.getUnhandledErrors().map((e) => String(e));
+            for (const file of vitest.state.getFiles()) {
+                errors.push(...(file.result?.errors ?? []).map((e) => e.message));
+                for (const task of file.tasks) {
+                    errors.push(...(task.result?.errors ?? []).map((e) => e.message));
+                }
+            }
+            if (vitest.state.getFiles().length === 0) {
+                errors.push("No test files found");
+            }
+            return errors;
+        } finally {
+            await vitest.close();
+        }
+    }
 });
 
 function findModuleContaining(dir: string, needle: string) {
