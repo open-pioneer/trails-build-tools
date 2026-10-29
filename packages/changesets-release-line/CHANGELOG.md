@@ -1,5 +1,11 @@
 # @open-pioneer/changesets-release-line
 
+## 0.2.2
+
+### Patch Changes
+
+- 4e657f0: Update dependencies
+
 ## 0.2.1
 
 ### Patch Changes

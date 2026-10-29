@@ -1,5 +1,15 @@
 # Changelog @open-pioneer/build-package-cli
 
+## 4.0.2
+
+### Patch Changes
+
+- 4e657f0: Update dependencies
+- Updated dependencies [32fdaaa]
+- Updated dependencies [4e657f0]
+- Updated dependencies [5b85124]
+    - @open-pioneer/build-package@5.0.2
+
 ## 4.0.1
 
 ### Patch Changes
