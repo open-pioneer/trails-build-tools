@@ -1,5 +1,21 @@
 # Changelog @open-pioneer/build-package
 
+## 5.0.2
+
+### Patch Changes
+
+- 32fdaaa: Extract common functionality into @open-pioneer/cli-common
+- 4e657f0: Update dependencies
+- 5b85124: The compiler fails with an error when a package imports `open-pioneer:test-support`.
+  The module is reserved for tests and cannot be part of a published package.
+- Updated dependencies [32fdaaa]
+- Updated dependencies [32fdaaa]
+- Updated dependencies [4e657f0]
+- Updated dependencies [5b85124]
+    - @open-pioneer/cli-common@0.1.0
+    - @open-pioneer/build-common@5.1.0
+    - @open-pioneer/build-support@4.0.2
+
 ## 5.0.1
 
 ### Patch Changes
