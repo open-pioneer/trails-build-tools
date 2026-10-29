@@ -102,36 +102,6 @@ overrides:
   "ol>color-space": "-"
   "ol>color-rgba": "-"
 
-  # Downgrade, 3.2.2 is not signed: https://github.com/mafintosh/why-is-node-running/issues/90
-  "why-is-node-running@3.2.2": "3.2.1"
-
-  # https://github.com/advisories/GHSA-h67p-54hq-rp68, CVE-2026-53550
-  # https://github.com/advisories/GHSA-2883-xcg3-v3hh
-  "js-yaml@>=4.0.0 <4.3.2": "^4.3.2"
-
-  # https://github.com/advisories/GHSA-52cp-r559-cp3m, CVE-2026-59869
-  # https://github.com/advisories/GHSA-5p4m-2wfm-xmqj
-  # https://github.com/advisories/GHSA-2883-xcg3-v3hh
-  "js-yaml@>=3.0.0 <3.15.2": "^3.15.2"
-
-  # https://github.com/advisories/GHSA-3jxr-9vmj-r5cp, CVE-2026-13149
-  # https://github.com/advisories/GHSA-mh99-v99m-4gvg, CVE-2026-14257
-  # https://github.com/advisories/GHSA-rgw5-rvv9-x895, CVE-2026-69152
-  "brace-expansion@<1.1.18": "^1.1.18"
-  "brace-expansion@>=3.0.0 <5.0.8": "^5.0.9"
-
-  # https://github.com/advisories/GHSA-xvcm-6775-5m9r, CVE-2026-59880
-  "immutable@>=5.0.0 <5.1.8": "^5.1.8"
-
-  # https://github.com/advisories/GHSA-fxqj-rqcc-2cmp, CVE-2026-69153
-  "postcss@<=8.5.22": "^8.5.23"
-
-  # https://github.com/advisories/GHSA-2v37-7h3g-55p8, CVE-2026-67213
-  "nanoid@<3.3.17": "^3.3.17"
-
-  # https://github.com/advisories/GHSA-68fv-2mgg-jv7q, CVE-2026-93749
-  "source-map-js@>=1.0.0 <1.2.2": "^1.2.2"
-
 audit:
   level: "moderate"
 
@@ -143,19 +113,6 @@ auditConfig:
     # https://github.com/advisories/GHSA-qjx8-664m-686j, CVE-2026-46625
     - GHSA-qjx8-664m-686j
 
-    # https://github.com/advisories/GHSA-h67p-54hq-rp68, CVE-2026-53550
-    - GHSA-h67p-54hq-rp68
-
-    # https://github.com/advisories/GHSA-mh99-v99m-4gvg, CVE-2026-14257
-    - GHSA-mh99-v99m-4gvg
-
-    # https://github.com/advisories/GHSA-vfj7-8cjw-p6xm CVE-2026-93687
-    - GHSA-vfj7-8cjw-p6xm
-
-    # https://github.com/advisories/GHSA-hp3w-g68c-fv3c, CVE-2026-97058
-    - GHSA-hp3w-g68c-fv3c
-
-allowUnusedPatches: true
 patchedDependencies: {}
 
 peerDependencyRules:
@@ -167,9 +124,6 @@ peerDependencyRules:
     "@open-pioneer/runtime-react-support@^1.0.2": "*"
     "@open-pioneer/core": "*"
 
-    # See overrides
-    "fdir>picomatch": "*"
-
 allowBuilds:
   "@parcel/watcher": true
   esbuild: true
@@ -179,8 +133,6 @@ allowBuilds:
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - "undici-types@6.21.0"
-  - "semver@6.3.1"
-  - "chokidar@4.0.3"
 
 # Workaround for current problems regarding our vite plugin + vite's optimizeDeps feature
 shamefullyHoist: true
