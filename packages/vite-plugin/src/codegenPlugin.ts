@@ -6,6 +6,8 @@ import { dirname } from "node:path";
 import { cwd } from "node:process";
 import { RuntimeSupport } from "@open-pioneer/build-common";
 import { normalizePath, Rolldown, UserConfig, Plugin as VitePlugin } from "vite";
+import type {} from "vitest/config"; // Pulls in the configureVitest() signature for the vite plugin
+import type { VitestPluginContext } from "vitest/node";
 import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
@@ -33,19 +35,7 @@ type SourceDescription = Rolldown.SourceDescription;
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
 
-/**
- * The subset of the context that vitest passes to a plugin's `configureVitest` hook.
- * Declared here because the plugin has no dependency on vitest.
- */
-interface VitestPluginContext {
-    defineCacheKeyGenerator(
-        generator: (context: { id: string }) => string | undefined | null | false
-    ): void;
-}
-
-export function codegenPlugin(): VitePlugin & {
-    configureVitest(context: VitestPluginContext): void;
-} {
+export function codegenPlugin(): VitePlugin {
     let isDev!: boolean;
     let isTestRun!: boolean;
     let rootDir!: string;
@@ -72,7 +62,7 @@ export function codegenPlugin(): VitePlugin & {
             deploymentModule = new DeploymentModule(isDev, config.base);
         },
 
-        configureVitest(context) {
+        configureVitest(context: VitestPluginContext) {
             // Don't cache virtual modules.
             context.defineCacheKeyGenerator(({ id }) => {
                 if (parseVirtualModuleId(id)) {
@@ -80,6 +70,15 @@ export function codegenPlugin(): VitePlugin & {
                 }
                 return undefined;
             });
+
+            // Vitest watches files through its root vite server only. A project with its own
+            // vite server (e.g. a browser project) gets a separate instance of this plugin, and
+            // that server has no watcher, so vite never calls `watchChange` on it.
+            const onFileChanged = (path: string) => repository.onFileChanged(normalizePath(path));
+            const watcher = context.vitest.vite.watcher;
+            watcher.on("add", onFileChanged);
+            watcher.on("change", onFileChanged);
+            watcher.on("unlink", onFileChanged);
         },
 
         async buildStart(this: PluginContext) {
