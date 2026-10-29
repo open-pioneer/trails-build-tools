@@ -263,7 +263,7 @@ function serializeSourceInfoModule(mod: VirtualSourceInfoModule): string {
 
 function getSourceFile(moduleId: string) {
     const sourceFile = moduleId.match(SOURCE_FILE_RE)?.[1];
-    if (!sourceFile || moduleId[0] == "\0") {
+    if (!sourceFile || moduleId[0] === "\0") {
         return undefined;
     }
     return sourceFile;
@@ -277,7 +277,7 @@ export function findPackageJson(startDir: string, rootDir: string) {
             return candidate;
         }
 
-        if (normalizePath(dir) == normalizePath(rootDir)) {
+        if (normalizePath(dir) === normalizePath(rootDir)) {
             return undefined;
         }
 
