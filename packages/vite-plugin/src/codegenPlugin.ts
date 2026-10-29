@@ -33,7 +33,19 @@ type SourceDescription = Rolldown.SourceDescription;
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:codegen");
 
-export function codegenPlugin(): VitePlugin {
+/**
+ * The subset of the context that vitest passes to a plugin's `configureVitest` hook.
+ * Declared here because the plugin has no dependency on vitest.
+ */
+interface VitestPluginContext {
+    defineCacheKeyGenerator(
+        generator: (context: { id: string }) => string | undefined | null | false
+    ): void;
+}
+
+export function codegenPlugin(): VitePlugin & {
+    configureVitest(context: VitestPluginContext): void;
+} {
     let isDev!: boolean;
     let isTestRun!: boolean;
     let rootDir!: string;
@@ -58,6 +70,16 @@ export function codegenPlugin(): VitePlugin {
         configResolved(config) {
             resolvedRoot = normalizePath(config.root);
             deploymentModule = new DeploymentModule(isDev, config.base);
+        },
+
+        configureVitest(context) {
+            // Don't cache virtual modules.
+            context.defineCacheKeyGenerator(({ id }) => {
+                if (parseVirtualModuleId(id)) {
+                    return false;
+                }
+                return undefined;
+            });
         },
 
         async buildStart(this: PluginContext) {
