@@ -4,6 +4,20 @@
 import { PackageConfig, RuntimeSupport } from "@open-pioneer/build-common";
 
 /**
+ * The dependency graph of a root package: the root itself and every Trails package reachable from it.
+ */
+export interface AnalyzedPackageGraph {
+    /** The package the analysis started from. */
+    rootPackage: AnalyzedPackage;
+
+    /**
+     * Trails packages in the graph.
+     * Includes the root package itself!
+     */
+    packages: AnalyzedPackage[];
+}
+
+/**
  * Contains build-time information about an app.
  */
 export interface AnalyzedApp {

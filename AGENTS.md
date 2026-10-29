@@ -56,6 +56,8 @@ To do so, `MetadataRepository` starts at the app's `package.json`, visits every 
 `build.config.mjs` or published package metadata, and caches each result together with the files that produced it, so a
 change to one `package.json`, `build.config.mjs` or i18n YAML invalidates exactly that entry and triggers a reload.
 A Trails package that appears at two locations in one app is a build error.
+`open-pioneer:test-support` runs the same walk from the importing package through `getTestSupportMetadata`, which
+skips the app-only steps such as the runtime metadata version.
 
 The package compiler produces what the plugin later consumes from `node_modules`.
 `buildPackage.ts` runs the steps in order: JavaScript, declarations, styles, i18n, assets, `package.json`, auxiliary

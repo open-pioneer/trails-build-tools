@@ -60,6 +60,18 @@ Entry points are listed in the build config, and every other module stays privat
 The module of a Trails package that exports its service classes, `./services` by default.
 It is an entry point that the author does not list.
 
+**Root package**:
+The Trails package a dependency analysis starts from.
+It is the app package when the plugin builds an app, and the importing package when a test imports
+`open-pioneer:test-support`.
+_Avoid_: root, which also names the source root and the workspace root
+
+**Dependency graph**:
+The root package together with every Trails package reachable from it through `dependencies`, `peerDependencies` and
+`optionalDependencies`.
+The plugin analyzes it once per root package and reads messages, styles and services from the packages in it.
+_Avoid_: package graph, package list
+
 ### Configuration and metadata
 
 **Build config**:

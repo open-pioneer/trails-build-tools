@@ -542,6 +542,25 @@ describe("test support", () => {
         }
     });
 
+    it("generates an error if test support is imported from a plain package", async () => {
+        // The importing package lives outside the source root and has no package metadata.
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-test-support-plain-importer/src");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-test-support-plain-importer");
+        const error = await expectAsyncError(() =>
+            runViteBuild({
+                outDir,
+                rootDir,
+                pluginOptions: {
+                    apps: ["test-app"]
+                },
+                testMode: true
+            })
+        );
+        expect(error.message).toMatch(
+            /'open-pioneer:test-support' can only be imported from a Trails package\. The package in .*plain-pkg has neither a build\.config\.mjs nor package metadata\./
+        );
+    });
+
     it("generates an error if test support is imported outside a test run", async () => {
         const error = await expectAsyncError(() =>
             buildTestSupportApp("app-default", { disableTestMode: true })

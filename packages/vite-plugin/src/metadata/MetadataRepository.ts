@@ -14,6 +14,7 @@ import { loadPackageMetadata } from "./loadPackageMetadata";
 import {
     AnalyzedApp,
     AnalyzedPackage,
+    AnalyzedPackageGraph,
     DiscoveredPackage,
     PackageDependency,
     PackageLocation
@@ -95,24 +96,68 @@ export class MetadataRepository {
     async getAppMetadata(ctx: MetadataContext, appDirectory: string): Promise<AnalyzedApp> {
         isDebug && debug(`Request for app metadata of ${appDirectory}`);
 
-        const appPackageMetadata = await this.#getPackageMetadata(ctx, {
-            type: "absolute",
-            directory: appDirectory
-        });
-        if (!appPackageMetadata) {
+        const graph = await this.#analyzeDependencyGraph(ctx, appDirectory);
+        if (!graph) {
             throw new ReportableError(
                 `Failed to parse app metadata in ${appDirectory}. Ensure that the app is a valid source package.`
             );
         }
 
-        // App's locales define which locales must be supported.
-        const appLocales = Array.from(appPackageMetadata.i18nPaths.keys());
+        const { rootPackage: appPackage, packages } = graph;
+        const appMetadata: AnalyzedApp = {
+            name: appPackage.name,
+            directory: appPackage.directory,
+            // App's locales define which locales must be supported.
+            locales: appPackage.locales,
+            packageJsonPath: appPackage.packageJsonPath,
+            appPackage,
+            packages,
+            runtimeMetadataVersion: detectRuntimeMetadataVersion(packages)
+        };
+        return appMetadata;
+    }
+
+    /**
+     * Returns the dependency graph of the package in `packageDirectory` that imports `open-pioneer:test-support`.
+     * The package is not an app, so none of the app-only checks (such as the runtime metadata version) run.
+     */
+    async getTestSupportMetadata(
+        ctx: MetadataContext,
+        packageDirectory: string
+    ): Promise<AnalyzedPackageGraph> {
+        isDebug && debug(`Request for test support metadata of ${packageDirectory}`);
+
+        const graph = await this.#analyzeDependencyGraph(ctx, packageDirectory);
+        if (!graph) {
+            throw new ReportableError(
+                "'open-pioneer:test-support' can only be imported from a Trails package." +
+                    ` The package in ${packageDirectory} has neither a ${BUILD_CONFIG_NAME} nor package metadata.`
+            );
+        }
+        return graph;
+    }
+
+    /**
+     * Visits the root package in `rootDirectory` and its dependencies recursively.
+     * Returns undefined when the root package is a plain package.
+     */
+    async #analyzeDependencyGraph(
+        ctx: MetadataContext,
+        rootDirectory: string
+    ): Promise<AnalyzedPackageGraph | undefined> {
+        const rootPackage = await this.#getPackageMetadata(ctx, {
+            type: "absolute",
+            directory: rootDirectory
+        });
+        if (!rootPackage) {
+            return undefined;
+        }
 
         // Map to ensure that we don't return duplicates. Key: package name
         const packageMetadataByName = new Map<string, AnalyzedPackage>();
         const packageSeenByDirectory = new Set<string>();
-        packageMetadataByName.set(appPackageMetadata.name, appPackageMetadata);
-        packageSeenByDirectory.add(appPackageMetadata.directory);
+        packageMetadataByName.set(rootPackage.name, rootPackage);
+        packageSeenByDirectory.add(rootPackage.directory);
 
         // Recursively visit all dependencies.
         // Detected metadata is placed into `packageMetadata`.
@@ -148,24 +193,12 @@ export class MetadataRepository {
             });
             return await Promise.all(jobs);
         };
-        await visitDependencies(
-            appPackageMetadata.dependencies,
-            appPackageMetadata.packageJsonPath
-        );
+        await visitDependencies(rootPackage.dependencies, rootPackage.packageJsonPath);
 
-        const packages = Array.from(packageMetadataByName.values());
-        const runtimeMetadataVersion = detectRuntimeMetadataVersion(packages);
-
-        const appMetadata: AnalyzedApp = {
-            name: appPackageMetadata.name,
-            directory: appPackageMetadata.directory,
-            locales: appLocales,
-            packageJsonPath: appPackageMetadata.packageJsonPath,
-            appPackage: appPackageMetadata,
-            packages,
-            runtimeMetadataVersion
+        return {
+            rootPackage,
+            packages: Array.from(packageMetadataByName.values())
         };
-        return appMetadata;
     }
 
     /**

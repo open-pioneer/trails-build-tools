@@ -195,6 +195,21 @@ export function codegenPlugin(): VitePlugin {
                     }
 
                     const ctx = createMetadataContextFromRolldown(this);
+                    if (mod.type === "test-support") {
+                        const { rootPackage, packages } = await repository.getTestSupportMetadata(
+                            ctx,
+                            dirname(packageJsonPath)
+                        );
+                        const generatedSourceCode = await generateTestSupport({
+                            rootPackage,
+                            locale: mod.locale,
+                            packages,
+                            loadI18n: createI18nLoader(ctx, repository)
+                        });
+                        isDebug && debug("Generated test support: %O", generatedSourceCode);
+                        return jsModule(generatedSourceCode);
+                    }
+
                     const appMetadata = await repository.getAppMetadata(
                         ctx,
                         dirname(packageJsonPath)
@@ -243,16 +258,6 @@ export function codegenPlugin(): VitePlugin {
                                 loadI18n: createI18nLoader(ctx, repository)
                             });
                             isDebug && debug("Generated i18n messages: %O", generatedSourceCode);
-                            return jsModule(generatedSourceCode);
-                        }
-                        case "test-support": {
-                            const generatedSourceCode = await generateTestSupport({
-                                rootPackage: appMetadata.appPackage,
-                                locale: mod.locale,
-                                packages: appMetadata.packages,
-                                loadI18n: createI18nLoader(ctx, repository)
-                            });
-                            isDebug && debug("Generated test support: %O", generatedSourceCode);
                             return jsModule(generatedSourceCode);
                         }
                         default:
