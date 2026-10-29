@@ -32,10 +32,12 @@ export async function generateTestSupport(options: TestSupportOptions): Promise<
         ? await collectI18nMessages({ mode: "test", locale, packages, loadI18n })
         : {};
     return printProgram([
-        exportNamed(constDeclaration("testMessages", jsonToExpression(messages)), {
+        exportNamed(constDeclaration("messages", jsonToExpression(messages)), {
             comment: `Messages for locale '${locale}', keyed by package name and message id`
         }),
-        exportNamed(constDeclaration("testMessagesLocale", literal(locale)))
+        exportNamed(constDeclaration("messageLocale", literal(locale)), {
+            comment: "The message locale that matches `messages`."
+        })
     ]);
 }
 

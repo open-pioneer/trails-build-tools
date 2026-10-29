@@ -1,2 +1,2 @@
-import { testMessages, testMessagesLocale } from "open-pioneer:test-support";
-console.log(testMessages, testMessagesLocale);
+import { messages, messageLocale } from "open-pioneer:test-support";
+console.log(messages, messageLocale);

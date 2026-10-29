@@ -133,11 +133,11 @@ declare module "open-pioneer:deployment" {
  * @example
  * // Render a component with the real messages of its package.
  * import { PackageContextProvider } from "@open-pioneer/test-utils/react";
- * import { testMessages, testMessagesLocale } from "open-pioneer:test-support";
+ * import { messages, messageLocale } from "open-pioneer:test-support";
  * import { render } from "@testing-library/react"; // or import { render } from "vitest-browser-react";
  *
  * render(
- *     <PackageContextProvider messages={testMessages} locale={testMessagesLocale}>
+ *     <PackageContextProvider messages={messages} locale={messageLocale}>
  *         <MyComponent />
  *     </PackageContextProvider>
  * );
@@ -145,7 +145,7 @@ declare module "open-pioneer:deployment" {
  * @example
  * // Request a different locale.
  * // The locale must be listed in the `i18n` array of the package's `build.config.mjs`.
- * import { testMessages, testMessagesLocale } from "open-pioneer:test-support?locale=de";
+ * import { messages, messageLocale } from "open-pioneer:test-support?locale=de";
  */
 declare module "open-pioneer:test-support" {
     /**
@@ -154,13 +154,13 @@ declare module "open-pioneer:test-support" {
      * The record fits the `messages` property of `PackageContextProvider` from `@open-pioneer/test-utils/react`.
      * It is empty when the package does not declare any locales in its `build.config.mjs`.
      */
-    export const testMessages: Record<string, Record<string, string>>;
+    export const messages: Record<string, Record<string, string>>;
 
     /**
-     * The locale of {@link testMessages}.
+     * The locale of {@link messages}.
      * It is an empty string when the package does not declare any locales.
      */
-    export const testMessagesLocale: string;
+    export const messageLocale: string;
 }
 
 /**
@@ -172,10 +172,10 @@ declare module "open-pioneer:test-support?*" {
     /**
      * I18n messages keyed by package name and message id, in the requested locale.
      */
-    export const testMessages: Record<string, Record<string, string>>;
+    export const messages: Record<string, Record<string, string>>;
 
     /**
      * The requested locale.
      */
-    export const testMessagesLocale: string;
+    export const messageLocale: string;
 }
