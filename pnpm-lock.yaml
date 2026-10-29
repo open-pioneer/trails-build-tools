@@ -279,8 +279,8 @@ catalogs:
       specifier: ^7.8.5
       version: 7.8.5
     spdx-expression-parse:
-      specifier: ^4.0.0
-      version: 4.0.0
+      specifier: ^5.0.0
+      version: 5.0.0
     spdx-satisfies:
       specifier: ^6.0.0
       version: 6.0.0
@@ -735,7 +735,7 @@ importers:
         version: 5.5.0
       spdx-expression-parse:
         specifier: 'catalog:'
-        version: 4.0.0
+        version: 5.0.0
       spdx-satisfies:
         specifier: 'catalog:'
         version: 6.0.0
@@ -3692,8 +3692,8 @@ packages:
   spdx-expression-parse@3.0.1:
     resolution: {integrity: sha512-cbqHunsQWnJNE6KhVSMsMeH5H/L9EpymbzqTQ3uLwNCLZ1Q481oWaofqH7nO6V07xlXwY6PhQdQ2IedWx/ZK4Q==}
 
-  spdx-expression-parse@4.0.0:
-    resolution: {integrity: sha512-Clya5JIij/7C6bRR22+tnGXbc4VKlibKSVj2iHvVeX5iMW7s1SIQlqu699JkODJJIhh/pUu8L0/VLh8xflD+LQ==}
+  spdx-expression-parse@5.0.0:
+    resolution: {integrity: sha512-vngmw3Rgn+o2arXNbnZaj5UtOEBuWBfvaI+Wc8GFfykIhA5/vdK9/Sp/XkLv63dykz2rxKDvKEHupF5P0FORcQ==}
 
   spdx-license-ids@3.0.23:
     resolution: {integrity: sha512-CWLcCCH7VLu13TgOH+r8p1O/Znwhqv/dbb6lqWy67G+pT1kHmeD/+V36AVb/vq8QMIQwVShJ6Ssl5FPh0fuSdw==}
@@ -6766,7 +6766,7 @@ snapshots:
       spdx-exceptions: 2.5.0
       spdx-license-ids: 3.0.23
 
-  spdx-expression-parse@4.0.0:
+  spdx-expression-parse@5.0.0:
     dependencies:
       spdx-exceptions: 2.5.0
       spdx-license-ids: 3.0.23
