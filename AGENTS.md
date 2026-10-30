@@ -173,6 +173,9 @@ A release pull request is opened automatically from the pending changesets and p
   The primary exports go to the top.
   Helpers, private functions, and supporting types follow in the order a reader first meets them.
   Reorder only when module evaluation order forces it.
+- **Declare the types of a signature before the function or class that uses them.**
+  An options interface, a parameter type and a return type come directly above the function, method, or class whose
+  signature names them, so a reader meets the shape before the code that takes or returns it.
 - **Use `#` for private fields and methods**, never the `private` keyword.
 - **Import Node built-ins with the `node:` prefix.**
 - **Fixtures are directories, not strings.**

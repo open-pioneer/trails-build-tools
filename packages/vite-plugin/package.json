@@ -36,6 +36,7 @@
         "@open-pioneer/build-common": "workspace:^",
         "debug": "catalog:",
         "esrap": "catalog:",
+        "fast-equals": "catalog:",
         "js-yaml": "catalog:",
         "oxc-resolver": "catalog:",
         "tinyglobby": "catalog:",

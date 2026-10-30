@@ -63,22 +63,22 @@ import { AsyncLocalStorage } from "node:async_hooks";
 type Path = string & { readonly [pathBrand]: true };
 function toPath(input: string): Path;
 
-interface QueryOptions<Params extends JsonValue, Value> {
+interface QueryOptions<Params, Value> {
     name: string;
     query(ctx: QueryContext, params: Params): Promise<Value>;
     equals?(a: Value, b: Value): boolean;
 }
 
-interface Query<Params extends JsonValue, Value> {
+interface Query<Params, Value> {
     readonly name: string;
     // The remaining members are private to the database.
 }
 
-function defineQuery<Params extends JsonValue, Value>(options: QueryOptions<Params, Value>): Query<Params, Value>;
+function defineQuery<Params, Value>(options: QueryOptions<Params, Value>): Query<Params, Value>;
 
 interface QueryContext<Host = unknown> {
     readonly host: Host;
-    get<Params extends JsonValue, Value>(query: Query<Params, Value>, params: Params): Promise<Value>;
+    get<Params, Value>(query: Query<Params, Value>, params: Params): Promise<Value>;
     readFile(path: Path): Promise<string>;
     fileExists(path: Path): Promise<boolean>;
     watchFile(path: Path): void;
@@ -92,7 +92,7 @@ interface Reader {
 
 class QueryDb<Host = unknown> {
     constructor(options: { host: Host });
-    get<Params extends JsonValue, Value>(query: Query<Params, Value>, params: Params, reader?: Reader): Promise<Value>;
+    get<Params, Value>(query: Query<Params, Value>, params: Params, reader?: Reader): Promise<Value>;
     fileChanged(path: Path): void;
     clear(): void;
 }
@@ -103,7 +103,10 @@ class QueryDb<Host = unknown> {
 Every public method that takes or hands out a file path uses `Path`, so a path that reaches the database is normalized
 by construction.
 
-Parameters are JSON data: strings, numbers, booleans, `null`, arrays and plain objects.
+Parameters are JSON data: strings, finite numbers, booleans, `null`, arrays and plain objects.
+`Params` is not constrained in the type system, because a constraint would reject interface declarations, which
+TypeScript does not give an implicit index signature.
+The database checks the rule at runtime instead and rejects a `get` whose parameters break it.
 The database looks entries up by a canonical serialization of the parameters with sorted object keys.
 Two parameter objects with the same content address the same entry.
 The database does not know which string parameters are paths, so a query that takes a path as parameter takes a `Path`.
@@ -260,8 +263,8 @@ computation failed, and when a cycle is detected.
 
 ## Delivery
 
-- The code lives in `packages/vite-plugin/src/query-db/`: `QueryDb.ts`, `defineQuery.ts`, `Path.ts`, and the tests next
-  to them.
+- The code lives in `packages/vite-plugin/src/query-db/`: `QueryDb.ts`, `defineQuery.ts`, `canonicalJson.ts`,
+  `Path.ts`, and the tests next to them.
   Types are declared as named interfaces, never inline.
 - `fast-equals` is added to the `catalog:` section of `pnpm-workspace.yaml` and to the dependencies of the Vite plugin.
 - Tests define their queries in the test file.

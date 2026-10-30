@@ -1,6 +1,6 @@
 # Scaffold the query database with single-level caching
 
-Status: ready-for-agent
+Status: done
 Type: task
 
 Spec: `.scratch/query-db/spec.md`
@@ -14,12 +14,14 @@ Nothing is invalidated yet, and queries cannot read other queries or files yet.
 Files to create:
 
 - `packages/vite-plugin/src/query-db/Path.ts`: the branded `Path` type and `toPath`.
-- `packages/vite-plugin/src/query-db/defineQuery.ts`: `defineQuery`, `Query`, `QueryOptions`, `QueryContext`, `Reader`
-  and the `JsonValue` type for parameters.
+- `packages/vite-plugin/src/query-db/defineQuery.ts`: `defineQuery`, `Query`, `QueryOptions`, `QueryContext`, `Reader`.
+  Params are unconstrained in the type system and checked at runtime.
   `QueryContext` already declares every method from the spec.
   The methods that are not implemented yet throw an `Error` saying so.
 - `packages/vite-plugin/src/query-db/QueryDb.ts`: the `QueryDb` class with `get`, `fileChanged` and `clear`.
   `fileChanged` is a no-op in this issue.
+- `packages/vite-plugin/src/query-db/canonicalJson.ts`: `canonicalJson`, the lookup key of an entry, which also
+  rejects params that are not plain JSON data.
 - Tests next to each file.
 
 Files to change:
