@@ -3,6 +3,8 @@
 
 import { assert, describe, expect, it } from "vitest";
 import { defineQuery, QueryContext } from "./defineQuery";
+import { FileSystem } from "./FileSystem";
+import { Path, toPath } from "./Path";
 import { QUERY_DB_INTERNALS, QueryDb } from "./QueryDb";
 
 describe("caching", function () {
@@ -352,21 +354,14 @@ describe("query context", function () {
     });
 
     it("rejects context methods that are not implemented yet", async function () {
-        const calls: Array<(ctx: QueryContext) => unknown> = [
-            (ctx) => ctx.readFile("/x" as never),
-            (ctx) => ctx.fileExists("/x" as never),
-            (ctx) => ctx.watchFile("/x" as never),
-            (ctx) => ctx.warn("x")
-        ];
-
-        for (const [index, call] of calls.entries()) {
-            const Caller = defineQuery<{ index: number }, unknown>({
-                name: "Caller",
-                query: async (ctx) => call(ctx)
-            });
-            const db = createDb();
-            await expect(db.get(Caller, { index })).rejects.toThrow(/is not implemented yet/);
-        }
+        const Caller = defineQuery<null, void>({
+            name: "Caller",
+            async query(ctx) {
+                ctx.warn("x");
+            }
+        });
+        const db = createDb();
+        await expect(db.get(Caller, null)).rejects.toThrow(/is not implemented yet/);
     });
 });
 
@@ -482,10 +477,10 @@ describe("cycle detection", function () {
     });
 
     it("detects a cycle through one of several concurrent inputs", async function () {
-        const leaf = createDeferred<number>();
+        const leafJob = createDeferred<number>();
         const Leaf = defineQuery<null, number>({
             name: "Leaf",
-            query: () => leaf.promise
+            query: () => leafJob.promise
         });
         const Root = defineQuery<null, number>({
             name: "Root",
@@ -503,13 +498,409 @@ describe("cycle detection", function () {
         await expect(db.get(Root, null)).rejects.toThrow(
             "Query cycle detected: Back(null) -> Root(null) -> Back(null)"
         );
-        leaf.resolve(1);
+        leafJob.resolve(1);
         assert.strictEqual(await db.get(Leaf, null), 1);
     });
 });
 
-function createDb(): QueryDb<undefined> {
-    return new QueryDb({ host: undefined });
+describe("file inputs", function () {
+    it("reads a file through the context and stores the text", async function () {
+        const file = toPath("/virtual/a.txt");
+        const fs = new MemoryFileSystem({ [file]: "hello" });
+
+        let upperCalls = 0;
+        const Upper = defineQuery<{ file: Path }, string>({
+            name: "Upper",
+            async query(ctx, params) {
+                upperCalls += 1;
+                return (await ctx.readFile(params.file)).toUpperCase();
+            }
+        });
+
+        const Length = defineQuery<{ file: Path }, number>({
+            name: "Length",
+            query: async (ctx, params) => (await ctx.readFile(params.file)).length
+        });
+
+        const db = createDb(fs);
+        assert.strictEqual(await db.get(Upper, { file }), "HELLO");
+        assert.strictEqual(await db.get(Upper, { file }), "HELLO");
+        assert.strictEqual(await db.get(Length, { file }), 5);
+        assert.strictEqual(upperCalls, 1);
+
+        assert.strictEqual(fs.reads(file), 1);
+        assert.deepEqual(db[QUERY_DB_INTERNALS].getInputs(Upper, { file }), [
+            `readFile("${file}")`
+        ]);
+    });
+
+    it("stores a missing file as a failure", async function () {
+        const fs = new MemoryFileSystem();
+        const file = toPath("/virtual/missing.txt");
+        const Read = defineQuery<{ file: Path }, string>({
+            name: "Read",
+            query: (ctx, params) => ctx.readFile(params.file)
+        });
+
+        const db = createDb(fs);
+        const error = await db.get(Read, { file }).catch((e) => e);
+        assert.instanceOf(error, Error);
+        assert.match(error.message, /ENOENT/);
+        await expect(db.get(Read, { file })).rejects.toBe(error);
+        assert.strictEqual(fs.reads(file), 1);
+    });
+
+    it("stores whether a file exists", async function () {
+        const present = toPath("/virtual/present.txt");
+        const absent = toPath("/virtual/absent.txt");
+        const fs = new MemoryFileSystem({ [present]: "" });
+
+        const Exists = defineQuery<{ file: Path }, boolean>({
+            name: "Exists",
+            query: (ctx, params) => ctx.fileExists(params.file)
+        });
+
+        const db = createDb(fs);
+        assert.isTrue(await db.get(Exists, { file: present }));
+        assert.isFalse(await db.get(Exists, { file: absent }));
+        assert.deepEqual(db[QUERY_DB_INTERNALS].getInputs(Exists, { file: absent }), [
+            `fileExists("${absent}")`
+        ]);
+    });
+
+    it("declares a watched file without reading it", async function () {
+        const file = toPath("/virtual/build.config.mjs");
+        const fs = new MemoryFileSystem({ [file]: "export default {}" });
+
+        let calls = 0;
+        const Config = defineQuery<{ file: Path }, number>({
+            name: "Config",
+            async query(ctx, params) {
+                ctx.watchFile(params.file);
+                calls += 1;
+                return calls;
+            }
+        });
+
+        const db = createDb(fs);
+        assert.strictEqual(await db.get(Config, { file }), 1);
+        assert.strictEqual(fs.reads(file), 0);
+        assert.deepEqual(db[QUERY_DB_INTERNALS].getInputs(Config, { file }), [
+            `watchFile("${file}")`
+        ]);
+    });
+});
+
+describe("invalidation", function () {
+    it("recomputes a chain of queries only as far as values change", async function () {
+        const file = toPath("/virtual/words.txt");
+        const fs = new MemoryFileSystem({ [file]: "a b" });
+
+        const callCounters = { text: 0, count: 0, summary: 0 };
+        const Text = defineQuery<{ file: Path }, string>({
+            name: "Text",
+            query(ctx, params) {
+                callCounters.text += 1;
+                return ctx.readFile(params.file);
+            }
+        });
+        const WordCount = defineQuery<{ file: Path }, number>({
+            name: "WordCount",
+            async query(ctx, params) {
+                callCounters.count += 1;
+                return (await ctx.get(Text, params)).split(" ").length;
+            }
+        });
+        const Summary = defineQuery<{ file: Path }, string>({
+            name: "Summary",
+            async query(ctx, params) {
+                callCounters.summary += 1;
+                return `${await ctx.get(WordCount, params)} words`;
+            }
+        });
+
+        const db = createDb(fs);
+        assert.strictEqual(await db.get(Summary, { file }), "2 words");
+        assert.deepEqual(callCounters, { text: 1, count: 1, summary: 1 });
+
+        // An edit recomputes the whole chain.
+        fs.write(file, "a b c");
+        db.fileChanged(file);
+        assert.strictEqual(await db.get(Summary, { file }), "3 words");
+        assert.deepEqual(callCounters, { text: 2, count: 2, summary: 2 });
+        assert.strictEqual(fs.reads(file), 2);
+
+        // A touch re-reads the file and recomputes nothing.
+        db.fileChanged(file);
+        assert.strictEqual(await db.get(Summary, { file }), "3 words");
+        assert.deepEqual(callCounters, { text: 2, count: 2, summary: 2 });
+        assert.strictEqual(fs.reads(file), 3);
+
+        // Word count remains the same: `WordCount` is reevaluated, but `Summary` is not.
+        fs.write(file, "x y z");
+        db.fileChanged(file);
+        assert.strictEqual(await db.get(Summary, { file }), "3 words");
+        assert.deepEqual(callCounters, { text: 3, count: 3, summary: 2 });
+    });
+
+    it("stops verifying at the first changed input", async function () {
+        const config = toPath("/virtual/config");
+        const a = toPath("/virtual/a");
+        const b = toPath("/virtual/b");
+        const fs = new MemoryFileSystem({ [config]: "a", [a]: "value a", [b]: "value b" });
+
+        const Selected = defineQuery<null, string>({
+            name: "Selected",
+            async query(ctx) {
+                const name = await ctx.readFile(config);
+                return ctx.readFile(name === "a" ? a : b);
+            }
+        });
+
+        const db = createDb(fs);
+        assert.strictEqual(await db.get(Selected, null), "value a");
+        assert.deepEqual(db[QUERY_DB_INTERNALS].getInputs(Selected, null), [
+            `readFile("${config}")`,
+            `readFile("${a}")`
+        ]);
+
+        fs.write(config, "b");
+        db.fileChanged(config);
+
+        fs.write(a, "changed a");
+        db.fileChanged(a);
+
+        assert.strictEqual(await db.get(Selected, null), "value b");
+        assert.strictEqual(fs.reads(config), 2);
+        assert.strictEqual(fs.reads(a), 1);
+        assert.strictEqual(fs.reads(b), 1);
+        assert.deepEqual(db[QUERY_DB_INTERNALS].getInputs(Selected, null), [
+            `readFile("${config}")`,
+            `readFile("${b}")`
+        ]);
+    });
+
+    it("recomputes a dependent of a watched file on every change", async function () {
+        const file = toPath("/virtual/build.config.mjs");
+        const fs = new MemoryFileSystem({ [file]: "" });
+
+        let calls = 0;
+        const Config = defineQuery<{ file: Path }, number>({
+            name: "Config",
+            async query(ctx, params) {
+                ctx.watchFile(params.file);
+                calls += 1;
+                return calls;
+            }
+        });
+
+        const Consumer = defineQuery<{ file: Path }, string>({
+            name: "Consumer",
+            query: async (ctx, params) => `run ${await ctx.get(Config, params)}`
+        });
+
+        const db = createDb(fs);
+        assert.strictEqual(await db.get(Consumer, { file }), "run 1");
+
+        db.fileChanged(file);
+        assert.strictEqual(await db.get(Consumer, { file }), "run 2");
+
+        db.fileChanged(file);
+        assert.strictEqual(await db.get(Consumer, { file }), "run 3");
+
+        assert.strictEqual(fs.reads(file), 0);
+    });
+
+    it("recovers a failed query when a missing file appears", async function () {
+        const fs = new MemoryFileSystem();
+        const file = toPath("/virtual/late.txt");
+
+        let calls = 0;
+        const Read = defineQuery<{ file: Path }, string>({
+            name: "Read",
+            query(ctx, params) {
+                calls += 1;
+                return ctx.readFile(params.file);
+            }
+        });
+
+        const db = createDb(fs);
+        await expect(db.get(Read, { file })).rejects.toThrow(/ENOENT/);
+        await expect(db.get(Read, { file })).rejects.toThrow(/ENOENT/);
+        assert.strictEqual(calls, 1);
+
+        fs.write(file, "here");
+        db.fileChanged(file);
+        assert.strictEqual(await db.get(Read, { file }), "here");
+        assert.strictEqual(calls, 2);
+    });
+
+    it("recomputes the dependents of a query that recovers from a failure", async function () {
+        const file = toPath("/virtual/number.txt");
+        const fs = new MemoryFileSystem({ [file]: "x" });
+
+        const Parse = defineQuery<{ file: Path }, number>({
+            name: "Parse",
+            async query(ctx, params) {
+                const text = await ctx.readFile(params.file);
+                const value = Number(text);
+                if (Number.isNaN(value)) {
+                    throw new Error(`not a number: ${text}`);
+                }
+                return value;
+            }
+        });
+
+        let calls = 0;
+        const Double = defineQuery<{ file: Path }, number>({
+            name: "Double",
+            async query(ctx, params) {
+                calls += 1;
+                return (await ctx.get(Parse, params)) * 2;
+            }
+        });
+
+        const db = createDb(fs);
+        await expect(db.get(Double, { file })).rejects.toThrow("not a number: x");
+
+        fs.write(file, "y");
+        db.fileChanged(file);
+        await expect(db.get(Double, { file })).rejects.toThrow("not a number: y");
+
+        fs.write(file, "21");
+        db.fileChanged(file);
+        assert.strictEqual(await db.get(Double, { file }), 42);
+        assert.strictEqual(calls, 3);
+    });
+
+    it("stores a computation that saw a fileChanged as maybe stale", async function () {
+        const file = toPath("/virtual/racy.txt");
+        const fs = new MemoryFileSystem({ [file]: "v1" });
+
+        const blocker = createDeferred<void>();
+        fs.beforeRead = () => blocker.promise;
+
+        let calls = 0;
+        const Read = defineQuery<{ file: Path }, string>({
+            name: "Read",
+            query(ctx, params) {
+                calls += 1;
+                return ctx.readFile(params.file);
+            }
+        });
+
+        // Start reads and captures the content, but they can't progress due to the blocker.
+        const db = createDb(fs);
+        const first = db.get(Read, { file });
+        const second = db.get(Read, { file });
+        await tick();
+
+        // Change files that are currently being read.
+        fs.write(file, "v2");
+        db.fileChanged(file);
+        fs.beforeRead = undefined;
+        blocker.resolve();
+
+        // The running read started before the change and delivers what it saw to every waiter.
+        assert.strictEqual(await first, "v1");
+        assert.strictEqual(await second, "v1");
+        assert.strictEqual(calls, 1);
+
+        assert.strictEqual(await db.get(Read, { file }), "v2");
+        assert.strictEqual(calls, 2);
+        assert.strictEqual(fs.reads(file), 2);
+    });
+
+    it("runs one verification for concurrent readers of a maybe stale entry", async function () {
+        const file = toPath("/virtual/shared.txt");
+        const fs = new MemoryFileSystem({ [file]: "same" });
+
+        let calls = 0;
+        const Read = defineQuery<{ file: Path }, string>({
+            name: "Read",
+            query(ctx, params) {
+                calls += 1;
+                return ctx.readFile(params.file);
+            }
+        });
+
+        const Upper = defineQuery<{ file: Path }, string>({
+            name: "Upper",
+            query: async (ctx, params) => (await ctx.get(Read, params)).toUpperCase()
+        });
+
+        const db = createDb(fs);
+        assert.strictEqual(await db.get(Upper, { file }), "SAME");
+        db.fileChanged(file);
+
+        const blocker = createDeferred<void>();
+        fs.beforeRead = () => blocker.promise;
+
+        const reads = [db.get(Upper, { file }), db.get(Upper, { file }), db.get(Read, { file })];
+        await tick();
+        blocker.resolve();
+
+        assert.deepEqual(await Promise.all(reads), ["SAME", "SAME", "same"]);
+        assert.strictEqual(calls, 1);
+        assert.strictEqual(fs.reads(file), 2);
+    });
+
+    it("forgets file leaves on clear", async function () {
+        const file = toPath("/virtual/cleared.txt");
+        const fs = new MemoryFileSystem({ [file]: "v1" });
+        const Read = defineQuery<{ file: Path }, string>({
+            name: "Read",
+            query: (ctx, params) => ctx.readFile(params.file)
+        });
+
+        const db = createDb(fs);
+        assert.strictEqual(await db.get(Read, { file }), "v1");
+        db.clear();
+
+        fs.write(file, "v2");
+        assert.strictEqual(await db.get(Read, { file }), "v2");
+        assert.strictEqual(fs.reads(file), 2);
+    });
+});
+
+function createDb(fileSystem?: FileSystem): QueryDb<undefined> {
+    return new QueryDb({ host: undefined, fileSystem });
+}
+
+class MemoryFileSystem implements FileSystem {
+    #files = new Map<Path, string>();
+    #reads = new Map<Path, number>();
+
+    // Lets a test hold a read open while it changes files behind it.
+    beforeRead: ((path: Path) => Promise<void>) | undefined;
+
+    constructor(files: Record<string, string> = {}) {
+        for (const [path, content] of Object.entries(files)) {
+            this.#files.set(toPath(path), content);
+        }
+    }
+
+    write(path: Path, content: string): void {
+        this.#files.set(path, content);
+    }
+
+    reads(path: Path): number {
+        return this.#reads.get(path) ?? 0;
+    }
+
+    async readFile(path: Path): Promise<string> {
+        this.#reads.set(path, this.reads(path) + 1);
+        const content = this.#files.get(path);
+        await this.beforeRead?.(path);
+        if (content === undefined) {
+            throw new Error(`ENOENT: no such file or directory, open '${path}'`);
+        }
+        return content;
+    }
+
+    async fileExists(path: Path): Promise<boolean> {
+        return this.#files.has(path);
+    }
 }
 
 interface Deferred<T> {

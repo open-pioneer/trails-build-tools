@@ -90,8 +90,13 @@ interface Reader {
     warn?(message: string): void;
 }
 
+interface FileSystem {
+    readFile(path: Path): Promise<string>;
+    fileExists(path: Path): Promise<boolean>;
+}
+
 class QueryDb<Host = unknown> {
-    constructor(options: { host: Host });
+    constructor(options: { host: Host; fileSystem?: FileSystem });
     get<Params, Value>(query: Query<Params, Value>, params: Params, reader?: Reader): Promise<Value>;
     fileChanged(path: Path): void;
     clear(): void;
@@ -144,6 +149,8 @@ That is acceptable in a dev server, and the decision may be reversed later.
 
 Files enter the database only through the three file operations on the context.
 Each pair of operation and path is a built-in leaf entry.
+The operations run against the `FileSystem` passed to the constructor.
+The default reads the real file system, and tests pass an in-memory one, so no test touches the disk.
 
 - `readFile(path)` reads the file as UTF-8 text and stores the text as the leaf's value.
   A missing file makes the leaf a failed entry under the rules above.
@@ -172,7 +179,7 @@ There is no escape hatch such as a query that always recomputes.
 
 The database keeps one global revision counter.
 Every `fileChanged` call bumps it.
-The counter throws a plain `Error` when it passes 2^48, which is a theoretical limit.
+The counter throws a plain `Error` when it reaches `Number.MAX_SAFE_INTEGER`, which is a theoretical limit.
 
 Every entry records two revisions.
 `verifiedAt` is the revision at which its inputs were last confirmed unchanged.
@@ -264,12 +271,12 @@ computation failed, and when a cycle is detected.
 ## Delivery
 
 - The code lives in `packages/vite-plugin/src/query-db/`: `QueryDb.ts`, `defineQuery.ts`, `canonicalJson.ts`,
-  `Path.ts`, and the tests next to them.
+  `FileSystem.ts`, `Path.ts`, and the tests next to them.
   Types are declared as named interfaces, never inline.
 - `fast-equals` is added to the `catalog:` section of `pnpm-workspace.yaml` and to the dependencies of the Vite plugin.
 - Tests define their queries in the test file.
-  Tests that need files create them under `packages/vite-plugin/temp/query-db/`, because they mutate them to drive
-  `fileChanged`, and they do not use `test-data/`.
+  Tests that need files use the in-memory `FileSystem` defined in the test file and drive `fileChanged` by hand.
+  They do not use `test-data/` or `temp/`.
   Concurrency cases use manually resolved promises inside test queries.
 - Implementation tickets go to `.scratch/query-db/issues/`, one per reviewable step.
   The user reviews the working tree after every ticket before the next one starts, so each ticket ends with a stop.

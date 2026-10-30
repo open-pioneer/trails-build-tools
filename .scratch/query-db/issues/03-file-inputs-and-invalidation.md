@@ -1,6 +1,6 @@
 # File inputs, revisions and verification
 
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 02
 
@@ -12,10 +12,10 @@ up, and a read recomputes only what actually changed.
 
 ## Scope
 
-Files to change: `QueryDb.ts`, `defineQuery.ts` and their tests.
-Tests that need files create them under `packages/vite-plugin/temp/query-db/<test name>/` and clean the directory at
-the start of each test.
-Do not use `test-data/`.
+Files to change: `QueryDb.ts`, `defineQuery.ts`, the new `FileSystem.ts` and their tests.
+The file operations go through a `FileSystem` interface passed to the constructor, with the real file system as the
+default.
+Tests use an in-memory implementation defined in the test file and do not touch `test-data/` or `temp/`.
 
 Behavior to implement:
 
@@ -26,7 +26,7 @@ Behavior to implement:
   `watchFile` stores the revision at which the file was last reported and never cuts off.
   All three take a `Path`.
 - A global revision counter that `fileChanged` bumps.
-  Throw a plain `Error` when it passes 2^48.
+  Throw a plain `Error` when it reaches `Number.MAX_SAFE_INTEGER`.
 - `verifiedAt` and `changedAt` on every entry, the recorded inputs in request order, and a reverse index from an entry
   to the entries that use it.
   The reverse index of an entry is rebuilt after every recomputation.
