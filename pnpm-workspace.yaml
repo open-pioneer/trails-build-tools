@@ -102,6 +102,9 @@ overrides:
   "ol>color-space": "-"
   "ol>color-rgba": "-"
 
+  # https://github.com/advisories/GHSA-3g3m-2fjr-6pw4
+  "glob@>=9.0.0 <=14.0.1": "^14.0.2"
+
 audit:
   level: "moderate"
 
@@ -112,6 +115,10 @@ auditConfig:
 
     # https://github.com/advisories/GHSA-qjx8-664m-686j, CVE-2026-46625
     - GHSA-qjx8-664m-686j
+
+    # https://github.com/advisories/GHSA-g3hv-75wg-m249
+    # eslint (header plugin) depends on minimatch 10.x
+    - GHSA-g3hv-75wg-m249
 
 patchedDependencies: {}
 
