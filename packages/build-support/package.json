@@ -1,6 +1,6 @@
 {
     "name": "@open-pioneer/build-support",
-    "version": "4.0.2",
+    "version": "4.0.3",
     "description": "Contains support functionality used in Open Pioneer Trails applications.",
     "keywords": [
         "open-pioneer-trails"
