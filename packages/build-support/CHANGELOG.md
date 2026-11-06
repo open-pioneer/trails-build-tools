@@ -1,5 +1,11 @@
 # Changelog @open-pioneer/build-support
 
+## 4.0.3
+
+### Patch Changes
+
+- e93649a: Configure trusted publishing. There are no other changes in this release.
+
 ## 4.0.2
 
 ### Patch Changes

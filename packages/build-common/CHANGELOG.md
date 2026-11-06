@@ -1,5 +1,13 @@
 # Changelog @open-pioneer/build-common
 
+## 5.1.1
+
+### Patch Changes
+
+- e93649a: Configure trusted publishing. There are no other changes in this release.
+- Updated dependencies [e93649a]
+    - @open-pioneer/build-support@4.0.3
+
 ## 5.1.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @open-pioneer/pnpm-plugin-defaults
 
+## 0.2.3
+
+### Patch Changes
+
+- e93649a: Configure trusted publishing. There are no other changes in this release.
+
 ## 0.2.2
 
 ### Patch Changes

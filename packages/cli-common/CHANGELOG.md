@@ -1,5 +1,11 @@
 # @open-pioneer/cli-common
 
+## 0.1.1
+
+### Patch Changes
+
+- e93649a: Configure trusted publishing. There are no other changes in this release.
+
 ## 0.1.0
 
 ### Minor Changes
