@@ -38,5 +38,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      id-token: write
+    with:
+      trusted-publishing: true
