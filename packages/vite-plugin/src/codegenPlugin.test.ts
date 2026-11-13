@@ -5,7 +5,7 @@ import { readFileSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { globSync } from "tinyglobby";
 import { describe, expect, it, onTestFailed } from "vitest";
-import { startVitest } from "vitest/node";
+import { CliOptions, createVitest, Vitest } from "vitest/node";
 import { pioneer } from ".";
 import { TEMP_DATA_DIR, TEST_DATA_DIR, runViteBuild } from "./utils/testUtils";
 
@@ -597,30 +597,51 @@ describe("test support", () => {
 
 describe("vitest", () => {
     it("resolves virtual modules on warm runs", async () => {
-        const cacheDir = resolve(TEMP_DATA_DIR, "vitest-fs-module-cache");
-        rmSync(cacheDir, { recursive: true, force: true });
+        const fixture = "vitest-fs-module-cache";
+        const options = { fsModuleCache: true, fsModuleCachePath: resolve(TEMP_DATA_DIR, fixture) };
+        rmSync(options.fsModuleCachePath, { recursive: true, force: true });
 
-        expect(await runFixture(cacheDir)).toEqual([]);
-        expect(await runFixture(cacheDir)).toEqual([]);
-        expect(await runFixture(cacheDir)).toEqual([]);
+        expect(await runFixture(fixture, { options })).toEqual([]);
+        expect(await runFixture(fixture, { options })).toEqual([]);
+        expect(await runFixture(fixture, { options })).toEqual([]);
     });
 
-    /** Runs the tests of the fixture with vitest and returns the messages of all errors. */
-    async function runFixture(cacheDir: string): Promise<string[]> {
-        const root = resolve(TEST_DATA_DIR, "vitest-fs-module-cache");
-        const vitest = await startVitest(
-            [],
-            {
-                root,
-                config: false,
-                watch: false,
-                reporters: [],
-                fsModuleCache: true,
-                fsModuleCachePath: cacheDir
-            },
+    it("serves the public assets of a package", async () => {
+        const errors = await runFixture("vitest-public-assets", {
+            options: { api: { port: 0, host: "127.0.0.1" } },
+            setup(vitest) {
+                const url = vitest.vite.resolvedUrls?.local[0];
+                if (!url) {
+                    throw new Error("Vitest's api server is not listening");
+                }
+                vitest.provide("serverOrigin", new URL(url).origin);
+            }
+        });
+        expect(errors).toEqual([]);
+    });
+
+    interface FixtureOptions {
+        /** Vitest options in addition to the defaults of {@link runFixture}. */
+        options?: CliOptions;
+        /** Runs after vitest has started its server and before the tests run. */
+        setup?(vitest: Vitest): void;
+    }
+
+    /**
+     * Runs the tests of the fixture with vitest and returns the messages of all errors.
+     * The fixture must contain an app named "app".
+     */
+    async function runFixture(fixture: string, fixtureOptions: FixtureOptions): Promise<string[]> {
+        const root = resolve(TEST_DATA_DIR, fixture);
+        const cacheDir = resolve(TEMP_DATA_DIR, fixture);
+        const vitest = await createVitest(
+            { root, config: false, watch: false, reporters: [], ...fixtureOptions.options },
             { root, cacheDir, plugins: [pioneer({ apps: ["app"] })] }
         );
         try {
+            fixtureOptions.setup?.(vitest);
+            await vitest.start();
+
             const errors = vitest.state.getUnhandledErrors().map((e) => String(e));
             for (const file of vitest.state.getFiles()) {
                 errors.push(...(file.result?.errors ?? []).map((e) => e.message));
@@ -676,4 +697,11 @@ function expectAsyncError(fn: () => Promise<unknown>): Promise<any> {
             reject(new Error("unexpected success: expected the operation to fail"));
         }, resolve);
     });
+}
+
+declare module "vitest" {
+    interface ProvidedContext {
+        /** Origin of vitest's api server, read by the fixture in test-data/vitest-public-assets. */
+        serverOrigin: string;
+    }
 }

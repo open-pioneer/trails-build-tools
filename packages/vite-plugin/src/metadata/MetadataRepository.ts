@@ -130,19 +130,21 @@ export class MetadataRepository {
     }
 
     /**
-     * Returns the dependency graph of the package in `packageDirectory` that imports `open-pioneer:test-support`.
+     * Returns the dependency graph of the package in `packageDirectory`, which imports `importedModule`.
      * The package is not an app, so none of the app-only checks (such as the runtime metadata version) run.
+     * `importedModule` only names the module in the error for a plain package.
      */
-    async getTestSupportMetadata(
+    async getTestDependencyGraph(
         ctx: MetadataContext,
-        packageDirectory: string
+        packageDirectory: string,
+        importedModule: string
     ): Promise<AnalyzedPackageGraph> {
-        isDebug && debug(`Request for test support metadata of ${packageDirectory}`);
+        isDebug && debug(`Request for the test dependency graph of package at ${packageDirectory}`);
 
         const graph = await this.#analyzeDependencyGraph(ctx, packageDirectory);
         if (!graph) {
             throw new ReportableError(
-                "'open-pioneer:test-support' can only be imported from a Trails package." +
+                `'${importedModule}' can only be imported from a Trails package.` +
                     ` The package in ${packageDirectory} has neither a ${BUILD_CONFIG_NAME} nor package metadata.`
             );
         }

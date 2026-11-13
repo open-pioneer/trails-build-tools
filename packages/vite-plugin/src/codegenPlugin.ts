@@ -223,6 +223,15 @@ export function codegenPlugin(): VitePlugin {
                         return jsModule(generatedSourceCode);
                     }
                     if (mod.type === "package-assets") {
+                        if (isTestRun) {
+                            // No app is analyzed in a test run. Loading the graph here lets the
+                            // middleware find the public assets of the package and its dependencies.
+                            await repository.getTestDependencyGraph(
+                                createMetadataContextFromRolldown(this),
+                                dirname(packageJsonPath),
+                                "open-pioneer:assets"
+                            );
+                        }
                         const packageName = await getPackageName(this, packageJsonPath);
                         const directory = isDev ? PUBLIC_ASSETS_URL_PREFIX : PACKAGE_ASSETS_DIR;
                         const slug = packageNameToSlug(packageName);
@@ -241,9 +250,10 @@ export function codegenPlugin(): VitePlugin {
 
                     const ctx = createMetadataContextFromRolldown(this);
                     if (mod.type === "test-support") {
-                        const { rootPackage, packages } = await repository.getTestSupportMetadata(
+                        const { rootPackage, packages } = await repository.getTestDependencyGraph(
                             ctx,
-                            dirname(packageJsonPath)
+                            dirname(packageJsonPath),
+                            "open-pioneer:test-support"
                         );
                         const generatedSourceCode = await generateTestSupport({
                             rootPackage,

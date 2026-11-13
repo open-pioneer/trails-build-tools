@@ -1,6 +1,6 @@
 # Serve public assets in Vitest browser mode
 
-Status: ready-for-agent
+Status: done
 Issue: #60
 Blocked by: 05
 
@@ -49,3 +49,51 @@ after the module was loaded, and say in the comments what remains for the manual
 
 `pnpm build`, `pnpm check-types`, `pnpm exec oxlint packages/vite-plugin` and
 `pnpm exec vitest run packages/vite-plugin` pass, and the findings of step 1 are written down in this file.
+
+## Comments
+
+### Step 1: Vitest browser server (Vitest 5.0.5, `@vitest/browser` 5.0.5)
+
+The middleware runs.
+Vitest 5 serves browser tests from one shared Vite server per project cluster (`createClusterServer` in
+`vitest/dist/chunks/index.*.js`).
+That server is created from the project's Vite config, so our `configureServer` registers the middleware on it.
+The browser contribution adds its own middlewares in a `configureServer` hook with `order: "pre"`, so they run
+before ours.
+None of them handles a path below `/@package-assets/`.
+They match the orchestrator and tester URLs, `/favicon.svg`, `/__vitest_attachment__`, `/__vitest__` and the
+coverage directory, and otherwise call `next()`.
+
+The test page is served at `${base}__vitest_test__/` by that same server, where `base` is the resolved `base` of the
+Vite config.
+`window.origin` is therefore the origin of the server that runs the middleware, and `new URL(base, window.origin)`
+points to it.
+
+A run in a real browser was not possible in the sandbox.
+The Playwright Chromium download needs a network approval for `storage.googleapis.com`.
+
+### Tests
+
+CI runs `pnpm ci:test` on `ubuntu-latest` without a browser install step, and the repository has no
+`@vitest/browser-playwright`.
+The new case in the `vitest` describe block of `codegenPlugin.test.ts` therefore runs the fixture
+`test-data/vitest-public-assets` in the node environment.
+It starts Vitest with `api.port` set, so Vitest's own server listens, and passes the server origin to the fixture with
+`provide()`.
+The fixture sets `window.origin`, imports `open-pioneer:assets` and fetches `getPublicAssetUrl("hello.txt")`.
+This covers the load hook, the graph analysis and the middleware on Vitest's server.
+Without the analysis in the load hook the fetch gets a 404.
+
+Left for the manual check in ticket 10: a browser test in a real project that loads a file with `importScripts()`
+from a classic worker.
+
+### Cases the scope does not cover
+
+- A package without `build.config.mjs` that imports `open-pioneer:assets` in a test run is an error, because it has
+  no public assets.
+  `getTestSupportMetadata` is renamed to `getDependencyGraph` and takes the imported module, so the message names
+  `open-pioneer:assets`.
+  The fixture `codegen-assets-plain-importer` covers it.
+- A published package whose import of `open-pioneer:assets` goes through the dependency optimizer resolves only
+  after ticket 07 adds the optimizer rewrite to the internal id.
+  The load hook then analyzes the package the same way.
