@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname, resolve } from "node:path";
 import { cwd } from "node:process";
 import { RuntimeSupport } from "@open-pioneer/build-common";
 import { normalizePath, Rolldown, UserConfig, Plugin as VitePlugin } from "vite";
@@ -12,12 +12,14 @@ import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
+import { generatePublicAssetsModule } from "./codegen/generatePublicAssetsModule";
 import { generateTestSupport } from "./codegen/generateTestSupport";
 import {
     findPackageJson,
     MAGIC_FILENAME_RE,
     parseVirtualModuleId,
     serializeModuleId,
+    serializeOptimizedVirtualModuleId,
     VIRTUAL_ID_FILTER
 } from "./codegen/shared";
 import { DeploymentModule } from "./deployment";
@@ -25,6 +27,10 @@ import { createMetadataContextFromRolldown, MetadataContext } from "./metadata/C
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
+import { PACKAGE_ASSETS_DIR, PUBLIC_ASSETS_URL_PREFIX } from "./publicAssets/constants";
+import { copyPublicAssets } from "./publicAssets/copyPublicAssets";
+import { packageNameToSlug } from "./publicAssets/packageSlug";
+import { createPublicAssetsMiddleware } from "./publicAssets/servePublicAssets";
 import { ReportableError } from "./ReportableError";
 import { createDebugger } from "./utils/debug";
 import { fileExists } from "./utils/fileUtils";
@@ -42,6 +48,7 @@ export function codegenPlugin(): VitePlugin {
     let resolvedRoot!: string;
     let repository!: MetadataRepository;
     let deploymentModule!: DeploymentModule;
+    let publicAssetsCopied = false;
 
     return {
         name: "pioneer:codegen",
@@ -60,6 +67,11 @@ export function codegenPlugin(): VitePlugin {
         configResolved(config) {
             resolvedRoot = normalizePath(config.root);
             deploymentModule = new DeploymentModule(isDev, config.base);
+        },
+
+        configureServer(server) {
+            // Registered directly so that it runs before Vite's own middlewares.
+            server.middlewares.use(createPublicAssetsMiddleware(repository, server.config.base));
         },
 
         configureVitest(context: VitestPluginContext) {
@@ -83,6 +95,7 @@ export function codegenPlugin(): VitePlugin {
 
         async buildStart(this: PluginContext) {
             repository?.reset();
+            publicAssetsCopied = false;
             deploymentModule.onStart(this);
         },
 
@@ -99,13 +112,16 @@ export function codegenPlugin(): VitePlugin {
                     // Vite turns ids inside the root into root-relative URLs ("/packages/x/@@open-pioneer-app?...").
                     // Vitest's fs module cache re-resolves those URLs without the importer that produced them,
                     // so map them back to the absolute id.
+                    // An absolute id outside the root looks the same, so the root wins only if the
+                    // directory exists there. Vite resolves a path with a leading slash the same way.
                     if (
                         moduleId.startsWith("/") &&
                         !moduleId.startsWith(resolvedRoot + "/") &&
                         MAGIC_FILENAME_RE.test(moduleId)
                     ) {
                         const absoluteId = resolvedRoot + moduleId;
-                        if (parseVirtualModuleId(absoluteId)) {
+                        const directory = absoluteId.slice(0, absoluteId.search(MAGIC_FILENAME_RE));
+                        if ((await fileExists(directory)) && parseVirtualModuleId(absoluteId)) {
                             return absoluteId;
                         }
                     }
@@ -150,6 +166,11 @@ export function codegenPlugin(): VitePlugin {
                                 type: "deployment"
                             });
                         }
+                        case "assets":
+                            return serializeModuleId({
+                                type: "package-assets",
+                                packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                            });
                         case "test-support":
                             if (!isTestRun) {
                                 throw new ReportableError(
@@ -208,6 +229,25 @@ export function codegenPlugin(): VitePlugin {
                         isDebug && debug("Generated hooks code: %O", generatedSourceCode);
                         return jsModule(generatedSourceCode);
                     }
+                    if (mod.type === "package-assets") {
+                        if (isTestRun) {
+                            // No app is analyzed in a test run. Loading the graph here lets the
+                            // middleware find the public assets of the package and its dependencies.
+                            await repository.getTestDependencyGraph(
+                                createMetadataContextFromRolldown(this),
+                                dirname(packageJsonPath),
+                                "open-pioneer:assets"
+                            );
+                        }
+                        const packageName = await getPackageName(this, packageJsonPath);
+                        const directory = isDev ? PUBLIC_ASSETS_URL_PREFIX : PACKAGE_ASSETS_DIR;
+                        const slug = packageNameToSlug(packageName);
+                        const generatedSourceCode = generatePublicAssetsModule(
+                            `${directory}/${slug}/`
+                        );
+                        isDebug && debug("Generated assets code: %O", generatedSourceCode);
+                        return jsModule(generatedSourceCode);
+                    }
                     if (mod.type === "source-info") {
                         const packageName = await getPackageName(this, packageJsonPath);
                         return jsModule(
@@ -217,9 +257,10 @@ export function codegenPlugin(): VitePlugin {
 
                     const ctx = createMetadataContextFromRolldown(this);
                     if (mod.type === "test-support") {
-                        const { rootPackage, packages } = await repository.getTestSupportMetadata(
+                        const { rootPackage, packages } = await repository.getTestDependencyGraph(
                             ctx,
-                            dirname(packageJsonPath)
+                            dirname(packageJsonPath),
+                            "open-pioneer:test-support"
                         );
                         const generatedSourceCode = await generateTestSupport({
                             rootPackage,
@@ -297,6 +338,26 @@ export function codegenPlugin(): VitePlugin {
 
         generateBundle(_options, bundle) {
             deploymentModule.onGenerateBundle(bundle);
+        },
+
+        async writeBundle() {
+            // writeBundle runs once per output, but the public assets are the same for all of them.
+            if (this.environment.name !== "client" || publicAssetsCopied) {
+                return;
+            }
+            publicAssetsCopied = true;
+
+            try {
+                await copyPublicAssets({
+                    packages: repository.getLoadedPackages(),
+                    outDir: resolve(
+                        this.environment.config.root,
+                        this.environment.config.build.outDir
+                    )
+                });
+            } catch (e) {
+                reportError(this, e, isDev);
+            }
         }
     };
 }
@@ -334,7 +395,7 @@ async function configureDevOptimizer(
         optimizeDeps: {
             include: trailsModules,
             rolldownOptions: {
-                plugins: [createOptimizeDepsRolldownPlugin()]
+                plugins: [createOptimizeDepsRolldownPlugin(rootDir)]
             }
         }
     };
@@ -370,14 +431,29 @@ async function getOptimizeDepsIncludes(rootDir: string) {
 
 /**
  * Creates a rolldown plugin for use during Vite's dependency optimization phase.
- * It marks all `open-pioneer:*` virtual module imports as external so that they
- * are left untouched by rolldown and can later be handled by the normal Vite plugin.
+ * It marks all `open-pioneer:*` virtual module imports as external, so that the normal
+ * Vite plugin handles them later.
  */
-function createOptimizeDepsRolldownPlugin(): Rolldown.Plugin {
+function createOptimizeDepsRolldownPlugin(rootDir: string): Rolldown.Plugin {
     return {
         name: "pioneer:optimize-deps",
-        resolveId(id) {
-            if (/^open-pioneer:/.test(id)) {
+        resolveId: {
+            filter: {
+                id: /^open-pioneer:/
+            },
+            handler(id, importer) {
+                // The optimized bundle can no longer tell from which package an import originated.
+                // As a workaround, we attach the package directory to the module id.
+                if (id === "open-pioneer:assets" && importer) {
+                    const packageDirectory = getPackageDirectoryFromImporter(importer, rootDir);
+                    return {
+                        id: serializeOptimizedVirtualModuleId({
+                            kind: "package-assets",
+                            packageDirectory
+                        }),
+                        external: true
+                    };
+                }
                 return { id, external: true };
             }
         }

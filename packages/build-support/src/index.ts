@@ -49,6 +49,62 @@ export interface BuildConfig {
     styles?: string;
 
     /**
+     * One or more directories that contain _public assets_.
+     *
+     * Public assets are files that are copied as-is into the application's final bundle.
+     * They are not processed in any way, and they keep their original file names instead of hashed file names.
+     *
+     * Use this property instead of Vite-style asset imports (see also {@link PublishConfig.assets}) if you need
+     * stable file URLs or if imports cannot be used.
+     * This is the case, for example, when a third party library expects its asset files at a certain location on
+     * the web server.
+     *
+     * You can obtain the URL to a package's public assets at runtime by importing the module `"open-pioneer:assets"`.
+     *
+     * When the package is built for publishing, public asset directories within the package are copied into the
+     * published package.
+     * Public assets from node dependencies are _not_ copied.
+     * The published package refers to such a dependency by its name instead, so the dependency must be listed in
+     * the `dependencies` or `peerDependencies` of the package.
+     *
+     * Publishing a package with public assets requires {@link PublishConfig.packageFormatTarget} `"1.2"` or later.
+     *
+     * > NOTE: File names starting with `.` are always ignored for security reasons.
+     *
+     * @example
+     *
+     * Serve all files in `<current-package>/public` as the public assets of that package.
+     * A plain string is short for a single directory with `dest: "."`, so both forms below are equivalent:
+     *
+     * ```js
+     * publicAssets: "public"
+     * ```
+     *
+     * ```js
+     * publicAssets: [{ src: "public", dest: "." }]
+     * ```
+     *
+     * @example
+     *
+     * Serve the files in `<current-package>/public` at the _root_ of the package's public assets,
+     * and the contents of `./node_modules/third-party-lib/cdn` in a subdirectory called `third-party-lib`:
+     *
+     * ```js
+     * publicAssets: [
+     *     {
+     *         src: "public",
+     *         dest: "."
+     *     },
+     *     {
+     *         src: "./node_modules/third-party-lib/cdn",
+     *         dest: "third-party-lib"
+     *     }
+     * ]
+     * ```
+     */
+    publicAssets?: string | PublicAssetDir[];
+
+    /**
      * Array of supported languages, every entry here needs a ./i18n/<lang>.yaml file.
      *
      * @example
@@ -151,6 +207,34 @@ export interface BuildConfig {
 }
 
 /**
+ * Defines a public asset directory.
+ */
+export interface PublicAssetDir {
+    /**
+     * Relative path to a local directory.
+     *
+     * All files in this directory and its subdirectories are served as public assets.
+     *
+     * Packages typically use a path _within_ the package (e.g. `./public`).
+     * They may also reference the files of a dependency (e.g. `./node_modules/my-dep/cdn/assets`).
+     */
+    src: string;
+
+    /**
+     * The name of the directory in the package's public assets.
+     * This becomes part of the URLs.
+     *
+     * Allowed values are:
+     * - `"."` or `""`: to serve the assets at the root of the package's public assets.
+     * - `"some/relative/path"`: to serve the assets from a subdirectory.
+     *
+     * Multiple public asset directories may use the same `dest` or nest their `dest` values.
+     * When two of them provide the same file, the directory that is declared first wins.
+     */
+    dest: string;
+}
+
+/**
  * Describes a single service.
  */
 export interface ServiceConfig {
@@ -228,7 +312,7 @@ export interface PropertyMetaConfig {
 }
 
 /** Compilation target for build time trails features. */
-export type PackageFormatTarget = "1.0" | "1.1";
+export type PackageFormatTarget = "1.0" | "1.1" | "1.2";
 
 /**
  * Contains options interpreted when building a package for publishing with the `@open-pioneer/build-package` tool.
@@ -306,6 +390,10 @@ export interface PublishConfig {
      *
      * Use a newer value to enable additional features (such as new `open-pioneer:*` modules).
      * Raising this value might require an updated trails vite plugin on the consumer side.
+     *
+     * - `"1.0"`: the initial package format.
+     * - `"1.1"`: enables the `open-pioneer:deployment` module.
+     * - `"1.2"`: enables {@link BuildConfig.publicAssets} and the `open-pioneer:assets` module.
      *
      * Defaults to `"1.0"`.
      */

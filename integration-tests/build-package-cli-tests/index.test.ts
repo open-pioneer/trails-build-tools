@@ -273,6 +273,48 @@ describe(
                 );
             }
         });
+
+        it("should compile a package with public assets successfully", async () => {
+            const sourceDir = resolve(TEST_DATA_DIR, "public-assets");
+            const snapshotDir = resolve(SNAPSHOT_DIR, "public-assets");
+            const { targetDir, stdout, stderr } = await runCli(sourceDir);
+
+            expect(stderr).toBe("");
+            expect(stdout).toMatchInlineSnapshot(`
+              "Building package at <PATH>
+              Building JavaScript...
+              Generating TypeScript declaration files...
+              Copying assets...
+              Copying public assets...
+              Writing package metadata...
+              Copying auxiliary files...
+              Success
+              "
+            `);
+
+            const files = await listFiles(targetDir);
+            expect(files).toMatchInlineSnapshot(`
+              [
+                "CHANGELOG.md",
+                "LICENSE",
+                "README.md",
+                "index.d.ts",
+                "index.js",
+                "index.js.map",
+                "package.json",
+                "public/nested/data.json",
+                "public/root.txt",
+              ]
+            `);
+
+            for (const file of files) {
+                const content = await readFile(resolve(targetDir, file), "utf-8");
+                await expect(content).toMatchFileSnapshot(
+                    snapshotPath(snapshotDir, file),
+                    `Expected contents of ${file} to match the snapshot`
+                );
+            }
+        });
     }
 );
 

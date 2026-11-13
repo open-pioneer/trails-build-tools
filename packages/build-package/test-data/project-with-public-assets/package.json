@@ -1,0 +1,11 @@
+{
+    "name": "project-with-public-assets",
+    "version": "1.0.0",
+    "license": "MIT",
+    "dependencies": {
+        "third-party-lib": "^1.0.0"
+    },
+    "publishConfig": {
+        "directory": "dist"
+    }
+}

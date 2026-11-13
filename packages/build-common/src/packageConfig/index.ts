@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
+import { posix, win32 } from "node:path";
 import {
     BuildConfig,
     PackageOverridesConfig,
@@ -9,12 +10,14 @@ import {
     ServiceConfig,
     ServiceOverridesConfig
 } from "@open-pioneer/build-support";
+import { normalizePath } from "@rollup/pluginutils";
 import type {
     PropertyConfig as MetadataPropertyConfig,
     ProvidesConfig as MetadataProvidesConfig,
     ReferenceConfig as MetadataReferenceConfig,
     ServiceConfig as MetadataServiceConfig,
     UiConfig as MetadataUiConfig,
+    PublicAssetConfig as MetadataPublicAssetConfig,
     PackageMetadata
 } from "../packageMetadata/v1";
 
@@ -28,6 +31,9 @@ export interface PackageConfig {
 
     /** Css entry point, if any. */
     styles: string | undefined;
+
+    /** Public asset directories, with normalized paths. */
+    publicAssets: PublicAssetConfig[];
 
     /** Supported languages. */
     languages: Set<string>;
@@ -49,6 +55,37 @@ export interface PackageConfig {
         /** The metadata version supported by the package. */
         metadataVersion?: string;
     };
+}
+
+/** Internal representation of a public asset directory. */
+export type PublicAssetConfig = LocalPublicAssetConfig | DependencyPublicAssetConfig;
+
+/** A public asset directory addressed by a path relative to the package directory. */
+export interface LocalPublicAssetConfig {
+    type: "local";
+
+    /**
+     * Path relative to the package directory, with forward slashes.
+     * The path of a source package may point outside the package.
+     */
+    src: string;
+
+    /** Path below the root of the package's public assets. Empty for the root itself. */
+    dest: string;
+}
+
+/** A public asset directory inside a dependency of the package. */
+export interface DependencyPublicAssetConfig {
+    type: "dependency";
+
+    /** Name of the dependency that contains the directory. */
+    packageName: string;
+
+    /** Path relative to the dependency's package directory, with forward slashes. */
+    src: string;
+
+    /** Path below the root of the package's public assets. Empty for the root itself. */
+    dest: string;
 }
 
 /** Internal representation of a service. */
@@ -145,6 +182,8 @@ export function createPackageConfigFromBuildConfig(buildConfig: BuildConfig): Pa
 
     const styles = buildConfig.styles ?? undefined;
 
+    const publicAssets = normalizePublicAssets(buildConfig.publicAssets);
+
     const languages = new Set<string>();
     if (buildConfig.i18n) {
         for (const lang of buildConfig.i18n) {
@@ -187,6 +226,7 @@ export function createPackageConfigFromBuildConfig(buildConfig: BuildConfig): Pa
         servicesModule,
         uiReferences,
         styles,
+        publicAssets,
         languages,
         properties,
         overrides,
@@ -279,6 +319,54 @@ function normalizeProvides(rawConfig: ServiceConfig["provides"]): ProvidedInterf
     });
 }
 
+function normalizePublicAssets(publicAssets: BuildConfig["publicAssets"]): PublicAssetConfig[] {
+    const directories =
+        typeof publicAssets === "string"
+            ? [{ src: publicAssets, dest: "." }]
+            : (publicAssets ?? []);
+    return directories.map((asset) => {
+        return {
+            type: "local",
+            src: normalizePublicAssetSrc(asset.src),
+            dest: normalizePublicAssetDest(asset.dest)
+        };
+    });
+}
+
+function normalizePublicAssetDest(rawDest: string): string {
+    if (isAbsolute(rawDest)) {
+        throw new Error(`The destination directory must be a relative path: "${rawDest}"`);
+    }
+
+    const dest = normalizeRelativePath(rawDest);
+    if (dest === ".." || dest.startsWith("../")) {
+        throw new Error(
+            `The destination directory must stay inside the package's public assets: "${rawDest}"`
+        );
+    }
+    return dest;
+}
+
+function normalizePublicAssetSrc(src: string): string {
+    if (isAbsolute(src)) {
+        return normalizePath(src);
+    }
+    return normalizeRelativePath(src);
+}
+
+function isAbsolute(src: string) {
+    return posix.isAbsolute(src) || win32.isAbsolute(src);
+}
+
+/**
+ * Returns the path with forward slashes, without a leading `./` and without a trailing `/`.
+ * The current directory is the empty string.
+ */
+function normalizeRelativePath(path: string): string {
+    const normalized = posix.normalize(normalizePath(path).replace(/\/$/, ""));
+    return normalized === "." ? "" : normalized;
+}
+
 function normalizeProperty(
     propertyName: string,
     value: unknown,
@@ -350,10 +438,13 @@ export function createPackageConfigFromPackageMetadata(metadata: PackageMetadata
         };
     }
 
+    const publicAssets = metadata.publicAssets?.map((asset) => readPublicAssetDir(asset)) ?? [];
+
     return {
         services,
         servicesModule: metadata.servicesModule ?? undefined,
         styles: metadata.styles ?? undefined,
+        publicAssets,
         languages,
         uiReferences: readUiReferences(metadata.ui),
         properties,
@@ -410,6 +501,14 @@ function readProperty(property: MetadataPropertyConfig): Property {
         propertyName: property.propertyName,
         defaultValue: property.defaultValue,
         required: property.required ?? false
+    };
+}
+
+function readPublicAssetDir(config: MetadataPublicAssetConfig): PublicAssetConfig {
+    // Interfaces are the same right now.
+    return {
+        ...config,
+        dest: normalizePublicAssetDest(config.dest)
     };
 }
 

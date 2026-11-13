@@ -10,6 +10,7 @@ import { Plugin, PluginContext, ResolvedId } from "rollup";
 import { loadPackageJson } from "../model/InputModel";
 import { getEntryPointsFromBuildConfig } from "../model/PackageModel";
 import { createDebugger } from "../utils/debug";
+import { isDeclaredDependency, parsePackageName } from "../utils/dependencies";
 import { getExportedName } from "../utils/entryPoints";
 import { getFileNameWithQuery, isInDirectory } from "../utils/pathUtils";
 
@@ -282,7 +283,7 @@ class CheckImportsState {
         let newModuleId: string | undefined = undefined;
         let packageName;
         try {
-            packageName = parsePackageName(moduleId);
+            packageName = parseImportedPackageName(moduleId);
         } catch (e) {
             ctx.error({
                 id: parentId,
@@ -592,33 +593,18 @@ function tryNodeImport(moduleId: string, parentFile: string): "found" | "not-fou
     }
 }
 
-// oxlint-disable-next-line @typescript-eslint/no-explicit-any
-function isDeclaredDependency(packageName: string, packageJson: Record<string, any>): boolean {
-    return !!(
-        packageJson?.dependencies?.[packageName] ||
-        packageJson?.peerDependencies?.[packageName] ||
-        false
-    );
-}
-
-function parsePackageName(absoluteId: string): string | undefined {
+function parseImportedPackageName(absoluteId: string): string | undefined {
     // NOTE: \0 (zero byte) is ignored because it is usually used internally in rollup
     // for plugin-generated virtual modules.
     if (absoluteId.includes("\0")) {
         return undefined;
     }
 
-    let match: string | null | undefined;
-    if (absoluteId.startsWith("@")) {
-        match = absoluteId.match(/^@[^/]+\/[^/]+/)?.[0];
-    } else {
-        match = absoluteId.match(/^[^/]+/)?.[0];
-    }
-
-    if (!match) {
+    const packageName = parsePackageName(absoluteId);
+    if (!packageName) {
         throw new Error(`Invalid import id: '${absoluteId}'`);
     }
-    return match;
+    return packageName;
 }
 
 function shouldEnableModuleImportCompatibility(

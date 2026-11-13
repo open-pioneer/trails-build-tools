@@ -17,7 +17,12 @@ import { ValidationReporter } from "./utils/ValidationReporter";
 
 type SimplePackageModel = Pick<
     PackageModel,
-    "input" | "jsEntryPoints" | "servicesEntryPoint" | "cssEntryPoint" | "outputDirectory"
+    | "input"
+    | "jsEntryPoints"
+    | "servicesEntryPoint"
+    | "cssEntryPoint"
+    | "outputDirectory"
+    | "publicAssets"
 >;
 
 export interface GeneratePackageJsonOptions {
@@ -182,6 +187,10 @@ function generateMetadata(model: SimplePackageModel, target: V1.MinorVersion): u
         },
         properties: writeProperties(Array.from(pkgConfig.properties.values()))
     };
+
+    if (model.publicAssets.length) {
+        metadata.publicAssets = model.publicAssets;
+    }
 
     if (pkgConfig.runtimeMeta) {
         // Only include this key if it was used in the build.config.mjs

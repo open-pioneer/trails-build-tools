@@ -3,9 +3,9 @@
 
 import { realpath } from "fs/promises";
 import { dirname, posix } from "path";
-import { ResolverFactory } from "oxc-resolver";
 import { glob } from "tinyglobby";
 import { normalizePath } from "vite";
+import { findDepPkgJsonPath } from "vitefu";
 import { createDebugger } from "../utils/debug";
 import { MetadataContext } from "./Context";
 import { loadPackageMetadata } from "./loadPackageMetadata";
@@ -16,7 +16,6 @@ const debug = createDebugger("open-pioneer:metadata");
 
 export async function findTrailsPackages(sourceRoot: string): Promise<AnalyzedPackage[]> {
     const ctx = createDummyContext();
-    const packageResolver = ResolverFactory.default();
 
     const localPackageJsonFiles = await glob("**/package.json", {
         cwd: sourceRoot,
@@ -59,14 +58,13 @@ export async function findTrailsPackages(sourceRoot: string): Promise<AnalyzedPa
         trailsPackages.push(pkg);
         for (const dependency of pkg.dependencies) {
             // oxlint-disable-next-line no-await-in-loop
-            const depResult = await packageResolver.async(
-                packageDirectory,
-                dependency.packageName + "/package.json"
+            const depPackageJsonPath = await findDepPkgJsonPath(
+                dependency.packageName,
+                packageDirectory
             );
-            if (depResult.path) {
+            if (depPackageJsonPath) {
                 // oxlint-disable-next-line no-await-in-loop
-                const depPath = await realpath(dirname(depResult.path));
-                visit(depPath);
+                visit(dirname(await realpath(depPackageJsonPath)));
             }
         }
     }

@@ -39,11 +39,22 @@ describe("parseVirtualModule", function () {
         }
     });
 
+    it("parses the assets module", function () {
+        expect(RuntimeSupport.parseVirtualModule("open-pioneer:assets")).toEqual({
+            type: "assets"
+        });
+    });
+
     it("throws for other modules with a query", function () {
         expect(() =>
             RuntimeSupport.parseVirtualModule("open-pioneer:app?locale=de")
         ).toThrowErrorMatchingInlineSnapshot(
             `[Error: Unsupported module id 'open-pioneer:app?locale=de'.]`
+        );
+        expect(() =>
+            RuntimeSupport.parseVirtualModule("open-pioneer:assets?package=my-pkg")
+        ).toThrowErrorMatchingInlineSnapshot(
+            `[Error: Unsupported module id 'open-pioneer:assets?package=my-pkg'.]`
         );
         expect(() =>
             RuntimeSupport.parseVirtualModule("open-pioneer:test-supportx")
