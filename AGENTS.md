@@ -57,7 +57,7 @@ To do so, `MetadataRepository` starts at the app's `package.json`, visits every 
 change to one `package.json`, `build.config.mjs` or i18n YAML invalidates exactly that entry and triggers a reload.
 A Trails package that appears at two locations in one app is a build error.
 `open-pioneer:test-support`, and `open-pioneer:assets` in a test run, run the same walk from the importing package
-through `getDependencyGraph`, which skips the app-only steps such as the runtime metadata version.
+through `getTestDependencyGraph`, which skips the app-only steps such as the runtime metadata version.
 The dev server answers requests below `@package-assets/<packageSlug>/` from the public asset directories of that
 package, and reads a file only when a request for it arrives.
 A build copies the public assets of every package to `packages/<packageSlug>/` in the output directory, after the

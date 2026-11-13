@@ -18,8 +18,9 @@ type RequestHandler = (req: Connect.IncomingMessage, res: ServerResponse, next: 
 /**
  * Serves public package assets in the dev server.
  *
- * Packages are look up in the metadata repository, so they must have an entry at the time that the request is being handled.
- * This works because the code of such a package necessarily had to be loaded earlier, which triggered parsing its metadata.
+ * Packages are looked up in the metadata repository, so a package must be loaded there when the request arrives.
+ * This works because the page loads the code of a package before it requests the package's assets,
+ * and loading the code loads the metadata.
  *
  * Files are read on request, so the middleware neither scans nor watches the directories.
  */
@@ -27,7 +28,7 @@ export function createPublicAssetsMiddleware(
     repository: MetadataRepository,
     base: string
 ): Connect.NextHandleFunction {
-    const prefix = getBasePath(base) + PUBLIC_ASSETS_URL_PREFIX + "/";
+    const prefix = base + PUBLIC_ASSETS_URL_PREFIX + "/";
     const handlers = new Map<string, RequestHandler>();
     const getHandler = (directory: string): RequestHandler => {
         let handler = handlers.get(directory);
@@ -120,10 +121,6 @@ function findCandidates(directories: ResolvedPublicAssetDir[], segments: string[
         candidates.push({ directory, path: remainder });
     }
     return candidates;
-}
-
-function getBasePath(base: string): string {
-    return base === "" || base === "./" ? "/" : base;
 }
 
 function replyWithStatus(res: ServerResponse, statusCode: number, message: string): void {

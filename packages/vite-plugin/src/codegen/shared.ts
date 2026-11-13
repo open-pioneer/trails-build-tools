@@ -17,8 +17,8 @@ import { normalizePath } from "vite";
  *    This encoding is the usual practice in the rollup / vite ecosystem, making it very reliable.
  *    It has the disadvantage that the generated files show up "somewhere" in the browser debugger.
  *
- *    The assets module that pass through vite's dependency optimizer also use this scheme,
- *    e.g. `\0open-pioneer:package-assets:/path/to/package`.
+ *    The assets module of a package that passes through vite's dependency optimizer also uses
+ *    this scheme, e.g. `\0open-pioneer:package-assets:/path/to/package`.
  *    That id is written into the optimized bundle, where a magic filename outside the root
  *    cannot be told apart from a root-relative URL.
  *

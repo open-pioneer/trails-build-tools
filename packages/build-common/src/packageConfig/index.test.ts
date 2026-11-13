@@ -366,7 +366,7 @@ describe("public assets", () => {
                 createPackageConfigFromBuildConfig({
                     publicAssets: [{ src: "foo", dest }]
                 })
-            ).toThrow(/Cannot use "\." or "\.\." in destination path/);
+            ).toThrow(/must stay inside the package's public assets/);
         }
     );
 });
@@ -411,6 +411,6 @@ describe("public assets in package metadata", () => {
                     }
                 ]
             })
-        ).toThrow(/Cannot use "\." or "\.\." in destination path/);
+        ).toThrow(/must stay inside the package's public assets/);
     });
 });

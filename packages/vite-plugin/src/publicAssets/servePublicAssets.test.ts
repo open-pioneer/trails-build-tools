@@ -112,7 +112,7 @@ it.each(["scope~scoped-assets", "scope%7Escoped-assets"])(
 );
 
 it.each(["missing.txt", "nested", "nested/", "third-party-lib/missing.js", ""])(
-    "Responds with 404 for missing file %j",
+    "responds with 404 for the missing file %j",
     async (path) => {
         const response = await fetch(`${devServerUrl}${PREFIX}/${path}`, {
             headers: { Accept: "text/html" }
@@ -125,7 +125,7 @@ it.each(["missing.txt", "nested", "nested/", "third-party-lib/missing.js", ""])(
 );
 
 it.each([".hidden", ".dotdir/file.txt", "nested/../.hidden"])(
-    "Responds with 404 for the hidden file %j",
+    "responds with 404 for the hidden file %j",
     async (path) => {
         const response = await get(`${PREFIX}/${path}`);
         expect(response.status).toBe(404);

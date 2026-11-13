@@ -301,7 +301,7 @@ const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<RuntimeMeta> = z.object({
     metadataVersion: z.string().nullish().optional()
 });
 
-const PUBLIC_ASSET_METADATA_SCHEMA: z.ZodType<PublicAssetConfig> = z.union([
+const PUBLIC_ASSET_CONFIG_SCHEMA: z.ZodType<PublicAssetConfig> = z.union([
     z.object({
         type: z.literal("local"),
         src: z.string(),
@@ -323,7 +323,7 @@ const PACKAGE_METADATA_SCHEMA: z.ZodType<PackageMetadata> = VERSION_SCHEMA.exten
     ui: UI_CONFIG_SCHEMA.nullish().optional(),
     properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional(),
     runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.nullish().optional(),
-    publicAssets: PUBLIC_ASSET_METADATA_SCHEMA.array().nullish().optional()
+    publicAssets: PUBLIC_ASSET_CONFIG_SCHEMA.array().nullish().optional()
 });
 
 export type PackageFormatFeature = "app-deployment-module" | "public-assets";

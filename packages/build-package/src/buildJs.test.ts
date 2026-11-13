@@ -176,7 +176,7 @@ it("transpiles a project with open-pioneer:deployment import", async function ()
     `);
 });
 
-it("throws for an open-pioneer:assets when the target is smaller than 1.2", async function () {
+it("throws for an open-pioneer:assets import when the target is older than 1.2", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "project-with-public-assets");
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-public-assets");
     const entryPoints = normalize(["index"]);

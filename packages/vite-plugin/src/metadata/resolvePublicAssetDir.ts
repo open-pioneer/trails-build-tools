@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { realpath, stat } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { PublicAssetConfig } from "@open-pioneer/build-common";
 import { findDepPkgJsonPath } from "vitefu";
 import { ReportableError } from "../ReportableError";
@@ -25,10 +25,7 @@ export async function resolvePublicAssetDir(
             break;
         case "dependency": {
             src = `${entry.packageName}/${entry.src}`;
-            const packageJsonPath = await findDepPkgJsonPath(
-                entry.packageName,
-                join(packageDir, "package.json")
-            );
+            const packageJsonPath = await findDepPkgJsonPath(entry.packageName, packageDir);
             if (!packageJsonPath) {
                 throw new ReportableError(
                     `Failed to find package '${entry.packageName}' for the public asset directory '${src}' of package '${packageName}'.` +

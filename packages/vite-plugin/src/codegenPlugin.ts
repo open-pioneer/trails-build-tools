@@ -433,7 +433,6 @@ async function getOptimizeDepsIncludes(rootDir: string) {
  * Creates a rolldown plugin for use during Vite's dependency optimization phase.
  * It marks all `open-pioneer:*` virtual module imports as external, so that the normal
  * Vite plugin handles them later.
- * Rolldown leaves them untouched, except for `open-pioneer:assets`.
  */
 function createOptimizeDepsRolldownPlugin(rootDir: string): Rolldown.Plugin {
     return {

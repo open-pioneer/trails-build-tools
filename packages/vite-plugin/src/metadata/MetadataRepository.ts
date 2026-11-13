@@ -58,7 +58,7 @@ export class MetadataRepository {
     #packageMetadataCache: PackageMetadataCache;
 
     // The Trails packages in #packageMetadataCache. Key: package name
-    #packagesByName = new Map<string, AnalyzedPackage>();
+    readonly #packagesByName = new Map<string, AnalyzedPackage>();
 
     // Cache for the contents of i18n files.
     // Key: path on disk.
@@ -74,7 +74,7 @@ export class MetadataRepository {
     }
 
     reset() {
-        this.#packagesByName = new Map();
+        this.#packagesByName.clear();
         this.#packageMetadataCache = this.#createPackageMetadataCache();
         this.#i18nCache = this.#createI18nCache();
     }

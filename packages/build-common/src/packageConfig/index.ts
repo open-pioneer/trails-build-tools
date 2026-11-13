@@ -58,13 +58,16 @@ export interface PackageConfig {
 }
 
 /** Internal representation of a public asset directory. */
-export type PublicAssetConfig = LocalPublicAssetConfig | PackagePublicAssetConfig;
+export type PublicAssetConfig = LocalPublicAssetConfig | DependencyPublicAssetConfig;
 
 /** A public asset directory addressed by a path relative to the package directory. */
 export interface LocalPublicAssetConfig {
     type: "local";
 
-    /** Path relative to the package directory, with forward slashes. May escape the package in development mode (for local packages). */
+    /**
+     * Path relative to the package directory, with forward slashes.
+     * The path of a source package may point outside the package.
+     */
     src: string;
 
     /** Path below the root of the package's public assets. Empty for the root itself. */
@@ -72,7 +75,7 @@ export interface LocalPublicAssetConfig {
 }
 
 /** A public asset directory inside a dependency of the package. */
-export interface PackagePublicAssetConfig {
+export interface DependencyPublicAssetConfig {
     type: "dependency";
 
     /** Name of the dependency that contains the directory. */
@@ -317,20 +320,11 @@ function normalizeProvides(rawConfig: ServiceConfig["provides"]): ProvidedInterf
 }
 
 function normalizePublicAssets(publicAssets: BuildConfig["publicAssets"]): PublicAssetConfig[] {
-    if (publicAssets == null) {
-        return [];
-    }
-    if (typeof publicAssets === "string") {
-        return [
-            {
-                type: "local",
-                src: normalizeRelativePath(publicAssets),
-                dest: ""
-            }
-        ];
-    }
-
-    return publicAssets.map((asset) => {
+    const directories =
+        typeof publicAssets === "string"
+            ? [{ src: publicAssets, dest: "." }]
+            : (publicAssets ?? []);
+    return directories.map((asset) => {
         return {
             type: "local",
             src: normalizePublicAssetSrc(asset.src),
@@ -345,8 +339,10 @@ function normalizePublicAssetDest(rawDest: string): string {
     }
 
     const dest = normalizeRelativePath(rawDest);
-    if (dest.split("/").some((segment) => /^\.\.?$/.test(segment))) {
-        throw new Error(`Cannot use "." or ".." in destination path: ${rawDest}`);
+    if (dest === ".." || dest.startsWith("../")) {
+        throw new Error(
+            `The destination directory must stay inside the package's public assets: "${rawDest}"`
+        );
     }
     return dest;
 }

@@ -5,15 +5,16 @@ import { cp } from "node:fs/promises";
 import { relative, sep } from "node:path";
 
 /**
- * Copies all files below `src` into `dest`, skipping files and directories whose name starts with `.`.
+ * Copies all files below the public asset directory `src` into `dest`,
+ * skipping files and directories whose name starts with `.`.
  * Symbolic links are copied as the files they point to.
  */
-export async function copyDirectory(src: string, dest: string): Promise<void> {
+export async function copyPublicAssetDirectory(src: string, dest: string): Promise<void> {
     await cp(src, dest, {
         recursive: true,
         dereference: true,
         force: true,
-        // Only the path below `src` counts, because the path of a pnpm dependency contains `.pnpm`.
+        // Only names below `src` count. The path of `src` itself may contain dot names such as `.pnpm`.
         filter: (source) =>
             !relative(src, source)
                 .split(sep)
