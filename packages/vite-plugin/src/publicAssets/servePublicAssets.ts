@@ -2,12 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ServerResponse } from "node:http";
+import { join } from "node:path";
 import sirv from "sirv";
 import type { Connect } from "vite";
 import { ResolvedPublicAssetDir } from "../metadata/Metadata";
 import { MetadataRepository } from "../metadata/MetadataRepository";
+import { createDebugger } from "../utils/debug";
 import { PUBLIC_ASSETS_URL_PREFIX } from "./constants";
 import { slugToPackageName } from "./packageSlug";
+
+const isDebug = !!process.env.DEBUG;
+const debug = createDebugger("open-pioneer:public-assets");
 
 type RequestHandler = (req: Connect.IncomingMessage, res: ServerResponse, next: () => void) => void;
 
@@ -28,12 +33,17 @@ export function createPublicAssetsMiddleware(
     const getHandler = (directory: string): RequestHandler => {
         let handler = handlers.get(directory);
         if (!handler) {
-            handler = sirv(directory, { dev: true, etag: true, extensions: [] });
+            handler = sirv(directory, {
+                dev: true,
+                etag: true,
+                extensions: []
+            });
             handlers.set(directory, handler);
         }
         return handler;
     };
 
+    isDebug && debug("Serving public assets below %s", prefix);
     return (req, res, next) => {
         const url = req.url;
         if ((req.method !== "GET" && req.method !== "HEAD") || !url?.startsWith(prefix)) {
@@ -44,6 +54,7 @@ export function createPublicAssetsMiddleware(
         try {
             path = decodeURI(url.slice(prefix.length).replace(/[?#].*$/, ""));
         } catch {
+            isDebug && debug("Rejecting %s: the path is not a valid URI", url);
             return replyWithStatus(res, 400, "Bad request: invalid path");
         }
 
@@ -51,12 +62,16 @@ export function createPublicAssetsMiddleware(
         const segments = path.split(/[/\\]/).filter((segment) => segment !== "");
         const [slug, ...assetPath] = segments;
         if (!slug || assetPath.length === 0) {
+            isDebug && debug("Rejecting %s: the path names no file of a package", url);
             return replyWithStatus(res, 404, "File not found");
         }
 
         const packageName = slugToPackageName(slug);
         const directories = repository.getLoadedPackage(packageName)?.publicAssets;
         if (!directories) {
+            // A package is only known after code of it was loaded, see the doc comment above.
+            isDebug &&
+                debug("Rejecting %s: package %s has not been loaded (yet)", url, packageName);
             return replyWithStatus(res, 404, "Package assets not found");
         }
 
@@ -64,6 +79,12 @@ export function createPublicAssetsMiddleware(
         const serveCandidate = (index: number): void => {
             const candidate = candidates[index];
             if (!candidate) {
+                isDebug &&
+                    debug(
+                        "Rejecting %s: no public asset directory of package %s contains the file",
+                        url,
+                        packageName
+                    );
                 return replyWithStatus(res, 404, "File not found");
             }
 

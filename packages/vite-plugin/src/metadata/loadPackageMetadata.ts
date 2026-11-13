@@ -407,9 +407,20 @@ async function resolvePublicAssetDirs(
     packageDir: string,
     publicAssets: PublicAssetConfig[]
 ): Promise<ResolvedPublicAssetDir[]> {
-    return await Promise.all(
+    const directories = await Promise.all(
         publicAssets.map((entry) => resolvePublicAssetDir(packageName, packageDir, entry))
     );
+    if (isDebug) {
+        for (const { directory, dest } of directories) {
+            debug(
+                "Package %s serves %s as public assets at '%s'",
+                packageName,
+                directory,
+                dest || "."
+            );
+        }
+    }
+    return directories;
 }
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/;
