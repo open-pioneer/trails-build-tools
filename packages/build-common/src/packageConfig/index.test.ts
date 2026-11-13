@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BuildConfig } from "@open-pioneer/build-support";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createPackageConfigFromBuildConfig, createPackageConfigFromPackageMetadata } from ".";
 import type { PackageMetadataV1 } from "../packageMetadata";
 
@@ -29,6 +29,10 @@ it("maps build.config.mjs contents to internal representation", function () {
         },
         i18n: ["x", "y"],
         styles: "./my-styles.scss",
+        publicAssets: [
+            { src: "./public/", dest: "." },
+            { src: "node_modules/third-party-lib/cdn", dest: "./third-party-lib/" }
+        ],
         servicesModule: "./my-services",
         ui: {
             references: [
@@ -64,82 +68,94 @@ it("maps build.config.mjs contents to internal representation", function () {
     };
     const packageConfig = createPackageConfigFromBuildConfig(buildConfig);
     expect(packageConfig).toMatchInlineSnapshot(`
-          {
-            "languages": Set {
-              "x",
-              "y",
-            },
-            "overrides": Map {
-              "otherPackage" => {
-                "packageName": "otherPackage",
-                "services": Map {
-                  "otherService" => {
-                    "enabled": false,
-                    "serviceName": "otherService",
-                  },
-                },
-              },
-            },
-            "properties": Map {
-              "x" => {
-                "defaultValue": 123,
-                "propertyName": "x",
-                "required": true,
-              },
-              "y" => {
-                "defaultValue": null,
-                "propertyName": "y",
-                "required": false,
-              },
-            },
-            "runtimeMeta": {
-              "metadataVersion": "1.1.1234",
-            },
+      {
+        "languages": Set {
+          "x",
+          "y",
+        },
+        "overrides": Map {
+          "otherPackage" => {
+            "packageName": "otherPackage",
             "services": Map {
-              "A" => {
-                "provides": [
-                  {
-                    "interfaceName": "foo",
-                    "qualifier": undefined,
-                  },
-                  {
-                    "interfaceName": "bar",
-                    "qualifier": "baz",
-                  },
-                ],
-                "references": Map {
-                  "r1" => {
-                    "interfaceName": "i1",
-                    "qualifier": undefined,
-                    "referenceName": "r1",
-                    "type": "unique",
-                  },
-                  "r2" => {
-                    "interfaceName": "i2",
-                    "qualifier": "q",
-                    "referenceName": "r2",
-                    "type": "all",
-                  },
-                },
-                "serviceName": "A",
+              "otherService" => {
+                "enabled": false,
+                "serviceName": "otherService",
               },
             },
-            "servicesModule": "./my-services",
-            "styles": "./my-styles.scss",
-            "uiReferences": [
+          },
+        },
+        "properties": Map {
+          "x" => {
+            "defaultValue": 123,
+            "propertyName": "x",
+            "required": true,
+          },
+          "y" => {
+            "defaultValue": null,
+            "propertyName": "y",
+            "required": false,
+          },
+        },
+        "publicAssets": [
+          {
+            "dest": "",
+            "src": "public",
+            "type": "local",
+          },
+          {
+            "dest": "third-party-lib",
+            "src": "node_modules/third-party-lib/cdn",
+            "type": "local",
+          },
+        ],
+        "runtimeMeta": {
+          "metadataVersion": "1.1.1234",
+        },
+        "services": Map {
+          "A" => {
+            "provides": [
               {
-                "interfaceName": "i1",
+                "interfaceName": "foo",
                 "qualifier": undefined,
-                "type": "unique",
               },
               {
-                "interfaceName": "i2",
-                "qualifier": "q",
-                "type": "all",
+                "interfaceName": "bar",
+                "qualifier": "baz",
               },
             ],
-          }
-        `);
+            "references": Map {
+              "r1" => {
+                "interfaceName": "i1",
+                "qualifier": undefined,
+                "referenceName": "r1",
+                "type": "unique",
+              },
+              "r2" => {
+                "interfaceName": "i2",
+                "qualifier": "q",
+                "referenceName": "r2",
+                "type": "all",
+              },
+            },
+            "serviceName": "A",
+          },
+        },
+        "servicesModule": "./my-services",
+        "styles": "./my-styles.scss",
+        "uiReferences": [
+          {
+            "interfaceName": "i1",
+            "qualifier": undefined,
+            "type": "unique",
+          },
+          {
+            "interfaceName": "i2",
+            "qualifier": "q",
+            "type": "all",
+          },
+        ],
+      }
+    `);
 });
 
 it("maps package metadata to internal representation", function () {
@@ -227,6 +243,7 @@ it("maps package metadata to internal representation", function () {
             "required": false,
           },
         },
+        "publicAssets": [],
         "runtimeMeta": {
           "metadataVersion": "1.2.456",
         },
@@ -275,4 +292,59 @@ it("maps package metadata to internal representation", function () {
         ],
       }
     `);
+});
+
+describe("public assets", () => {
+    it("expands a public assets string to a single directory at the root", function () {
+        const packageConfig = createPackageConfigFromBuildConfig({ publicAssets: "public" });
+        expect(packageConfig.publicAssets).toEqual([{ type: "local", src: "public", dest: "" }]);
+    });
+
+    it("returns no public assets if the build config does not declare any", function () {
+        const packageConfig = createPackageConfigFromBuildConfig({});
+        expect(packageConfig.publicAssets).toEqual([]);
+    });
+
+    it("treats an empty dest like '.'", function () {
+        const packageConfig = createPackageConfigFromBuildConfig({
+            publicAssets: [{ src: "public", dest: "" }]
+        });
+        expect(packageConfig.publicAssets).toEqual([{ type: "local", src: "public", dest: "" }]);
+    });
+
+    it("allows a public asset dest below another one", function () {
+        const packageConfig = createPackageConfigFromBuildConfig({
+            publicAssets: [
+                { src: "public", dest: "." },
+                { src: "fonts", dest: "lib" },
+                { src: "icons", dest: "lib/icons" }
+            ]
+        });
+        expect(packageConfig.publicAssets).toEqual([
+            { type: "local", src: "public", dest: "" },
+            { type: "local", src: "fonts", dest: "lib" },
+            { type: "local", src: "icons", dest: "lib/icons" }
+        ]);
+    });
+
+    // Note: cannot be used for published packages (local dev setup only).
+    it("allows a public asset src outside of the package directory", function () {
+        const packageConfig = createPackageConfigFromBuildConfig({
+            publicAssets: [{ src: "../shared/assets", dest: "shared" }]
+        });
+        expect(packageConfig.publicAssets).toEqual([
+            { type: "local", src: "../shared/assets", dest: "shared" }
+        ]);
+    });
+
+    it("writes public asset paths with forward slashes", function () {
+        const packageConfig = createPackageConfigFromBuildConfig({
+            publicAssets: [
+                { src: ".\\node_modules\\third-party-lib\\cdn\\", dest: "third-party\\lib" }
+            ]
+        });
+        expect(packageConfig.publicAssets).toEqual([
+            { type: "local", src: "node_modules/third-party-lib/cdn", dest: "third-party/lib" }
+        ]);
+    });
 });

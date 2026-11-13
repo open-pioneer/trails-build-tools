@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
+import { posix, win32, isAbsolute } from "node:path";
 import {
     BuildConfig,
     PackageOverridesConfig,
@@ -9,6 +10,7 @@ import {
     ServiceConfig,
     ServiceOverridesConfig
 } from "@open-pioneer/build-support";
+import { normalizePath } from "@rollup/pluginutils";
 import type {
     PropertyConfig as MetadataPropertyConfig,
     ProvidesConfig as MetadataProvidesConfig,
@@ -28,6 +30,9 @@ export interface PackageConfig {
 
     /** Css entry point, if any. */
     styles: string | undefined;
+
+    /** Public asset directories, with normalized paths. */
+    publicAssets: PublicAssetConfig[];
 
     /** Supported languages. */
     languages: Set<string>;
@@ -49,6 +54,34 @@ export interface PackageConfig {
         /** The metadata version supported by the package. */
         metadataVersion?: string;
     };
+}
+
+/** Internal representation of a public asset directory. */
+export type PublicAssetConfig = LocalPublicAssetConfig | PackagePublicAssetConfig;
+
+/** A public asset directory addressed by a path relative to the package directory. */
+export interface LocalPublicAssetConfig {
+    type: "local";
+
+    /** Path relative to the package directory, with forward slashes. May escape the package in development mode (for local packages). */
+    src: string;
+
+    /** Path below the root of the package's public assets. Empty for the root itself. */
+    dest: string;
+}
+
+/** A public asset directory inside a dependency of the package. */
+export interface PackagePublicAssetConfig {
+    type: "package";
+
+    /** Name of the dependency that contains the directory. */
+    packageName: string;
+
+    /** Path relative to the dependency's package directory, with forward slashes. */
+    path: string;
+
+    /** Path below the root of the package's public assets. Empty for the root itself. */
+    dest: string;
 }
 
 /** Internal representation of a service. */
@@ -145,6 +178,8 @@ export function createPackageConfigFromBuildConfig(buildConfig: BuildConfig): Pa
 
     const styles = buildConfig.styles ?? undefined;
 
+    const publicAssets = normalizePublicAssets(buildConfig.publicAssets);
+
     const languages = new Set<string>();
     if (buildConfig.i18n) {
         for (const lang of buildConfig.i18n) {
@@ -187,6 +222,7 @@ export function createPackageConfigFromBuildConfig(buildConfig: BuildConfig): Pa
         servicesModule,
         uiReferences,
         styles,
+        publicAssets,
         languages,
         properties,
         overrides,
@@ -279,6 +315,43 @@ function normalizeProvides(rawConfig: ServiceConfig["provides"]): ProvidedInterf
     });
 }
 
+function normalizePublicAssets(rawConfig: BuildConfig["publicAssets"]): PublicAssetConfig[] {
+    if (rawConfig == null) {
+        return [];
+    }
+
+    const dirs = typeof rawConfig === "string" ? [{ src: rawConfig, dest: "." }] : rawConfig;
+    return dirs.map((dir) => {
+        const src = normalizePublicAssetSrc(dir.src);
+
+        if (isAbsolute(dir.dest)) {
+            throw new Error(`The destination directory must be a relative path: "${dir.dest}"`);
+        }
+        const dest = normalizeRelativePath(dir.dest);
+        return {
+            type: "local",
+            src,
+            dest
+        };
+    });
+}
+
+function normalizePublicAssetSrc(src: string): string {
+    if (isAbsolute(src)) {
+        return normalizePath(src);
+    }
+    return normalizeRelativePath(src);
+}
+
+/**
+ * Returns the path with forward slashes, without a leading `./` and without a trailing `/`.
+ * The current directory is the empty string.
+ */
+function normalizeRelativePath(path: string): string {
+    const normalized = posix.normalize(normalizePath(path).replace(/\/$/, ""));
+    return normalized === "." ? "" : normalized;
+}
+
 function normalizeProperty(
     propertyName: string,
     value: unknown,
@@ -354,6 +427,7 @@ export function createPackageConfigFromPackageMetadata(metadata: PackageMetadata
         services,
         servicesModule: metadata.servicesModule ?? undefined,
         styles: metadata.styles ?? undefined,
+        publicAssets: [],
         languages,
         uiReferences: readUiReferences(metadata.ui),
         properties,

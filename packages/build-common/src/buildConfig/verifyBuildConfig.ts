@@ -7,6 +7,7 @@ import {
     PackageOverridesConfig,
     PropertyMetaConfig,
     ProvidesConfig,
+    PublicAssetDir,
     PublishConfig,
     ReferenceConfig,
     ServiceConfig,
@@ -45,6 +46,11 @@ const PROVIDES_CONFIG_SCHEMA: z.ZodType<ProvidesConfig> = z.strictObject({
 
 const UI_CONFIG_SCHEMA: z.ZodType<UiConfig> = z.strictObject({
     references: z.array(z.string().or(REFERENCE_CONFIG_SCHEMA)).optional()
+});
+
+const PUBLIC_ASSET_DIR_SCHEMA: z.ZodType<PublicAssetDir> = z.strictObject({
+    src: z.string(),
+    dest: z.string()
 });
 
 const SERVICE_CONFIG_SCHEMA: z.ZodType<ServiceConfig> = z.strictObject({
@@ -87,6 +93,7 @@ const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<BuildConfig["runtimeMeta"]> = z.stri
 const BUILD_CONFIG_SCHEMA: z.ZodType<BuildConfig> = z.strictObject({
     entryPoints: z.string().or(z.string().array()).optional(),
     styles: z.string().optional(),
+    publicAssets: z.string().or(z.array(PUBLIC_ASSET_DIR_SCHEMA)).optional(),
     i18n: z.array(z.string()).optional(),
     services: z.record(z.string(), SERVICE_CONFIG_SCHEMA).optional(),
     servicesModule: z.string().optional(),
