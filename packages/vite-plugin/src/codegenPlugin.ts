@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname, resolve } from "node:path";
 import { cwd } from "node:process";
 import { RuntimeSupport } from "@open-pioneer/build-common";
 import { normalizePath, Rolldown, UserConfig, Plugin as VitePlugin } from "vite";
@@ -27,6 +27,7 @@ import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
 import { PACKAGE_ASSETS_DIR, PUBLIC_ASSETS_URL_PREFIX } from "./publicAssets/constants";
+import { copyPublicAssets } from "./publicAssets/copyPublicAssets";
 import { packageNameToSlug } from "./publicAssets/packageSlug";
 import { createPublicAssetsMiddleware } from "./publicAssets/servePublicAssets";
 import { ReportableError } from "./ReportableError";
@@ -46,6 +47,7 @@ export function codegenPlugin(): VitePlugin {
     let resolvedRoot!: string;
     let repository!: MetadataRepository;
     let deploymentModule!: DeploymentModule;
+    let publicAssetsCopied = false;
 
     return {
         name: "pioneer:codegen",
@@ -92,6 +94,7 @@ export function codegenPlugin(): VitePlugin {
 
         async buildStart(this: PluginContext) {
             repository?.reset();
+            publicAssetsCopied = false;
             deploymentModule.onStart(this);
         },
 
@@ -331,6 +334,26 @@ export function codegenPlugin(): VitePlugin {
 
         generateBundle(_options, bundle) {
             deploymentModule.onGenerateBundle(bundle);
+        },
+
+        async writeBundle() {
+            // writeBundle runs once per output, but the public assets are the same for all of them.
+            if (this.environment.name !== "client" || publicAssetsCopied) {
+                return;
+            }
+            publicAssetsCopied = true;
+
+            try {
+                await copyPublicAssets({
+                    packages: repository.getLoadedPackages(),
+                    outDir: resolve(
+                        this.environment.config.root,
+                        this.environment.config.build.outDir
+                    )
+                });
+            } catch (e) {
+                reportError(this, e, isDev);
+            }
         }
     };
 }

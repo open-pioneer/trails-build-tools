@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { globSync } from "tinyglobby";
 import { describe, expect, it, onTestFailed } from "vitest";
@@ -523,6 +523,55 @@ describe("public assets", () => {
         expect(appJs).toContain('"packages/scope~scoped-assets/"');
         expect(appJs).toContain('"packages/test-app/"');
         expect(appJs).toContain("__base_url_sentinel__");
+    });
+
+    it("copies the public assets of all packages into the build output", async () => {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-public-assets/src");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-public-assets-copy");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        const packagesDir = join(outDir, "packages");
+        const assetFiles = globSync("**", { cwd: packagesDir, dot: true }).sort();
+        expect(assetFiles).toMatchInlineSnapshot(`
+          [
+            "package-with-assets/nested/file.txt",
+            "package-with-assets/root.txt",
+            "package-with-assets/shared/nested/shared.txt",
+            "package-with-assets/third-party-lib/overwritten.txt",
+            "package-with-assets/third-party-lib/third-party.txt",
+            "scope~scoped-assets/scoped.txt",
+          ]
+        `);
+
+        // The entry declared first wins, as in the dev server.
+        expect(
+            readFileSync(
+                join(packagesDir, "package-with-assets/third-party-lib/overwritten.txt"),
+                "utf-8"
+            )
+        ).toBe("overwritten\n");
+    });
+
+    it("creates no packages directory for an app without public assets", async () => {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-packages");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-packages-no-public-assets");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        expect(existsSync(join(outDir, "packages"))).toBe(false);
     });
 });
 

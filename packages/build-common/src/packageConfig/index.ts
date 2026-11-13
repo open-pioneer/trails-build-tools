@@ -329,7 +329,7 @@ function normalizePublicAssets(rawConfig: BuildConfig["publicAssets"]): PublicAs
         }
 
         const dest = normalizeRelativePath(dir.dest);
-        if (dest.split("/").some((segment) => /^\.|\.\.$/.test(segment))) {
+        if (dest.split("/").some((segment) => /^\.\.?$/.test(segment))) {
             throw new Error(`Cannot use "." or ".." in destination path: ${dir.dest}`);
         }
 

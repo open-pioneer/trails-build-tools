@@ -43,8 +43,9 @@ Expose the result on `PackageModel` as two lists, so the copy step and the metad
 ### Copy step
 
 New `src/copyPublicAssets.ts`, called in `buildPackage.ts` after `copyAssets`, only if there are local entries.
-Log "Copying public assets...". For each local entry call `copyPublicAssetDirectory(<package>/<src>,
-<dist>/<src>)` from build-common. Dependency entries are not copied.
+Log "Copying public assets...". Copy each local entry from `<package>/<src>` to `<dist>/<src>` with
+`fs.promises.cp`, skipping names that start with `.`, like `copyDirectory` in the vite plugin.
+Dependency entries are not copied.
 
 ### Metadata
 

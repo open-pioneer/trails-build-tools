@@ -99,6 +99,13 @@ export class MetadataRepository {
     }
 
     /**
+     * Returns the metadata of all Trails packages that have been loaded since the last reset.
+     */
+    getLoadedPackages(): AnalyzedPackage[] {
+        return Array.from(this.#packagesByName.values());
+    }
+
+    /**
      * Returns the combined application metadata of the app in `appDirectory`.
      * Starting from the app's package.json, dependencies will be visited recursively.
      *

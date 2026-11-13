@@ -112,7 +112,6 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
 - The plugin copies the public assets of all packages of all apps in the build, once, after the bundle is written.
 - The copy is asynchronous.
 - It runs for the client environment only and not when `build.write` is `false`.
-- A file of the bundle below `packages/<packageSlug>/` of a package with public assets is an error.
 
 ### Published packages
 
@@ -155,9 +154,6 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
   A build config only produces local entries.
 - `PackageMetadataV1` gets version 1.2.0 with the optional `publicAssets` field and the feature `public-assets`.
 - `RuntimeSupport.parseVirtualModule` accepts `open-pioneer:assets` without a query, like `open-pioneer:react-hooks`.
-- `copyPublicAssetDirectory(src, dest)` copies one directory with `fs.promises.cp`, `recursive`, `dereference` and a
-  filter for dot names.
-  The plugin and the compiler both use it.
 
 ### vite-plugin
 
@@ -177,6 +173,8 @@ The code lives in `src/publicAssets/` and `codegenPlugin.ts` drives it, like `De
   Only the plugin knows the internal id, and `RuntimeSupport` rejects a query on `open-pioneer:assets`.
 - The plugin generates the module code itself, because nothing else needs it.
 - The build copy runs in `writeBundle`.
+- `copyDirectory(src, dest)` copies one directory with `fs.promises.cp`, `recursive`, `dereference` and a filter for
+  dot names.
 
 ### build-package
 

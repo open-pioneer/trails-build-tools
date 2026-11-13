@@ -40,7 +40,7 @@ Also check by hand:
 
 ## Decide
 
-- If the build copy is too slow, replace `fs.promises.cp` in `copyPublicAssetDirectory` with a recursive
+- If the build copy is too slow, replace `fs.promises.cp` in `copyDirectory` (vite-plugin) with a recursive
   `readdir` plus `copyFile` loop with bounded concurrency, and measure again.
   Record both numbers under `## Comments`.
 - Record anything the feature cannot do for the app as a new ticket in this directory.

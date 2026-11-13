@@ -1,6 +1,6 @@
 # Copy public assets into the app build
 
-Status: ready-for-agent
+Status: done
 Issue: #60
 Blocked by: 04
 
@@ -56,3 +56,19 @@ export async function copyPublicAssetDirectory(src: string, dest: string): Promi
 
 `pnpm build`, `pnpm check-types`, `pnpm exec oxlint packages` and
 `pnpm exec vitest run packages/build-common packages/vite-plugin` pass.
+
+## Comments
+
+The build copies the public assets of the packages that the repository loaded, and only `open-pioneer:app` and its
+sibling modules load an app's dependency graph in a build.
+An app that imports `open-pioneer:assets` but never `open-pioneer:app` therefore copies nothing.
+Every real app imports `open-pioneer:app`, so the fixture `codegen-public-assets` now imports it too.
+
+Packages are copied in parallel, because their target directories differ.
+The directories of one package are copied one after another.
+
+The copy function lives in the vite-plugin as `copyDirectory` in `src/publicAssets/copyDirectory.ts`, not in
+build-common, because nothing else uses it.
+
+The check for bundle files below `packages/<packageSlug>/` and the debug line with the number of directories were
+dropped to keep the implementation simple.
