@@ -125,6 +125,50 @@ declare module "open-pioneer:deployment" {
 }
 
 /**
+ * Provides access to the current package's public asset files.
+ *
+ * Public assets are declared in the package's `build.config.mjs`.
+ * The build system ensures that public assets are copied over when building the application.
+ *
+ * This module computes the URLs to those assets at runtime, so they can be `fetch()`-ed or downloaded.
+ */
+declare module "open-pioneer:assets" {
+    /**
+     * The URL of the root directory of this package's public assets.
+     *
+     * The URL always ends with a `/`.
+     * For example, in an app deployed at `https://example.com/`, the value might be
+     * `https://example.com/packages/<packageName>/`.
+     *
+     * The specific location in the final build output is an implementation detail.
+     * Always use this constant or {@link getPublicAssetUrl} to resolve public assets.
+     */
+    export const publicAssetsUrl: string;
+
+    /**
+     * Returns the fully resolved URL to the specified public asset file.
+     *
+     * For example:
+     *
+     * ```ts
+     * // in my-package/my-file.ts
+     * import { getPublicAssetUrl } from "open-pioneer:assets";
+     *
+     * // Public asset path local to this package. Should match the public asset declarations in `build.config.mjs`.
+     * const localPath = "icons/my-icon.png";
+     *
+     * // The fully resolved absolute URL to the asset. Can be used at development time and in production.
+     * const fileUrl = getPublicAssetUrl(localPath);
+     * console.log(fileUrl); // E.g. https://example.com/packages/my-package/icons/my-icon.png
+     * ```
+     *
+     * The specific location in the final build output is an implementation detail.
+     * Always use this function or {@link publicAssetsUrl} to resolve public assets.
+     */
+    export function getPublicAssetUrl(localAssetPath: string): string;
+}
+
+/**
  * Provides test support helpers for the importing package, such as the actual i18n messages that would be used when running in a trails app.
  *
  * This module is designed to be used in combination with the `@open-pioneer/test-utils` package.

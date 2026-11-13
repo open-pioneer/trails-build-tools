@@ -50,8 +50,8 @@ test output in `temp/`.
 the resulting `PackageConfig`.
 
 The Vite plugin serves an app from source.
-`codegenPlugin` answers imports of `open-pioneer:app`, `open-pioneer:react-hooks`, `open-pioneer:source-info` and
-`open-pioneer:deployment` with generated modules.
+`codegenPlugin` answers imports of `open-pioneer:app`, `open-pioneer:react-hooks`, `open-pioneer:source-info`,
+`open-pioneer:deployment` and `open-pioneer:assets` with generated modules.
 To do so, `MetadataRepository` starts at the app's `package.json`, visits every dependency, keeps the ones that carry a
 `build.config.mjs` or published package metadata, and caches each result together with the files that produced it, so a
 change to one `package.json`, `build.config.mjs` or i18n YAML invalidates exactly that entry and triggers a reload.

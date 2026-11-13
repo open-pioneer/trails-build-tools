@@ -49,6 +49,58 @@ export interface BuildConfig {
     styles?: string;
 
     /**
+     * One or more directories that contain _public assets_.
+     *
+     * Public assets are files that are copied as-is into the application's final bundle.
+     * They are not processed in any way, and they keep their original file names instead of hashed file names.
+     *
+     * Use this property instead of Vite-style asset imports (see also {@link PublishConfig.assets}) if you need
+     * stable file URLs or if imports cannot be used.
+     * This is the case, for example, when a third party library expects its asset files at a certain location on
+     * the web server.
+     *
+     * You can obtain the URL to a package's public assets at runtime by importing the module `"open-pioneer:assets"`.
+     *
+     * When the package is built for publishing, public asset directories within the package are copied into the
+     * published package.
+     * Public assets from node dependencies are _not_ copied.
+     *
+     * > NOTE: File names starting with `.` are always ignored for security reasons.
+     *
+     * @example
+     *
+     * Serve all files in `<current-package>/public` as the public assets of that package.
+     * A plain string is short for a single directory with `dest: "."`, so both forms below are equivalent:
+     *
+     * ```js
+     * publicAssets: "public"
+     * ```
+     *
+     * ```js
+     * publicAssets: [{ src: "public", dest: "." }]
+     * ```
+     *
+     * @example
+     *
+     * Serve the files in `<current-package>/public` at the _root_ of the package's public assets,
+     * and the contents of `./node_modules/third-party-lib/cdn` in a subdirectory called `third-party-lib`:
+     *
+     * ```js
+     * publicAssets: [
+     *     {
+     *         src: "public",
+     *         dest: "."
+     *     },
+     *     {
+     *         src: "./node_modules/third-party-lib/cdn",
+     *         dest: "third-party-lib"
+     *     }
+     * ]
+     * ```
+     */
+    publicAssets?: string | PublicAssetDir[];
+
+    /**
      * Array of supported languages, every entry here needs a ./i18n/<lang>.yaml file.
      *
      * @example
@@ -148,6 +200,33 @@ export interface BuildConfig {
         /** The metadata version supported by the package. */
         metadataVersion?: string;
     };
+}
+
+/**
+ * Defines a public asset directory.
+ */
+export interface PublicAssetDir {
+    /**
+     * Relative path to a local directory.
+     *
+     * All files in this directory and its subdirectories are served as public assets.
+     *
+     * Packages typically use a path _within_ the package (e.g. `./public`).
+     * They may also reference the files of a dependency (e.g. `./node_modules/my-dep/cdn/assets`).
+     */
+    src: string;
+
+    /**
+     * The name of the directory in the package's public assets.
+     * This becomes part of the URLs.
+     *
+     * Allowed values are:
+     * - `"."` or `""`: to serve the assets at the root of the package's public assets.
+     * - `"some/relative/path"`: to serve the assets from a subdirectory.
+     *
+     * If you define multiple public asset directories, their `dest` values must not conflict with one another.
+     */
+    dest: string;
 }
 
 /**

@@ -76,8 +76,14 @@ _Avoid_: package graph, package list
 
 **Build config**:
 The `build.config.mjs` file of a Trails package.
-It declares entry points, styles, languages, services, UI references, properties, overrides, and the publish config.
+It declares entry points, styles, public assets, languages, services, UI references, properties, overrides, and the
+publish config.
 _Avoid_: package config, pioneer config
+
+**Public asset**:
+A file in one of the directories that the build config lists under `publicAssets`.
+It is copied unchanged and under its original file name into the app's build output, below a directory of its package.
+Code obtains its URL from the virtual module `open-pioneer:assets`.
 
 **Package config**:
 The normalized, in-memory form of a package's configuration that the plugin and the compiler work with.
@@ -132,7 +138,7 @@ _Avoid_: root directory, project root, repository root
 
 **Virtual module**:
 A module with an `open-pioneer:` prefix that the Vite plugin generates instead of reading from disk, for example
-`open-pioneer:app` or `open-pioneer:react-hooks`.
+`open-pioneer:app`, `open-pioneer:react-hooks` or `open-pioneer:assets`.
 The `client.d.ts` of the Vite plugin declares every virtual module and what it exports.
 The package compiler passes them through, so they are resolved again when the published package is used in an app,
 except for the modules that only tests may import.
