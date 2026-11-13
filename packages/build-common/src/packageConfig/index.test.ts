@@ -347,4 +347,26 @@ describe("public assets", () => {
             { type: "local", src: "node_modules/third-party-lib/cdn", dest: "third-party/lib" }
         ]);
     });
+
+    it.each(["/absolute/path", "C:\\absolute\\path"])(
+        "rejects absolute path in a public asset dest: %s",
+        (dest) => {
+            expect(() =>
+                createPackageConfigFromBuildConfig({
+                    publicAssets: [{ src: "foo", dest }]
+                })
+            ).toThrow(/must be a relative path/);
+        }
+    );
+
+    it.each(["..", "../outside", "lib/../../icons", "lib\\..\\..\\icons"])(
+        "rejects '..' in a public asset dest: %s",
+        (dest) => {
+            expect(() =>
+                createPackageConfigFromBuildConfig({
+                    publicAssets: [{ src: "foo", dest }]
+                })
+            ).toThrow(/Cannot use "\." or "\.\." in destination path/);
+        }
+    );
 });

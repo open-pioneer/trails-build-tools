@@ -16,7 +16,8 @@ New folder `packages/vite-plugin/src/publicAssets/`, wired from `codegenPlugin.t
 `src/deployment/index.ts` is wired.
 
 - **`PublicAssetsRegistry`**: `register(packages: AnalyzedPackage[])`, `get(packageName)`, `clear()`.
-  A map from package name to `ResolvedPublicAssetDir[]`. Registering a package again replaces its entry.
+  A map from package name to `ResolvedPublicAssetDir[]` in declaration order. Registering a package again replaces
+  its entry.
   Packages without public assets are not stored.
 - **Filling the registry**: in `codegenPlugin.ts`, after every `repository.getAppMetadata(...)` and
   `repository.getTestSupportMetadata(...)` call. Wrap the calls in one local helper so no call site forgets.
@@ -29,8 +30,9 @@ New folder `packages/vite-plugin/src/publicAssets/`, wired from `codegenPlugin.t
     2. Strip query and hash, decode with `decodeURI` in a try/catch (400 on failure).
     3. Parse the package name: two segments if the first starts with `@`, else one.
     4. Respond 404 if the package is not registered, or if any remaining segment starts with `.`.
-    5. Walk the package's directories in registry order. An entry matches if `dest` is `""` or the remaining path
-       starts with `dest + "/"`. Call that directory's `sirv` handler with `req.url` set to the path below `dest`.
+    5. Walk the package's directories from the last to the first, so the entry declared later wins.
+       An entry matches if `dest` is `""` or the remaining path starts with `dest + "/"`.
+       Call that directory's `sirv` handler with `req.url` set to the path below `dest`.
        The handler's `next` callback tries the following entry.
     6. Respond 404 when no entry is left. Never call the outer `next()` for a URL below the prefix.
 - **sirv**: `sirv(directory, { dev: true, etag: true, extensions: [] })`, created on first use and kept in a map by
@@ -51,6 +53,7 @@ analyzed and registered, then `fetch`:
 - the same file with `If-None-Match`: 304
 - a file in the nested `dest` (`third-party-lib/...`)
 - fall-through: a file that exists only in the shallower directory but whose path starts with the deeper `dest`
+- precedence: a file that exists in two entries is served from the entry declared later
 - a missing file: 404 and not the content of `index.html`, also with `Accept: text/html`
 - `.hidden` and a path with a dot directory: 404
 - `..%2f` and `%2e%2e/` traversal attempts: 404 or 400, never a file from outside

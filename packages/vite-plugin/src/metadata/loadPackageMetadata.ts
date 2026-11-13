@@ -10,6 +10,7 @@ import {
     BuildConfig,
     PackageConfig,
     PackageMetadataV1,
+    PublicAssetConfig,
     createPackageConfigFromBuildConfig,
     createPackageConfigFromPackageMetadata,
     loadBuildConfig
@@ -20,7 +21,8 @@ import { createDebugger } from "../utils/debug";
 import { fileExists, isInDirectory } from "../utils/fileUtils";
 import { PACKAGE_NAME } from "../utils/package";
 import { MetadataContext } from "./Context";
-import { DiscoveredPackage, PackageDependency } from "./Metadata";
+import { DiscoveredPackage, PackageDependency, ResolvedPublicAssetDir } from "./Metadata";
+import { resolvePublicAssetDir } from "./resolvePublicAssetDir";
 
 const isDebug = !!process.env.DEBUG;
 const debug = createDebugger("open-pioneer:metadata");
@@ -139,6 +141,12 @@ class PackageMetadataReader {
             }
         }
 
+        const publicAssets = await resolvePublicAssetDirs(
+            packageName,
+            packageDir,
+            config.publicAssets
+        );
+
         const i18nPaths = new Map<string, string>();
         for (const locale of config.languages) {
             if (i18nPaths.has(locale)) {
@@ -157,6 +165,7 @@ class PackageMetadataReader {
             servicesModuleId,
             servicesModulePath,
             cssFilePath: cssFile,
+            publicAssets,
             i18nPaths,
             get locales() {
                 return Array.from(i18nPaths.keys());
@@ -391,6 +400,16 @@ async function resolveLocalFile(
     }
 
     return await ctx.resolveLocalFile(localModuleId, packageName, packageDir);
+}
+
+async function resolvePublicAssetDirs(
+    packageName: string,
+    packageDir: string,
+    publicAssets: PublicAssetConfig[]
+): Promise<ResolvedPublicAssetDir[]> {
+    return await Promise.all(
+        publicAssets.map((entry) => resolvePublicAssetDir(packageName, packageDir, entry))
+    );
 }
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/;

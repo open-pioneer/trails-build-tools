@@ -1,0 +1,6 @@
+{
+    "name": "package-with-assets",
+    "dependencies": {
+        "third-party-lib": "x.x"
+    }
+}

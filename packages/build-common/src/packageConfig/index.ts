@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { posix, win32, isAbsolute } from "node:path";
+import { posix, win32 } from "node:path";
 import {
     BuildConfig,
     PackageOverridesConfig,
@@ -327,7 +327,12 @@ function normalizePublicAssets(rawConfig: BuildConfig["publicAssets"]): PublicAs
         if (isAbsolute(dir.dest)) {
             throw new Error(`The destination directory must be a relative path: "${dir.dest}"`);
         }
+
         const dest = normalizeRelativePath(dir.dest);
+        if (dest.split("/").some((segment) => /^\.|\.\.$/.test(segment))) {
+            throw new Error(`Cannot use "." or ".." in destination path: ${dir.dest}`);
+        }
+
         return {
             type: "local",
             src,
@@ -341,6 +346,10 @@ function normalizePublicAssetSrc(src: string): string {
         return normalizePath(src);
     }
     return normalizeRelativePath(src);
+}
+
+function isAbsolute(src: string) {
+    return posix.isAbsolute(src) || win32.isAbsolute(src);
 }
 
 /**

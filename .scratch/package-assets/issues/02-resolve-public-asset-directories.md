@@ -1,6 +1,6 @@
 # Resolve public asset directories during package analysis
 
-Status: ready-for-agent
+Status: done
 Issue: #60
 Blocked by: 01
 
@@ -16,7 +16,7 @@ Only `packages/vite-plugin/src/metadata`.
 - Add to `AnalyzedPackage` in `Metadata.ts`:
 
     ```ts
-    /** Public asset directories, sorted from the longest `dest` to the shortest. */
+    /** Public asset directories, in the order of the build config or package metadata. */
     publicAssets: ResolvedPublicAssetDir[];
 
     export interface ResolvedPublicAssetDir {
@@ -53,9 +53,17 @@ New fixture `packages/vite-plugin/test-data/codegen-public-assets/` with a sourc
 Later tickets reuse this fixture, so keep it small and name files by what they test.
 
 Test through `MetadataRepository.getAppMetadata` or the nearest existing test seam in `src/metadata`:
-directories resolved and sorted, missing directory reports an error.
+directories resolved in declaration order, missing directory reports an error.
 
 ## Done when
 
 `pnpm build`, `pnpm check-types`, `pnpm exec oxlint packages/vite-plugin` and
 `pnpm exec vitest run packages/vite-plugin` pass.
+
+## Comments
+
+`src/metadata/resolvePublicAssetDir.ts` resolves a single entry, so the `package` branch has direct unit tests in
+`resolvePublicAssetDir.test.ts`, including the missing dependency error.
+`MetadataRepository.test.ts` covers the whole fixture through `getAppMetadata`.
+`AnalyzedPackage.publicAssets` keeps the order of the build config instead of sorting by `dest`.
+Ticket 01 now accepts an absolute `src`, and `resolve(packageDir, src)` handles it without a special case.

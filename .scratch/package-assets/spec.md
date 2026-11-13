@@ -70,10 +70,11 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
   It trusts the package metadata that the compiler wrote.
 - `dest` is a relative path without `..`.
   `"."` and `""` both mean the root of the package's public assets.
-- Two entries with the same normalized `dest` are an error.
-- A `dest` may lie below another one.
-  A file is looked up in the entry with the longest matching `dest` first, then in the shallower ones.
-  The build copies shallow entries first, so the deeper entry wins on a conflict there as well.
+- Entries keep the order of the build config.
+- A `dest` may lie below another one or repeat it.
+  When two entries provide the same file, the entry declared later wins.
+  The dev server looks a file up from the last entry to the first.
+  The build copies the entries in declaration order, so a later entry overwrites an earlier one.
 - A `src` directory that does not exist is an error.
 
 ### URLs
@@ -159,8 +160,7 @@ The code lives in `src/publicAssets/` and `codegenPlugin.ts` drives it, like `De
 - `loadPackageMetadata.ts` resolves each entry to an absolute real directory and stores the list on `AnalyzedPackage`.
   A `package` entry is resolved with `findDepPkgJsonPath` from `vitefu`.
   Errors are `ReportableError`.
-- `PublicAssetsRegistry` maps a package name to its resolved directories, sorted from the longest `dest` to the
-  shortest.
+- `PublicAssetsRegistry` maps a package name to its resolved directories, in declaration order.
   `codegenPlugin` fills it whenever a dependency graph has been analyzed.
 - The dev middleware is registered directly in `configureServer`, so it runs before Vite's own middlewares.
   It creates one `sirv` handler per directory on first use and keeps it.

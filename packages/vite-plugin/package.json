@@ -37,7 +37,6 @@
         "debug": "catalog:",
         "esrap": "catalog:",
         "js-yaml": "catalog:",
-        "oxc-resolver": "catalog:",
         "tinyglobby": "catalog:",
         "vitefu": "catalog:",
         "zod": "catalog:",

@@ -242,9 +242,6 @@ catalogs:
     lint-staged:
       specifier: ^17.6.0
       version: 17.6.0
-    oxc-resolver:
-      specifier: ^11.24.2
-      version: 11.24.2
     oxfmt:
       specifier: ^0.74.0
       version: 0.74.0
@@ -777,9 +774,6 @@ importers:
       js-yaml:
         specifier: 'catalog:'
         version: 5.5.0
-      oxc-resolver:
-        specifier: 'catalog:'
-        version: 11.24.2
       tinyglobby:
         specifier: 'catalog:'
         version: 0.2.17
@@ -6297,6 +6291,7 @@ snapshots:
       '@oxc-resolver/binding-wasm32-wasi': 11.24.2
       '@oxc-resolver/binding-win32-arm64-msvc': 11.24.2
       '@oxc-resolver/binding-win32-x64-msvc': 11.24.2
+    optional: true
 
   oxfmt@0.74.0:
     dependencies:

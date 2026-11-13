@@ -30,9 +30,8 @@ export async function copyPublicAssetDirectory(src: string, dest: string): Promi
 - `writeBundle` hook in `codegenPlugin.ts`, delegating to a function in `src/publicAssets/`.
 - Skip unless `this.environment.name === "client"`.
 - Target root: `resolve(this.environment.config.build.outDir, "packages")`.
-- For every registered package, in a stable order: copy its directories from the shortest `dest` to the longest into
-  `<target root>/<packageName>/<dest>`, one after another, so a deeper `dest` overwrites.
-  The registry stores the opposite order. Reverse a copy, do not mutate.
+- For every registered package, in a stable order: copy its directories in registry order into
+  `<target root>/<packageName>/<dest>`, one after another, so the entry declared later overwrites.
 - `writeBundle` runs once per output. Copy only once per build. Reset the guard in `buildStart`.
 - Before copying, check the bundle passed to `writeBundle`: a file name below `packages/<packageName>/` of a package
   with public assets is a `ReportableError` that names the file and the package.
