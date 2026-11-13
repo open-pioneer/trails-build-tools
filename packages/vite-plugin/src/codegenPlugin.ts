@@ -25,6 +25,7 @@ import { createMetadataContextFromRolldown, MetadataContext } from "./metadata/C
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
+import { createPublicAssetsMiddleware } from "./publicAssets/servePublicAssets";
 import { ReportableError } from "./ReportableError";
 import { createDebugger } from "./utils/debug";
 import { fileExists } from "./utils/fileUtils";
@@ -60,6 +61,11 @@ export function codegenPlugin(): VitePlugin {
         configResolved(config) {
             resolvedRoot = normalizePath(config.root);
             deploymentModule = new DeploymentModule(isDev, config.base);
+        },
+
+        configureServer(server) {
+            // Registered directly so that it runs before Vite's own middlewares.
+            server.middlewares.use(createPublicAssetsMiddleware(repository, server.config.base));
         },
 
         configureVitest(context: VitestPluginContext) {

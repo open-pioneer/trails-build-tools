@@ -37,6 +37,7 @@
         "debug": "catalog:",
         "esrap": "catalog:",
         "js-yaml": "catalog:",
+        "sirv": "catalog:",
         "tinyglobby": "catalog:",
         "vitefu": "catalog:",
         "zod": "catalog:",

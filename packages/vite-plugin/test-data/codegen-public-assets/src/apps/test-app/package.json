@@ -2,6 +2,7 @@
     "name": "test-app",
     "private": true,
     "dependencies": {
+        "@scope/scoped-assets": "x.x",
         "package-with-assets": "x.x"
     }
 }

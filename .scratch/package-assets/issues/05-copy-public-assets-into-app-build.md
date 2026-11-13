@@ -6,7 +6,7 @@ Blocked by: 04
 
 Spec: `.scratch/package-assets/spec.md`, section "App build".
 
-After ticket 04 a built app computes URLs below `packages/<packageName>/`, but the files are missing from the output.
+After ticket 04 a built app computes URLs below `packages/<packageSlug>/`, but the files are missing from the output.
 
 ## Scope
 
@@ -30,10 +30,14 @@ export async function copyPublicAssetDirectory(src: string, dest: string): Promi
 - `writeBundle` hook in `codegenPlugin.ts`, delegating to a function in `src/publicAssets/`.
 - Skip unless `this.environment.name === "client"`.
 - Target root: `resolve(this.environment.config.build.outDir, "packages")`.
-- For every registered package, in a stable order: copy its directories in registry order into
-  `<target root>/<packageName>/<dest>`, one after another, so the entry declared later overwrites.
+- For every package the repository has loaded, in a stable order: copy its directories in reverse declaration order
+  into `<target root>/<packageSlug>/<dest>`, one after another, so the entry declared first overwrites the others.
+  This matches the dev server, where the entry declared first wins.
+- The repository loads only packages of analyzed dependency graphs and is reset in `buildStart`, so its packages are
+  exactly the packages of the apps in this build.
+  Add `MetadataRepository.getLoadedPackages()` next to `getLoadedPackage(name)`.
 - `writeBundle` runs once per output. Copy only once per build. Reset the guard in `buildStart`.
-- Before copying, check the bundle passed to `writeBundle`: a file name below `packages/<packageName>/` of a package
+- Before copying, check the bundle passed to `writeBundle`: a file name below `packages/<packageSlug>/` of a package
   with public assets is a `ReportableError` that names the file and the package.
 - Log one line per build through the plugin's existing debug or logger facility with the number of directories.
   Do not count files.

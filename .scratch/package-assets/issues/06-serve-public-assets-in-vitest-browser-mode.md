@@ -26,13 +26,13 @@ Do not work around it with `/@fs/` URLs: Vite transforms those, which breaks `im
 ## Step 2: scope
 
 - In a test run (`isTestRun` in `codegenPlugin.ts`), loading `\0open-pioneer:assets?package=<name>` must make the
-  package's public assets servable. No app is analyzed in a test run, so nothing fills the registry.
+  package's public assets servable. No app is analyzed in a test run, so the repository has not loaded the package.
     - Plain import from a source package: analyze the graph of the importing package with
-      `repository.getTestSupportMetadata(ctx, packageDirectory)` and register the result.
-      The package directory is known in `resolveId`. Carry it to `load` or register in `resolveId`, whichever keeps
+      `repository.getTestSupportMetadata(ctx, packageDirectory)`, which loads the graph into the repository.
+      The package directory is known in `resolveId`. Carry it to `load` or analyze in `resolveId`, whichever keeps
       the id format of ticket 04 unchanged.
     - Query form from a published package: the declaring package's directory is not known from the id.
-      Published packages reach a test through the graph of the source package under test, so the registration above
+      Published packages reach a test through the graph of the source package under test, so the analysis above
       covers them once that package or one of its dependents imports the module.
       If step 1 or a test shows a case this misses, describe it in the comments and propose a fix. Do not guess.
 - `open-pioneer:deployment` in dev emits `new URL(base, window.origin)`. Keep that. In a node or jsdom environment
@@ -46,7 +46,7 @@ New fixture with a source package that has public assets and a test that fetches
 `getPublicAssetUrl("<file>")` and asserts the body.
 
 Browser mode needs a browser binary. Check what the repository's CI can run.
-If no browser is available there, cover the registration with a non-browser test that asserts the registry content
+If no browser is available there, cover the analysis with a non-browser test that asserts `repository.getLoadedPackage(name)`
 after the module was loaded, and say in the comments what remains for the manual check in ticket 10.
 
 ## Done when

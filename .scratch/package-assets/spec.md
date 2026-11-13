@@ -72,17 +72,22 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
   `"."` and `""` both mean the root of the package's public assets.
 - Entries keep the order of the build config.
 - A `dest` may lie below another one or repeat it.
-  When two entries provide the same file, the entry declared later wins.
-  The dev server looks a file up from the last entry to the first.
-  The build copies the entries in declaration order, so a later entry overwrites an earlier one.
+  When two entries provide the same file, the entry declared first wins.
+  The dev server looks a file up from the first entry to the last.
+  The build copies the entries in reverse declaration order, so an earlier entry overwrites a later one.
 - A `src` directory that does not exist is an error.
 
 ### URLs
 
 - `open-pioneer:assets` exports `publicAssetsUrl`, which ends with `/`, and `getPublicAssetUrl(localAssetPath)`.
   Both are absolute URLs derived from `baseUrl` of `open-pioneer:deployment`.
-- In the dev server the public assets of a package are at `<base>@package-assets/<packageName>/`.
-- In the build output they are at `packages/<packageName>/` below the output root.
+- In the dev server the public assets of a package are at `<base>@package-assets/<packageSlug>/`.
+- In the build output they are at `packages/<packageSlug>/` below the output root.
+- The package slug is the package name as one path segment.
+  A scoped name loses its `@` and its `/` becomes `~`, so `@scope/name` becomes `scope~name`.
+  An unscoped name stays as it is.
+  npm forbids `~` in package names, so the encoding is reversible.
+  The plugin reverses it to find the package of a request.
 - The URLs carry no version and no hash.
 - The location is an implementation detail.
   A later version may let an app developer change it per package.
@@ -93,7 +98,7 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
 - The server does not scan and does not watch public asset directories.
   It reads a file when a request for it arrives.
 - One middleware handles all requests below the prefix.
-  It finds the package by the name in the URL, through a lookup from package name to public asset directories.
+  It decodes the package name from the slug in the URL and looks up the package's public asset directories.
 - A request below the prefix that matches no file gets status 404.
   It never reaches Vite's HTML fallback.
 - Responses carry a content type, an ETag and `Cache-Control: no-cache`, and they support `If-None-Match` and `Range`.
@@ -107,7 +112,7 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
 - The plugin copies the public assets of all packages of all apps in the build, once, after the bundle is written.
 - The copy is asynchronous.
 - It runs for the client environment only and not when `build.write` is `false`.
-- A file of the bundle below `packages/<packageName>/` of a package with public assets is an error.
+- A file of the bundle below `packages/<packageSlug>/` of a package with public assets is an error.
 
 ### Published packages
 
@@ -160,8 +165,9 @@ The code lives in `src/publicAssets/` and `codegenPlugin.ts` drives it, like `De
 - `loadPackageMetadata.ts` resolves each entry to an absolute real directory and stores the list on `AnalyzedPackage`.
   A `package` entry is resolved with `findDepPkgJsonPath` from `vitefu`.
   Errors are `ReportableError`.
-- `PublicAssetsRegistry` maps a package name to its resolved directories, in declaration order.
-  `codegenPlugin` fills it whenever a dependency graph has been analyzed.
+- `MetadataRepository.getLoadedPackage(name)` returns a Trails package the repository has loaded, which includes
+  every package of an analyzed dependency graph.
+  The middleware looks the package up there on each request, so no separate registry exists.
 - The dev middleware is registered directly in `configureServer`, so it runs before Vite's own middlewares.
   It creates one `sirv` handler per directory on first use and keeps it.
 - Every import form of the module resolves to the global id `\0open-pioneer:assets?package=<name>`.
