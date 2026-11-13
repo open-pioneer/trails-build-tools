@@ -1,6 +1,6 @@
 # Compile packages with public assets
 
-Status: ready-for-agent
+Status: done
 Issue: #60
 Blocked by: 07
 
@@ -79,3 +79,18 @@ Check that `checkImports.ts` still skips the id.
 
 `pnpm build`, `pnpm check-types`, `pnpm exec oxlint packages/build-package` and
 `pnpm exec vitest run packages/build-package` pass.
+
+## Comments
+
+Implemented with these deviations from the text above:
+
+- `PackageModel.publicAssets` is one list in the order of the build config, not two lists.
+  Two lists lose the order between a local entry and a dependency entry, and the order decides which entry wins.
+  `buildPackage.ts` filters the local entries for the copy step.
+- The metadata uses the types that ticket 07 committed: `{ type: "local", src, dest }` and
+  `{ type: "dependency", packageName, src, dest }`.
+- A dependency entry is a `src` whose first directory is `node_modules`, so it has the form
+  `node_modules/<dep>/<rest>`.
+  A `node_modules` directory at any other position is an error, as is `../other/node_modules/dep`.
+- A local `src` inside the output directory is an error too, not only one that equals or contains it.
+- An absolute `src` inside the package is accepted and written as a relative path.

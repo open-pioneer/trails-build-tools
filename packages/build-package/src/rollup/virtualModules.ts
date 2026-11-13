@@ -16,6 +16,12 @@ export interface VirtualModulesPluginOptions {
 export const REACT_HOOKS_ID = "\0virtual-pioneer-module:react-hooks";
 export const SOURCE_INFO_ID = "\0virtual-pioneer-module:source-info";
 
+// Virtual modules that stay in the output and need support in the vite plugin of the app.
+const REQUIRED_FEATURES = {
+    deployment: "app-deployment-module",
+    assets: "public-assets"
+} as const;
+
 /**
  * Generates the virtual module `open-pioneer:react-hooks` at compile time.
  * "magic" imports should not be left standing in distributed javascript if possible
@@ -52,10 +58,11 @@ export function virtualModulesPlugin({
                     return REACT_HOOKS_ID;
                 case "source-info":
                     return createSourceInfoId(packageDirectory, importer);
-                case "deployment": {
+                case "deployment":
+                case "assets": {
                     const supportInfo = PackageMetadataV1.supportsFeature(
                         packageFormatTarget,
-                        "app-deployment-module"
+                        REQUIRED_FEATURES[virtualModule.type]
                     );
                     if (!supportInfo.supports) {
                         this.error({

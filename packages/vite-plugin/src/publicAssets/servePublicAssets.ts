@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ServerResponse } from "node:http";
-import { join } from "node:path";
 import sirv from "sirv";
 import type { Connect } from "vite";
 import { ResolvedPublicAssetDir } from "../metadata/Metadata";

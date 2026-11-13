@@ -176,6 +176,56 @@ it("transpiles a project with open-pioneer:deployment import", async function ()
     `);
 });
 
+it("throws for an open-pioneer:assets when the target is smaller than 1.2", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-public-assets");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-public-assets");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+
+    const error = await expectError(() =>
+        buildJs({
+            ...testDefaults(),
+            packageDirectory,
+            outputDirectory,
+            entryPoints,
+            packageFormatTarget: "1.1" as PackageMetadataV1.MinorVersion
+        })
+    );
+
+    expect(error).toMatchInlineSnapshot(
+        `[RollupError: [plugin virtual-modules] packages/build-package/test-data/project-with-public-assets/index.js: Importing 'open-pioneer:assets' requires package format target '1.2' or later.]`
+    );
+});
+
+it("transpiles a project with open-pioneer:assets import", async function () {
+    const packageDirectory = resolve(TEST_DATA_DIR, "project-with-public-assets");
+    const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-public-assets");
+    const entryPoints = normalize(["index"]);
+
+    await cleanDir(outputDirectory);
+
+    const logger = createMemoryLogger();
+    await buildJs({
+        ...testDefaults(),
+        packageDirectory,
+        outputDirectory,
+        entryPoints,
+        logger,
+        packageFormatTarget: "1.2" as PackageMetadataV1.MinorVersion
+    });
+
+    expect(logger.messages).toEqual([]);
+
+    // The import is left as-is, the output knows neither a URL nor a directory of the public assets
+    expect(readText(resolve(outputDirectory, "./index.js"))).toMatchInlineSnapshot(`
+      "import { getPublicAssetUrl } from 'open-pioneer:assets';
+
+      console.log(getPublicAssetUrl("third-party-lib/worker.js"));
+      "
+    `);
+});
+
 it("transpiling open-pioneer:test-support fails", async function () {
     const packageDirectory = resolve(TEST_DATA_DIR, "project-with-test-support-import");
     const outputDirectory = resolve(TEMP_DATA_DIR, "project-with-test-support-import");
