@@ -55,12 +55,15 @@ const TEST_SUPPORT_LOCALE_RE = /[?&]locale=(?<locale>.*?)(?:$|&)/;
 const SOURCE_INFO_MODULE = "@@open-pioneer-source-info";
 const SOURCE_INFO_MODULE_MODULE_PATH_RE = /@@open-pioneer-source-info\/(?<module_path>.*)&lang=js$/;
 
+const PACKAGE_ASSETS_MODULE = "@@open-pioneer-assets";
+
 const SOURCE_FILE_RE = /^(.*?)(?:\?|$)/;
 
 export type VirtualModule =
     | VirtualAppModule
     | VirtualI18nMessages
-    | VirtualPackageModule
+    | VirtualPackageHooksModule
+    | VirtualPackageAssetsModule
     | VirtualSourceInfoModule
     | VirtualDeploymentModule
     | VirtualTestSupportModule;
@@ -76,8 +79,13 @@ export interface VirtualI18nMessages {
     locale: string;
 }
 
-export interface VirtualPackageModule {
+export interface VirtualPackageHooksModule {
     type: "package-hooks";
+    packageDirectory: string;
+}
+
+export interface VirtualPackageAssetsModule {
+    type: "package-assets";
     packageDirectory: string;
 }
 
@@ -142,6 +150,13 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
     if (base === PACKAGE_HOOKS_MODULE) {
         return {
             type: "package-hooks",
+            packageDirectory: dirname(sourceFile)
+        };
+    }
+
+    if (base === PACKAGE_ASSETS_MODULE) {
+        return {
+            type: "package-assets",
             packageDirectory: dirname(sourceFile)
         };
     }
@@ -238,6 +253,8 @@ export function serializeModuleId(mod: VirtualModule): string {
             return `${mod.packageDirectory}/${APP_MODULE}?${APP_I18N_QUERY}&locale=${mod.locale}`;
         case "deployment":
             return `${VIRTUAL_PREFIX}deployment`;
+        case "package-assets":
+            return `${mod.packageDirectory}/${PACKAGE_ASSETS_MODULE}`;
         case "test-support": {
             let result = `${mod.packageDirectory}/${TEST_SUPPORT_MODULE}`;
             if (mod.locale) {

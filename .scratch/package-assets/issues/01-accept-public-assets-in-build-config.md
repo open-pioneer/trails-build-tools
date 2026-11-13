@@ -1,6 +1,6 @@
 # Accept `publicAssets` in the build config and normalize it into the package config
 
-Status: ready-for-agent
+Status: done
 Issue: #60
 
 Spec: `.scratch/package-assets/spec.md`, sections "`src` and `dest`" and "Design > build-common".

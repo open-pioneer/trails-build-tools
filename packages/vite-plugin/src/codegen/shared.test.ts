@@ -31,3 +31,15 @@ it("serializes and parses the test support module with a locale", function () {
         locale: "de"
     });
 });
+
+it("serializes and parses the assets module of a package", function () {
+    const id = serializeModuleId({
+        type: "package-assets",
+        packageDirectory: "/project/packages/pkg-a"
+    });
+    expect(id).toBe("/project/packages/pkg-a/@@open-pioneer-assets");
+    expect(parseVirtualModuleId(id)).toEqual({
+        type: "package-assets",
+        packageDirectory: "/project/packages/pkg-a"
+    });
+});

@@ -159,6 +159,18 @@ it("leaves requests outside the prefix to vite", async () => {
     expect(content).toContain('console.log("test-app")');
 });
 
+it.each([
+    ["packages/package-with-assets/index.js", "package-with-assets"],
+    ["packages/scoped-assets/index.js", "scope~scoped-assets"]
+])("generates asset urls below the prefix for %j", async (modulePath, slug) => {
+    const packageModule = await (await fetch(`${devServerUrl}/${modulePath}`)).text();
+    const assetsModuleUrl = packageModule.match(/from "([^"]*@@open-pioneer-assets[^"]*)"/)?.[1];
+    expect(assetsModuleUrl).toBeTruthy();
+
+    const assetsModule = await (await fetch(`${devServerUrl}${assetsModuleUrl}`)).text();
+    expect(assetsModule).toContain(`"@package-assets/${slug}/"`);
+});
+
 // Loads the open-pioneer:app module; this makes sure that package metadata is present for the file server middleware.
 async function analyzeApp(server: ViteDevServer) {
     const pluginContainer = server.environments.client.pluginContainer;

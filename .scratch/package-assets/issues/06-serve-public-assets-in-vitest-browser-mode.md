@@ -25,16 +25,12 @@ Do not work around it with `/@fs/` URLs: Vite transforms those, which breaks `im
 
 ## Step 2: scope
 
-- In a test run (`isTestRun` in `codegenPlugin.ts`), loading `\0open-pioneer:assets?package=<name>` must make the
+- In a test run (`isTestRun` in `codegenPlugin.ts`), loading `<packageDirectory>/@@open-pioneer-assets` must make the
   package's public assets servable. No app is analyzed in a test run, so the repository has not loaded the package.
-    - Plain import from a source package: analyze the graph of the importing package with
-      `repository.getTestSupportMetadata(ctx, packageDirectory)`, which loads the graph into the repository.
-      The package directory is known in `resolveId`. Carry it to `load` or analyze in `resolveId`, whichever keeps
-      the id format of ticket 04 unchanged.
-    - Query form from a published package: the declaring package's directory is not known from the id.
-      Published packages reach a test through the graph of the source package under test, so the analysis above
-      covers them once that package or one of its dependents imports the module.
-      If step 1 or a test shows a case this misses, describe it in the comments and propose a fix. Do not guess.
+  Analyze the graph of the package in the id with `repository.getTestSupportMetadata(ctx, packageDirectory)`, which
+  loads the graph into the repository.
+  The id carries the package directory for source and published packages alike.
+  If step 1 or a test shows a case this misses, describe it in the comments and propose a fix. Do not guess.
 - `open-pioneer:deployment` in dev emits `new URL(base, window.origin)`. Keep that. In a node or jsdom environment
   without a usable origin the import behaves as `open-pioneer:deployment` does today. Do not add a fallback.
 - The middleware and the URL prefix stay as they are.

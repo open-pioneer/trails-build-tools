@@ -12,6 +12,7 @@ import { generateAppMetadata } from "./codegen/generateAppMetadata";
 import { generateCombinedCss } from "./codegen/generateCombinedCss";
 import { generateI18nIndex, generateI18nMessages } from "./codegen/generateI18n";
 import { generatePackagesMetadata } from "./codegen/generatePackagesMetadata";
+import { generatePublicAssetsModule } from "./codegen/generatePublicAssetsModule";
 import { generateTestSupport } from "./codegen/generateTestSupport";
 import {
     findPackageJson,
@@ -25,6 +26,8 @@ import { createMetadataContextFromRolldown, MetadataContext } from "./metadata/C
 import { findTrailsPackages } from "./metadata/findTrailsPackages";
 import { MetadataRepository } from "./metadata/MetadataRepository";
 import { validateI18nConfig } from "./metadata/validateI18nConfig";
+import { PACKAGE_ASSETS_DIR, PUBLIC_ASSETS_URL_PREFIX } from "./publicAssets/constants";
+import { packageNameToSlug } from "./publicAssets/packageSlug";
 import { createPublicAssetsMiddleware } from "./publicAssets/servePublicAssets";
 import { ReportableError } from "./ReportableError";
 import { createDebugger } from "./utils/debug";
@@ -156,6 +159,11 @@ export function codegenPlugin(): VitePlugin {
                                 type: "deployment"
                             });
                         }
+                        case "assets":
+                            return serializeModuleId({
+                                type: "package-assets",
+                                packageDirectory: getPackageDirectoryFromImporter(importer, rootDir)
+                            });
                         case "test-support":
                             if (!isTestRun) {
                                 throw new ReportableError(
@@ -212,6 +220,16 @@ export function codegenPlugin(): VitePlugin {
                             RuntimeSupport.REACT_INTEGRATION_MODULE_ID
                         );
                         isDebug && debug("Generated hooks code: %O", generatedSourceCode);
+                        return jsModule(generatedSourceCode);
+                    }
+                    if (mod.type === "package-assets") {
+                        const packageName = await getPackageName(this, packageJsonPath);
+                        const directory = isDev ? PUBLIC_ASSETS_URL_PREFIX : PACKAGE_ASSETS_DIR;
+                        const slug = packageNameToSlug(packageName);
+                        const generatedSourceCode = generatePublicAssetsModule(
+                            `${directory}/${slug}/`
+                        );
+                        isDebug && debug("Generated assets code: %O", generatedSourceCode);
                         return jsModule(generatedSourceCode);
                     }
                     if (mod.type === "source-info") {

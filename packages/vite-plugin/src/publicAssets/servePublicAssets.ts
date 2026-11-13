@@ -6,10 +6,8 @@ import sirv from "sirv";
 import type { Connect } from "vite";
 import { ResolvedPublicAssetDir } from "../metadata/Metadata";
 import { MetadataRepository } from "../metadata/MetadataRepository";
+import { PUBLIC_ASSETS_URL_PREFIX } from "./constants";
 import { slugToPackageName } from "./packageSlug";
-
-/** The URL segment below the base URL that holds the public assets of all packages in the dev server. */
-export const PUBLIC_ASSETS_URL_SEGMENT = "@package-assets";
 
 type RequestHandler = (req: Connect.IncomingMessage, res: ServerResponse, next: () => void) => void;
 
@@ -25,7 +23,7 @@ export function createPublicAssetsMiddleware(
     repository: MetadataRepository,
     base: string
 ): Connect.NextHandleFunction {
-    const prefix = getBasePath(base) + PUBLIC_ASSETS_URL_SEGMENT + "/";
+    const prefix = getBasePath(base) + PUBLIC_ASSETS_URL_PREFIX + "/";
     const handlers = new Map<string, RequestHandler>();
     const getHandler = (directory: string): RequestHandler => {
         let handler = handlers.get(directory);

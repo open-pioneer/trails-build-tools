@@ -53,6 +53,15 @@ The `package` branch in `loadPackageMetadata.ts` from ticket 02 now gets real in
 Resolution starts at the `package.json` of the declaring package, so a dependency that pnpm installed next to the
 published package is found.
 
+A published package keeps its import of `open-pioneer:assets`.
+In a build, `resolveId` finds the package from the importing file, as for a source package.
+In the dev server, Vite's dependency optimizer bundles published packages, so the importer of the optimized module no
+longer tells the package.
+Extend `createOptimizeDepsRolldownPlugin` in `codegenPlugin.ts`: for `open-pioneer:assets` it finds the package
+directory of the importer and emits the internal id of ticket 04 as an external import in place of the public id.
+Check that Vite serves that external id from the optimized module.
+If it does not, stop, set `Status: needs-info`, and describe what you found.
+
 ## Tests
 
 - `v1.test.ts`: 1.2 round trip with both entry kinds, the serialization error for target 1.1, a 1.1 reader case is
@@ -62,9 +71,10 @@ published package is found.
   `test-data/codegen-packages-external`: the package lives outside the source root and is linked into the app's
   `node_modules`. Its `package.json` has `openPioneerFramework` with `packageFormatVersion: "1.2.0"`, a local entry
   and a `package` entry. The named dependency sits next to it, not inside it, to mirror pnpm.
-  Its JavaScript imports `open-pioneer:assets?package=<its name>`.
+  Its JavaScript imports `open-pioneer:assets`.
   Assert with `runViteBuild`: the generated URL in the output, and the copied files of both entries.
-- The dev server test of ticket 03 gets one request for a file of the published package.
+- The dev server test of ticket 03 gets one request for a file of the published package, and one test that loads
+  the optimized module and finds `@package-assets/<slug>/` in the assets module it imports.
 
 ## Done when
 

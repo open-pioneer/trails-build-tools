@@ -1,6 +1,6 @@
 # Generate the `open-pioneer:assets` module
 
-Status: ready-for-agent
+Status: done
 Issue: #60
 Blocked by: 03
 
@@ -14,35 +14,32 @@ The build output does not contain the files yet. That is ticket 05.
 
 ### build-common, `src/runtimeSupport/index.ts`
 
-- `parseVirtualModule` returns `{ type: "assets", packageName?: string }` for `open-pioneer:assets` and
-  `open-pioneer:assets?package=<name>`. Parse the query the way `parseTestSupportQuery` does. Unknown query keys and
-  an empty name throw. Update the doc comment that says only `test-support` accepts a query.
-- `generatePublicAssetsModule(packageSlug: string, directory: string): string` returns:
+- `parseVirtualModule` returns `{ type: "assets" }` for `open-pioneer:assets`, like `react-hooks`.
+  The public id takes no query, so `open-pioneer:assets?package=<name>` throws `Unsupported module id`.
+
+### vite-plugin
+
+- `generatePublicAssetsModule(packageDir: string): string` in `src/codegen/generatePublicAssetsModule.ts` returns the
+  code below. The plugin is its only user, so it does not live in build-common.
 
     ```js
     import { baseUrl } from "open-pioneer:deployment";
-    export const publicAssetsUrl = new URL("<directory>/<packageSlug>/", baseUrl).href;
+    export const publicAssetsUrl = new URL("<packageDir>", baseUrl).href;
     export function getPublicAssetUrl(localAssetPath) {
         return new URL(localAssetPath, publicAssetsUrl).href;
     }
     ```
 
-    Embed strings with `JSON.stringify`. `directory` has no leading and no trailing slash.
-- Export a helper that builds the id `open-pioneer:assets?package=<name>` from a package name. Ticket 08 uses it.
+    Embed strings with `JSON.stringify`. `packageDir` is relative to the base URL and ends with a slash.
 
-### vite-plugin
-
-- `resolveId` in `codegenPlugin.ts`:
-    - plain `open-pioneer:assets`: find the importing package with `getPackageDirectoryFromImporter`, read its name,
-      as the `react-hooks` branch does. An importer outside any package is a `ReportableError`.
-    - `open-pioneer:assets?package=<name>`: use the name, no importer needed.
-    - Both return the global id `\0open-pioneer:assets?package=<name>`. Add the encoding and its parser to
-      `codegen/shared.ts` next to the `deployment` id, and extend the header comment there.
-- `load`: `generatePublicAssetsModule(packageNameToSlug(name), directory)` with `@package-assets` in dev and `packages`
-  in a build. `packageNameToSlug` is in `src/publicAssets/packageSlug.ts`.
+- `resolveId` in `codegenPlugin.ts`: find the importing package with `getPackageDirectoryFromImporter`, as the
+  `react-hooks` branch does. An importer outside any package is a `ReportableError`.
+  Return the internal id `<packageDirectory>/@@open-pioneer-assets`, type `package-assets` in `codegen/shared.ts`.
+- `load`: read the package name from the resolved `package.json`, as for `source-info`.
+  Return ``generatePublicAssetsModule(`${directory}/${packageNameToSlug(name)}/`)`` with `@package-assets` in dev and
+  `packages` in a build. `packageNameToSlug` is in `src/publicAssets/packageSlug.ts`.
   Export `packages` as a constant from `src/publicAssets/`. Ticket 05 needs it.
-- The package named in the id does not have to be registered. The module only computes a URL.
-- Check that `VIRTUAL_ID_FILTER` matches all three id forms.
+- The package does not have to be registered. The module only computes a URL.
 
 ### build-package
 
@@ -51,7 +48,8 @@ Keep the `default` error for it. Ticket 08 implements it.
 
 ## Tests
 
-- `runtimeSupport/index.test.ts`: parsing of both forms, bad queries, generated code as inline snapshot.
+- `runtimeSupport/index.test.ts`: parsing of `open-pioneer:assets`, and a query on it throws.
+- `generatePublicAssetsModule.test.ts`: generated code as inline snapshot, and the error for a missing trailing slash.
 - `codegenPlugin.test.ts`, fixture `codegen-public-assets`: add a module in the source package that imports
   `open-pioneer:assets` and logs both exports. With `runViteBuild` and `findModuleContaining`, assert the output
   contains `packages/<packageSlug>/` and an import of the deployment module's `baseUrl`.

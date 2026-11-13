@@ -502,6 +502,30 @@ describe("deployment info", () => {
     });
 });
 
+describe("public assets", () => {
+    it("generates asset urls below the packages directory of the build output", async () => {
+        const rootDir = resolve(TEST_DATA_DIR, "codegen-public-assets/src");
+        const outDir = resolve(TEMP_DATA_DIR, "codegen-public-assets");
+
+        await runViteBuild({
+            outDir,
+            rootDir,
+            pluginOptions: {
+                apps: ["test-app"]
+            }
+        });
+
+        const appJs = findModuleContaining(outDir, '"packages/package-with-assets/"');
+        onTestFailed(() => {
+            console.log(`Generated app JS:\n${appJs}`);
+        });
+
+        expect(appJs).toContain('"packages/scope~scoped-assets/"');
+        expect(appJs).toContain('"packages/test-app/"');
+        expect(appJs).toContain("__base_url_sentinel__");
+    });
+});
+
 describe("test support", () => {
     it("generates test support messages for the package's first locale", async () => {
         const appJs = await buildTestSupportApp("app-default");

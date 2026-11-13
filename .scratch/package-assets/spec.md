@@ -133,10 +133,13 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
 - The plugin resolves a `package` entry from the location of the published package, the way Node resolves a bare
   import.
   This is needed because pnpm installs the dependencies of a published package next to it and not inside it.
-- The compiler rewrites an import of `open-pioneer:assets` to `open-pioneer:assets?package=<packageName>` and keeps it
-  external.
-  The plugin answers this id from the package name alone.
-  Vite's dependency optimizer bundles published packages together, so the importing file no longer tells the package.
+- The compiler keeps an import of `open-pioneer:assets` unchanged and external.
+  The plugin resolves it from the importing file, as for a source package.
+- Vite's dependency optimizer bundles published packages together, so in the dev server the importing file no longer
+  tells the package.
+  The rolldown plugin that the Vite plugin adds to the optimizer therefore resolves the import while the importer is
+  still known.
+  It replaces the import with the plugin's internal id, which carries the package directory.
 - A plugin older than this feature rejects a 1.2 package with its existing error "Try updating
   @open-pioneer/vite-plugin-pioneer".
 
@@ -151,9 +154,7 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
   `createPackageConfigFromPackageMetadata`.
   A build config only produces local entries.
 - `PackageMetadataV1` gets version 1.2.0 with the optional `publicAssets` field and the feature `public-assets`.
-- `RuntimeSupport.parseVirtualModule` accepts `open-pioneer:assets` with an optional `package` query, parsed like the
-  query of `open-pioneer:test-support`.
-  `RuntimeSupport` also generates the module code from a package name and a directory URL, so the shape is defined once.
+- `RuntimeSupport.parseVirtualModule` accepts `open-pioneer:assets` without a query, like `open-pioneer:react-hooks`.
 - `copyPublicAssetDirectory(src, dest)` copies one directory with `fs.promises.cp`, `recursive`, `dereference` and a
   filter for dot names.
   The plugin and the compiler both use it.
@@ -170,8 +171,11 @@ The code lives in `src/publicAssets/` and `codegenPlugin.ts` drives it, like `De
   The middleware looks the package up there on each request, so no separate registry exists.
 - The dev middleware is registered directly in `configureServer`, so it runs before Vite's own middlewares.
   It creates one `sirv` handler per directory on first use and keeps it.
-- Every import form of the module resolves to the global id `\0open-pioneer:assets?package=<name>`.
-  A plain import takes the name from the importer's `package.json`, as `open-pioneer:react-hooks` does.
+- An import of the module resolves to the internal id `<packageDirectory>/@@open-pioneer-assets`, a magic file name
+  like the ids of `open-pioneer:react-hooks` and the i18n modules.
+  Loading the module reads the package name from the `package.json` in that directory.
+  Only the plugin knows the internal id, and `RuntimeSupport` rejects a query on `open-pioneer:assets`.
+- The plugin generates the module code itself, because nothing else needs it.
 - The build copy runs in `writeBundle`.
 
 ### build-package
@@ -179,7 +183,7 @@ The code lives in `src/publicAssets/` and `codegenPlugin.ts` drives it, like `De
 - `PackageModel` classifies each entry as local or dependency and validates it.
 - `copyPublicAssets` is a new step after `copyAssets`.
 - `generatePackageJson` writes the metadata field.
-- `virtualModulesPlugin` rewrites the import.
+- `virtualModulesPlugin` keeps the import unchanged and external.
 
 ## Out of scope
 

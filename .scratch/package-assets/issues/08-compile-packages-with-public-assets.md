@@ -57,8 +57,8 @@ dependency entries as `{ package, path, dest }`. Omit the field when there are n
 `virtualModulesPlugin` in `src/rollup/virtualModules.ts`, case `assets`:
 
 - check `supportsFeature(packageFormatTarget, "public-assets")`, same error text as the `deployment` case
-- return `{ id: <open-pioneer:assets?package=<packageName>>, external: true }`, built with the helper from ticket 04
-- a source file that already imports the query form is an error: only the plain id is allowed in source code
+- return `{ id: source, external: true }`, as the `deployment` case does, so the import stays unchanged
+- the plugin finds the package from the importing file (ticket 04) or from the optimizer (ticket 07)
 
 The output must contain no URL and no directory name of the public assets.
 Check that `checkImports.ts` still skips the id.
@@ -70,7 +70,7 @@ Check that `checkImports.ts` still skips the id.
   `open-pioneer:assets`.
 - `copyPublicAssets.test.ts`: files in `dist/public`, no dot file, nothing from the dependency.
 - `generatePackageJson.test.ts`: metadata with both kinds, inline snapshot.
-- `buildJs.test.ts`: the emitted import is `open-pioneer:assets?package=<name>`. Target 1.1 fails with the message.
+- `buildJs.test.ts`: the emitted import is `open-pioneer:assets`, unchanged. Target 1.1 fails with the message.
 - Model errors: missing directory, undeclared dependency, target too low, `src` outside the package.
 - Every test file takes its directory from `tempDirForTest(import.meta.url)`.
 
