@@ -3,6 +3,7 @@
     "private": true,
     "dependencies": {
         "@scope/scoped-assets": "x.x",
-        "package-with-assets": "x.x"
+        "package-with-assets": "x.x",
+        "published-assets": "x.x"
     }
 }

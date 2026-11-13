@@ -510,6 +510,7 @@ describe("public assets", () => {
         await runViteBuild({
             outDir,
             rootDir,
+            bundleNodeModules: true,
             pluginOptions: {
                 apps: ["test-app"]
             }
@@ -521,6 +522,7 @@ describe("public assets", () => {
         });
 
         expect(appJs).toContain('"packages/scope~scoped-assets/"');
+        expect(appJs).toContain('"packages/published-assets/"');
         expect(appJs).toContain('"packages/test-app/"');
         expect(appJs).toContain("__base_url_sentinel__");
     });
@@ -532,6 +534,7 @@ describe("public assets", () => {
         await runViteBuild({
             outDir,
             rootDir,
+            bundleNodeModules: true,
             pluginOptions: {
                 apps: ["test-app"]
             }
@@ -546,6 +549,8 @@ describe("public assets", () => {
             "package-with-assets/shared/nested/shared.txt",
             "package-with-assets/third-party-lib/overwritten.txt",
             "package-with-assets/third-party-lib/third-party.txt",
+            "published-assets/cdn/cdn.txt",
+            "published-assets/published.txt",
             "scope~scoped-assets/scoped.txt",
           ]
         `);

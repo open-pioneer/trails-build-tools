@@ -6,7 +6,7 @@ import { resolve } from "node:path";
 import { createServer, ViteDevServer } from "vite";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { pioneer } from "..";
-import { TEST_DATA_DIR } from "../utils/testUtils";
+import { TEMP_DATA_DIR, TEST_DATA_DIR } from "../utils/testUtils";
 
 const ROOT_DIR = resolve(TEST_DATA_DIR, "codegen-public-assets/src");
 const PREFIX = "/@package-assets/package-with-assets";
@@ -20,7 +20,8 @@ beforeAll(async () => {
         configFile: false,
         logLevel: "silent",
         server: { port: 0, host: "127.0.0.1", ws: false },
-        optimizeDeps: { noDiscovery: true },
+        cacheDir: resolve(TEMP_DATA_DIR, "serve-public-assets-cache"),
+        optimizeDeps: { noDiscovery: true, include: ["published-assets"], force: true },
         plugins: [pioneer({ apps: ["test-app"] })]
     });
     await devServer.listen();
@@ -78,6 +79,17 @@ it("serves a file from a dependency", async () => {
 
     const content = await response.text();
     expect(content).toBe("third-party\n");
+});
+
+it.each([
+    ["published.txt", "published\n"],
+    ["cdn/cdn.txt", "cdn\n"]
+])("serves the file %j of a published package", async (path, expected) => {
+    const response = await fetch(`${devServerUrl}/@package-assets/published-assets/${path}`);
+    expect(response.status).toBe(200);
+
+    const content = await response.text();
+    expect(content).toBe(expected);
 });
 
 it("allows overriding a file from an entry with higher priority", async () => {
@@ -169,6 +181,43 @@ it.each([
 
     const assetsModule = await (await fetch(`${devServerUrl}${assetsModuleUrl}`)).text();
     expect(assetsModule).toContain(`"@package-assets/${slug}/"`);
+});
+
+it("generates the asset url of a published package in the optimized module", async () => {
+    const appModule = await (await fetch(`${devServerUrl}/apps/test-app/app.js`)).text();
+    const optimizedUrl = appModule.match(/import "([^"]*\/deps\/published-assets\.js[^"]*)"/)?.[1];
+    expect(optimizedUrl).toBeTruthy();
+
+    const optimizedModule = await (await fetch(`${devServerUrl}${optimizedUrl}`)).text();
+    const assetsModuleUrl = optimizedModule.match(
+        /from "(\/@id\/__x00__open-pioneer:package-assets:[^"]*)"/
+    )?.[1];
+    expect(assetsModuleUrl).toMatch(/\/node_modules\/published-assets$/);
+
+    const assetsModule = await (await fetch(`${devServerUrl}${assetsModuleUrl}`)).text();
+    expect(assetsModule).toContain(`"@package-assets/published-assets/"`);
+});
+
+it("keeps the absolute id of a virtual module outside the root", async () => {
+    const id = resolve(
+        TEST_DATA_DIR,
+        "codegen-public-assets/external/node_modules/published-assets/@@open-pioneer-assets"
+    );
+    const resolved = await devServer.environments.client.pluginContainer.resolveId(
+        id,
+        resolve(ROOT_DIR, "apps/test-app/app.js")
+    );
+    expect(resolved!.id).toBe(id);
+});
+
+it("maps the root-relative url of a virtual module to its absolute id", async () => {
+    const resolved = await devServer.environments.client.pluginContainer.resolveId(
+        "/packages/package-with-assets/@@open-pioneer-assets",
+        resolve(ROOT_DIR, "apps/test-app/app.js")
+    );
+    expect(resolved!.id).toBe(
+        resolve(ROOT_DIR, "packages/package-with-assets/@@open-pioneer-assets")
+    );
 });
 
 // Loads the open-pioneer:app module; this makes sure that package metadata is present for the file server middleware.

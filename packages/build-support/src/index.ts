@@ -311,7 +311,7 @@ export interface PropertyMetaConfig {
 }
 
 /** Compilation target for build time trails features. */
-export type PackageFormatTarget = "1.0" | "1.1";
+export type PackageFormatTarget = "1.0" | "1.1" | "1.2";
 
 /**
  * Contains options interpreted when building a package for publishing with the `@open-pioneer/build-package` tool.
@@ -389,6 +389,10 @@ export interface PublishConfig {
      *
      * Use a newer value to enable additional features (such as new `open-pioneer:*` modules).
      * Raising this value might require an updated trails vite plugin on the consumer side.
+     *
+     * - `"1.0"`: the initial package format.
+     * - `"1.1"`: enables the `open-pioneer:deployment` module.
+     * - `"1.2"`: enables {@link BuildConfig.publicAssets} and the `open-pioneer:assets` module.
      *
      * Defaults to `"1.0"`.
      */

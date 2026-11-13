@@ -19,6 +19,7 @@ import {
     MAGIC_FILENAME_RE,
     parseVirtualModuleId,
     serializeModuleId,
+    serializeOptimizedVirtualModuleId,
     VIRTUAL_ID_FILTER
 } from "./codegen/shared";
 import { DeploymentModule } from "./deployment";
@@ -111,13 +112,16 @@ export function codegenPlugin(): VitePlugin {
                     // Vite turns ids inside the root into root-relative URLs ("/packages/x/@@open-pioneer-app?...").
                     // Vitest's fs module cache re-resolves those URLs without the importer that produced them,
                     // so map them back to the absolute id.
+                    // An absolute id outside the root looks the same, so the root wins only if the
+                    // directory exists there. Vite resolves a path with a leading slash the same way.
                     if (
                         moduleId.startsWith("/") &&
                         !moduleId.startsWith(resolvedRoot + "/") &&
                         MAGIC_FILENAME_RE.test(moduleId)
                     ) {
                         const absoluteId = resolvedRoot + moduleId;
-                        if (parseVirtualModuleId(absoluteId)) {
+                        const directory = absoluteId.slice(0, absoluteId.search(MAGIC_FILENAME_RE));
+                        if ((await fileExists(directory)) && parseVirtualModuleId(absoluteId)) {
                             return absoluteId;
                         }
                     }
@@ -391,7 +395,7 @@ async function configureDevOptimizer(
         optimizeDeps: {
             include: trailsModules,
             rolldownOptions: {
-                plugins: [createOptimizeDepsRolldownPlugin()]
+                plugins: [createOptimizeDepsRolldownPlugin(rootDir)]
             }
         }
     };
@@ -427,14 +431,30 @@ async function getOptimizeDepsIncludes(rootDir: string) {
 
 /**
  * Creates a rolldown plugin for use during Vite's dependency optimization phase.
- * It marks all `open-pioneer:*` virtual module imports as external so that they
- * are left untouched by rolldown and can later be handled by the normal Vite plugin.
+ * It marks all `open-pioneer:*` virtual module imports as external, so that the normal
+ * Vite plugin handles them later.
+ * Rolldown leaves them untouched, except for `open-pioneer:assets`.
  */
-function createOptimizeDepsRolldownPlugin(): Rolldown.Plugin {
+function createOptimizeDepsRolldownPlugin(rootDir: string): Rolldown.Plugin {
     return {
         name: "pioneer:optimize-deps",
-        resolveId(id) {
-            if (/^open-pioneer:/.test(id)) {
+        resolveId: {
+            filter: {
+                id: /^open-pioneer:/
+            },
+            handler(id, importer) {
+                // The optimized bundle can no longer tell from which package an import originated.
+                // As a workaround, we attach the package directory to the module id.
+                if (id === "open-pioneer:assets" && importer) {
+                    const packageDirectory = getPackageDirectoryFromImporter(importer, rootDir);
+                    return {
+                        id: serializeOptimizedVirtualModuleId({
+                            kind: "package-assets",
+                            packageDirectory
+                        }),
+                        external: true
+                    };
+                }
                 return { id, external: true };
             }
         }

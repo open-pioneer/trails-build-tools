@@ -23,8 +23,8 @@ export async function resolvePublicAssetDir(
             src = entry.src;
             path = resolve(packageDir, entry.src);
             break;
-        case "package": {
-            src = `${entry.packageName}/${entry.path}`;
+        case "dependency": {
+            src = `${entry.packageName}/${entry.src}`;
             const packageJsonPath = await findDepPkgJsonPath(
                 entry.packageName,
                 join(packageDir, "package.json")
@@ -35,7 +35,7 @@ export async function resolvePublicAssetDir(
                         ` Is the dependency installed correctly?`
                 );
             }
-            path = resolve(dirname(packageJsonPath), entry.path);
+            path = resolve(dirname(packageJsonPath), entry.src);
             break;
         }
     }

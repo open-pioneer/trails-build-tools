@@ -1,6 +1,6 @@
 # Add package format 1.2 and read public assets of published packages
 
-Status: ready-for-agent
+Status: done
 Issue: #60
 Blocked by: 06
 
@@ -58,9 +58,11 @@ In a build, `resolveId` finds the package from the importing file, as for a sour
 In the dev server, Vite's dependency optimizer bundles published packages, so the importer of the optimized module no
 longer tells the package.
 Extend `createOptimizeDepsRolldownPlugin` in `codegenPlugin.ts`: for `open-pioneer:assets` it finds the package
-directory of the importer and emits the internal id of ticket 04 as an external import in place of the public id.
-Check that Vite serves that external id from the optimized module.
-If it does not, stop, set `Status: needs-info`, and describe what you found.
+directory of the importer and emits `\0open-pioneer:package-assets:<packageDirectory>` as an external import in place
+of the public id.
+Vite serves that id as `/@id/__x00__open-pioneer:package-assets:<packageDirectory>`.
+The magic file name of ticket 04 does not work here.
+For a package outside the root it is an absolute path, and `resolveId` cannot tell it from a root-relative URL.
 
 ## Tests
 

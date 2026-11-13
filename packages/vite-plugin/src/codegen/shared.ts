@@ -16,6 +16,12 @@ import { normalizePath } from "vite";
  *    This is used for "global" modules that are not scoped to a specific file, app or package.
  *    This encoding is the usual practice in the rollup / vite ecosystem, making it very reliable.
  *    It has the disadvantage that the generated files show up "somewhere" in the browser debugger.
+ *
+ *    The assets module that pass through vite's dependency optimizer also use this scheme,
+ *    e.g. `\0open-pioneer:package-assets:/path/to/package`.
+ *    That id is written into the optimized bundle, where a magic filename outside the root
+ *    cannot be told apart from a root-relative URL.
+ *
  * 2. Magic filenames, e.g. /path/to/app/@@open-pioneer-app.
  *    These use a different prefix ("@@") for file names so they show up next to the relevant location,
  *    for example as if they were developed in a specific package.
@@ -56,6 +62,7 @@ const SOURCE_INFO_MODULE = "@@open-pioneer-source-info";
 const SOURCE_INFO_MODULE_MODULE_PATH_RE = /@@open-pioneer-source-info\/(?<module_path>.*)&lang=js$/;
 
 const PACKAGE_ASSETS_MODULE = "@@open-pioneer-assets";
+const OPTIMIZED_PACKAGE_ASSETS_SUFFIX = "package-assets:";
 
 const SOURCE_FILE_RE = /^(.*?)(?:\?|$)/;
 
@@ -134,6 +141,12 @@ export function parseVirtualModuleId(inputModuleId: string): VirtualModule | und
             const suffix = virtualPrefixMatch.groups?.["suffix"];
             if (suffix === "deployment") {
                 return { type: "deployment" };
+            }
+            if (suffix?.startsWith(OPTIMIZED_PACKAGE_ASSETS_SUFFIX)) {
+                return {
+                    type: "package-assets",
+                    packageDirectory: suffix.slice(OPTIMIZED_PACKAGE_ASSETS_SUFFIX.length)
+                };
             }
         }
         return undefined;
@@ -262,6 +275,27 @@ export function serializeModuleId(mod: VirtualModule): string {
             }
             return result;
         }
+    }
+}
+
+/**
+ * Represents a virtual module inside bundled dependencies from vite's dependency optimizer.
+ *
+ * Used for outputting module ids only; they are parsed by {@link parseVirtualModuleId} into the same
+ * shape as their "normal" counterparts.  */
+export interface OptimizedVirtualModule {
+    kind: "package-assets";
+    packageDirectory: string;
+}
+
+/**
+ * Returns the id of the assets module for an import inside an optimized dependency.
+ * It parses to the same module as the magic filename that `serializeModuleId` returns.
+ */
+export function serializeOptimizedVirtualModuleId(mod: OptimizedVirtualModule): string {
+    switch (mod.kind) {
+        case "package-assets":
+            return `${VIRTUAL_PREFIX}${OPTIMIZED_PACKAGE_ASSETS_SUFFIX}${mod.packageDirectory}`;
     }
 }
 

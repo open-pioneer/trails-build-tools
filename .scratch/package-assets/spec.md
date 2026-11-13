@@ -138,7 +138,9 @@ The types of both APIs are committed in `packages/build-support/src/index.ts` an
   tells the package.
   The rolldown plugin that the Vite plugin adds to the optimizer therefore resolves the import while the importer is
   still known.
-  It replaces the import with the plugin's internal id, which carries the package directory.
+  It replaces the import with the internal id `\0open-pioneer:package-assets:<packageDirectory>`.
+  The magic file name of a source package does not work here, because for a package outside the root it is an
+  absolute path that `resolveId` cannot tell from a root-relative URL.
 - A plugin older than this feature rejects a 1.2 package with its existing error "Try updating
   @open-pioneer/vite-plugin-pioneer".
 

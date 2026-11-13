@@ -370,3 +370,47 @@ describe("public assets", () => {
         }
     );
 });
+
+describe("public assets in package metadata", () => {
+    it("maps both entry kinds", function () {
+        const packageConfig = createPackageConfigFromPackageMetadata({
+            packageFormatVersion: "1.2.0",
+            publicAssets: [
+                { type: "local", src: "public", dest: "" },
+                {
+                    type: "dependency",
+                    packageName: "third-party-lib",
+                    src: "cdn",
+                    dest: "third-party-lib"
+                },
+                { type: "dependency", packageName: "@scope/lib", src: "", dest: "lib/nested" }
+            ]
+        });
+        expect(packageConfig.publicAssets).toEqual([
+            { type: "local", src: "public", dest: "" },
+            {
+                type: "dependency",
+                packageName: "third-party-lib",
+                src: "cdn",
+                dest: "third-party-lib"
+            },
+            { type: "dependency", packageName: "@scope/lib", src: "", dest: "lib/nested" }
+        ]);
+    });
+
+    it("rejects '..' in the dest of a package entry", function () {
+        expect(() =>
+            createPackageConfigFromPackageMetadata({
+                packageFormatVersion: "1.2.0",
+                publicAssets: [
+                    {
+                        type: "dependency",
+                        packageName: "third-party-lib",
+                        src: "cdn",
+                        dest: "../outside"
+                    }
+                ]
+            })
+        ).toThrow(/Cannot use "\." or "\.\." in destination path/);
+    });
+});

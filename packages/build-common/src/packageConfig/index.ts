@@ -17,6 +17,7 @@ import type {
     ReferenceConfig as MetadataReferenceConfig,
     ServiceConfig as MetadataServiceConfig,
     UiConfig as MetadataUiConfig,
+    PublicAssetConfig as MetadataPublicAssetConfig,
     PackageMetadata
 } from "../packageMetadata/v1";
 
@@ -72,13 +73,13 @@ export interface LocalPublicAssetConfig {
 
 /** A public asset directory inside a dependency of the package. */
 export interface PackagePublicAssetConfig {
-    type: "package";
+    type: "dependency";
 
     /** Name of the dependency that contains the directory. */
     packageName: string;
 
     /** Path relative to the dependency's package directory, with forward slashes. */
-    path: string;
+    src: string;
 
     /** Path below the root of the package's public assets. Empty for the root itself. */
     dest: string;
@@ -315,30 +316,39 @@ function normalizeProvides(rawConfig: ServiceConfig["provides"]): ProvidedInterf
     });
 }
 
-function normalizePublicAssets(rawConfig: BuildConfig["publicAssets"]): PublicAssetConfig[] {
-    if (rawConfig == null) {
+function normalizePublicAssets(publicAssets: BuildConfig["publicAssets"]): PublicAssetConfig[] {
+    if (publicAssets == null) {
         return [];
     }
+    if (typeof publicAssets === "string") {
+        return [
+            {
+                type: "local",
+                src: normalizeRelativePath(publicAssets),
+                dest: ""
+            }
+        ];
+    }
 
-    const dirs = typeof rawConfig === "string" ? [{ src: rawConfig, dest: "." }] : rawConfig;
-    return dirs.map((dir) => {
-        const src = normalizePublicAssetSrc(dir.src);
-
-        if (isAbsolute(dir.dest)) {
-            throw new Error(`The destination directory must be a relative path: "${dir.dest}"`);
-        }
-
-        const dest = normalizeRelativePath(dir.dest);
-        if (dest.split("/").some((segment) => /^\.\.?$/.test(segment))) {
-            throw new Error(`Cannot use "." or ".." in destination path: ${dir.dest}`);
-        }
-
+    return publicAssets.map((asset) => {
         return {
             type: "local",
-            src,
-            dest
+            src: normalizePublicAssetSrc(asset.src),
+            dest: normalizePublicAssetDest(asset.dest)
         };
     });
+}
+
+function normalizePublicAssetDest(rawDest: string): string {
+    if (isAbsolute(rawDest)) {
+        throw new Error(`The destination directory must be a relative path: "${rawDest}"`);
+    }
+
+    const dest = normalizeRelativePath(rawDest);
+    if (dest.split("/").some((segment) => /^\.\.?$/.test(segment))) {
+        throw new Error(`Cannot use "." or ".." in destination path: ${rawDest}`);
+    }
+    return dest;
 }
 
 function normalizePublicAssetSrc(src: string): string {
@@ -432,11 +442,13 @@ export function createPackageConfigFromPackageMetadata(metadata: PackageMetadata
         };
     }
 
+    const publicAssets = metadata.publicAssets?.map((asset) => readPublicAssetDir(asset)) ?? [];
+
     return {
         services,
         servicesModule: metadata.servicesModule ?? undefined,
         styles: metadata.styles ?? undefined,
-        publicAssets: [],
+        publicAssets,
         languages,
         uiReferences: readUiReferences(metadata.ui),
         properties,
@@ -493,6 +505,14 @@ function readProperty(property: MetadataPropertyConfig): Property {
         propertyName: property.propertyName,
         defaultValue: property.defaultValue,
         required: property.required ?? false
+    };
+}
+
+function readPublicAssetDir(config: MetadataPublicAssetConfig): PublicAssetConfig {
+    // Interfaces are the same right now.
+    return {
+        ...config,
+        dest: normalizePublicAssetDest(config.dest)
     };
 }
 

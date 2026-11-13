@@ -33,6 +33,10 @@
  *
  * ## Version history
  *
+ * ### 1.2.0
+ *
+ * - Packages may declare public assets and use the `open-pioneer:assets` module.
+ *
  * ### 1.1.0
  *
  * - Packages may now use the `open-pioneer:deployment` module.
@@ -94,6 +98,37 @@ export interface PackageMetadata {
 
     /** Runtime package metadata. Only supported on the runtime package. */
     runtimeMeta?: Nullish<RuntimeMeta>;
+
+    /** Directories served as public assets of the package. Requires version 1.2. */
+    publicAssets?: Nullish<PublicAssetConfig[]>;
+}
+
+/**
+ * A directory served as public assets of the package.
+ */
+export type PublicAssetConfig = LocalPublicAsset | DependencyPublicAsset;
+
+export interface LocalPublicAsset {
+    type: "local";
+
+    /** Directory relative to the package's root. */
+    src: string;
+
+    /** Normalized path below the root of the package's public assets, `""` for the root itself. */
+    dest: string;
+}
+
+export interface DependencyPublicAsset {
+    type: "dependency";
+
+    /** The name of the dependency. */
+    packageName: string;
+
+    /** Directory relative to the dependency's package root. */
+    src: string;
+
+    /** Normalized path below the root of the dependent package's public assets, `""` for the root itself. */
+    dest: string;
 }
 
 /**
@@ -201,7 +236,7 @@ export const PACKAGE_JSON_KEY = "openPioneerFramework";
  * The latest supported metadata version (a semver).
  * Guaranteed to start with `"1."`.
  */
-export const LATEST_VERSION: string = "1.1.0";
+export const LATEST_VERSION: string = "1.2.0";
 
 export type MinorVersion = string & { __brand: "package-format-minor-version" };
 
@@ -211,13 +246,15 @@ export type MinorVersion = string & { __brand: "package-format-minor-version" };
  */
 export const MINOR_VERSIONS: readonly MinorVersion[] = [
     "1.0" as MinorVersion,
-    "1.1" as MinorVersion
+    "1.1" as MinorVersion,
+    "1.2" as MinorVersion
 ];
 
 // Target (minor version) to semver with patch version (if any).
 const LATEST_VERSION_FOR_TARGET: Record<MinorVersion, string> = {
     ["1.0" as MinorVersion]: "1.0.1",
-    ["1.1" as MinorVersion]: "1.1.0"
+    ["1.1" as MinorVersion]: "1.1.0",
+    ["1.2" as MinorVersion]: "1.2.0"
 };
 
 /* NOTE: do not use .strict() for objects here to allow future additions of optional properties */
@@ -264,6 +301,20 @@ const RUNTIME_META_CONFIG_SCHEMA: z.ZodType<RuntimeMeta> = z.object({
     metadataVersion: z.string().nullish().optional()
 });
 
+const PUBLIC_ASSET_METADATA_SCHEMA: z.ZodType<PublicAssetConfig> = z.union([
+    z.object({
+        type: z.literal("local"),
+        src: z.string(),
+        dest: z.string()
+    }),
+    z.object({
+        type: z.literal("dependency"),
+        packageName: z.string(),
+        src: z.string(),
+        dest: z.string()
+    })
+]);
+
 const PACKAGE_METADATA_SCHEMA: z.ZodType<PackageMetadata> = VERSION_SCHEMA.extend({
     services: SERVICE_CONFIG_SCHEMA.array().nullish().optional(),
     servicesModule: z.string().nullish().optional(),
@@ -271,11 +322,15 @@ const PACKAGE_METADATA_SCHEMA: z.ZodType<PackageMetadata> = VERSION_SCHEMA.exten
     i18n: I18N_CONFIG_SCHEMA.nullish().optional(),
     ui: UI_CONFIG_SCHEMA.nullish().optional(),
     properties: PROPERTY_CONFIG_SCHEMA.array().nullish().optional(),
-    runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.nullish().optional()
+    runtimeMeta: RUNTIME_META_CONFIG_SCHEMA.nullish().optional(),
+    publicAssets: PUBLIC_ASSET_METADATA_SCHEMA.array().nullish().optional()
 });
 
-const featuresSince: Record<"app-deployment-module", MinorVersion> = {
-    "app-deployment-module": "1.1" as MinorVersion
+export type PackageFormatFeature = "app-deployment-module" | "public-assets";
+
+const featuresSince: Record<PackageFormatFeature, MinorVersion> = {
+    "app-deployment-module": "1.1" as MinorVersion,
+    "public-assets": "1.2" as MinorVersion
 };
 
 /**
@@ -283,7 +338,7 @@ const featuresSince: Record<"app-deployment-module", MinorVersion> = {
  */
 export function supportsFeature(
     target: MinorVersion,
-    feature: "app-deployment-module"
+    feature: PackageFormatFeature
 ): { supports: true } | { supports: false; needed: MinorVersion } {
     const featureTarget = featuresSince[feature];
     if (!featureTarget) {
@@ -370,8 +425,7 @@ export function parsePackageMetadata(jsonValue: unknown): ParseMetadataResult {
  *
  * Note: the framework metadata version will be included automatically.
  *
- * NOTE: This will probably have to be multiple signatures in the future, when additional metadata fields are added.
- * At this time (version 1.1), only new _source code_ features have been added.
+ * Throws if the metadata uses a field that the target does not support.
  */
 export function serializePackageMetadata(
     metadata: OutputPackageMetadata,
@@ -385,6 +439,15 @@ export function serializePackageMetadata(
     const latestVersion = LATEST_VERSION_FOR_TARGET[target];
     if (!latestVersion) {
         throw new Error(`Unknown target version: '${target}'.`);
+    }
+
+    if (metadata.publicAssets?.length) {
+        const support = supportsFeature(target, "public-assets");
+        if (!support.supports) {
+            throw new Error(
+                `Public assets require package format target ${support.needed} or later, but the target is ${target}.`
+            );
+        }
     }
 
     const augmentedMetadata: PackageMetadata = {

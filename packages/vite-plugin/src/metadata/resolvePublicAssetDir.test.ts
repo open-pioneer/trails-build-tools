@@ -13,9 +13,9 @@ const PACKAGE_DIR = resolve(FIXTURE_DIR, "src/packages/package-with-assets");
 
 it("resolves a directory inside a dependency", async () => {
     const dir = await resolvePublicAssetDir("package-with-assets", PACKAGE_DIR, {
-        type: "package",
+        type: "dependency",
         packageName: "third-party-lib",
-        path: "cdn",
+        src: "cdn",
         dest: "third-party-lib"
     });
     expect(normalizePath(relative(FIXTURE_DIR, dir.directory))).toBe(
@@ -51,9 +51,9 @@ it("throws if the path is not a directory", async () => {
 it("throws if the dependency cannot be found", async () => {
     await expect(
         resolvePublicAssetDir("package-with-assets", PACKAGE_DIR, {
-            type: "package",
+            type: "dependency",
             packageName: "missing-lib",
-            path: "cdn",
+            src: "cdn",
             dest: ""
         })
     ).rejects.toThrow(
@@ -64,9 +64,9 @@ it("throws if the dependency cannot be found", async () => {
 it("throws if a directory inside a dependency does not exist", async () => {
     await expect(
         resolvePublicAssetDir("package-with-assets", PACKAGE_DIR, {
-            type: "package",
+            type: "dependency",
             packageName: "third-party-lib",
-            path: "missing",
+            src: "missing",
             dest: ""
         })
     ).rejects.toThrow(

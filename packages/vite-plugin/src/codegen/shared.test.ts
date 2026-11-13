@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, it } from "vitest";
-import { parseVirtualModuleId, serializeModuleId } from "./shared";
+import {
+    parseVirtualModuleId,
+    serializeModuleId,
+    serializeOptimizedVirtualModuleId
+} from "./shared";
 
 it("serializes and parses the test support module without a locale", function () {
     const id = serializeModuleId({
@@ -41,5 +45,17 @@ it("serializes and parses the assets module of a package", function () {
     expect(parseVirtualModuleId(id)).toEqual({
         type: "package-assets",
         packageDirectory: "/project/packages/pkg-a"
+    });
+});
+
+it("serializes and parses the assets module of an optimized dependency", function () {
+    const id = serializeOptimizedVirtualModuleId({
+        kind: "package-assets",
+        packageDirectory: "/project/node_modules/pkg-a"
+    });
+    expect(id).toBe("\0open-pioneer:package-assets:/project/node_modules/pkg-a");
+    expect(parseVirtualModuleId(id)).toEqual({
+        type: "package-assets",
+        packageDirectory: "/project/node_modules/pkg-a"
     });
 });
