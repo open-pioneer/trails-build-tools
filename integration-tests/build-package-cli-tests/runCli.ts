@@ -27,7 +27,13 @@ export async function runCli(packageDirectory: string): Promise<RunResult> {
     // Compiled output is written into copyDir/dist
     await copy(packageDirectory, copyDir);
 
-    const { stdout, stderr } = await $({ cwd: copyDir })`node ${cli}`.quiet();
+    const { stdout, stderr } = await $({
+        cwd: copyDir,
+        env: {
+            ...process.env,
+            FORCE_COLOR: "0"
+        }
+    })`node ${cli}`.quiet();
     const stableStdout = stdout.replace(/Building package at .*/, "Building package at <PATH>");
     return {
         targetDir,

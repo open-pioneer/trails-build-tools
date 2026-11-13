@@ -58,10 +58,15 @@ change to one `package.json`, `build.config.mjs` or i18n YAML invalidates exactl
 A Trails package that appears at two locations in one app is a build error.
 `open-pioneer:test-support`, and `open-pioneer:assets` in a test run, run the same walk from the importing package
 through `getDependencyGraph`, which skips the app-only steps such as the runtime metadata version.
+The dev server answers requests below `@package-assets/<packageSlug>/` from the public asset directories of that
+package, and reads a file only when a request for it arrives.
+A build copies the public assets of every package to `packages/<packageSlug>/` in the output directory, after the
+bundle is written.
 
 The package compiler produces what the plugin later consumes from `node_modules`.
-`buildPackage.ts` runs the steps in order: JavaScript, declarations, styles, i18n, assets, `package.json`, auxiliary
-files, then `ValidationReporter.check()`, which turns collected warnings into a failure in strict mode.
+`buildPackage.ts` runs the steps in order: JavaScript, declarations, styles, i18n, assets, public assets,
+`package.json`, auxiliary files, then `ValidationReporter.check()`, which turns collected warnings into a failure in
+strict mode.
 The generated `package.json` carries the package metadata in the `PackageMetadataV1` format, and `packageFormatTarget`
 picks which minor version of that format to emit.
 `RuntimeSupport` in `build-common` generates the same module shapes for both the plugin and the compiler, so an app

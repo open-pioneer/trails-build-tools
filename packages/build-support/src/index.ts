@@ -228,7 +228,8 @@ export interface PublicAssetDir {
      * - `"."` or `""`: to serve the assets at the root of the package's public assets.
      * - `"some/relative/path"`: to serve the assets from a subdirectory.
      *
-     * If you define multiple public asset directories, their `dest` values must not conflict with one another.
+     * Multiple public asset directories may use the same `dest` or nest their `dest` values.
+     * When two of them provide the same file, the directory that is declared first wins.
      */
     dest: string;
 }

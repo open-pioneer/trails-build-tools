@@ -89,7 +89,8 @@ _Avoid_: static asset, static file
 **Public asset directory**:
 A directory that a build config lists under `publicAssets`, together with the `dest` path it gets below the package's
 public assets.
-It lies inside the package or inside one of the package's dependencies.
+A source package in an app may list any directory.
+The package compiler only accepts a directory inside the package or inside one of the package's dependencies.
 The package metadata of a published package names a dependency's directory by package name and path.
 
 **Package config**:
@@ -147,8 +148,10 @@ _Avoid_: root directory, project root, repository root
 A module with an `open-pioneer:` prefix that the Vite plugin generates instead of reading from disk, for example
 `open-pioneer:app`, `open-pioneer:react-hooks` or `open-pioneer:assets`.
 The `client.d.ts` of the Vite plugin declares every virtual module and what it exports.
-The package compiler passes them through, so they are resolved again when the published package is used in an app,
-except for the modules that only tests may import.
+The package compiler generates `open-pioneer:react-hooks` and `open-pioneer:source-info` into the published package.
+It keeps the imports of `open-pioneer:deployment` and `open-pioneer:assets`, so the Vite plugin resolves them when the
+published package is used in an app.
+It rejects the modules that only tests may import.
 
 ### Runtime concepts as the build sees them
 

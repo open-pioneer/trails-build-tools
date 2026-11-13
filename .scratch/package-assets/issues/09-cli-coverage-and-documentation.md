@@ -1,6 +1,6 @@
 # Cover the CLI and update the documentation
 
-Status: ready-for-agent
+Status: done
 Issue: #60
 Blocked by: 08
 
@@ -46,3 +46,24 @@ Skip this if the fixture of ticket 07 already has exactly that shape, and say so
 ## Done when
 
 `pnpm ci:test` passes.
+
+## Comments
+
+Implemented with these notes:
+
+- The integration fixture `test-data/public-assets` has its own committed `node_modules/third-party-lib`.
+  The other fixtures link `node_modules` to the test package, which cannot hold a made-up dependency.
+  Node still finds `@open-pioneer/build-support` in the `node_modules` of the test package, two levels up.
+- The round trip test is skipped.
+  `codegen-public-assets/external/node_modules/published-assets` from ticket 07 already has the shape the compiler
+  produces: the `publicAssets` metadata with one `local` and one `dependency` entry, format version 1.2.0, the
+  unchanged import of `open-pioneer:assets`, and the dependency next to the package.
+  The snapshot `__snapshots/public-assets/package.json` of the integration test shows the same entries.
+- Drift fixed in the doc comments: `PublicAssetDir.dest` said that `dest` values must not conflict.
+  They may overlap, and the directory declared first wins.
+  `client.d.ts` needed no change.
+- `CONTEXT.md`: "Public asset directory" now says that only the compiler restricts the location.
+  "Virtual module" now says which modules the compiler generates, keeps and rejects.
+- `spec.md` still shows the metadata entries as `{ package, path, dest }`.
+  The implemented shape is `{ type: "dependency", packageName, src, dest }`, see the comments of ticket 08.
+

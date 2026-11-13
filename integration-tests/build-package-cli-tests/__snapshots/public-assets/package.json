@@ -1,0 +1,54 @@
+{
+    "type": "module",
+    "name": "@open-pioneer/public-assets-example",
+    "version": "1.0.0",
+    "description": "This package ships public assets from itself and from a dependency.",
+    "keywords": [
+        "open-pioneer-trails"
+    ],
+    "homepage": "https://github.com/open-pioneer",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/open-pioneer/trails-build-tools",
+        "directory": "integration-tests/build-package-cli-tests/test-data/public-assets"
+    },
+    "dependencies": {
+        "third-party-lib": "^1.0.0"
+    },
+    "publishConfig": {
+        "directory": "dist",
+        "linkDirectory": false
+    },
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "import": "./index.js",
+            "types": "./index.d.ts"
+        }
+    },
+    "openPioneerFramework": {
+        "services": [],
+        "i18n": {
+            "languages": []
+        },
+        "ui": {
+            "references": []
+        },
+        "properties": [],
+        "publicAssets": [
+            {
+                "type": "local",
+                "src": "public",
+                "dest": ""
+            },
+            {
+                "type": "dependency",
+                "packageName": "third-party-lib",
+                "src": "cdn",
+                "dest": "third-party-lib"
+            }
+        ],
+        "packageFormatVersion": "1.2.0"
+    }
+}
