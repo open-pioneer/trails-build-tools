@@ -81,9 +81,16 @@ publish config.
 _Avoid_: package config, pioneer config
 
 **Public asset**:
-A file in one of the directories that the build config lists under `publicAssets`.
+A file in one of the public asset directories of a Trails package.
 It is copied unchanged and under its original file name into the app's build output, below a directory of its package.
 Code obtains its URL from the virtual module `open-pioneer:assets`.
+_Avoid_: static asset, static file
+
+**Public asset directory**:
+A directory that a build config lists under `publicAssets`, together with the `dest` path it gets below the package's
+public assets.
+It lies inside the package or inside one of the package's dependencies.
+The package metadata of a published package names a dependency's directory by package name and path.
 
 **Package config**:
 The normalized, in-memory form of a package's configuration that the plugin and the compiler work with.
@@ -103,7 +110,7 @@ The `1.x.y` version stamped into package metadata, which says which shape of the
 carries.
 
 **Package format target**:
-The minor version of the package format that the compiler is asked to emit, `1.0` or `1.1`.
+The minor version of the package format that the compiler is asked to emit, `1.0`, `1.1` or `1.2`.
 It decides which Trails features a published package may rely on.
 
 **Runtime metadata version**:

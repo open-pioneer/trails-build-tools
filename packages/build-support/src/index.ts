@@ -64,6 +64,10 @@ export interface BuildConfig {
      * When the package is built for publishing, public asset directories within the package are copied into the
      * published package.
      * Public assets from node dependencies are _not_ copied.
+     * The published package refers to such a dependency by its name instead, so the dependency must be listed in
+     * the `dependencies` or `peerDependencies` of the package.
+     *
+     * Publishing a package with public assets requires {@link PublishConfig.packageFormatTarget} `"1.2"` or later.
      *
      * > NOTE: File names starting with `.` are always ignored for security reasons.
      *
