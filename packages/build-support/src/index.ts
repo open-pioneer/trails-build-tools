@@ -69,7 +69,7 @@ export interface BuildConfig {
      *
      * Publishing a package with public assets requires {@link PublishConfig.packageFormatTarget} `"1.2"` or later.
      *
-     * > NOTE: File names starting with `.` are always ignored for security reasons.
+     * > NOTE: Files in source directories that start with `.` are always ignored for security reasons.
      *
      * @example
      *
