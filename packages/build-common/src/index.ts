@@ -10,4 +10,5 @@ export {
 } from "./buildConfig";
 export { PackageMetadataV1 } from "./packageMetadata";
 export * from "./packageConfig";
+export { copyPublicAssetDirectory } from "./publicAssets/copyPublicAssetDirectory";
 export * as RuntimeSupport from "./runtimeSupport";

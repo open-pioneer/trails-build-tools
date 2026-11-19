@@ -10,6 +10,7 @@ import { buildJs } from "./buildJs";
 import { copyAssets } from "./copyAssets";
 import { copyAuxiliaryFiles } from "./copyAuxiliaryFiles";
 import { copyI18nFiles } from "./copyI18nFiles";
+import { copyPublicAssets } from "./copyPublicAssets";
 import { generatePackageJson } from "./generatePackageJson";
 import { InputModel } from "./model/InputModel";
 import { ResolvedOptions } from "./model/Options";
@@ -31,7 +32,12 @@ export async function buildPackage({ input, options, logger }: BuildPackageOptio
     logger.info(`Building package at ${chalk.underline(input.packageDirectory)}`);
 
     const reporter = new ValidationReporter(logger, options.strict);
-    const model = createPackageModel(input, options.outputDirectory, reporter);
+    const model = createPackageModel(
+        input,
+        options.outputDirectory,
+        reporter,
+        options.packageFormatTarget
+    );
 
     // Prepare output directory
     if (options.clean) {
@@ -100,6 +106,17 @@ export async function buildPackage({ input, options, logger }: BuildPackageOptio
             packageDirectory: model.input.packageDirectory,
             outputDirectory: model.outputDirectory,
             patterns: model.assetPatterns
+        });
+    }
+
+    // Copy public assets
+    const localPublicAssets = model.publicAssets.filter((entry) => entry.type === "local");
+    if (localPublicAssets.length) {
+        logger.info(chalk.gray("Copying public assets..."));
+        await copyPublicAssets({
+            packageDirectory: model.input.packageDirectory,
+            outputDirectory: model.outputDirectory,
+            publicAssets: localPublicAssets
         });
     }
 

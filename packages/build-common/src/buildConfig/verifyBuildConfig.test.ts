@@ -52,3 +52,17 @@ it("allow runtimeMeta", () => {
     };
     verifyBuildConfig(metaRuntimeConfig);
 });
+
+it("allows a single public asset directory as a string", () => {
+    const config = verifyBuildConfig({ publicAssets: "public" });
+    expect(config.publicAssets).toBe("public");
+});
+
+it("allows a list of public asset directories", () => {
+    const publicAssets = [
+        { src: "public", dest: "." },
+        { src: "./node_modules/third-party-lib/cdn", dest: "third-party-lib" }
+    ];
+    const config = verifyBuildConfig({ publicAssets });
+    expect(config.publicAssets).toEqual(publicAssets);
+});

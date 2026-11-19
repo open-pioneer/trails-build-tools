@@ -1,0 +1,129 @@
+// SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
+// SPDX-License-Identifier: Apache-2.0
+
+import type { ServerResponse } from "node:http";
+import sirv from "sirv";
+import type { Connect } from "vite";
+import { ResolvedPublicAssetDir } from "../metadata/Metadata";
+import { MetadataRepository } from "../metadata/MetadataRepository";
+import { createDebugger } from "../utils/debug";
+import { PUBLIC_ASSETS_URL_PREFIX } from "./constants";
+import { slugToPackageName } from "./packageSlug";
+
+const isDebug = !!process.env.DEBUG;
+const debug = createDebugger("open-pioneer:public-assets");
+
+type RequestHandler = (req: Connect.IncomingMessage, res: ServerResponse, next: () => void) => void;
+
+/**
+ * Serves public package assets in the dev server.
+ *
+ * Packages are looked up in the metadata repository, so a package must be loaded there when the request arrives.
+ * This works because the page loads the code of a package before it requests the package's assets,
+ * and loading the code loads the metadata.
+ *
+ * Files are read on request, so the middleware neither scans nor watches the directories.
+ */
+export function createPublicAssetsMiddleware(
+    repository: MetadataRepository,
+    base: string
+): Connect.NextHandleFunction {
+    const prefix = base + PUBLIC_ASSETS_URL_PREFIX + "/";
+    const handlers = new Map<string, RequestHandler>();
+    const getHandler = (directory: string): RequestHandler => {
+        let handler = handlers.get(directory);
+        if (!handler) {
+            handler = sirv(directory, {
+                dev: true,
+                etag: true,
+                extensions: []
+            });
+            handlers.set(directory, handler);
+        }
+        return handler;
+    };
+
+    isDebug && debug("Serving public assets below %s", prefix);
+    return (req, res, next) => {
+        const url = req.url;
+        if ((req.method !== "GET" && req.method !== "HEAD") || !url?.startsWith(prefix)) {
+            return next();
+        }
+
+        let path;
+        try {
+            path = decodeURI(url.slice(prefix.length).replace(/[?#].*$/, ""));
+        } catch {
+            isDebug && debug("Rejecting %s: the path is not a valid URI", url);
+            return replyWithStatus(res, 400, "Bad request: invalid path");
+        }
+
+        // Backslashes count as separators so that no segment can hide a dot name on Windows.
+        const segments = path.split(/[/\\]/).filter((segment) => segment !== "");
+        const [slug, ...assetPath] = segments;
+        if (!slug || assetPath.length === 0) {
+            isDebug && debug("Rejecting %s: the path names no file of a package", url);
+            return replyWithStatus(res, 404, "File not found");
+        }
+
+        const packageName = slugToPackageName(slug);
+        const directories = repository.getLoadedPackage(packageName)?.publicAssets;
+        if (!directories) {
+            // A package is only known after code of it was loaded, see the doc comment above.
+            isDebug &&
+                debug("Rejecting %s: package %s has not been loaded (yet)", url, packageName);
+            return replyWithStatus(res, 404, "Package assets not found");
+        }
+
+        const candidates = findCandidates(directories, assetPath);
+        const serveCandidate = (index: number): void => {
+            const candidate = candidates[index];
+            if (!candidate) {
+                isDebug &&
+                    debug(
+                        "Rejecting %s: no public asset directory of package %s contains the file",
+                        url,
+                        packageName
+                    );
+                return replyWithStatus(res, 404, "File not found");
+            }
+
+            // sirv decodes the URL itself, so it gets the decoded path encoded again.
+            req.url = "/" + candidate.path.map(encodeURI).join("/");
+            getHandler(candidate.directory)(req, res, () => serveCandidate(index + 1));
+        };
+        serveCandidate(0);
+    };
+}
+
+interface Candidate {
+    directory: string;
+    path: string[];
+}
+
+/**
+ * Returns the directories that may contain the file.
+ */
+function findCandidates(directories: ResolvedPublicAssetDir[], segments: string[]): Candidate[] {
+    const candidates: Candidate[] = [];
+    for (const { directory, dest } of directories) {
+        const destSegments = dest === "" ? [] : dest.split("/");
+        const matchesDest = destSegments.every((segment, i) => segments[i] === segment);
+        if (!matchesDest) {
+            continue;
+        }
+
+        const remainder = segments.slice(destSegments.length);
+        if (remainder.length === 0 || remainder.some((s) => s.startsWith("."))) {
+            continue;
+        }
+
+        candidates.push({ directory, path: remainder });
+    }
+    return candidates;
+}
+
+function replyWithStatus(res: ServerResponse, statusCode: number, message: string): void {
+    res.statusCode = statusCode;
+    res.end(message);
+}

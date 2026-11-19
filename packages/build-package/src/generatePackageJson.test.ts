@@ -1,7 +1,12 @@
 // SPDX-FileCopyrightText: 2023-2025 Open Pioneer project (https://github.com/open-pioneer)
 // SPDX-License-Identifier: Apache-2.0
 
-import { BuildConfig, DEFAULT_PACKAGE_TARGET } from "@open-pioneer/build-common";
+import {
+    BuildConfig,
+    DEFAULT_PACKAGE_TARGET,
+    PackageMetadataV1,
+    PublicAssetConfig
+} from "@open-pioneer/build-common";
 import { createMemoryLogger } from "@open-pioneer/cli-common";
 import { expect, it } from "vitest";
 import { GeneratePackageJsonOptions, generatePackageJson } from "./generatePackageJson";
@@ -369,6 +374,48 @@ it("includes runtime metadata when specified", async function () {
     expect(options.logger.messages).toEqual([]); // no warnings
 });
 
+it("includes public assets of the package and of a dependency", async function () {
+    const options = testDefaults({
+        publicAssets: [
+            { type: "local", src: "public", dest: "" },
+            {
+                type: "dependency",
+                packageName: "third-party-lib",
+                src: "cdn",
+                dest: "third-party-lib"
+            }
+        ],
+        packageFormatTarget: "1.2" as PackageMetadataV1.MinorVersion
+    });
+    const { openPioneerFramework } = await generatePackageJson(options);
+    expect(openPioneerFramework).toMatchInlineSnapshot(`
+      {
+        "i18n": {
+          "languages": [],
+        },
+        "packageFormatVersion": "1.2.0",
+        "properties": [],
+        "publicAssets": [
+          {
+            "dest": "",
+            "src": "public",
+            "type": "local",
+          },
+          {
+            "dest": "third-party-lib",
+            "packageName": "third-party-lib",
+            "src": "cdn",
+            "type": "dependency",
+          },
+        ],
+        "services": [],
+        "ui": {
+          "references": [],
+        },
+      }
+    `);
+});
+
 function testDefaults(options?: {
     packageJson?: Record<string, unknown>;
     buildConfig?: BuildConfig;
@@ -376,6 +423,8 @@ function testDefaults(options?: {
     jsEntryPoints?: NormalizedEntryPoint[];
     cssEntryPoint?: NormalizedEntryPoint | undefined;
     servicesEntryPoint?: NormalizedEntryPoint | undefined;
+    publicAssets?: PublicAssetConfig[];
+    packageFormatTarget?: PackageMetadataV1.MinorVersion;
 }) {
     const logger = createMemoryLogger();
     return {
@@ -397,7 +446,8 @@ function testDefaults(options?: {
             outputDirectory: "./test/package/dist",
             jsEntryPoints: options?.jsEntryPoints ?? [],
             servicesEntryPoint: options?.servicesEntryPoint ?? undefined,
-            cssEntryPoint: options?.cssEntryPoint ?? undefined
+            cssEntryPoint: options?.cssEntryPoint ?? undefined,
+            publicAssets: options?.publicAssets ?? []
         },
         validation: {
             requireChangelog: true,
@@ -405,7 +455,7 @@ function testDefaults(options?: {
             requireReadme: true
         },
         logger,
-        packageFormatTarget: DEFAULT_PACKAGE_TARGET,
+        packageFormatTarget: options?.packageFormatTarget ?? DEFAULT_PACKAGE_TARGET,
         reporter: new ValidationReporter(logger, options?.strict ?? true)
     } satisfies GeneratePackageJsonOptions;
 }

@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { join } from "node:path";
-import { PackageConfig, createPackageConfigFromBuildConfig } from "@open-pioneer/build-common";
+import {
+    PackageConfig,
+    PackageMetadataV1,
+    PublicAssetConfig,
+    createPackageConfigFromBuildConfig
+} from "@open-pioneer/build-common";
 import { BuildConfig } from "@open-pioneer/build-support";
 import {
     NormalizedEntryPoint,
@@ -11,6 +16,7 @@ import {
 } from "../utils/entryPoints";
 import { ValidationReporter } from "../utils/ValidationReporter";
 import { InputModel } from "./InputModel";
+import { resolvePublicAssets } from "./publicAssets";
 
 export const SUPPORTED_TS_EXTENSIONS = [".ts", ".mts", ".tsx"];
 export const SUPPORTED_JS_EXTENSIONS = [...SUPPORTED_TS_EXTENSIONS, ".js", ".mjs", ".jsx"];
@@ -55,12 +61,19 @@ export interface PackageModel {
 
     /** Glob patterns for copying assets. */
     assetPatterns: string[];
+
+    /**
+     * Public asset directories in the order of the build config.
+     * A directory inside the package is `local`, a directory inside a dependency is `dependency`.
+     */
+    publicAssets: PublicAssetConfig[];
 }
 
 export function createPackageModel(
     input: InputModel,
     outputDirectory: string,
-    reporter: ValidationReporter
+    reporter: ValidationReporter,
+    packageFormatTarget: PackageMetadataV1.MinorVersion
 ): PackageModel {
     const packageName = input.packageJson.name;
     if (typeof packageName !== "string" || !packageName) {
@@ -91,6 +104,7 @@ export function createPackageModel(
     }
 
     const assetPatterns = toArray(input.buildConfig.publishConfig?.assets ?? "assets/**");
+    const publicAssets = resolvePublicAssets(input, outputDirectory, packageFormatTarget);
     reporter.check();
     return {
         outputDirectory,
@@ -101,6 +115,7 @@ export function createPackageModel(
         cssEntryPoint: normalizedCssEntryPoint,
         i18nFiles,
         assetPatterns,
+        publicAssets,
         servicesEntryPoint
     };
 }

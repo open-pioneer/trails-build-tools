@@ -32,6 +32,15 @@ export interface ViteBuildOptions {
      * Default: false.
      */
     testMode?: boolean;
+
+    /**
+     * Bundle modules below `node_modules` instead of keeping their imports external.
+     *
+     * Needed to see the code that the plugin generates for a published package.
+     *
+     * Default: false.
+     */
+    bundleNodeModules?: boolean;
 }
 
 export async function runViteBuild(options: ViteBuildOptions) {
@@ -90,7 +99,11 @@ async function runVite(options: ViteBuildOptions) {
                     void 0;
                 },
                 external(id, importer, isResolved) {
-                    if (isResolved && /[/\\]node_modules[/\\]/.test(id)) {
+                    if (
+                        !options.bundleNodeModules &&
+                        isResolved &&
+                        /[/\\]node_modules[/\\]/.test(id)
+                    ) {
                         return true;
                     }
                     if (/^@open-pioneer\/runtime\//.test(id)) {

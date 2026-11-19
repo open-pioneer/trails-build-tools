@@ -20,7 +20,6 @@ catalog:
   fs-extra: ^11.4.1
   import-meta-resolve: ^4.2.0
   js-yaml: ^5.5.0
-  oxc-resolver: ^11.24.2
   postcss-import: ^17.0.1
   postcss: ^8.5.31
   rolldown: ^1.2.15
@@ -28,6 +27,7 @@ catalog:
   rollup: ^4.65.0
   sass: ^1.106.1
   semver: ^7.8.5
+  sirv: ^3.0.2
   spdx-expression-parse: ^5.0.0
   spdx-satisfies: ^6.0.0
   tinyglobby: ^0.2.17

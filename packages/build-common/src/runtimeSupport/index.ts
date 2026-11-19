@@ -14,7 +14,7 @@ export type VirtualModule = PlainVirtualModule | TestSupportVirtualModule;
 
 /** A virtual module whose id carries no data of its own. */
 export interface PlainVirtualModule {
-    type: "app" | "react-hooks" | "source-info" | "deployment";
+    type: "app" | "react-hooks" | "source-info" | "deployment" | "assets";
 }
 
 /** The `open-pioneer:test-support` module, optionally with a `?locale=<message locale>` query. */
@@ -90,6 +90,8 @@ export function parseVirtualModule(moduleId: string): VirtualModule | undefined 
             return { type: "source-info" };
         case "open-pioneer:deployment":
             return { type: "deployment" };
+        case "open-pioneer:assets":
+            return { type: "assets" };
     }
     throw new Error(`Unsupported module id '${moduleId}'.`);
 }

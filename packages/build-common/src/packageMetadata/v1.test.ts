@@ -63,16 +63,16 @@ it("succeeds to parse simple metadata", function () {
         styles: "./foo.css"
     });
     expect(result).toMatchInlineSnapshot(`
-          {
-            "type": "success",
-            "value": {
-              "packageFormatVersion": "1.1.0",
-              "properties": [],
-              "services": [],
-              "styles": "./foo.css",
-            },
-          }
-        `);
+      {
+        "type": "success",
+        "value": {
+          "packageFormatVersion": "1.2.0",
+          "properties": [],
+          "services": [],
+          "styles": "./foo.css",
+        },
+      }
+    `);
 });
 
 it("serializes and parses valid metadata objects", function () {
@@ -158,6 +158,56 @@ it("produces a newer format version for newer targets", () => {
         "styles": "foo.css",
       }
     `);
+});
+
+it("serializes and parses public assets for target 1.2", () => {
+    const metadata: PackageMetadataV1.OutputPackageMetadata = {
+        publicAssets: [
+            { type: "local", src: "public", dest: "" },
+            {
+                type: "dependency",
+                packageName: "third-party-lib",
+                src: "cdn",
+                dest: "third-party-lib"
+            }
+        ]
+    };
+    const serialized = serializePackageMetadata(metadata, "1.2" as PackageMetadataV1.MinorVersion);
+    expect(serialized).toMatchInlineSnapshot(`
+      {
+        "packageFormatVersion": "1.2.0",
+        "publicAssets": [
+          {
+            "dest": "",
+            "src": "public",
+            "type": "local",
+          },
+          {
+            "dest": "third-party-lib",
+            "packageName": "third-party-lib",
+            "src": "cdn",
+            "type": "dependency",
+          },
+        ],
+      }
+    `);
+
+    const parseResult = parsePackageMetadata(serialized);
+    expect(parseResult).toEqual({
+        type: "success",
+        value: { ...metadata, packageFormatVersion: "1.2.0" }
+    });
+});
+
+it("rejects public assets for a target older than 1.2", () => {
+    expect(() =>
+        serializePackageMetadata(
+            { publicAssets: [{ type: "local", src: "public", dest: "" }] },
+            "1.1" as PackageMetadataV1.MinorVersion
+        )
+    ).toThrowErrorMatchingInlineSnapshot(
+        `[Error: Public assets require package format target 1.2 or later, but the target is 1.1.]`
+    );
 });
 
 it("throws an error when the version is explicitly defined during serialization", function () {

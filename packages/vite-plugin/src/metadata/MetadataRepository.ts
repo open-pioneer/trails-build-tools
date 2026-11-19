@@ -57,6 +57,9 @@ export class MetadataRepository {
     // Key: package directory on disk, value: existing metadata
     #packageMetadataCache: PackageMetadataCache;
 
+    // The Trails packages in #packageMetadataCache. Key: package name
+    readonly #packagesByName = new Map<string, AnalyzedPackage>();
+
     // Cache for the contents of i18n files.
     // Key: path on disk.
     #i18nCache: Cache<string, I18nEntry, [ctx: MetadataContext]>;
@@ -71,6 +74,7 @@ export class MetadataRepository {
     }
 
     reset() {
+        this.#packagesByName.clear();
         this.#packageMetadataCache = this.#createPackageMetadataCache();
         this.#i18nCache = this.#createI18nCache();
     }
@@ -84,6 +88,21 @@ export class MetadataRepository {
             this.#packageMetadataCache.invalidate(dirname(path));
         }
         this.#i18nCache.invalidate(path);
+    }
+
+    /**
+     * Returns the metadata of the Trails package named `packageName`, if it has already been loaded.
+     * It is not loaded on demand, because the package's location is only known from a dependency graph.
+     */
+    getLoadedPackage(packageName: string): AnalyzedPackage | undefined {
+        return this.#packagesByName.get(packageName);
+    }
+
+    /**
+     * Returns the metadata of all Trails packages that have been loaded since the last reset.
+     */
+    getLoadedPackages(): AnalyzedPackage[] {
+        return Array.from(this.#packagesByName.values());
     }
 
     /**
@@ -118,19 +137,21 @@ export class MetadataRepository {
     }
 
     /**
-     * Returns the dependency graph of the package in `packageDirectory` that imports `open-pioneer:test-support`.
+     * Returns the dependency graph of the package in `packageDirectory`, which imports `importedModule`.
      * The package is not an app, so none of the app-only checks (such as the runtime metadata version) run.
+     * `importedModule` only names the module in the error for a plain package.
      */
-    async getTestSupportMetadata(
+    async getTestDependencyGraph(
         ctx: MetadataContext,
-        packageDirectory: string
+        packageDirectory: string,
+        importedModule: string
     ): Promise<AnalyzedPackageGraph> {
-        isDebug && debug(`Request for test support metadata of ${packageDirectory}`);
+        isDebug && debug(`Request for the test dependency graph of package at ${packageDirectory}`);
 
         const graph = await this.#analyzeDependencyGraph(ctx, packageDirectory);
         if (!graph) {
             throw new ReportableError(
-                "'open-pioneer:test-support' can only be imported from a Trails package." +
+                `'${importedModule}' can only be imported from a Trails package.` +
                     ` The package in ${packageDirectory} has neither a ${BUILD_CONFIG_NAME} nor package metadata.`
             );
         }
@@ -290,9 +311,8 @@ export class MetadataRepository {
 
     #createPackageMetadataCache(): PackageMetadataCache {
         const sourceRoot = this.#sourceRoot;
+        const packagesByName = this.#packagesByName;
         const provider = {
-            _byName: new Map<string, AnalyzedPackage>(),
-
             getId(directory: string) {
                 return normalizePath(directory);
             },
@@ -328,7 +348,7 @@ export class MetadataRepository {
 
                 // Ensure only one version of a package exists in the app
                 if (metadata.type === "pioneer-package") {
-                    const existingMetadata = this._byName.get(metadata.name);
+                    const existingMetadata = packagesByName.get(metadata.name);
                     if (
                         existingMetadata &&
                         normalizePath(existingMetadata.directory) !==
@@ -345,7 +365,7 @@ export class MetadataRepository {
                         throw new ReportableError(message);
                     }
 
-                    this._byName.set(metadata.name, metadata);
+                    packagesByName.set(metadata.name, metadata);
                 }
 
                 return {
@@ -355,7 +375,7 @@ export class MetadataRepository {
             },
             onInvalidate(directory: string, entry: MetadataEntry) {
                 isDebug && debug(`Removed cache entry for '${entry.metadata.name}'`);
-                this._byName.delete(entry.metadata.name);
+                packagesByName.delete(entry.metadata.name);
             },
             onCachedReturn(directory: string, entry: MetadataEntry) {
                 isDebug && debug(`Returning cached metadata for '${entry.metadata.name}'`);

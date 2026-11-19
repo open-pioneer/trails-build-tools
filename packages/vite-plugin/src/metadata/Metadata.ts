@@ -78,6 +78,9 @@ export interface AnalyzedPackage {
     /** Path to the resolved css file (if any). */
     cssFilePath: string | undefined;
 
+    /** Public asset directories. */
+    publicAssets: ResolvedPublicAssetDir[];
+
     /**
      * Paths to the i18n yaml files, one per message locale declared in the build config.
      * Key: message locale, value: file path
@@ -96,6 +99,17 @@ export interface AnalyzedPackage {
 
     /** Package config, read from the build config or the package metadata. */
     config: PackageConfig;
+}
+
+/**
+ * A public asset directory of a package, resolved on disk.
+ */
+export interface ResolvedPublicAssetDir {
+    /** Absolute real path of the directory on disk. */
+    directory: string;
+
+    /** Normalized path below the package's public assets, `""` for the root. */
+    dest: string;
 }
 
 /**
