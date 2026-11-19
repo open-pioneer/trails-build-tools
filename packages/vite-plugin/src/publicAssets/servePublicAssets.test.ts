@@ -111,7 +111,7 @@ it.each(["scope~scoped-assets", "scope%7Escoped-assets"])(
     }
 );
 
-it.each(["missing.txt", "nested", "nested/", "third-party-lib/missing.js", ""])(
+it.each(["missing.txt", "third-party-lib/missing.js", ""])(
     "responds with 404 for the missing file %j",
     async (path) => {
         const response = await fetch(`${devServerUrl}${PREFIX}/${path}`, {
@@ -140,11 +140,45 @@ it.each([
     "%2e%2e%2fpackage.json",
     "..%5cpackage.json",
     "nested/..%2f..%2fpackage.json",
-    "third-party-lib/%2e%2e/%2e%2e/package.json"
+    "third-party-lib/%2e%2e/%2e%2e/package.json",
+    "nested/../../package.json",
+    "nested%5c..%5c..%5cpackage.json",
+    "%252e%252e/package.json",
+    "..%252fpackage.json",
+    "nested/..;/..;/package.json",
+    "nested/%00/../../package.json",
+    "shared/../../package-with-assets/package.json",
+    "shared/nested/../../../package-with-assets/package.json"
 ])("never serves a file outside the public asset directories for %j", async (path) => {
     const response = await get(`${PREFIX}/${path}`);
     expect([400, 404]).toContain(response.status);
     expect(response.body).not.toContain("package-with-assets");
+});
+
+it.each([
+    "../packages/package-with-assets/package.json",
+    "%2e%2e/packages/package-with-assets/package.json",
+    "package-with-assets~../package.json",
+    "..%5cpackage-with-assets/package.json"
+])("never resolves the package slug in %j to a directory", async (path) => {
+    const response = await get(`/@package-assets/${path}`);
+    expect(response.status).toBe(404);
+    expect(response.body).not.toContain("package-with-assets");
+});
+
+it.each([
+    "nested",
+    "nested/",
+    "nested/.",
+    "nested//",
+    "nested%2f",
+    "third-party-lib",
+    "third-party-lib/",
+    "shared/nested/"
+])("never lists the contents of the directory %j", async (path) => {
+    const response = await get(`${PREFIX}/${path}`, { Accept: "text/html" });
+    expect(response.status).toBe(404);
+    expect(response.body).toBe("File not found");
 });
 
 it("answers a malformed URL with 400", async () => {
@@ -234,9 +268,12 @@ async function analyzeApp(server: ViteDevServer) {
 }
 
 // Raw request to avoid fetch() doing request path normalization (e.g. dots in paths).
-function get(path: string): Promise<{ status: number; body: string }> {
+function get(
+    path: string,
+    headers?: Record<string, string>
+): Promise<{ status: number; body: string }> {
     return new Promise((resolvePromise, reject) => {
-        const req = request(`${devServerUrl}/`, { path }, (res) => {
+        const req = request(`${devServerUrl}/`, { path, headers }, (res) => {
             let body = "";
             res.setEncoding("utf-8");
             res.on("data", (chunk: string) => (body += chunk));
