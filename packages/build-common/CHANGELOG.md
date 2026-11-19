@@ -1,5 +1,19 @@
 # Changelog @open-pioneer/build-common
 
+## 5.2.0
+
+### Minor Changes
+
+- fe47866: Add support for the new `publicAssets` option in `build.config.mjs`.
+  A Trails package can declare public asset directories, which are deployed together with the built app, using their original file names and unmodified contents.
+
+    The new version `"1.2"` of the package metadata format includes support for public assets from published packages (and the module `open-pioneer:assets`).
+
+### Patch Changes
+
+- Updated dependencies [fe47866]
+    - @open-pioneer/build-support@4.1.0
+
 ## 5.1.1
 
 ### Patch Changes

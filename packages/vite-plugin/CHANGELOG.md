@@ -1,5 +1,31 @@
 # Changelog @open-pioneer/vite-plugin-pioneer
 
+## 7.2.0
+
+### Minor Changes
+
+- fe47866: Support public assets of Trails packages.
+
+    A package lists its public asset directories under `publicAssets` in its `build.config.mjs`.
+
+    The development server serves these files on request, and the Vite build copies them into the output directory.
+
+    The new module `open-pioneer:assets` exports `publicAssetsUrl`, the root URL of the package's public assets, and `getPublicAssetUrl()`, which returns the URL of a specific asset.
+
+    ```js
+    import { getPublicAssetUrl } from "open-pioneer:assets";
+
+    const assetUrl = getPublicAssetUrl("icons/my-icon.png");
+    ```
+
+    The plugin also supports published packages with the package format version 1.2, which may define public assets of their own.
+
+### Patch Changes
+
+- fe47866: Replace `oxc-resolver` for the Trails package lookup on dev server start with a simpler algorithm from `vitefu`.
+- Updated dependencies [fe47866]
+    - @open-pioneer/build-common@5.2.0
+
 ## 7.1.2
 
 ### Patch Changes
